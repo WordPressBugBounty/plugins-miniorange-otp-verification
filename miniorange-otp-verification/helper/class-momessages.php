@@ -165,10 +165,7 @@ if ( ! class_exists( 'MoMessages' ) ) {
 
 					self::WC_GUEST_CHECKOUT_HEAD        => mo_( 'WHAT IS GUEST CHECKOUT?' ),
 
-					self::WC_GUEST_CHECKOUT_BODY        => mo_(
-						"Verify customer's phone number or email address only when
-														he is not logged in during checkout ( is a guest user )."
-					),
+					self::WC_GUEST_CHECKOUT_BODY        => mo_( 'Verify customer only when he is not logged in during checkout.' ),
 
 					self::SUPPORT_FORM_VALUES           => mo_( 'Please submit your query along with email.' ),
 
@@ -356,8 +353,6 @@ if ( ! class_exists( 'MoMessages' ) ) {
 														UserPro Registration Form.'
 					),
 
-					self::USERPRO_VERIFY                => mo_( 'Please verify yourself before submitting the form.' ),
-
 					self::PASS_LENGTH                   => mo_( 'Choose a password with minimum length 6.' ),
 
 					self::PASS_MISMATCH                 => mo_( 'Password and Confirm Password do not match.' ),
@@ -472,8 +467,6 @@ if ( ! class_exists( 'MoMessages' ) ) {
 
 					self::WP_MEMBER_CHOOSE              => mo_( 'Please choose a Verification Method for WP Member Form.' ),
 
-					self::UMPRO_VERIFY                  => mo_( 'Please verify yourself before submitting the form.' ),
-
 					self::UMPRO_CHOOSE                  => mo_(
 						'Please choose a verification method for
 														Ultimate Membership Pro form.'
@@ -506,10 +499,6 @@ if ( ! class_exists( 'MoMessages' ) ) {
 					self::FORMCRAFT_FIELD_ERROR         => mo_( 'Please fill in the form id and field id of your FormCraft Form' ),
 
 					self::WPEMEMBER_CHOOSE              => mo_( 'Please choose a Verification Method for WpEmember Registration Form' ),
-
-					self::DOC_DIRECT_VERIFY             => mo_( 'Please verify yourself before submitting the form' ),
-
-					self::DCD_ENTER_VERIFY_CODE         => mo_( 'Please enter a verification code to verify yourself' ),
 
 					self::DOC_DIRECT_CHOOSE             => mo_( 'Please choose a Verification Method for DocDirect Theme.' ),
 
@@ -575,8 +564,7 @@ if ( ! class_exists( 'MoMessages' ) ) {
 					self::CUSTOM_CHOOSE                 => mo_( 'Please choose a Verification Method for Your Own Form.' ),
 
 					self::GATEWAY_PARAM_NOTE            => mo_(
-						"You will need to place your SMS gateway URL in the field above in order to be
-											able to send OTPs to the user's phone.<br>Example:-http://alerts.sinfini.com/api/web2sms.php?username=XYZ&password=password& to=##phone##&sender=senderid& message=##message##"
+						"You will need to place your SMS gateway URL in the above field.<br><br>Example:-http://alerts.sinfini.com/api/web2sms.php?username=XYZ&password=password& to=<b>##phone##</b>&sender=senderid& message=<b>##message##</b>"
 					),
 					self::CUSTOM_FORM_MESSAGE           => mo_( "<b>Your test was succesful!</b> <br> Please contact us at <a style='cursor:pointer;' href='mailto:otpsupport@xecurify.com'>otpsupport@xecurify.com</a> for full integration of your form." ),
 					self::LOW_TRANSACTION_ERROR         => mo_( 'There was an error in sending the OTP. Please try again or contact site admin.' ),
@@ -587,14 +575,157 @@ if ( ! class_exists( 'MoMessages' ) ) {
 					self::USERNAME_NOT_EXIST            => mo_( "We can't find an account registered with that address or username or phone number." ),
 					self::RESET_LABEL                   => mo_( 'To reset your password, please enter your email address, username or phone number.' ),
 
-					self::HOUZEZ_VERIFY                 => ( 'Please verify yourself before submitting the form' ),
-					self::HOUZEZ_ENTER_VERIFY_CODE      => ( 'Please enter a verification code to verify yourself' ),
+					self::ENTER_VERIFICATION_CODE       => ( 'Please enter a verification code to verify yourself' ),
+					self::REMOVE_PLUS_MESSAGE           => ( 'For some gateways, a + is automatically inserted into the SMS template. You can enable this option to remove the "+" if needed.' ),
+					self::REMOVE_PLUS_MESSAGE_HEADER    => ( 'When to Use the "+" Removal Option' ),
+
 				)
 			);
+
+			$frontend_messages = maybe_serialize(
+				array(
+
+					// General Messages.
+					self::BLOCKED_COUNTRY               => mo_( 'This country is blocked by the admin. Please enter another phone number or contact site admin.' ),
+					self::GLOBALLY_INVALID_PHONE_FORMAT => mo_(
+						'##phone## is not a Globally valid phone number.
+														Please enter a valid Phone Number.'
+					),
+
+					self::OTP_SENT_PHONE                => mo_(
+						'A OTP (One Time Passcode) has been sent to ##phone##.
+														Please enter the OTP in the field below to verify your phone.'
+					),
+
+					self::OTP_SENT_EMAIL                => mo_(
+						'A One Time Passcode has been sent to ##email##.
+														Please enter the OTP below to verify your Email Address. 
+														If you cannot see the email in your inbox, make sure to check 
+														your SPAM folder.'
+					),
+
+					self::ERROR_OTP_EMAIL               => mo_(
+						'There was an error in sending the OTP.
+														Please enter a valid email id or contact site Admin.'
+					),
+
+					self::ERROR_OTP_PHONE               => mo_(
+						'There was an error in sending the OTP to the given Phone.
+														Number. Please Try Again or contact site Admin.'
+					),
+
+					self::ERROR_PHONE_FORMAT            => mo_(
+						'##phone## is not a valid phone number.
+														Please enter a valid Phone Number. E.g:+1XXXXXXXXXX'
+					),
+
+					self::ERROR_EMAIL_FORMAT            => mo_(
+						'##email## is not a valid email address.
+														Please enter a valid Email Address. E.g:abc@abc.abc'
+					),
+
+					self::INVALID_EMAIL                 => mo_(
+						"Invalid Email address.
+										Please register using a valid Email Address or contact us at <b><i><a style='cursor:pointer;' onClick='otpSupportOnClick();'> <u>otpsupport@xecurify.com</u></a></i></b> to know more."
+					),
+
+					self::CHOOSE_METHOD                 => mo_(
+						'Please select one of the methods below to verify your account.
+														A One time passcode will be sent to the selected method.'
+					),
+
+					self::PLEASE_VALIDATE               => mo_( 'You need to verify yourself in order to submit this form' ),
+
+					self::ERROR_PHONE_BLOCKED           => mo_(
+						'##phone## has been blocked by the admin.
+														Please Try a different number or Contact site Admin.'
+					),
+
+					self::ERROR_EMAIL_BLOCKED           => mo_(
+						'##email## has been blocked by the admin.
+														Please Try a different email or Contact site Admin.'
+					),
+					self::EMAIL_MISMATCH                => mo_(
+						'The email OTP was sent to and the email in contact
+														submission do not match.'
+					),
+
+					self::PHONE_MISMATCH                => mo_(
+						'The phone number OTP was sent to and the phone number in
+														contact submission do not match.'
+					),
+
+					self::ENTER_PHONE                   => mo_( 'You will have to provide a Phone Number before you can verify it.' ),
+
+					self::ENTER_EMAIL                   => mo_( 'You will have to provide an Email Address before you can verify it.' ),
+
+					self::USERNAME_MISMATCH             => mo_( 'Username that the OTP was sent to and the username submitted do not match' ),
+
+					self::ENTER_PHONE_CODE              => mo_( 'Please enter the verification code sent to your phone' ),
+
+					self::ENTER_EMAIL_CODE              => mo_( 'Please enter the verification code sent to your email address' ),
+
+					self::ENTER_VERIFY_CODE             => mo_( 'Please verify yourself before submitting the form.' ),
+
+					self::ENTER_PHONE_VERIFY_CODE       => mo_( 'Please verify your phone number before submitting the form.' ),
+
+					self::ENTER_EMAIL_VERIFY_CODE       => mo_( 'Please verify your email address before submitting the form.' ),
+
+					self::PHONE_VALIDATION_MSG          => mo_( 'Enter your mobile number below for verification :' ),
+
+					self::ENTER_PHONE_DEFAULT           => mo_( 'ERROR: Please enter a valid phone number.' ),
+
+					self::OTP_SENT                      => mo_(
+						'A passcode has been sent to {{method}}. Please enter the otp
+														below to verify your account.'
+					),
+
+					self::ERR_OTP                       => mo_(
+						'There was an error in sending OTP. Please click on Resend
+														OTP link to resend the OTP.'
+					),
+
+					self::INVALID_OTP                   => mo_( 'Invalid one time passcode. Please enter a valid passcode.' ),
+
+					self::REQUIRED_OTP                  => mo_( 'Please enter a value in OTP field.' ),
+
+					self::UNKNOWN_ERROR                 => mo_( 'Error processing your request. Please try again.' ),
+					self::INVALID_OP                    => mo_( 'Invalid Operation. Please Try Again' ),
+
+					self::MO_REG_ENTER_PHONE            => mo_( 'Phone with country code eg. +1xxxxxxxxxx' ),
+
+					self::PHONE_NOT_FOUND               => mo_( "Sorry, but you don't have a registered phone number." ),
+
+					self::REGISTER_PHONE_LOGIN          => mo_(
+						'A new security system has been enabled for you. Please
+														register your phone to continue.'
+					),
+					self::PHONE_EXISTS                  => mo_( 'Phone Number is already in use. Please use another number.' ),
+
+					self::EMAIL_EXISTS                  => mo_( 'Email is already in use. Please use another email.' ),
+
+					self::INVALID_USERNAME              => mo_( 'Please enter a valid username or email.' ),
+
+					self::INVALID_PHONE                 => mo_( 'Please enter a valid phone number' ),
+
+					self::ERROR_SENDING_SMS             => mo_( 'There was an error sending SMS to the user' ),
+
+					self::SMS_SENT_SUCCESS              => mo_( 'SMS was sent successfully.' ),
+
+					self::ENTER_VERIFICATION_CODE       => mo_( 'Please enter a verification code to verify yourself' ),
+				)
+			);
+
 			/** Created an array instead of messages instead of constant variables for Translation reasons. */
 			define(
 				'MO_MESSAGES',
 				$this->update_message_list( $messages )
+			);
+
+			/** Created an array instead of messages instead of constant variables for Translation reasons. */
+			define(
+				'MO_FRONTEND_MESSAGES',
+				$this->update_message_list( $frontend_messages )
 			);
 
 			/** Created an array instead of messages instead of constant variables for Translation reasons. */
@@ -640,6 +771,16 @@ if ( ! class_exists( 'MoMessages' ) ) {
 		 */
 		public static function get_original_message_list() {
 			$messages = maybe_unserialize( MO_ORIGINAL_MESSAGES );
+			return $messages;
+		}
+
+		/**
+		 * This function is used to fetch the original message list.
+		 *
+		 * @return array
+		 */
+		public static function get_frontend_message_list() {
+			$messages = maybe_unserialize( MO_FRONTEND_MESSAGES );
 			return $messages;
 		}
 

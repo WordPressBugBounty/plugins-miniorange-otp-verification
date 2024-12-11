@@ -36,6 +36,14 @@ if ( ! class_exists( 'GravityForm' ) ) {
 	class GravityForm extends FormHandler implements IFormHandler {
 
 		use Instance;
+
+		/**
+		 * Add button_class value.
+		 *
+		 * @var string $button_css
+		 */
+		public $button_css;
+
 		/**
 		 * Initializes values
 		 */
@@ -51,6 +59,8 @@ if ( ! class_exists( 'GravityForm' ) ) {
 			$this->phone_form_id           = '.ginput_container_phone';
 			$this->button_text             = get_mo_option( 'gf_button_text' );
 			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : mo_( 'Click Here to send OTP' );
+			$this->generate_otp_action     = 'mo_gravity_send_otp';
+			$this->button_css              = get_mo_option( 'gf_button_css' );
 			$this->form_documents          = MoFormDocs::GF_FORM_LINK;
 			parent::__construct();
 		}
@@ -66,39 +76,32 @@ if ( ! class_exists( 'GravityForm' ) ) {
 			if ( empty( $this->form_details ) ) {
 				return;
 			}
-			add_filter( 'gform_field_content', array( $this, 'add_scripts' ), 1, 5 );
+			add_action( 'wp_enqueue_scripts', array( $this, 'miniorange_gravity_script' ) );
 			add_filter( 'gform_field_validation', array( $this, 'validate_form_submit' ), 1, 5 );
 			add_action( 'gform_pre_submission', array( $this, 'mo_gravity_unset_session' ) );
-			$this->routeData();
+			add_action( 'wp_ajax_nopriv_' . $this->generate_otp_action, array( $this, 'handleGfForm' ) );
+			add_action( 'wp_ajax_' . $this->generate_otp_action, array( $this, 'handleGfForm' ) );
 		}
-		/**
-		 * * @throws ReflectionException
-		 */
-		private function routeData() {
 
-			if ( ! array_key_exists( 'mo_gravity_option', $_GET ) ) { // phpcs:ignore -- false positive.
-				return;
-			}
-
-			if ( ! check_ajax_referer( $this->nonce, 'security', false ) ) {
-				wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ), MoConstants::ERROR_JSON_TYPE ) );
-			}
-			$data                  = MoUtility::mo_sanitize_array( $_POST );
-			$send_otp_check_option = isset( $_GET['mo_gravity_option'] ) ? sanitize_text_field( wp_unslash( $_GET['mo_gravity_option'] ) ) : ''; // phpcs:ignore -- false positive.
-			switch ( trim( $send_otp_check_option ) ) {
-				case 'miniorange-gf-contact':
-					$this->handleGfForm( $data );
-					break;
-			}
-		}
 		/**
 		 * This function is used to start the OTP Verification process. Initializes the
 		 * required session variables and starts the OTP Verification process.
 		 *
-		 * @param string $get_data  array   the post variable.
 		 * * @throws ReflectionException.
 		 */
-		public function handleGfForm( $get_data ) {
+		public function handleGfForm() {
+
+			if ( ! check_ajax_referer( $this->nonce, $this->nonce_key ) ) {
+				wp_send_json(
+					MoUtility::create_json(
+						MoMessages::showMessage( MoMessages::INVALID_OP ),
+						MoConstants::ERROR_JSON_TYPE
+					)
+				);
+				exit;
+			}
+
+			$get_data = MoUtility::mo_sanitize_array( $_POST );
 
 			MoUtility::initialize_transaction( $this->form_session_var );
 
@@ -109,6 +112,32 @@ if ( ! class_exists( 'GravityForm' ) ) {
 				$this->processPhoneAndStartOTPVerificationProcess( $get_data );
 			}
 		}
+
+		/**
+		 * This function registers the js file for enabling OTP Verification
+		 * for Gravity using AJAX calls.
+		 */
+		public function miniorange_gravity_script() {
+			wp_register_script( 'mogravity', MOV_URL . 'includes/js/mogravity.min.js', array( 'jquery' ), MOV_VERSION, true );
+			wp_localize_script(
+				'mogravity',
+				'mogravity',
+				array(
+					'siteURL'           => wp_ajax_url(),
+					'nonce'             => wp_create_nonce( $this->nonce ),
+					'otpType'           => $this->otp_type,
+					'buttonText'        => $this->button_text,
+					'buttonCSS'         => $this->button_css,
+					'phonefield'        => $this->phone_key,
+					'emailfield'        => $this->email_key,
+					'gaction'           => $this->generate_otp_action,
+					'formDetails'       => $this->form_details,
+					'isDropdownEnabled' => get_mo_option( 'show_dropdown_on_form' ),
+				)
+			);
+			wp_enqueue_script( 'mogravity' );
+		}
+
 		/**
 		 * This function is called to check if email verification has been enabled in the settings
 		 * and start the OTP Verification process. Keeps the email otp was sent to in session so
@@ -149,64 +178,6 @@ if ( ! class_exists( 'GravityForm' ) ) {
 					)
 				);
 			}
-		}
-		/**
-		 * This function hooks into the gform_field_content hook and decides which field
-		 * the the script and verify button need to be added to based on admin settings.
-		 *
-		 * @param string $field_content - variable denotes what's to be added to the gravity form field.
-		 * @param object $field - the entire field variable having all field related information.
-		 * @param string $value - denotes the value of the field being submitted.
-		 * @param string $zero -.
-		 * @param string $form_id - the id of the form being submitted.
-		 * @return string.
-		 */
-		public function add_scripts( $field_content, $field, $value, $zero, $form_id ) {
-			if ( ! isset( $this->form_details[ $form_id ] ) ) {
-				return $field_content;
-			}
-			$form_data = $this->form_details[ $form_id ];
-			if ( ! MoUtility::is_blank( $form_data ) ) {
-				if ( strcasecmp( $this->otp_type, $this->type_email_tag ) === 0
-				&& get_class( $field ) === 'GF_Field_Email'
-				&& $field['id'] === $form_data['emailkey'] ) {
-					$field_content = $this->add_shortcode_to_form( 'email', $field_content, $field, $form_id );
-				}
-				if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0
-				&& get_class( $field ) === 'GF_Field_Phone'
-				&& $field['id'] === $form_data['phonekey'] ) {
-					$field_content = $this->add_shortcode_to_form( 'phone', $field_content, $field, $form_id );
-				}
-			}
-			return $field_content;
-		}
-		/**
-		 * This function is called to add the Verify Button below the relevant gravity
-		 * form field and the required scripts to make sending of OTPs possible for the
-		 * gravity form.
-		 *
-		 * @param string $mo_type - variable denotes what type of OTP Verification is taking place.
-		 * @param string $field_content - variable denotes what's to be added to the gravity form field.
-		 * @param object $field - the entire field variable having all field related information.
-		 * @param string $form_id - the form id for which otp verification was enabled.
-		 * @return string
-		 */
-		private function add_shortcode_to_form( $mo_type, $field_content, $field, $form_id ) {
-			$img            = "<div class= 'moloader'></div>";
-			$field_content .= "<div style='margin-top: 2%;'><input type='button' class='gform_button button medium' ";
-			$field_content .= "id='miniorange_otp_token_submit' title='Please Enter an " . $mo_type . " to enable this' ";
-			$field_content .= "value= '" . mo_( $this->button_text ) . "'><div style='margin-top:2%'>";
-			$field_content .= "<div id='mo_message' style='width:auto; display: none; font-size: 15px; padding: 10px 20px;border-radius: 10px; margin-top: 16px;'></div></div></div>";
-			$field_content .= '<style>@media only screen and (min-width: 641px) { #mo_message { width: calc(50% - 8px);}}</style>';
-			$field_content .= '<script>jQuery(document).ready(function(){$mo=jQuery;$mo("#gform_' . $form_id . ' #miniorange_otp_token_submit").click(function(o){';
-			$field_content .= 'var e=$mo("#input_' . $form_id . '_' . $field->id . '").val(); $mo("#gform_' . $form_id . ' #mo_message").empty(),$mo("#gform_' . $form_id . ' #mo_message").append("' . $img . '")';
-			$field_content .= ',$mo("#gform_' . $form_id . ' #mo_message").show(),$mo.ajax({url:"' . site_url() . '/?mo_gravity_option=miniorange-gf-contact",type:"POST",data:{security:"' . wp_create_nonce( $this->nonce ) . '",user_';
-			$field_content .= $mo_type . ':e},crossDomain:!0,dataType:"json",success:function(o){ if(o.result==="success"){$mo("#gform_' . $form_id . ' #mo_message").empty()';
-			$field_content .= ',$mo("#gform_' . $form_id . ' #mo_message").append(o.message),$mo("#gform_' . $form_id . ' #mo_message").css({"background-color":"#dbfff7","color":"#008f6e"}),$mo("';
-			$field_content .= '#gform_' . $form_id . ' input[name=email_verify]").focus()}else{$mo("#gform_' . $form_id . ' #mo_message").empty(),$mo("#gform_' . $form_id . ' #mo_message").append(o.message),';
-			$field_content .= '$mo("#gform_' . $form_id . ' #mo_message").css({"background-color":"#ffefef","color":"#ff5b5b"}),$mo("#gform_' . $form_id . ' input[name=phone_verify]").focus()} ;},';
-			$field_content .= 'error:function(o,e,n){}})});});</script>';
-			return $field_content;
 		}
 		/**
 		 * This function is used to unset OTP session after all the validations of the form are completed.
@@ -371,6 +342,7 @@ if ( ! class_exists( 'GravityForm' ) ) {
 			$this->is_form_enabled = $this->sanitize_form_post( 'gf_contact_enable' );
 			$this->otp_type        = $this->sanitize_form_post( 'gf_contact_type' );
 			$this->button_text     = $this->sanitize_form_post( 'gf_button_text' );
+			$this->button_css      = $this->sanitize_form_post( 'gf_button_css' );
 			$forms                 = $this->parseform_datails( $data );
 
 			$this->form_details = is_array( $forms ) ? $forms : '';
@@ -379,6 +351,7 @@ if ( ! class_exists( 'GravityForm' ) ) {
 			update_mo_option( 'gf_contact_enable', $this->is_form_enabled );
 			update_mo_option( 'gf_contact_type', $this->otp_type );
 			update_mo_option( 'gf_button_text', $this->button_text );
+			update_mo_option( 'gf_button_css', $this->button_css );
 		}
 		/**
 		 * Parse the form details and create an array containing form details for

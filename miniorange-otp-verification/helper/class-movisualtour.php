@@ -195,7 +195,7 @@ if ( ! class_exists( 'MOVisualTour' ) ) {
 				),
 
 				$this->tour_template(
-					'GatewayTab',
+					'MoGatewayTab',
 					'left',
 					'<h1>Gateway Settings</h1>',
 					'Click here to setup your SMS or Email Gateway.',
@@ -313,7 +313,7 @@ if ( ! class_exists( 'MOVisualTour' ) ) {
 				),
 
 				$this->tour_template(
-					'tabID',
+					'MoForms',
 					'left',
 					'<br>',
 					'This is Form settings page. <br> Enable/Disable OTP verification for your forms here.',

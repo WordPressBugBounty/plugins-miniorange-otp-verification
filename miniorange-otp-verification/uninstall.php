@@ -100,6 +100,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	delete_site_option( 'mo_customer_validation_wpcomment_enable_type' );
 	delete_site_option( 'mo_customer_validation_wpcomment_enable_for_loggedin_users' );
 	delete_site_option( 'mo_customer_validation_wc_checkout_payment_type' );
+	delete_site_option( 'mo_customer_validation_wc_checkout_new_payment_type' );
 	delete_site_option( 'mo_customer_validation_otp_length' );
 	delete_site_option( 'mo_customer_validation_otp_validity' );
 	delete_site_option( 'mo_customer_validation_generate_alphanumeric_otp' );
@@ -113,6 +114,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	delete_site_option( 'mo_customer_validation_docdirect_enable_type' );
 	delete_site_option( 'mo_customer_validation_docdirect_enable' );
 	delete_site_option( 'mo_customer_validation_wc_checkout_selective_payment' );
+	delete_site_option( 'mo_customer_validation_wc_checkout_new_selective_payment' );
 	delete_site_option( 'mo_customer_validation_wpform_enable' );
 	delete_site_option( 'mo_customer_validation_wpform_enable_type' );
 	delete_site_option( 'mo_customer_validation_wpform_forms' );
@@ -153,6 +155,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	delete_site_option( 'mo_customer_validation_custom_form_contact_enable' );
 	delete_site_option( 'mo_customer_validation_custom_form_enable_type' );
 	delete_site_option( 'mo_customer_validation_custom_form_button_text' );
+	delete_site_option( 'mo_customer_validation_remove_plus_from_template' );
 
 	delete_site_option( 'mmo_otp_success_email_message' );
 	delete_site_option( 'mmo_otp_success_phone_message' );

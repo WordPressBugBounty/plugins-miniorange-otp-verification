@@ -3,9 +3,9 @@ Contributors: cyberlord92, geniuszealot
 Donate link: https://miniorange.com/
 Tags: OTP, SMS notifications, mobile verification, woocommerce sms, Login with Phone, OTP verification, SMS, two-step verification, email, signup security, user verification, user security, ​Twilio WordPress, SMS gateway, Solutions Infini, Clickatell, BulkSMS, MSG91, Nexmo, SMS Country, message, woocommerce, subscribes-SMS,notification,​alert,bulk SMS Email,mobile, phone, one time, password, order SMS, order notifications,email notifications ,WordPress OTP,Miniorange OTP,registration verification,email verification,User registration verification,User login verification, SMS notification,OTP verification,OTP,mobile verification,mobile verification, 2FA, login OTP, login with SMS, mobile login, phone login, OTP login, Twilio ,nexmo, Clickatell ,clicksend ,ringcaptcha ,msg91 ,WordPress plugin, woocommerce mobile login, SMS login, passwordless login, auth, login with OTP WordPress,  OTP, two-step authentication, Mobile Authentication, passwordless login, one time passcode, email verification, security, website security, login security, multi-factor authentication,, woocommerce, smartphone,WordPress otp, register with OTP, user OTP verification, SMS OTP, OTP Email, registration with OTP verification, registration verification, admin notification, reset OTP, woocommerce order notification 
 Requires at least: 3.5
-Tested up to: 6.6
+Tested up to: 6.7
 Requires PHP: 5.3.0
-Stable tag: 5.2.4
+Stable tag: 5.2.5
 License: MIT/Expat
 License URI: https://docs.miniorange.com/mit-license
 
@@ -15,7 +15,7 @@ OTP Verification via Email & SMS/WhatsApp. WooCommerce SMS Notification. Login w
 [Features](https://plugins.miniorange.com/wordpress-otp-verification) | [Setup Guide](https://plugins.miniorange.com/step-by-step-guide-for-wordpress-otp-verification) | [Documentation](https://plugins.miniorange.com/otp-verification-forms) | [Contact Us](https://www.miniorange.com/contact)
 
 = SMS & EMAIL OTP VERIFICATION / WOOCOMMERCE SMS NOTIFICATION =
-[ OTP Verification ](https://plugins.miniorange.com/wordpress-otp-verification) verifies Email Address/Mobile Number of users by sending OTP verification code during registration, login and contact form submissions. It removes the possibility of users registering with fake Email Address/Mobile Number by enabling OTP Verification. The OTP Verification plugin also checks if Email Address/Mobile Number of a user already exists. The OTP Verification plugin includes WooCommerce SMS Notification and Ultimate Member SMS Notification along with other addons listed below. Plugin also provides the Login with Phone and Passwordless login. The plugin ships with **10 free email and 10 free SMS transactions**.
+[ OTP Verification ](https://plugins.miniorange.com/wordpress-otp-verification) verifies Email Address/Mobile Number of users by sending OTP verification code during registration, login and contact form submissions. It removes the possibility of users registering with fake Email Address/Mobile Number by enabling OTP Verification. The OTP Verification plugin also checks if Email Address/Mobile Number of a user already exists. The OTP Verification plugin includes WooCommerce SMS Notification and Ultimate Member SMS Notification along with other addons listed below. Plugin also provides the Login with Phone and Passwordless login. The plugin ships with 10 free email and 10 free SMS transactions*.
 
 == Key Feactures of OTP Verification Plugin ==
 👉 [Login with Phone Number](https://plugins.miniorange.com/woocommerce-login-form-with-otp-verification-for-wordpress)
@@ -145,6 +145,9 @@ Contact us at otpsupport@xecurify.com/info@xecurify.com to know more.
 > + [WooCommerce Billing Address Form](https://plugins.miniorange.com/otp-verification-woocommerce-billing-address-update-form/)
 > + WP Client Registration Form
 > + UserPro Plugin
+> + WS Pro Contact form
+> + JetFormBuilder by Crocoblock
+
 
 = How does this plugin work? =
 1. On submitting the registration/login form an Email/SMS with OTP is sent to the email address/mobile number provided by the user.
@@ -203,6 +206,25 @@ Please email us at **otpsupport@xecurify.com/info@xecurify.com** . You can also 
 8. OTP Verification Plugin Settings
 
 == Changelog ==
+= 5.2.5 =
+* miniOrange WordPress OTP Verification
+ * Introduced JetFormBuilder Form
+ * Introduced WS Pro Contact Form
+ * Released Transaction report feature in premium plugins
+ * Renamed the IDs of Tabs
+ * WooCommerce Classic Checkout - Integrated default common pop-up 
+ * WooCommerce Block Checkout - Pop-up OTP integration
+ * WooCommerce Block Checkout - Enable OTP only for guest users
+ * WooCommerce Block Checkout - OTP on selective payment method
+ * Gravity Forms - Compatibility with Ajax submissions
+ * Custom Gateway settings compatibility for specifc templates
+ * Improvements - Edit messages tab
+ * Improvements - Pop-up design tab
+ * Removed 'Email Verification using link' addon
+ * Bug fixes - WooCommerce login form 
+ * Bug fixes - Ninja contact forms
+ * Marketed - Both phone and email verification addon.
+
 = 5.2.4 =
 * miniOrange WordPress OTP Verification
  * Fixed a few bugs in Houzez Form
@@ -981,6 +1003,25 @@ Please email us at **otpsupport@xecurify.com/info@xecurify.com** . You can also 
 * First version of plugin.
 
 == Upgrade Notice ==
+= 5.2.5 =
+* miniOrange WordPress OTP Verification
+ * Introduced JetFormBuilder Form
+ * Introduced WS Pro Contact Form
+ * Released Transaction report feature in premium plugins
+ * Renamed the IDs of Tabs
+ * WooCommerce Classic Checkout - Integrated default common pop-up 
+ * WooCommerce Block Checkout - Pop-up OTP integration
+ * WooCommerce Block Checkout - Enable OTP only for guest users
+ * WooCommerce Block Checkout - OTP on selective payment method
+ * Gravity Forms - Compatibility with Ajax submissions
+ * Custom Gateway settings compatibility for specifc templates
+ * Improvements - Edit messages tab
+ * Improvements - Pop-up design tab
+ * Removed 'Email Verification using link' addon
+ * Bug fixes - WooCommerce login form 
+ * Bug fixes - Ninja contact forms
+ * Marketed - Both phone and email verification addon.
+
 = 5.2.4 =
 * miniOrange WordPress OTP Verification
  * Fixed a few bugs in Houzez Form

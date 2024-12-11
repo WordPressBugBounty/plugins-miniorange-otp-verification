@@ -20,6 +20,7 @@ $gf_type_email   = $handler->get_email_html_tag();
 $gf_type_phone   = $handler->get_phone_html_tag();
 $form_name       = $handler->get_form_name();
 $gf_button_text  = $handler->get_button_text();
+$gf_button_css   = $handler->get_button_css();
 
 require_once MOV_DIR . 'views/forms/gravityform.php';
 get_plugin_form_link( $handler->get_form_documents() );

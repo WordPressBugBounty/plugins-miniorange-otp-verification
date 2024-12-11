@@ -200,8 +200,13 @@ echo '
 
                                 <li class="feature-snippet">
                                     <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                    <p class="m-mo-0">Allow OTP for selected countries.</p>
-                                </li>                          
+                                    <p class="m-mo-0">' . esc_html( mo_( 'OTP for selected countries.' ) ) . '</p>
+                                </li>   
+
+                                <li class="feature-snippet">
+                                    <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'Transaction Report.' ) ) . '</p>
+                                </li>  
                             </ul>
                             <button class="w-full mo-button primary" onclick="mo_otp_upgradeform_submit(\'wp_email_verification_intranet_enterprise_plan\')">Upgrade Now</button>
                         </div>
@@ -457,6 +462,42 @@ echo '
                                 </td>
                             </tr>
 
+                            <tr class="bg-white border-b">
+                                <th scope="row" class="mo-caption-pricing py-mo-2 px-mo-6 ">
+                                    JetFormBuilder by Crocoblock
+                                </th>
+                                <td class="flex flex-row items-center justify-center py-mo-2 px-mo-6">
+                                    ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                            </tr>
+
+                             <tr class="bg-white border-b">
+                                <th scope="row" class="mo-caption-pricing py-mo-2 px-mo-6">
+                                    WS Pro Contact Forms
+                                </th>
+                                <td class="flex flex-row items-center justify-center py-mo-2 px-mo-6">
+                                    ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                            </tr>
+
 
                             <tr>
                                 <th scope="row" class="py-mo-4 px-mo-6 text-md" style="background-color: #ecf0ff; text-align: left; padding-left: 2rem;">
@@ -686,6 +727,24 @@ echo '
                             <tr class="bg-white border-b">
                                 <th scope="row" class="mo-caption-pricing py-mo-2 px-mo-6 ">
                                     WooCommerce Password Reset OTP
+                                </th>
+                                <td class="flex flex-row items-center justify-center py-mo-2 px-mo-6">
+                                    ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                            </tr>
+
+                            <tr class="bg-white border-b">
+                                <th scope="row" class="mo-caption-pricing py-mo-2 px-mo-6 ">
+                                    ' . esc_html( mo_( 'Transaction Report' ) ) . '
                                 </th>
                                 <td class="flex flex-row items-center justify-center py-mo-2 px-mo-6">
                                     ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
@@ -1007,8 +1066,13 @@ echo '									</select>
 
                                 <li class="feature-snippet">
                                     <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                    <p class="m-mo-0">Allow OTP for selected countries.</p>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'OTP for selected countries.' ) ) . '</p>
                                 </li>   
+
+                                <li class="feature-snippet">
+                                    <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'Transaction Report.' ) ) . '</p>
+                                </li> 
                             </ul>
                             <button class="w-full mo-button primary" onclick="mo_otp_upgradeform_submit(\'wp_email_verification_intranet_enterprise_plan\')">Upgrade Now</button>
                         </div>
@@ -1236,6 +1300,36 @@ echo '									</select>
                                 </td>
                             </tr>
 
+                            <tr class="bg-white border-b">
+                                <th scope="row" class="mo-caption-pricing py-mo-2 px-mo-6 ">
+                                    JetFormBuilder by Crocoblock
+                                </th>
+                                <td class="flex flex-row items-center justify-center py-mo-2 px-mo-6">
+                                    ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                            </tr>
+
+                            <tr class="bg-white border-b">
+                                <th scope="row" class="mo-caption-pricing py-mo-2 px-mo-6">
+                                    WS Pro Contact Forms
+                                </th>
+                                <td class="flex flex-row items-center justify-center py-mo-2 px-mo-6">
+                                    ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                            </tr>
+
                             <tr>
                                 <th scope="row" class="py-mo-4 px-mo-6 text-md" style="background-color: #ecf0ff; text-align: left; padding-left: 2rem;">
                                     Gateways Supported<br>
@@ -1414,6 +1508,21 @@ echo '									</select>
                             <tr class="bg-white border-b">
                                 <th scope="row" class="mo-caption-pricing py-mo-2 px-mo-6 ">
                                     WooCommerce Password Reset OTP
+                                </th>
+                                <td class="flex flex-row items-center justify-center py-mo-2 px-mo-6">
+                                    ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                            </tr>
+
+                            <tr class="bg-white border-b">
+                                <th scope="row" class="mo-caption-pricing py-mo-2 px-mo-6 ">
+                                    ' . esc_html( mo_( 'Transaction Report' ) ) . '
                                 </th>
                                 <td class="flex flex-row items-center justify-center py-mo-2 px-mo-6">
                                     ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
@@ -1803,6 +1912,7 @@ echo '
     
     <form style="display:none;" id="mo_upgrade_form" action="' . esc_url( $portal_host ) . '" target="_blank" method="post">
         <input type="text" name="requestOrigin" id="requestOriginUpgrade"  />
+        <input type="text" name="payment_referer" value="' . esc_url( admin_url() ) . 'admin.php?page=mootppricing">
     </form>
 
     <form id="mo_ln_form" style="display:none;" action="" method="post">';

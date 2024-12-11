@@ -89,7 +89,7 @@ if ( ! class_exists( 'MoFormDocs' ) ) {
 		);
 		const WC_NEW_CHECKOUT_LINK = array(
 			'formLink'  => 'https://wordpress.org/plugins/woocommerce/',
-			'guideLink' => '',
+			'guideLink' => 'https://plugins.miniorange.com/otp-verification-woocommerce-checkout-form/',
 			'videoLink' => '',
 		);
 		const CHECKOUT_WC_LINK     = array(
@@ -401,6 +401,11 @@ if ( ! class_exists( 'MoFormDocs' ) ) {
 		const FLUENT_FORM_LINK    = array(
 			'formLink'  => '',
 			'guideLink' => 'https://plugins.miniorange.com/wordpress-fluent-form-with-otp-verification',
+			'videoLink' => '',
+		);
+		const WS_FORM_LINK        = array(
+			'formLink'  => 'https://wsform.com/',
+			'guideLink' => '',
 			'videoLink' => '',
 		);
 	}

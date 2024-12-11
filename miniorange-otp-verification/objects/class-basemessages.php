@@ -113,7 +113,6 @@ if ( ! class_exists( 'BaseMessages' ) ) {
 		const AUTO_ACTIVATE_HEAD      = 'AUTO_ACTIVATE_HEAD';
 		const AUTO_ACTIVATE_BODY      = 'AUTO_ACTIVATE_BODY';
 		const USERPRO_CHOOSE          = 'USERPRO_CHOOSE';
-		const USERPRO_VERIFY          = 'USERPRO_VERIFY';
 		const PASS_LENGTH             = 'PASS_LENGTH';
 		const PASS_MISMATCH           = 'PASS_MISMATCH';
 		const OTP_SENT                = 'OTP_SENT';
@@ -146,7 +145,6 @@ if ( ! class_exists( 'BaseMessages' ) ) {
 		const PHONE_NOT_FOUND         = 'PHONE_NOT_FOUND';
 		const REGISTER_PHONE_LOGIN    = 'REGISTER_PHONE_LOGIN';
 		const WP_MEMBER_CHOOSE        = 'WP_MEMBER_CHOOSE';
-		const UMPRO_VERIFY            = 'UMPRO_VERIFY';
 		const UMPRO_CHOOSE            = 'UMPRO_CHOOSE';
 		const CLASSIFY_THEME          = 'CLASSIFY_THEME';
 		const REALES_THEME            = 'REALES_THEME';
@@ -159,8 +157,6 @@ if ( ! class_exists( 'BaseMessages' ) ) {
 		const FORMCRAFT_CHOOSE        = 'FORMCRAFT_CHOOSE';
 		const FORMCRAFT_FIELD_ERROR   = 'FORMCRAFT_FIELD_ERROR';
 		const WPEMEMBER_CHOOSE        = 'WPEMEMBER_CHOOSE';
-		const DOC_DIRECT_VERIFY       = 'DOC_DIRECT_VERIFY';
-		const DCD_ENTER_VERIFY_CODE   = 'DCD_ENTER_VERIFY_CODE';
 		const DOC_DIRECT_CHOOSE       = 'DOC_DIRECT_CHOOSE';
 		const WPFORM_FIELD_ERROR      = 'WPFORM_FIELD_ERROR';
 		const CALDERA_FIELD_ERROR     = 'CALDERA_FIELD_ERROR';
@@ -300,9 +296,10 @@ if ( ! class_exists( 'BaseMessages' ) ) {
 		const PRODUCT_IS_OUT_OF_STOCK_NOTIF_HEADER = 'PRODUCT_IS_OUT_OF_STOCK_NOTIF_HEADER';
 		const PRODUCT_IS_OUT_OF_STOCK_NOTIF_BODY   = 'PRODUCT_IS_OUT_OF_STOCK_NOTIF_BODY';
 		const PRODUCT_IS_OUT_OF_STOCK_SMS          = 'PRODUCT_IS_OUT_OF_STOCK_SMS';
+		const ENTER_VERIFICATION_CODE              = 'ENTER_VERIFICATION_CODE';
+		const REMOVE_PLUS_MESSAGE                  = 'REMOVE_PLUS_MESSAGE';
+		const REMOVE_PLUS_MESSAGE_HEADER           = 'REMOVE_PLUS_MESSAGE_HEADER';
 
-		const HOUZEZ_VERIFY            = 'HOUZEZ_VERIFY';
-		const HOUZEZ_ENTER_VERIFY_CODE = 'HOUZEZ_ENTER_VERIFY_CODE';
 
 	}
 }

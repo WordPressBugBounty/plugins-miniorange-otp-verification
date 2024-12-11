@@ -17,6 +17,12 @@ echo '	<form name="f" method="post" action="" id="sms-configuration-form">';
 	echo '	<input type="hidden" name="option" value="mo_customer_validation_gateway_configuration" />
 			<div class="mo-header">
 				<p class="mo-heading flex-1">' . esc_html( mo_( 'Gateway Settings' ) ) . '</p>
+				<a  href="https://faq.miniorange.com/knowledgebase/use-own-gateway-plugin/" 
+					target="_blank"
+					id="mo_gateway_guide" 
+					class="mo-button secondary">
+					' . esc_html( mo_( 'Setup Guide' ) ) . '
+				</a>
 				<input type="submit" name="save" ' . esc_attr( $disabled ) . '
 							class="mo-button inverted" value="' . esc_attr( mo_( 'Save Settings' ) ) . '">
 			</div>
@@ -25,6 +31,8 @@ echo '	<form name="f" method="post" action="" id="sms-configuration-form">';
 							<div class="flex-1">
 								<h5 class="mo-title">' . esc_html( $sms_gateway_title ) . '</h5>
 								<p class="mo-caption mt-mo-2 mr-mo-8">' . esc_html( mo_( ' Configure Your SMS Gateway to send OTPs and notifications' ) ) . '</p>
+								<div class="mo-caption mt-mo-2 mr-mo-8">[ <u><i><a href="https://plugins.miniorange.com/supported-sms-email-gateways" target="_blank" >Click here</a></i></u> to check Supported Gateways list in our plugin. ]
+								</div>
 							</div>
 							<div class="flex-1 pr-mo-4 pl-mo-2 py-mo-4" id="gateway">
 								<div class="flex">
@@ -68,7 +76,11 @@ echo '	<form name="f" method="post" action="" id="sms-configuration-form">';
 											'class' => array(),
 											'id'    => array(),
 										),
-										'span'     => array( 'style' => array() ),
+										'span'      => array(
+											'style' => array(),
+											'class' => array(),
+											'id'    => array(),
+										),
 										'a'        => array(
 											'href'   => array(),
 											'target' => array(),

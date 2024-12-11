@@ -26,12 +26,21 @@ if ( ! class_exists( 'DefaultPopup' ) ) {
 	class DefaultPopup extends Template implements MoITemplate {
 
 		use Instance;
+
+		/**
+		 * Default length of OTP.
+		 *
+		 * @var int
+		 */
+		private $mo_otp_length;
+
 		/**
 		 * Constructor to declare variables of the class on initialization
 		 **/
 		protected function __construct() {
 			$this->key                = 'DEFAULT';
 			$this->template_editor_id = 'customEmailMsgEditor';
+			$this->mo_otp_length      = get_mo_option( 'otp_length' ) ? get_mo_option( 'otp_length' ) : 5;
 			parent::__construct();
 		}
 
@@ -84,14 +93,13 @@ if ( ! class_exists( 'DefaultPopup' ) ) {
 		 */
 		public function parse( $template, $message, $otp_type, $from_both ) {
 			$from_both              = $from_both ? 'true' : 'false';
-			$otp_length_mo          = get_mo_option( 'otp_length' ) ? get_mo_option( 'otp_length' ) : 5;
 			$required_scripts       = $this->getRequiredFormsSkeleton( $otp_type, $from_both );
 			$extra_post_data        = $this->preview ? '' : extra_post_data();
 			$extra_form_fields      = $this->getExtraFormFields( $otp_type, $from_both );
 			$extra_form_fields     .= '<input type="hidden" name="option" value="miniorange-validate-otp-form" />';
 			$extra_form_fields     .= '<input type="hidden" id="mopopup_wpnonce" name="mopopup_wpnonce" value="' . wp_create_nonce( $this->nonce ) . '"/>';
-			$append_input_field     = $this->giveInputField( $otp_length_mo );
-			$append_input_field_css = $this->giveInputFieldCSS( $otp_length_mo );
+			$append_input_field     = $this->giveInputField();
+			$append_input_field_css = $this->giveInputFieldCSS();
 			$selected_popup         = get_mo_option( 'selected_popup' );
 			$button_html            = $this->addButtonFieldOtp();
 
@@ -143,17 +151,16 @@ if ( ! class_exists( 'DefaultPopup' ) ) {
 		/**
 		 * This function is used to add OTP input field in the popup according the selected popup template.
 		 *
-		 * @param string $otp_length_mo - the otp length needed.
 		 * @return mixed|string
 		 */
-		public function giveInputField( $otp_length_mo ) {
+		public function giveInputField() {
 			$selected_popup = get_mo_option( 'selected_popup' );
-			$generate_input = $this->manyInputField( $otp_length_mo, true );
+			$generate_input = $this->manyInputField( true );
 			if ( 'Default' === $selected_popup ) {
 				$input = '<input type="text" autocomplete="one-time-code" name="{{OTP_FIELD_NAME}}" autofocus placeholder="" autofocus required class="mo_customer_validation-textbox mo-new-ui-validation-textbox" title="{{OTP_FIELD_TITLE}}" /><br />';
 			} elseif ( 'Streaky' === $selected_popup ) {
-				$input = '<style>.otp-streaky-input{display:block;margin:.08em auto;border:none;padding:0;font:4ch droid sans mono,consolas,monospace;letter-spacing:.5ch; width: ' . $otp_length_mo * 1.5 . 'ch ;   background: repeating-linear-gradient(90deg, dimgrey 0 , dimgrey 1.2ch, transparent 0, transparent 1.5ch) 0 100%/ ' . $otp_length_mo * 1.5 . 'ch 2px no-repeat;}input:focus{outline:0;color:#696969} </style>';
-				$input = $input . "<input class='otp-streaky-input' autocomplete='one-time-code' maxlength=" . $otp_length_mo . "  type='text' name='{{OTP_FIELD_NAME}}'    title='{{OTP_FIELD_TITLE}}' value=''/><br />";
+				$input = '<style>.otp-streaky-input{display:block;margin:.08em auto;border:none;padding:0;font:4ch droid sans mono,consolas,monospace;letter-spacing:.5ch; width: ' . $this->mo_otp_length * 1.5 . 'ch ;   background: repeating-linear-gradient(90deg, dimgrey 0 , dimgrey 1.2ch, transparent 0, transparent 1.5ch) 0 100%/ ' . $this->mo_otp_length * 1.5 . 'ch 2px no-repeat;}input:focus{outline:0;color:#696969} </style>';
+				$input = $input . "<input class='otp-streaky-input' autocomplete='one-time-code' maxlength=" . $this->mo_otp_length . "  type='text' name='{{OTP_FIELD_NAME}}'    title='{{OTP_FIELD_TITLE}}' value=''/><br />";
 			} elseif ( 'Catchy' === $selected_popup ) {
 				$input = '<style>.otp-catchy{display:flex;float:none;width:30px;height:30px;margin:2px;text-align:center} .otp-catchy-box{display:flex}</style>
 							<div style= "width:100%; margin: 0 auto;">
@@ -171,14 +178,13 @@ if ( ! class_exists( 'DefaultPopup' ) ) {
 		/**
 		 * This function is used to add OTP input field in the popup according the selected popup template.
 		 *
-		 * @param string $otp_length_mo - the otp length needed.
 		 * @return mixed|string
 		 */
-		public function giveInputFieldCSS( $otp_length_mo ) {
+		public function giveInputFieldCSS() {
 			$selected_popup = get_mo_option( 'selected_popup' );
-			$generate_input = $this->manyInputField( $otp_length_mo, false );
+			$generate_input = $this->manyInputField( false );
 			if ( 'Streaky' === $selected_popup ) {
-				$input = '<style>.otp-streaky-input{display:block;margin:.08em auto;border:none;padding:0;font:4ch droid sans mono,consolas,monospace;letter-spacing:.5ch; width: ' . $otp_length_mo * 1.5 . 'ch ;   background: repeating-linear-gradient(90deg, dimgrey 0 , dimgrey 1.2ch, transparent 0, transparent 1.5ch) 0 100%/ ' . $otp_length_mo * 1.5 . 'ch 2px no-repeat;}input:focus{outline:0;color:#696969} </style>';
+				$input = '<style>.otp-streaky-input{display:block;margin:.08em auto;border:none;padding:0;font:4ch droid sans mono,consolas,monospace;letter-spacing:.5ch; width: ' . $this->mo_otp_length * 1.5 . 'ch ;   background: repeating-linear-gradient(90deg, dimgrey 0 , dimgrey 1.2ch, transparent 0, transparent 1.5ch) 0 100%/ ' . $this->mo_otp_length * 1.5 . 'ch 2px no-repeat;}input:focus{outline:0;color:#696969} </style>';
 			} elseif ( 'Catchy' === $selected_popup ) {
 				$input = '<style>.otp-catchy{display:flex;float:none;width:30px;height:30px;margin:2px;text-align:center} .otp-catchy-box{display:flex}</style>
 							<div style= "width:100%; margin: 0 auto;">
@@ -198,20 +204,19 @@ if ( ! class_exists( 'DefaultPopup' ) ) {
 		/**
 		 * This function is used to generate input field in catchy popup template.
 		 *
-		 * @param string $otp_length_mo - the otp length needed.
-		 * @param bool   $add_field - do we have to add field in the template.
+		 * @param bool $add_field - do we have to add field in the template.
 		 * @return mixed|string
 		 */
-		public function manyInputField( $otp_length_mo, $add_field ) {
+		public function manyInputField( $add_field ) {
 			$input      = '<input type="text" id="digit-1" class="otp-catchy"  data-next="digit-2" />';
-			$prev_field = $otp_length_mo - 1;
-			for ( $i = 2;$i <= $otp_length_mo - 1;$i++ ) {
+			$prev_field = $this->mo_otp_length - 1;
+			for ( $i = 2;$i <= $this->mo_otp_length - 1;$i++ ) {
 				$next  = $i + 1;
 				$prev  = $i - 1;
 				$input = $input . '<input type="text" id="digit-' . $i . '" class="otp-catchy"  data-next="digit-' . $next . '"  data-previous="digit-' . $prev . '" />';
 
 			}
-			$input = $input . '<input type="text" id="digit-' . $otp_length_mo . '" class="otp-catchy"  data-previous="digit-' . $prev_field . '" />';
+			$input = $input . '<input type="text" id="digit-' . $this->mo_otp_length . '" class="otp-catchy"  data-previous="digit-' . $prev_field . '" />';
 			if ( $add_field ) {
 				$input = $input . '<input type="text" autocomplete="one-time-code" hidden id="hidden_input_field" name="{{OTP_FIELD_NAME}}" autofocus placeholder="" autofocus required class="mo_customer_validation-textbox mo-new-ui-validation-textbox" title="{{OTP_FIELD_TITLE}}" /><br />';
 			}
@@ -253,16 +258,25 @@ if ( ! class_exists( 'DefaultPopup' ) ) {
 		private function getRequiredScripts() {
 			$scripts = '<style>.mo_customer_validation-modal{display:block!important}</style>';
 			if ( ! $this->preview ) {
-				$scripts .= '<script>function mo_validation_goback(){
-				document.getElementById("validation_goBack_form").submit()}function mo_otp_verification_resend(){
-					document.getElementById("verification_resend_otp_form").submit()}function mo_select_goback(){
-						document.getElementById("goBack_choice_otp_form").submit()}document.addEventListener("DOMContentLoaded", function() {
-						var form = document.querySelector("#mo_validate_form");
-						form.addEventListener("submit", function() {
+				$scripts .= '<script>
+				function mo_validation_goback(){
+					if(document.querySelector("#validation_goBack_form") !== null){
+						document.getElementById("validation_goBack_form").submit();
+					}
+				}
+				function mo_otp_verification_resend(){
+					document.getElementById("verification_resend_otp_form").submit()
+				}
+				function mo_select_goback(){
+					document.getElementById("goBack_choice_otp_form").submit()
+				}
+				document.addEventListener("DOMContentLoaded", function() {
+					var form = document.querySelector("#mo_validate_form");
+					form.addEventListener("submit", function() {
 						this.style.display = "none";
 						document.querySelector("#mo_message").style.display = "block";
-						});
-							});</script>';
+					});
+				});</script>';
 			} else {
 				$scripts .= '<script>document.querySelector("#mo_validate_form").addEventListener("submit", function(e) {
 					e.preventDefault();
@@ -277,7 +291,6 @@ if ( ! class_exists( 'DefaultPopup' ) ) {
 		 * @return void
 		 */
 		public function getCatchyRequiredScripts() {
-			$otp_length_mo = get_mo_option( 'otp_length' ) ? get_mo_option( 'otp_length' ) : 5;
 			echo '<script>
 			document.querySelectorAll(".digit-group input").forEach(function(input) {
 				input.setAttribute("maxlength", "1");
@@ -299,7 +312,7 @@ if ( ! class_exists( 'DefaultPopup' ) ) {
 			  var mo_submit_button=document.getElementById("mo_sec_otp_submit_button");
 			  if (mo_submit_button){
 			  mo_submit_button.onclick = function(){var fieldstring = "";
-				for (var i = 1; i <= ' . esc_attr( $otp_length_mo ) . '; i++) {
+				for (var i = 1; i <= ' . esc_attr( $this->mo_otp_length ) . '; i++) {
 				  fieldstring += document.querySelector("#digit-" + i).value;
 				}
 				document.querySelector("#hidden_input_field").value = fieldstring;

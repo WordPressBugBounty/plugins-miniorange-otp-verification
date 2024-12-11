@@ -22,6 +22,7 @@ use OTP\Objects\FormHandler;
 use OTP\Objects\IFormHandler;
 use OTP\Objects\VerificationType;
 use OTP\Traits\Instance;
+use OTP\Helper\Templates\DefaultPopup;
 use ReflectionException;
 use WC_Checkout;
 use WP_Error;
@@ -150,6 +151,7 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 				add_action( 'woocommerce_review_order_after_submit', array( $this, 'add_custom_button' ), 1, 1 );
 			} else {
 				add_action( 'woocommerce_after_checkout_billing_form', array( $this, 'my_custom_checkout_field' ), 99 );
+				add_action( 'woocommerce_after_checkout_validation', array( $this, 'my_custom_checkout_field_process' ), 99, 2 );
 			}
 
 			if ( $this->disable_auto_login ) {
@@ -158,7 +160,6 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 
 			add_filter( 'woocommerce_checkout_posted_data', array( $this, 'billing_phone_process' ), 99, 1 );
 			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_script_on_page' ) );
-			add_action( 'woocommerce_after_checkout_validation', array( $this, 'my_custom_checkout_field_process' ), 99, 2 );
 			$this->routeData();
 		}
 
@@ -232,6 +233,10 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 			if ( strcasecmp( trim( sanitize_text_field( wp_unslash( $_GET['option'] ) ) ), 'miniorange-woocommerce-checkout' ) === 0 ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- Reading GET parameter for checking the option name, doesn't require nonce verification.
 				$this->handle_woocommerce_checkout_form( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
 			}
+			if ( strcasecmp( trim( sanitize_text_field( wp_unslash( $_GET['option'] ) ) ), 'miniorange_wc_otp_validation' ) === 0 ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- Reading GET parameter for checking the option name, doesn't require nonce verification.
+				$this->process_wc_form_and_validate_otp( $_POST );// phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+			}
+
 		}
 
 
@@ -248,6 +253,7 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 			MoUtility::initialize_transaction( $this->form_session_var );
 			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
 				$this->checkPhoneValidity( $get_data );
+				SessionUtils::add_phone_verified( $this->form_session_var, MoUtility::process_phone_number( sanitize_text_field( trim( $get_data['user_phone'] ) ) ) );
 				$this->send_challenge(
 					'test',
 					sanitize_email( $get_data['user_email'] ),
@@ -256,6 +262,7 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 					VerificationType::PHONE
 				);
 			} else {
+				SessionUtils::add_email_verified( $this->form_session_var, sanitize_email( $get_data['user_email'] ) );
 				$this->send_challenge(
 					'test',
 					sanitize_email( $get_data['user_email'] ),
@@ -348,80 +355,171 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 			if ( $this->guest_check_out_only && is_user_logged_in() ) {
 				return;
 			}
-			$this->show_validation_button_or_text();
+			$mo_is_timer_on = get_mo_option( 'otp_timer_enable', 'mo_rc_sms_' ) ? "enabled" : "not_enabled";
+			$show_button    = $this->show_button ? 'show_button' : 'show_link';
+			$this->show_validation_button_or_text( 'miniorange_wc_popup_send_otp_token' );
 			$this->common_button_or_link_enable_disable_script();
-			echo ',$mo("#miniorange_otp_token_submit").click(function(o){
-                    var requiredFields = areAllMandotryFieldsFilled(),
-                    e=$mo("input[name=billing_email]").val(),
-                    m=$mo("#billing_phone").val(),
-                    a=$mo("div.woocommerce");
-                    if(requiredFields=="")
-                    {
-                        a.addClass("processing").block({message:null,overlayCSS:{background:"#fff",opacity:.6}});
-                        $mo.ajax({
-                            url:"' . esc_url( site_url() ) . '/?option=miniorange-woocommerce-checkout",type:"POST",
-                            data:{user_email:e,user_phone:m},crossDomain:!0,dataType:"json",
-                            success:function(o){
-                                "success"==o.result?(
-                                    $mo(".blockUI").hide(),$mo("#mo_message").empty(),
-                                    $mo("#mo_message").append(o.message).show(),
-                                    $mo("#mo_message").addClass("woocommerce-message").removeClass("woocommerce-error"),
-                                    //$mo("#myModal .modal-content").append(popupTemplate),
-                                    $mo("#myModal").show(),$mo("#mo_validate_field").show()):($mo(".blockUI").hide(),$mo("#mo_message").empty(),
-                                    $mo("#mo_message").append(o.message),$mo("#mo_message").addClass("woocommerce-error"),
-                                    $mo("#mo_validate_field").hide(),$mo("#myModal").show()
-                                )
-                            },
-                            error:function(o,e,m){}
-                        });
-                    }else{
-                        $mo(".woocommerce-NoticeGroup-checkout").empty();
-                        $mo("form.woocommerce-checkout").prepend(requiredFields);
-                        $mo("html, body").animate({scrollTop: $mo(".woocommerce-error").offset().top}, 2000);
-                    }
-                    o.preventDefault()});
-                    $mo("#miniorange_otp_validate_submit").click(function(o){$mo("#myModal").hide(),$mo(\'form[name="checkout"]\').submit()}),
-                    $mo(".close").click(function(){$mo(".modal").hide();});});';
+			echo ',$mo("#miniorange_wc_popup_send_otp_token, #mo_otp_verification_resend").off("click");
+					var resendAjaxFlag=true;
+					$mo("#miniorange_wc_popup_send_otp_token, #mo_otp_verification_resend ").click(function(o){
+					img = "<div class= \'moloader\'></div>";
+					jQuery("#wc_pop_up_message_box").empty().append(img).show();
+					var requiredFields = areAllMandotryFieldsFilled();
+					var placeholder = "{{MO_OTP_TEXT}}";
+					$mo(".mo_customer_validation-login-container").show();
+					email=$mo("input[name=billing_email]").val(),
+					phone=$mo("#billing_phone").val(),
+					a=$mo("div.woocommerce");
+					var isTimerEnabled="' . esc_html( $mo_is_timer_on ) . '";
+					if(requiredFields=="")
+					{
+						a.addClass("processing").block({message:null,overlayCSS:{background:"#fff",opacity:.6}});
+						if (resendAjaxFlag) {
+							$mo.ajax({
+								url:"' . esc_url( site_url() ) . '/?option=miniorange-woocommerce-checkout",type:"POST",
+								data:{user_email:email,user_phone:phone},crossDomain:!0,dataType:"json",
+								success:function(o){
+									if (o.result == "success") {
+										if (isTimerEnabled === "enabled") {
+											setTimeout(function() {
+												resendAjaxFlag=false;
+												resendButtonSelector = $mo("#mo_otp_verification_resend");
+												hideSelector = "a[id=\'mo_otp_verification_resend\']";
+												sendButtonSelector = $mo("#miniorange_wc_popup_send_otp_token");
+												let elements = document.querySelectorAll(\'[name="otpTimer"]\');
+												elements.forEach(element => {
+													element.remove();
+												});
+												
+												timerHtml = "<p name=\'otpTimer\' hidden style=\'float:right;margin-top:5px\'></p>";
+												$mo(timerHtml).insertAfter(resendButtonSelector);
+												$mo(timerHtml).insertAfter(sendButtonSelector);
+										
+												if (resendButtonSelector.length > 0) {
+													buttonTimer(hideSelector);
+												}
+				
+												function buttonTimer(hideSelector) {
+													timeLeftUnblock = ' . esc_html( get_mo_option( 'otp_timer', 'mo_rc_sms_' ) * 60 ) . ';
+													displays = document.querySelectorAll(\'[name="otpTimer"]\');
+													displays.forEach(display => {
+													$mo(display).show();
+													$mo(hideSelector).hide();
+													$mo("#miniorange_wc_popup_send_otp_token").remove();
+													startTimer(timeLeftUnblock, display, hideSelector);
+													});
+													
+												}
+				
+												function startTimer(duration, display, hideSelector) {
+													var timer = duration, minutes, seconds;
+													var timerFunction = setInterval(function () {
+														minutes = parseInt(timer / 60, 10);
+														seconds = parseInt(timer % 60, 10);
+				
+														minutes = minutes < 10 ? "0" + minutes : minutes;
+														seconds = seconds < 10 ? "0" + seconds : seconds;
+				
+														display.textContent = minutes + ":" + seconds + " minutes.";
+														if (timer < 1) {
+															var show_button = "' . esc_html( $show_button ) . '";
+															var buttonHtml = "<div style=\'margin-bottom: 15px;\'><a href=\'#\' style=\'text-align:center;color:grey;pointer-events:initial;\' id=\'miniorange_wc_popup_send_otp_token\'>' . esc_html( mo_( $this->button_text ) ) . '</a></div>";
+															var inputHtml = "<input type=\'button\' class=\'button alt\' style=\'" 
+																+ ( ' . json_encode( $this->popup_enabled ) . ' ? \'float: right; line-height: 1; margin-right: 2em; padding: 1em 2em;\' : \'width: 100%; margin-bottom: 15px;\' )
+																+ "\' id=\'miniorange_wc_popup_send_otp_token\' value=\'' . esc_attr( mo_( $this->button_text ) ) . '\'>";
+
+															if (show_button !== "show_button") {
+																if ($mo("#miniorange_wc_popup_send_otp_token").length === 0) {
+																	$mo(".woocommerce-terms-and-conditions-wrapper").append(buttonHtml);
+																	$mo("#miniorange_wc_popup_send_otp_token").click(function(o){ $mo("#mo_otp_verification_resend").click();});
+																} else {
+																	$mo("#miniorange_wc_popup_send_otp_token").show();
+																}
+															} else {
+																if ($mo("#miniorange_wc_popup_send_otp_token").length === 0) {
+																	$mo(".woocommerce-terms-and-conditions-wrapper").append(inputHtml);
+																	$mo("#miniorange_wc_popup_send_otp_token").click(function(o){ $mo("#mo_otp_verification_resend").click();});
+																} else {
+																	$mo("#miniorange_wc_popup_send_otp_token").show();
+																}
+															}
+															resendAjaxFlag= true;
+															$mo(display).hide();
+															$mo(hideSelector).show();
+															clearInterval(timerFunction);
+														}
+														if (--timer < 0) {
+															timer = duration;
+														}
+													}, 1000);
+												}
+											}, 100);
+										}
+										$mo(".blockUI").hide();
+										jQuery("#wc_pop_up_message_box").text(o.message);
+										$mo(".digit-group input[type=\'text\']").val("");
+										$mo("input[name=\'order_verify\']").val("");
+										$mo("#popup_wc_mo").show();
+								} else {
+									$mo(".blockUI").hide();
+									var wc_error_div = `<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout">`+
+												`<ul class="woocommerce-error" role="alert">{{errors}}</ul>`+
+											`</div>`;
+									$mo(".woocommerce-NoticeGroup-checkout").empty();
+									$mo("form.woocommerce-checkout").prepend(wc_error_div.replace("{{errors}}",o.message));
+									$mo("html, body").animate({scrollTop: $mo(".woocommerce-error").offset().top}, 2000);
+								}
+							},
+							error:function(o,e,m){}
+						});
+					}	
+					}else{
+						$mo(".woocommerce-NoticeGroup-checkout").empty();
+						$mo("form.woocommerce-checkout").prepend(requiredFields);
+						$mo("html, body").animate({scrollTop: $mo(".woocommerce-error").offset().top}, 2000);
+					}
+					o.preventDefault()});
+					$mo(".close").click(function(){$mo("#popup_wc_mo").hide();});});';
 
 			echo 'function areAllMandotryFieldsFilled(){
-                var err = `<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout">`+
-                                `<ul class="woocommerce-error" role="alert">{{errors}}</ul>`+
-                         `</div>`;
-                var errors = "";
-                $mo(".validate-required").each(function(){
-                    var id = $mo(this).attr("id");
-                    if(id!=undefined){
-                        var n = id.replace("_field","");
-                        if(n!="") {
-                            var val = $mo("#"+n).val();
-                            if((val=="" || val=="select") && checkOptionalMandatoryFields(n) ) {
-                                $mo("#"+n).addClass("woocommerce-invalid woocommerce-invalid-required-field");
-                                errors  += 	`<li><strong>`+
-                                                $mo("#"+n+"_field").children("label").text().replace("*","")+
-                                                "</strong> is a required field."+
-                                            `</li>`;
-                            }
-                        }
-                    }
-                });
-                return errors != "" ? err.replace("{{errors}}",errors) : 0;
-            }
-            function checkOptionalMandatoryFields(n){
-                var optional = { "shipping": { "fields": [ "shipping_first_name","shipping_last_name","shipping_postcode","shipping_address_1","shipping_address_2","shipping_city","shipping_state"],"checkbox": "ship-to-different-address-checkbox"},"account": {"fields": ["account_password","account_username"],"checkbox": "createaccount"}};
-                if(n.indexOf("shipping") != -1){
-                   return check_fields(n,optional["shipping"]);
-                }else if(n.indexOf("account") != -1){
-                   return check_fields(n,optional["account"]);
-                }
-                return true;
-            }
-            function check_fields(n,data){
-                if($mo.inArray(n,data["fields"]) == -1 || ($mo.inArray(n,data["fields"]) > -1 &&
-                        $mo("#"+data[\'checkbox\']+":checked").length > 0)) {
-                    return true;
-                }
-                return false;
-            }</script>';
+				var err = `<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout">`+
+								`<ul class="woocommerce-error" role="alert">{{errors}}</ul>`+
+						 `</div>`;
+				var errors = "";
+				$mo(".validate-required").each(function(){
+					var id = $mo(this).attr("id");
+					if(id!=undefined){
+						var n = id.replace("_field","");
+						if(n!="") {
+							var val = $mo("#"+n).val();
+							if((val=="" || val=="select") && checkOptionalMandatoryFields(n) ) {
+								$mo("#"+n).addClass("woocommerce-invalid woocommerce-invalid-required-field");
+								errors  += 	`<li><strong>`+
+												$mo("#"+n+"_field").children("label").text().replace("*","")+
+												"</strong> is a required field."+
+											`</li>`;
+							}
+						}
+					}
+				});
+				return errors != "" ? err.replace("{{errors}}",errors) : 0;
+			}
+			function checkOptionalMandatoryFields(n){
+				var optional = { "shipping": { "fields": [ "shipping_first_name","shipping_last_name","shipping_postcode","shipping_address_1","shipping_address_2","shipping_city","shipping_state"],"checkbox": "ship-to-different-address-checkbox"},"account": {"fields": ["account_password","account_username"],"checkbox": "createaccount"}};
+				if(n.indexOf("shipping") != -1){
+				   return check_fields(n,optional["shipping"]);
+				}else if(n.indexOf("account") != -1){
+				   return check_fields(n,optional["account"]);
+				}
+				return true;
+			}
+			function check_fields(n,data){
+				if($mo.inArray(n,data["fields"]) == -1 || ($mo.inArray(n,data["fields"]) > -1 &&
+						$mo("#"+data[\'checkbox\']+":checked").length > 0)) {
+					return true;
+				}
+				return false;
+			}</script>';
 		}
 
 
@@ -438,11 +536,42 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 			if ( $this->guest_check_out_only && is_user_logged_in() ) {
 				return;
 			}
-			echo '<style>@media only screen and (max-width: 800px) {.modal-content {width: 90% !important;}.modal-header .close{margin-left: 80% !important;}}.modal{display:none;position:fixed;z-index:1;padding-top:100px;left:0;top:0;width:100%;height:100%;overflow:auto;background-color:rgb(0,0,0);background-color:rgba(0,0,0,0.4);}.modal-content{position:relative;background-color:#fefefe;margin:auto;padding:0;border:1px solid #888;width:40%;box-shadow:04px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);-webkit-animation-name:animatetop;-webkit-animation-duration:0.4s;animation-name:animatetop;animation-duration:0.4s}@-webkit-keyframes animatetop{from{top:-300px;opacity:0}to{top:0;opacity:1}}@keyframes animatetop{from{top:-300px;opacity:0}to{top:0;opacity:1}}.close{color:white;font-weight:bold;}.close:hover,.close:focus{color:#000;text-decoration:none;cursor:pointer;}.modal-header{background-color:#5cb85c;color:white;}.modal-footer{background-color:#5cb85c;color:white;</style>';
-			echo '<script>
-                var e = `<div id="myModal" class="modal"><div class="modal-content"><div class="modal-header"> <i><span style="margin-left:90%;" class="close" id="close"> close </span></i> </div><div class="modal-body"><div id="mo_message"></div><div id="mo_validate_field" style="margin:1em"><input type="text" name="order_verify" autofocus="true" placeholder="" id="mo_otp_token" required="true" style="color: #000;font-family: Helvetica,sans-serif;padding: 7px;text-shadow: 1px 1px 0 #fff;width: 100%;border-radius: 2px;" class="mo_customer_validation-textbox" autofocus="true"/><input type="button" name="miniorange_otp_validate_submit"  style="margin-top:1%;width:100%" id="miniorange_otp_validate_submit" class="miniorange_otp_token_submit"  value="' . esc_attr( mo_( 'Validate OTP' ) ) . '" /></div></div></div></div>`;
-                jQuery(`form[name="checkout"]`).append(e);
-             </script>';
+			$this->load_mo_popup();
+		}
+
+		/**
+		 * Adds a pop-up to validate OTP.
+		 */
+		public function load_mo_popup() {
+			$default_popup_handler = DefaultPopup::instance();
+			$message               = '<div id="wc_pop_up_message_box"></div>';
+			$otp_type              = 'phone';
+			$from_both             = 'from_both';
+			$html_content          = '<div id="popup_wc_mo" style="display:none">' . apply_filters( 'mo_template_build', '', $default_popup_handler->get_template_key(), $message, $otp_type, $from_both ) . '</div>';
+			echo '<script type="text/javascript">
+					$mo = jQuery;
+					jQuery(document).ready(function() {
+						var htmlContent = ' . wp_json_encode( htmlspecialchars_decode( $html_content ) ) . ';
+						var form = jQuery("form[name=\'checkout\']");
+						form.append(htmlContent);
+						form.find("input[type=\'hidden\'][name=\'option\'][value=\'miniorange-validate-otp-form\']").remove();
+						var popupform = jQuery("#mo_validate_form");
+						popupform.children().appendTo(popupform.parent());
+						popupform.remove();
+						jQuery(\'[name="mo_otp_token"]\').attr({ id: \'mo_otp_token\', name: \'order_verify\' });
+						jQuery(\'[name="miniorange_otp_token_submit"]\').replaceWith($mo(\'<input>\', {
+							type: \'button\',
+							id: \'miniorange_otp_validate_submit\',
+							class: jQuery(\'[name="miniorange_otp_token_submit"]\').attr(\'class\'),
+							value: jQuery(\'[name="miniorange_otp_token_submit"]\').attr(\'value\')
+						}));	
+						jQuery(\'.close\').removeAttr(\'onclick\');
+						jQuery("#validation_goBack_form, #verification_resend_otp_form, #goBack_choice_otp_form").remove();
+						jQuery(\'a[onclick="mo_otp_verification_resend()"]\').attr(\'id\', \'mo_otp_verification_resend\').removeAttr(\'onclick\');
+						jQuery(\'.mo_customer_validation-login-container\').find(\'input[type="hidden"]\').remove();
+						jQuery("#mo_message").remove();
+					});
+				</script>';
 		}
 
 
@@ -460,7 +589,7 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 				return;
 			}
 			echo '<div id="mo_validation_wrapper">';
-			$this->show_validation_button_or_text();
+			$this->show_validation_button_or_text( 'miniorange_otp_token_submit' );
 
 			echo '<div id="mo_message" style="display:none;"></div>';
 
@@ -484,53 +613,59 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 		/**
 		 * Show Text link on the checkout form which user can click to start the
 		 * OTP Verification process.
+		 *
+		 *  @param string $button_id ID of the button.
 		 */
-		private function show_validation_button_or_text() {
+		private function show_validation_button_or_text( $button_id ) {
 			if ( ! $this->show_button ) {
-				$this->showTextLinkOnPage();
+				$this->showTextLinkOnPage( $button_id );
 			}
 			if ( $this->show_button ) {
-				$this->mo_showButtonOnPage();
+				$this->mo_showButtonOnPage( $button_id );
 			}
 		}
 
 		/**
 		 * Show Button on the checkout form which user can click to start the
 		 * OTP Verification process.
+		 *
+		 * @param string $button_id ID of the button.
 		 */
-		private function showTextLinkOnPage() {
+		private function showTextLinkOnPage( $button_id ) {
 			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
 				echo '<div style = "margin-bottom: 15px;" title="' . esc_attr( mo_( 'Please Enter a Phone Number to enable this link' ) ) . '">
-                        <a  href="#" style="text-align:center;color:grey;pointer-events:initial;display:none;" 
-                            id="miniorange_otp_token_submit" 
-                            class="" >' . esc_html( mo_( $this->button_text ) ) . '
-                        </a>
-                   </div>';
+						<a  href="#" style="text-align:center;color:grey;pointer-events:initial;display:none;" 
+							id="' . esc_attr( $button_id ) . '" 
+							class="" >' . esc_html( mo_( $this->button_text ) ) . '
+						</a>
+				   </div>';
 			} else {
 				echo '<div style = "margin-bottom: 15px;" title="' . esc_attr( mo_( 'Please Enter an Email Address to enable this link' ) ) . '">
-                        <a  href="#" 
-                            style="text-align:center;color:grey;pointer-events:initial;display:none;" 
-                            id="miniorange_otp_token_submit" 
-                            class="" >' . esc_html( mo_( $this->button_text ) ) . '
-                        </a>
-                   </div>';
+						<a  href="#" 
+							style="text-align:center;color:grey;pointer-events:initial;display:none;" 
+							id="' . esc_attr( $button_id ) . '" 
+							class="" >' . esc_html( mo_( $this->button_text ) ) . '
+						</a>
+				   </div>';
 			}
 		}
 
 		/**
 		 * Show Button on the checkout form which user can click to start the
 		 * OTP Verification process.
+		 *
+		 * @param string $button_id ID of the button.
 		 */
-		private function mo_showButtonOnPage() {
+		private function mo_showButtonOnPage( $button_id ) {
 			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
 				echo '<input type="button" class="button alt" style="'
 				. ( $this->popup_enabled ? 'float: right;line-height: 1;margin-right: 2em;padding: 1em 2em; display:none;' : 'display:none;width:100%;margin-bottom: 15px;' )
-				. '" id="miniorange_otp_token_submit" title="'
+				. '" id="' . esc_attr( $button_id ) . '" title="'
 				. esc_attr( mo_( 'Please Enter a Phone Number to enable this.' ) ) . '" value="';
 			} else {
 				echo '<input type="button" class="button alt" style="'
 				. ( $this->popup_enabled ? 'float: right;line-height: 1;margin-right: 2em;padding: 1em 2em; display:none;' : 'display:none;width:100%;margin-bottom: 15px;' )
-				. '" id="miniorange_otp_token_submit" title="'
+				. '" id="' . esc_attr( $button_id ) . '" title="'
 				. esc_attr( mo_( 'Please Enter an Email Address to enable this.' ) ) . '" value="';
 			}
 			echo esc_attr( mo_( $this->button_text ) ) . '"></input>';
@@ -554,10 +689,70 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 		private function place_after_validating_field() {
 
 			echo '<script>jQuery(document).ready(function(){
-                    setTimeout(function(){
-                        jQuery("#mo_validation_wrapper").insertAfter("#billing_' . ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ? 'phone' : 'email' ) . '_field");
-                    },200);
-        });</script>';
+					setTimeout(function(){
+						jQuery("#mo_validation_wrapper").insertAfter("#billing_' . ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ? 'phone' : 'email' ) . '_field");
+					},200);
+		});</script>';
+		}
+
+		/**
+		 * Process form and Validate OTP.
+		 *
+		 *  @param object $data this is the get / post data from the ajax call containing email or phone.
+		 */
+		public function process_wc_form_and_validate_otp( $data ) {
+			$sanitized_data = MoUtility::mo_sanitize_array( $data );
+			$this->checkIfOTPSent();
+			$this->checkIntegrityAndValidateOTP( $sanitized_data );
+		}
+
+		/**
+		 * Checks whether OTP sent or not.
+		 */
+		private function checkIfOTPSent() {
+			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
+				wp_send_json(
+					MoUtility::create_json(
+						MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ),
+						MoConstants::ERROR_JSON_TYPE
+					)
+				);
+			}
+		}
+
+		/**
+		 * Check Integrity and validate OTP.
+		 *
+		 * @param array $data - this is the get / post data from the ajax call containing email or phone.
+		 */
+		private function checkIntegrityAndValidateOTP( $data ) {
+			$this->checkIntegrity( $data );
+			$this->validate_challenge( sanitize_text_field( $data['otpType'] ), null, sanitize_text_field( $data['otp_token'] ) );
+		}
+
+		/**
+		 * Checks Integrity.
+		 *
+		 * @param array $data - this is the get / post data from the ajax call containing email or phone.
+		 */
+		private function checkIntegrity( $data ) {
+			if ( 'phone' === $data['otpType'] ) {
+				if ( ! Sessionutils::is_phone_verified_match( $this->form_session_var, MoUtility::process_phone_number( sanitize_text_field( $data['user_phone'] ) ) ) ) {
+					wp_send_json(
+						MoUtility::create_json(
+							MoMessages::showMessage( MoMessages::PHONE_MISMATCH ),
+							MoConstants::ERROR_JSON_TYPE
+						)
+					);
+				}
+			} elseif ( ! SessionUtils::is_email_verified_match( $this->form_session_var, sanitize_email( $data['user_email'] ) ) ) {
+				wp_send_json(
+					MoUtility::create_json(
+						MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ),
+						MoConstants::ERROR_JSON_TYPE
+					)
+				);
+			}
 		}
 
 		/**
@@ -659,7 +854,16 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 		 */
 		public function handle_failed_verification( $user_login, $user_email, $phone_number, $otp_type ) {
 
-			wc_add_notice( MoUtility::get_invalid_otp_method(), MoConstants::ERROR_JSON_TYPE ); //phpcs:ignore intelephense.diagnostics.undefinedFunctions -- Default function of WooCommerce.
+			if ( $this->popup_enabled ) {
+				wp_send_json(
+					MoUtility::create_json(
+						MoMessages::showMessage( MoMessages::INVALID_OTP ),
+						MoConstants::ERROR_JSON_TYPE
+					)
+				);
+			} else {
+				wc_add_notice( MoUtility::get_invalid_otp_method(), MoConstants::ERROR_JSON_TYPE ); //phpcs:ignore intelephense.diagnostics.undefinedFunctions -- Default function of WooCommerce.
+			}
 		}
 
 
@@ -679,6 +883,15 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 
 			$this->unset_otp_session_variables();
 			MoPHPSessions::unset_session( 'specialproductexist' );
+
+			if ( $this->popup_enabled ) {
+				wp_send_json(
+					MoUtility::create_json(
+						MoConstants::SUCCESS_JSON_TYPE,
+						MoConstants::SUCCESS_JSON_TYPE
+					)
+				);
+			}
 
 		}
 
@@ -703,6 +916,8 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 					'popupEnabled'            => $this->popup_enabled,
 					'isLoggedIn'              => $this->guest_check_out_only && is_user_logged_in(),
 					'otpType'                 => strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ? 'phone' : 'email',
+					'otp_length_mo'           => get_mo_option( 'otp_length' ) ? get_mo_option( 'otp_length' ) : 5,
+					'siteURL'                 => esc_url( site_url() ) . '/?option=miniorange_wc_otp_validation',
 				)
 			);
 			wp_enqueue_script( 'wccheckout' );

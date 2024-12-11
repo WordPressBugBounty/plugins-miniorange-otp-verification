@@ -52,7 +52,7 @@ if ( ! class_exists( 'TabDetails' ) ) {
 					'M6 4h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2zm12 1.5H6a.5.5 0 00-.5.5v3h13V6a.5.5 0 00-.5-.5zm.5 5H10v8h8a.5.5 0 00.5-.5v-7.5zm-10 0h-3V18a.5.5 0 00.5.5h2.5v-8z',
 					$request_uri,
 					'settings.php',
-					'tabID',
+					'MoForms',
 					'background:#D8D8D8'
 				),
 				Tabs::NOTIFICATIONS => new PluginPageDetails(
@@ -85,7 +85,7 @@ if ( ! class_exists( 'TabDetails' ) ) {
 					'M4 20h8v-1.5H4V20zM18.9 3.5c-.6-.6-1.5-.6-2.1 0l-7.2 7.2c-.4-.1-.7 0-1.1.1-.5.2-1.5.7-1.9 2.2-.4 1.7-.8 2.2-1.1 2.7-.1.1-.2.3-.3.4l-.6 1.1H6c2 0 3.4-.4 4.7-1.4.8-.6 1.2-1.4 1.3-2.3 0-.3 0-.5-.1-.7L19 5.7c.5-.6.5-1.6-.1-2.2zM9.7 14.7c-.7.5-1.5.8-2.4 1 .2-.5.5-1.2.8-2.3.2-.6.4-1 .8-1.1.5-.1 1 .1 1.3.3.2.2.3.5.2.8 0 .3-.1.9-.7 1.3z',
 					$request_uri,
 					'configuration.php',
-					'GatewayTab',
+					'MoGatewayTab',
 					'background:#D8D8D8'
 				),
 				Tabs::REPORTING     => new PluginPageDetails(

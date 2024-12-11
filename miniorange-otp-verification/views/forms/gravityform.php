@@ -104,16 +104,21 @@ echo '							<div class="mo_registration_help_desc" id="gf_contact_options">
 												<li>' . esc_html( mo_( 'Click on the Save Button to save your settings and keep a track of your Form Ids.' ) ) . '</li>
 											</ol>
 									</div>
-									<div style="margin-left:2%;">
-										<div class="pt-mo-4">
-											<div class="mo-input-wrapper">
-												<label class="mo-input-label">' . esc_html( mo_( 'Verification Button text' ) ) . '</label>
-												<input class=" mo-form-input" 
-													placeholder="Enter the verification button text" 
-													value="' . esc_attr( $gf_button_text ) . '" 
-													type="text" name="mo_customer_validation_gf_button_text" >
-											</div>
-							        	</div>
+									<div style="margin-left:2%;" class="flex pt-mo-4 gap-mo-4">
+										<div class="mo-input-wrapper">
+											<label class="mo-input-label">' . esc_html( mo_( 'Verification Button text' ) ) . '</label>
+											<input class=" mo-form-input w-full" 
+												placeholder="Enter the verification button text" 
+												value="' . esc_attr( $gf_button_text ) . '" 
+												type="text" name="mo_customer_validation_gf_button_text" >
+										</div>
+										<div class="mo-input-wrapper">
+											<label class="mo-input-label">' . esc_html( mo_( 'Verification Button CSS' ) ) . '</label>
+											<input class=" mo-form-input w-full" 
+												placeholder="Enter the semicolon seperated verification button CSS. Example- color:black; background-color: white;" 
+												value="' . esc_attr( $gf_button_css ) . '" 
+												type="text" name="mo_customer_validation_gf_button_css" >
+										</div>
                                     </div>
 
 								</div>

@@ -401,14 +401,16 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		private function login_wp_user( $user_log, $extra_data = null ) {
 			$user = is_email( $user_log ) ? get_user_by( 'email', $user_log ) : get_user_by( 'login', $user_log );
 			$user = $user ? $user : ( $this->allowLoginThroughPhone() && MoUtility::validate_phone_number( $user_log ) ? $this->getUserFromPhoneNumber( MoUtility::process_phone_number( $user_log ) ) : '' );
-			wp_set_auth_cookie( $user->data->ID, true );
-			
-			if ( $this->delay_otp && $this->delay_otp_interval > 0 ) {
-				update_user_meta( $user->data->ID, $this->time_stamp_meta_key, time() );
-			}
-			$this->unset_otp_session_variables();
-			do_action( 'wp_login', $user->user_login, $user );
 
+			if( $user ){
+				wp_set_auth_cookie( $user->data->ID, true );
+				if ( $this->delay_otp && $this->delay_otp_interval > 0 ) {
+					update_user_meta( $user->data->ID, $this->time_stamp_meta_key, time() );
+				}
+				$this->unset_otp_session_variables();
+				do_action( 'wp_login', $user->user_login, $user );
+			}
+			
 			if ( 'redirect_to_the_page' === $this->redirect_after_login ) {
 				wp_safe_redirect(
 					get_permalink(
@@ -632,7 +634,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 */
 		private function mo_handle_wp_login_ajax_send_otp( $post_data ) {
 			if ( $this->restrict_duplicates()
-			&& ! MoUtility::is_blank( $this->getUserFromPhoneNumber( sanitize_text_field( $post_data['user_phone'] ) ) ) ) {
+			&& ! MoUtility::is_blank( $this->getUserFromPhoneNumber( MoUtility::process_phone_number( sanitize_text_field( $post_data['user_phone'] ) ) ) ) ) {
 				wp_send_json(
 					MoUtility::create_json(
 						MoMessages::showMessage( MoMessages::PHONE_EXISTS ),

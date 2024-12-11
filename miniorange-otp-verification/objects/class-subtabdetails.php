@@ -94,7 +94,7 @@ if ( ! class_exists( 'SubTabDetails' ) ) {
 
 			$this->notification_sub_tab_details = array(
 				SubTabs::MO_WC_NOTIF    => new SubtabPageDetails(
-					'Notifications',
+					'MoNotifications',
 					mo_( 'WooCommerce' ),
 					mo_( 'WooCommerce' ),
 					'sms-notifications.php',
@@ -102,7 +102,7 @@ if ( ! class_exists( 'SubTabDetails' ) ) {
 					'background:#D8D8D8'
 				),
 				SubTabs::MO_UM_NOTIF    => new SubtabPageDetails(
-					'Notifications',
+					'MoNotifications',
 					mo_( 'Ultimate Member' ),
 					mo_( 'Ultimate Member' ),
 					'sms-notifications.php',
@@ -126,7 +126,7 @@ if ( ! class_exists( 'SubTabDetails' ) ) {
 					'background:#D8D8D8'
 				),
 				SubTabs::MO_FORM_NOTIF  => new SubtabPageDetails(
-					'Notifications',
+					'MoNotifications',
 					mo_( 'Forms' ),
 					mo_( 'Forms' ),
 					'sms-notifications.php',

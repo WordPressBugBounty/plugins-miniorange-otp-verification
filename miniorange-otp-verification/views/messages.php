@@ -103,7 +103,7 @@ foreach ( $reduced_msg_list as $key => $value ) {
 echo ' 							</select>
 							</div>
 							<div class="w-half pb-mo-4" style="float:left;">
-								<input type="button" ' . esc_attr( $disabled ) . '  name="save" id="moAddNewMessage" class="mo-button primary inverted" value="Replace this message" />';
+								<input type="button" ' . esc_attr( $disabled ) . '  name="save" id="mo_add_new_message" class="mo-button primary inverted" value="Replace this message" />';
 								wp_nonce_field( 'addmsgnonce', 'mo_add_message_nonce' );
 echo '					    </div>
 						</div>

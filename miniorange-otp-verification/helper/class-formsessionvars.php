@@ -93,5 +93,6 @@ if ( ! class_exists( 'FormSessionVars' ) ) {
 		const HOUZEZ_REG                    = 'houzez_reg';
 		const WP_DEFAULT_PASS               = 'wp_default_pass';
 		const JET_BUILDER_FORM              = 'jet_builder_form';
+		const MO_WS_FORMS                   = 'mo_ws_form';
 	}
 }

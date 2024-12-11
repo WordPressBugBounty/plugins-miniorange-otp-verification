@@ -204,7 +204,7 @@ if ( ! class_exists( 'RegistrationMagicForm' ) ) {
 		private function getFieldID( $key, $form_id ) {
 			global $wpdb;
 			$row1 = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM `{$wpdb->prefix}rm_fields` where `form_id` = %s and `field_label` =%s", array( $form_id, $key ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, Direct database call without caching detected -- DB Direct Query is necessary here.
-			return isset( $row1 ) ? ( 'Mobile' === $row1->field_type ? $row1->field_type : 'Textbox' ) . '_' . $row1->field_id : 'null';
+			return isset( $row1 ) ? ( 'Mobile' === $row1->field_type ? $row1->field_type : 'Email' ) . '_' . $row1->field_id : 'null';
 		}
 
 

@@ -143,6 +143,13 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		protected $button_text;
 
 		/**
+		 * CSS of the Send OTP button
+		 *
+		 * @var string
+		 */
+		protected $button_css;
+
+		/**
 		 * Text of the Verify OTP button
 		 *
 		 * @var string
@@ -493,6 +500,10 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		 */
 		public function get_button_text() {
 			return mo_( $this->button_text ); }
+		/**Function for Getter
+		 */
+		public function get_button_css() {
+			return mo_( $this->button_css ); }
 		/**Function for Getter
 		 */
 		public function get_verify_button_text() {

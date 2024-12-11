@@ -29,7 +29,7 @@ echo '	        <div class= "border-b flex flex-col gap-mo-6 px-mo-4">
 								<select id="select_popup_option" name="select_popup_option"  style="width:100%; height:42px" class=" active rounded-md"> ';
 
 foreach ( $mo_template_types as $key => $val ) {
-	echo '                             <option ' . esc_attr( $val['selected'] ) . ' id="' . esc_attr( $val['id'] ) . '" class="p-mo-5 m-mo-2">' . esc_attr( $key ) . ' </option><br>';
+	echo '                             <option ' . esc_attr( $val['selected'] ) . ' id="' . esc_attr( $val['id'] ) . '" class="p-mo-5 m-mo-2">' . esc_attr( $key ) . ' </option>';
 }
 echo '     
 								</select>';

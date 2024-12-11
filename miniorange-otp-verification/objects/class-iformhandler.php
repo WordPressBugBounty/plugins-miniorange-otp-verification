@@ -133,6 +133,11 @@ interface IFormHandler {
 	 *
 	 * @return mixed
 	 */
+	public function get_button_css();
+	/**MoInternal Function
+	 *
+	 * @return mixed
+	 */
 	public function get_form_details();
 	/**MoInternal Function
 	 *

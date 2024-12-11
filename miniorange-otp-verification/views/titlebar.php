@@ -20,6 +20,7 @@ echo '
 			<h5 class="text-lg font-bold" style="flex: 1 1 0%;">' . esc_html( mo_( 'OTP Verification' ) ) . '</h5>';
 echo '      
 	        <div class="mo-otp-help-button static">';
+
 if ( $is_logged_in && ( 'MoGateway' === $gateway_type || $is_free_plugin ) ) {
 	echo '
 			<div class="flex text-white text-xs">

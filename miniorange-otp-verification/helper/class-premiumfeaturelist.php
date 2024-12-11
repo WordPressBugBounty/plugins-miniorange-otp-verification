@@ -41,6 +41,12 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 
 		/** Variable declaration
 		 *
+		 * @var $both_email_phone_addon_forms
+		 */
+		private $both_email_phone_addon_forms;
+
+		/** Variable declaration
+		 *
 		 * @var $addon_name
 		 */
 		private $addon_name;
@@ -376,7 +382,7 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 				'otp_over_call_addon'           => array(
 					'name'        => 'OTP Over Call',
 					'description' => array(
-						mo_( 'Send OTP Over Call insted of SMS' ),
+						mo_( 'Send OTP Over Call instead of SMS' ),
 						mo_( 'User friendly' ),
 						mo_( 'Hassle-Free Setup' ),
 						mo_( 'This add-on works with the Twilio Gateway' ),
@@ -401,34 +407,6 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 					'guide_link'  => MoFormDocs::OTP_OVER_CALL_TWILIO_ADDON_LINK['guideLink'],
 					'support_msg' => 'Hi! I am interested in the OTP Over Phone Call addon, could you please tell me more about this addon?',
 					'plan_name'   => 'Twilio Gateway, Enterprise and WooCommerce Plan',
-				),
-				'verification_using_email_link' => array(
-					'name'              => 'Verification via Email Link instead of One time Passcode',
-					'description'       => array(
-						mo_( 'Verification via email links' ),
-						mo_( 'Verify by clicking on accept or decline links sent over email instead of OTP' ),
-						mo_( 'Supported in the free plugin only' ),
-					),
-					'svg'               => '<svg width="50" height="50" viewBox="0 0 100 100" fill="none" >
-										<g id="d793a5c7f1276bb8bd96ed3a45fc2ba1">
-										<rect width="100" height="100" rx="10" fill="url(#429fd1d4aa4ecddb39c430be9baf1ab8)"></rect>
-										<g id="39642c8164731a0c117c0148c6bf5978">
-											<path id="8f236ae67414afd6bb621c61fb227f5e" fill-rule="evenodd" clip-rule="evenodd" d="M56.629 43.3717C57.3613 44.104 57.3613 45.2911 56.629 46.0234L46.0224 56.63C45.2902 57.3622 44.103 57.3622 43.3708 56.63C42.6386 55.8977 42.6386 54.7106 43.3708 53.9783L53.9774 43.3717C54.7096 42.6395 55.8968 42.6395 56.629 43.3717Z" fill="black"></path>
-											<path id="aba512741839dadd8362e312019f69c0" fill-rule="evenodd" clip-rule="evenodd" d="M65.3408 34.6595C61.4706 30.7893 55.1959 30.7893 51.3257 34.6595L47.159 38.8262C46.4268 39.5584 45.2396 39.5584 44.5074 38.8262C43.7751 38.094 43.7751 36.9068 44.5074 36.1745L48.674 32.0078C54.0087 26.6732 62.6578 26.6732 67.9925 32.0078C73.3271 37.3425 73.3271 45.9916 67.9925 51.3263L63.8258 55.493C63.0935 56.2252 61.9064 56.2252 61.1741 55.493C60.4419 54.7607 60.4419 53.5735 61.1741 52.8413L65.3408 48.6746C69.211 44.8044 69.211 38.5297 65.3408 34.6595Z" fill="black"></path>
-											<path id="2041639debf797014dd7a0c568732528" fill-rule="evenodd" clip-rule="evenodd" d="M34.6589 65.3405C38.5291 69.2107 44.8039 69.2107 48.6741 65.3405L52.8408 61.1738C53.573 60.4416 54.7602 60.4416 55.4924 61.1738C56.2246 61.906 56.2246 63.0932 55.4924 63.8255L51.3257 67.9922C45.9911 73.3268 37.3419 73.3268 32.0073 67.9922C26.6727 62.6575 26.6727 54.0084 32.0073 48.6737L36.174 44.507C36.9062 43.7748 38.0934 43.7748 38.8256 44.507C39.5579 45.2393 39.5579 46.4265 38.8256 47.1587L34.6589 51.3254C30.7888 55.1956 30.7888 61.4703 34.6589 65.3405Z" fill="black"></path>
-										</g>
-										</g>
-										<defs>
-										<linearGradient id="429fd1d4aa4ecddb39c430be9baf1ab8" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-											<stop stop-color="#5DECFF"></stop>
-											<stop offset="1" stop-color="#1CE7C2"></stop>
-										</linearGradient>
-										</defs>
-									</svg>',
-					'price'             => '$49',
-					'guide_link'        => '',
-					'guide_request_msg' => 'Hi! I am interested in the Verification via Email Link instead of One time Passcode addon, could you please tell me more about this addon?',
-					'support_msg'       => 'Hi! Could you please share the payment details for the Verification via Email Link instead of One time Passcode addon?',
 				),
 				'api_otp_verification_addon'    => array(
 					'name'              => 'OTP Verification for Android/IOS Application',
@@ -497,7 +475,30 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 					'name'      => 'Checkout WC Form ',
 					'plan_name' => 'WooCommerce OTP and Notification Plan',
 				),
+				'JET_BUILDER_FORM'              => array(
+					'name'      => 'JetFormBuilder Form by Crocoblock ',
+					'plan_name' => 'Enterprise Plan',
+				),
+				'MO_WS_FORMS'                   => array(
+					'name'      => 'WS Pro Contact Forms ',
+					'plan_name' => 'Enterprise Plan',
+				),
 
+			);
+
+			$this->both_email_phone_addon_forms = array(
+				'ELEMENTOR_PRO'    => array(
+					'name' => 'Elementor Pro Forms',
+				),
+				'WC_CHECKOUT_FORM' => array(
+					'name' => 'WooCommerce Checkout Form - Classic Form',
+				),
+				'WC_REG_FORM'      => array(
+					'name' => 'WooCommerce Registration Form',
+				),
+				'GRAVITY_FORM'     => array(
+					'name' => 'Gravity Form',
+				),
 			);
 
 		}
@@ -519,6 +520,12 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 		 */
 		public function get_premium_forms() {
 			return $this->premium_forms; }
+
+		/**
+		 * Function called to get the form list supported in both email and phone addon
+		 */
+		public function get_both_email_phone_addon_forms() {
+			return $this->both_email_phone_addon_forms; }
 
 	}
 }

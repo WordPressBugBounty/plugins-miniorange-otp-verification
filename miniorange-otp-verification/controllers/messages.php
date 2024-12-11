@@ -13,6 +13,7 @@ use OTP\Helper\MoUtility;
 
 $nonce                = $admin_handler->get_nonce_value();
 $msg_list             = MoMessages::get_original_message_list();
+$frontend_msg_list    = MoMessages::get_frontend_message_list();
 $common_msg_hidden    = 'messagesSubTab' !== $subtab ? 'hidden' : '';
 $otp_success_email    = get_mo_option( 'success_email_message', 'mo_otp_' ) ? get_mo_option( 'success_email_message', 'mo_otp_' ) : MoMessages::showMessage( MoMessages::OTP_SENT_EMAIL );
 $otp_success_phone    = get_mo_option( 'success_phone_message', 'mo_otp_' ) ? get_mo_option( 'success_phone_message', 'mo_otp_' ) : MoMessages::showMessage( MoMessages::OTP_SENT_PHONE );
@@ -101,7 +102,7 @@ function has_special_characters( $sentence ) {
 	$pattern = '/[<>]/';
 	return preg_match( $pattern, $sentence ) === 1;
 }
-$reduced_msg_list = array_diff_key( $msg_list, $final_message_array );
+$reduced_msg_list = array_diff_key( $frontend_msg_list, $final_message_array );
 
 foreach ( $reduced_msg_list as $key => $value ) {
 	if ( has_special_characters( $value ) ) {

@@ -21,6 +21,7 @@ use OTP\Objects\BaseMessages;
 use OTP\Objects\FormHandler;
 use OTP\Objects\IFormHandler;
 use OTP\Objects\VerificationType;
+use OTP\Helper\Templates\DefaultPopup;
 use OTP\Traits\Instance;
 use ReflectionException;
 use WC_Checkout;
@@ -48,6 +49,39 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 		 * @var string
 		 */
 		private $enabled_address;
+
+		/**
+		 * Should show a popUp for verifying the OTP
+		 * sent instead of fields on the page
+		 *
+		 * @var boolean
+		 */
+		private $popup_enabled;
+
+		/**
+		 * Should OTP Verification be applied only
+		 * for guest users
+		 *
+		 * @var bool
+		 */
+		private $guest_check_out_only;
+
+
+		/**
+		 * The array of all the available payment
+		 * options
+		 *
+		 * @var array
+		 */
+		private $payment_methods;
+
+		/**
+		 * Option to enable/disable OTP Verification based
+		 * on payment type
+		 *
+		 * @var bool
+		 */
+		private $selective_payment;
 
 		/**
 		 * Initializes values
@@ -87,14 +121,26 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 			} else {
 				$this->enabled_address = $this->get_woocommerce_shipping_address_setting();
 			}
-			$this->phone_form_id = 'shipping' === $this->enabled_address ? '#shipping-phone' : '#billing-phone';
-			$this->otp_type      = get_mo_option( 'wc_new_checkout_type' );
+			$this->phone_form_id        = 'shipping' === $this->enabled_address ? '#shipping-phone' : '#billing-phone';
+			$this->otp_type             = get_mo_option( 'wc_new_checkout_type' );
+			$this->payment_methods      = maybe_unserialize( get_mo_option( 'wc_checkout_new_payment_type' ) );
+			$this->payment_methods      = $this->payment_methods ? $this->payment_methods : WC()->payment_gateways->payment_gateways(); // phpcs:ignore intelephense.diagnostics.undefinedFunctions -- Default function of WooCommerce.
+			$this->selective_payment    = get_mo_option( 'wc_checkout_new_selective_payment' );
+			$this->popup_enabled        = get_mo_option( 'wc_new_checkout_popup' );
+			$this->guest_check_out_only = get_mo_option( 'wc_new_checkout_guest' );
 
+			if ( $this->guest_check_out_only && is_user_logged_in() ) {
+				return;
+			}
 			add_action( "wp_ajax_{$this->generate_otp_action}", array( $this, 'send_otp' ) );
 			add_action( "wp_ajax_nopriv_{$this->generate_otp_action}", array( $this, 'send_otp' ) );
 
 			add_action( "wp_ajax_{$this->validate_otp_action}", array( $this, 'processFormAndValidateOTP' ) );
 			add_action( "wp_ajax_nopriv_{$this->validate_otp_action}", array( $this, 'processFormAndValidateOTP' ) );
+
+			if ( $this->popup_enabled ) {
+				add_action( 'woocommerce_blocks_checkout_enqueue_data', array( $this, 'add_custom_popup' ), 99 );
+			}
 
 			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_script_on_page' ) );
 			add_action( 'woocommerce_store_api_checkout_order_processed', array( $this, 'my_custom_checkout_field_process' ), 99, 1 );
@@ -114,6 +160,52 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 			} else {
 				return $this->has_shipping_methods() ? 'shipping' : 'billing';
 			}
+		}
+
+		/**
+		 * Adds a default popup on checkout page along with the script.
+		 * Script is used here to append deafult popup and manupulate it using js.
+		 */
+		public function add_custom_popup() {
+			$default_popup_handler = DefaultPopup::instance();
+			$message               = '<div id="wc_pop_up_message_box"></div>';
+			$otp_type              = 'mo_wc_phone_enable' === $this->otp_type ? 'phone' : 'email';
+			$from_both             = 'from_both';
+			$html_content          = '<div id="popup_wc_mo" style="display:none">' . apply_filters( 'mo_template_build', '', $default_popup_handler->get_template_key(), $message, $otp_type, $from_both ) . '</div>';
+			echo '<script type="text/javascript">
+					document.addEventListener(\'DOMContentLoaded\', function() {
+						function mo_check_form_loaded() {
+							if (jQuery(".wc-block-components-address-form__phone input[type=tel]").length > 0) {
+								mo_add_custom_popup();
+							} else {
+								setTimeout(mo_check_form_loaded, 100);
+							}
+						}
+
+						mo_check_form_loaded();
+						function mo_add_custom_popup() {
+							var htmlContent = ' . wp_json_encode( htmlspecialchars_decode( $html_content ) ) . ';
+							var form = jQuery(".wc-block-checkout__form");
+							form.append(htmlContent);
+							form.find("input[type=\'hidden\'][name=\'option\'][value=\'miniorange-validate-otp-form\']").remove();
+							var popupform = jQuery("#mo_validate_form");
+							popupform.children().appendTo(popupform.parent());
+							popupform.remove();
+							jQuery(\'[name="mo_otp_token"]\').attr({ id: \'mo_otp_token\', name: \'order_verify\' });
+							jQuery(\'[name="miniorange_otp_token_submit"]\').replaceWith(jQuery(\'<input>\', {
+								type: \'button\',
+								id: \'miniorange_otp_validate_submit\',
+								class: jQuery(\'[name="miniorange_otp_token_submit"]\').attr(\'class\'),
+								value: jQuery(\'[name="miniorange_otp_token_submit"]\').attr(\'value\')
+							}));
+							jQuery(\'.close\').removeAttr(\'onclick\');
+							jQuery("#validation_goBack_form, #verification_resend_otp_form, #goBack_choice_otp_form").remove();
+							jQuery(\'a[onclick="mo_otp_verification_resend()"]\').attr(\'id\', \'mo_otp_verification_resend\').removeAttr(\'onclick\');
+							jQuery(\'.mo_customer_validation-login-container\').find(\'input[type="hidden"]\').remove();
+							jQuery("#mo_message").remove();
+						}
+					});
+				</script>';
 		}
 
 		/**
@@ -292,7 +384,13 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 			$order_details    = $order->get_data();
 			$billing_details  = $order_details['billing'];
 			$shipping_details = $order_details['shipping'];
-			$message          = $this->handle_otp_token_submitted( $billing_details, $shipping_details ) ? $this->handle_otp_token_submitted( $billing_details, $shipping_details ) : null;
+			$payment_method   = $order_details['payment_method'];
+
+			if ( ! $this->isPaymentVerificationNeeded( $payment_method ) ) {
+				return;
+			}
+
+			$message = $this->handle_otp_token_submitted( $billing_details, $shipping_details ) ? $this->handle_otp_token_submitted( $billing_details, $shipping_details ) : null;
 			if ( ! empty( $message ) ) {
 				$notices = WC()->session->get( 'wc_notices', array() );// phpcs:ignore intelephense.diagnostics.undefinedFunctions -- Default function of Woocommerce.
 
@@ -307,6 +405,13 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 			} else {
 				$this->unset_otp_session_variables();
 			}
+		}
+
+		/**
+		 * Checks if OTP Verification is enabled for the current.
+		 */
+		private function isPaymentVerificationNeeded( $payment_method ) {
+			return $this->selective_payment ? array_key_exists( $payment_method, $this->payment_methods ) : true;
 		}
 
 		/**
@@ -403,13 +508,18 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 				'wccheckout',
 				'mowcnewcheckout',
 				array(
-					'siteURL' => wp_ajax_url(),
-					'otpType' => strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ? 'phone' : 'email',
-					'field'   => strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ? ( 'shipping' === $this->enabled_address ? 'shipping-phone' : 'billing-phone' ) : 'email',
-					'gaction' => $this->generate_otp_action,
-					'vaction' => $this->validate_otp_action,
-					'imgURL'  => MOV_LOADER_URL,
-					'nonce'   => wp_create_nonce( $this->nonce ),
+					'siteURL'                 => wp_ajax_url(),
+					'otpType'                 => strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ? 'phone' : 'email',
+					'field'                   => strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ? ( 'shipping' === $this->enabled_address ? 'shipping-phone' : 'billing-phone' ) : 'email',
+					'gaction'                 => $this->generate_otp_action,
+					'vaction'                 => $this->validate_otp_action,
+					'otp_length_mo'           => get_mo_option( 'otp_length' ) ? get_mo_option( 'otp_length' ) : 5,
+					'popupEnabled'            => $this->popup_enabled,
+					'nonce'                   => wp_create_nonce( $this->nonce ),
+					'otp_timer_enable'        => get_mo_option( 'otp_timer_enable', 'mo_rc_sms_' ),
+					'otp_timer'               => get_mo_option( 'otp_timer', 'mo_rc_sms_' ),
+					'paymentMethods'          => $this->payment_methods,
+					'selectivePaymentEnabled' => $this->selective_payment,
 				)
 			);
 			wp_enqueue_script( 'wccheckout' );
@@ -456,12 +566,60 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 				return;
 			}
 
-			$this->is_form_enabled = $this->sanitize_form_post( 'wc_new_checkout_enable' );
-			$this->otp_type        = $this->sanitize_form_post( 'wc_new_checkout_type' );
+			$data            = MoUtility::mo_sanitize_array( $_POST );
+			$payment_methods = array();
+			if ( array_key_exists( 'wc_payment', $data ) ) { //phpcs:ignore -- $data is an array but considered as a string (false positive).
+				foreach ( ( $data['wc_payment'] ) as $selected ) { //phpcs:ignore -- $data is an array but considered as a string (false positive).
+					$payment_methods[ $selected ] = $selected;
+				}
+			}
+			$this->is_form_enabled      = $this->sanitize_form_post( 'wc_new_checkout_enable' );
+			$this->otp_type             = $this->sanitize_form_post( 'wc_new_checkout_type' );
+			$this->selective_payment    = $this->sanitize_form_post( 'wc_checkout_new_selective_payment' );
+			$this->payment_methods      = $payment_methods;
+			$this->guest_check_out_only = $this->sanitize_form_post( 'wc_new_checkout_guest' );
+			$this->popup_enabled        = $this->sanitize_form_post( 'wc_new_checkout_popup' );
 
 			update_mo_option( 'wc_new_checkout_enable', $this->is_form_enabled );
 			update_mo_option( 'wc_new_checkout_type', $this->otp_type );
+			update_mo_option( 'wc_checkout_new_selective_payment', $this->selective_payment );
+			update_mo_option( 'wc_checkout_new_payment_type', maybe_serialize( $payment_methods ) );
+			update_mo_option( 'wc_new_checkout_guest', $this->guest_check_out_only );
+			update_mo_option( 'wc_new_checkout_popup', $this->popup_enabled );
+		}
 
+		/**
+		 * Getter for guest checkout option
+		 *
+		 * @return bool
+		 */
+		public function isGuestCheckoutOnlyEnabled() {
+			return $this->guest_check_out_only; }
+
+		/**
+		 * Getter for payment methods for which OTP Verification has been enabled for Block checkout
+		 *
+		 * @return array
+		 */
+		public function getPaymentMethods() {
+			return $this->payment_methods;
+		}
+
+		/**
+		 * Getter for is popup enabled for otp verification during wc checkout
+		 *
+		 * @return bool
+		 */
+		public function isPopUpEnabled() {
+			return $this->popup_enabled; }
+
+		/**
+		 * Getter for is selective payment enabled (based on payment methods)
+		 *
+		 * @return bool
+		 */
+		public function isSelectivePaymentEnabled() {
+			return $this->selective_payment;
 		}
 	}
 }

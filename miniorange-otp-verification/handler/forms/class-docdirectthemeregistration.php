@@ -189,7 +189,7 @@ if ( ! class_exists( 'DocDirectThemeRegistration' ) ) {
 				echo wp_json_encode(
 					array(
 						'type'    => 'error',
-						'message' => MoMessages::showMessage( MoMessages::DOC_DIRECT_VERIFY ),
+						'message' => MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ),
 					)
 				);
 				die();
@@ -207,7 +207,7 @@ if ( ! class_exists( 'DocDirectThemeRegistration' ) ) {
 				echo wp_json_encode(
 					array(
 						'type'    => 'error',
-						'message' => MoMessages::showMessage( MoMessages::DCD_ENTER_VERIFY_CODE ),
+						'message' => MoMessages::showMessage( MoMessages::ENTER_VERIFICATION_CODE ),
 					)
 				);
 				die();
