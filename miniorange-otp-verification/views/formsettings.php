@@ -38,7 +38,8 @@ echo '  <div class="mo_registration_table_layout px-mo-4" id="selected_form_deta
 			<div id="new_form_settings">
 				<div id="form_details">';
 					require $controller . 'forms/class-' . strtolower( $form_name ) . '.php';
-echo '          </div>';
+echo '          </div>
+			</div>';
 
 foreach ( $both_email_and_phone_form_list as $key => $value ) {
 	if ( $value['name'] === $form_name ) {
@@ -59,5 +60,5 @@ foreach ( $both_email_and_phone_form_list as $key => $value ) {
 	}
 }
 
-echo '			</div>
+echo '			
 		</div>';

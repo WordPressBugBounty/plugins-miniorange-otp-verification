@@ -5,7 +5,7 @@ Tags: OTP, SMS notifications, mobile verification, woocommerce sms, Login with P
 Requires at least: 3.5
 Tested up to: 6.7
 Requires PHP: 5.3.0
-Stable tag: 5.2.5
+Stable tag: 5.2.6
 License: MIT/Expat
 License URI: https://docs.miniorange.com/mit-license
 
@@ -206,6 +206,11 @@ Please email us at **otpsupport@xecurify.com/info@xecurify.com** . You can also 
 8. OTP Verification Plugin Settings
 
 == Changelog ==
+= 5.2.6 =
+* miniOrange WordPress OTP Verification
+ * Bug fixes - Gravity Forms
+ * CSS issue fixes in Elementor Pro Form
+
 = 5.2.5 =
 * miniOrange WordPress OTP Verification
  * Introduced JetFormBuilder Form
@@ -1003,6 +1008,11 @@ Please email us at **otpsupport@xecurify.com/info@xecurify.com** . You can also 
 * First version of plugin.
 
 == Upgrade Notice ==
+= 5.2.6 =
+* miniOrange WordPress OTP Verification
+ * Bug fixes - Gravity Forms
+ * CSS issue fixes in Elementor Pro Form
+
 = 5.2.5 =
 * miniOrange WordPress OTP Verification
  * Introduced JetFormBuilder Form
