@@ -27,5 +27,5 @@ $form_name                 = $handler->get_form_name();
 $disable_autologin         = $handler->isAutoLoginDisabled() ? 'checked' : '';
 $restrict_duplicates       = $handler->restrict_duplicates() ? 'checked' : '';
 
-require_once MOV_DIR . 'views/forms/woocommercecheckoutform.php';
+require_once MOV_DIR . 'views/forms/mowoocommercecheckoutform.php';
 get_plugin_form_link( $handler->get_form_documents() );

@@ -24,5 +24,5 @@ $form_name                        = $handler->get_form_name();
 $enter_otp_text                   = $handler->get_enter_otp_field_text();
 $verify_button_text               = $handler->get_verify_button_text();
 
-require_once MOV_DIR . 'views/forms/wpformsplugin.php';
+require_once MOV_DIR . 'views/forms/mowpformsplugin.php';
 get_plugin_form_link( $handler->get_form_documents() );

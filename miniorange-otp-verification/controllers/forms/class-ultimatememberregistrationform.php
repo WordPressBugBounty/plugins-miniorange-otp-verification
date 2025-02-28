@@ -26,5 +26,5 @@ $is_ajax_mode_enabled   = $is_ajax_form ? 'checked' : '';
 $um_otp_meta_key        = $handler->get_verify_field_key();
 $um_register_field_key  = $handler->get_phone_key_details();
 
-require_once MOV_DIR . 'views/forms/ultimatememberregistrationform.php';
+require_once MOV_DIR . 'views/forms/moultimatememberregistrationform.php';
 get_plugin_form_link( $handler->get_form_documents() );

@@ -44,5 +44,5 @@ $redirect_page_id            = MoUtility::is_blank( $redirect_page ) ? '' : get_
 	)
 )[0]->ID;
 
-require_once MOV_DIR . 'views/forms/wploginform.php';
+require_once MOV_DIR . 'views/forms/mowploginform.php';
 get_plugin_form_link( $handler->get_form_documents() );

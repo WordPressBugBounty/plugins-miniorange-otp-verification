@@ -23,5 +23,5 @@ $is_ajax_form              = $handler->is_ajax_form();
 $is_ajax_mode_enabled      = $is_ajax_form ? 'checked' : '';
 $wc_pv_button_text         = $handler->get_button_text();
 
-require_once MOV_DIR . 'views/forms/woocommerceproductvendors.php';
+require_once MOV_DIR . 'views/forms/mowoocommerceproductvendors.php';
 get_plugin_form_link( $handler->get_form_documents() );

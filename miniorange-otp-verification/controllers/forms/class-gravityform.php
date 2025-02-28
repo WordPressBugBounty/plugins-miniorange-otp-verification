@@ -22,5 +22,5 @@ $form_name       = $handler->get_form_name();
 $gf_button_text  = $handler->get_button_text();
 $gf_button_css   = $handler->get_button_css();
 
-require_once MOV_DIR . 'views/forms/gravityform.php';
+require_once MOV_DIR . 'views/forms/mogravityform.php';
 get_plugin_form_link( $handler->get_form_documents() );

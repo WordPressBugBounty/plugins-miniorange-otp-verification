@@ -18,5 +18,5 @@ $easyreg_phone_type                = $handler->get_phone_html_tag();
 $easyreg_email_type                = $handler->get_email_html_tag();
 $form_name                         = $handler->get_form_name();
 
-require_once MOV_DIR . 'views/forms/easyregform.php';
+require_once MOV_DIR . 'views/forms/moeasyregform.php';
 get_plugin_form_link( $handler->get_form_documents() );

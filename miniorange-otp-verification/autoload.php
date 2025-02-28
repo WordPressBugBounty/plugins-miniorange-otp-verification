@@ -73,6 +73,17 @@ if ( file_exists( MOV_DIR . MoConstants::LICENCE_SERVICE_FILE ) ) {
 	new Mo_License_Library();
 }
 
+$plugin_slug = 'resendcontrol/miniorange-rc-validation.php';
+if ( ! function_exists( 'deactivate_plugins' ) ) {
+	require_once ABSPATH . 'wp-admin/includes/plugin.php';
+}
+if ( ! function_exists( 'is_plugin_active' ) ) {
+	include_once ABSPATH . 'wp-admin/includes/plugin.php';
+}
+if ( is_plugin_active( $plugin_slug ) ) {
+	deactivate_plugins( $plugin_slug );
+}
+
 /**
  * Initializes hanlders of forms.
  */
@@ -192,7 +203,7 @@ function initialize_package_json() {
 	$package = wp_json_encode(
 		array(
 			'name'         => 'miniorange-otp-verification',
-			'version'      => '5.2.6',
+			'version'      => '5.2.8',
 			'type'         => 'MiniOrangeGateway',
 			'testmode'     => false,
 			'failmode'     => false,

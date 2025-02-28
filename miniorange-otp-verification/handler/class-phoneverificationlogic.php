@@ -133,6 +133,7 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 		 * @param string $from_both string has user enabled from both.
 		 */
 		public function start_otp_verification( $user_login, $user_email, $phone_number, $otp_type, $from_both ) {
+			do_action( 'mo_generate_or_resend_otp', $user_login, $user_email, $phone_number, $otp_type, $from_both );
 			$gateway           = GatewayFunctions::instance();
 			$verification_type = 'SMS';
 			$content           = $gateway->mo_send_otp_token( $verification_type, '', $phone_number );

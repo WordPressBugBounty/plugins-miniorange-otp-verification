@@ -18,5 +18,5 @@ $docdirect_type_phone   = $handler->get_phone_html_tag();
 $docdirect_type_email   = $handler->get_email_html_tag();
 $form_name              = $handler->get_form_name();
 
-require_once MOV_DIR . 'views/forms/docdirectthemeregistration.php';
+require_once MOV_DIR . 'views/forms/modocdirectthemeregistration.php';
 get_plugin_form_link( $handler->get_form_documents() );

@@ -21,5 +21,5 @@ $wpreg_both_type          = $handler->get_both_html_tag();
 $form_name                = $handler->get_form_name();
 $auto_activate_users      = $handler->disable_auto_activation() ? '' : 'checked';
 
-require_once MOV_DIR . 'views/forms/defaultwordpressregistrationform.php';
+require_once MOV_DIR . 'views/forms/modefaultwordpressregistrationform.php';
 get_plugin_form_link( $handler->get_form_documents() );

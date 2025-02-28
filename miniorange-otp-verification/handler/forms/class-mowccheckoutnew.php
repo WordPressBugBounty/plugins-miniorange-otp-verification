@@ -168,7 +168,7 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 		 */
 		public function add_custom_popup() {
 			$default_popup_handler = DefaultPopup::instance();
-			$message               = '<div id="wc_pop_up_message_box"></div>';
+			$message               = '<div id="mo_message_wc_pop_up"></div>';
 			$otp_type              = 'mo_wc_phone_enable' === $this->otp_type ? 'phone' : 'email';
 			$from_both             = 'from_both';
 			$html_content          = '<div id="popup_wc_mo" style="display:none">' . apply_filters( 'mo_template_build', '', $default_popup_handler->get_template_key(), $message, $otp_type, $from_both ) . '</div>';

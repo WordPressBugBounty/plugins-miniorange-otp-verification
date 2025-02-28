@@ -575,10 +575,15 @@ if ( ! class_exists( 'MoMessages' ) ) {
 					self::USERNAME_NOT_EXIST            => mo_( "We can't find an account registered with that address or username or phone number." ),
 					self::RESET_LABEL                   => mo_( 'To reset your password, please enter your email address, username or phone number.' ),
 
-					self::ENTER_VERIFICATION_CODE       => ( 'Please enter a verification code to verify yourself' ),
-					self::REMOVE_PLUS_MESSAGE           => ( 'For some gateways, a + is automatically inserted into the SMS template. You can enable this option to remove the "+" if needed.' ),
-					self::REMOVE_PLUS_MESSAGE_HEADER    => ( 'When to Use the "+" Removal Option' ),
-
+					self::ENTER_VERIFICATION_CODE       => mo_( 'Please enter a verification code to verify yourself' ),
+					self::REMOVE_PLUS_MESSAGE           => mo_( 'For some gateways, a + is automatically inserted into the SMS template. You can enable this option to remove the "+" if needed.' ),
+					self::REMOVE_PLUS_MESSAGE_HEADER    => mo_( 'When to Use the "+" Removal Option' ),
+					self::USER_IS_BLOCKED               => mo_( 'You have exceeded the limit to send OTP. Please wait for <span id ="mo-time-remain" value = "{{remaining_time}}">{{remaining_time}}</span>' ),
+					self::LIMIT_OTP_SENT                => mo_( 'Your OTP has been sent. The next OTP can be sent after {minutes}:{seconds} minutes' ),
+					self::USER_IS_BLOCKED_AJAX          => mo_( 'You have exceeded the limit to send OTP. Please wait for {minutes}:{seconds} minutes' ),
+					self::ENTER_VALID_INT               => mo_( 'Please enter a valid integer in the fields.' ),
+					self::ENTER_VALID_BLOCK_TIME        => mo_( 'The block timer should be greater than resend OTP timer' ),
+					self::ERROR_OTP_VERIFY              => mo_( 'The next OTP can be sent after {minutes}:{seconds} minutes' ),
 				)
 			);
 
@@ -713,6 +718,15 @@ if ( ! class_exists( 'MoMessages' ) ) {
 					self::SMS_SENT_SUCCESS              => mo_( 'SMS was sent successfully.' ),
 
 					self::ENTER_VERIFICATION_CODE       => mo_( 'Please enter a verification code to verify yourself' ),
+
+					self::USER_IS_BLOCKED               => mo_( 'You have exceeded the limit to send OTP. Please wait for <span id ="mo-time-remain" value = "{{remaining_time}}">{{remaining_time}}</span>' ),
+
+					self::LIMIT_OTP_SENT                => mo_( 'Your OTP has been sent. The next OTP can be sent after {minutes}:{seconds} minutes' ),
+
+					self::USER_IS_BLOCKED_AJAX          => mo_( 'You have exceeded the limit to send OTP. Please wait for {minutes}:{seconds} minutes' ),
+
+					self::ERROR_OTP_VERIFY              => mo_( 'The next OTP can be sent after {minutes}:{seconds} minutes' ),
+
 				)
 			);
 

@@ -20,5 +20,5 @@ $wpm_type_email        = $handler->get_email_html_tag();
 $form_name             = $handler->get_form_name();
 $wpmember_field_key    = $handler->get_phone_key_details();
 
-require_once MOV_DIR . 'views/forms/wpmemberform.php';
+require_once MOV_DIR . 'views/forms/mowpmemberform.php';
 get_plugin_form_link( $handler->get_form_documents() );

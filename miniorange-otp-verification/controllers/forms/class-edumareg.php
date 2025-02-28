@@ -20,5 +20,5 @@ $edumareg_type_email          = $handler->get_email_html_tag();
 $form_name                    = $handler->get_form_name();
 $edumareg_restrict_duplicates = $handler->restrict_duplicates() ? 'checked' : '';
 
-require_once MOV_DIR . 'views/forms/edumareg.php';
+require_once MOV_DIR . 'views/forms/moedumareg.php';
 get_plugin_form_link( $handler->get_form_documents() );

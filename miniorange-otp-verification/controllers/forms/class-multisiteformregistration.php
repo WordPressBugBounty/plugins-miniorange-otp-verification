@@ -19,5 +19,5 @@ $multisite_type_phone = $handler->get_phone_html_tag();
 $multisite_type_email = $handler->get_email_html_tag();
 $form_name            = $handler->get_form_name();
 
-require_once MOV_DIR . 'views/forms/multisiteformregistration.php';
+require_once MOV_DIR . 'views/forms/momultisiteformregistration.php';
 get_plugin_form_link( $handler->get_form_documents() );

@@ -170,18 +170,10 @@ echo '
                                     <p class="m-mo-0"><b>All features</b> from Custom & Twilio Gateway Plan</p>
                                 </li>
 
-                                <li class="flex gap-mo-2">
-                                    <span style="margin-top: 0.2rem; margin-left: -8px;" >
-                                        <svg width="22" height="21" viewBox="0 0 22 21" fill="none" >
-                                            <path d="M3 6C3 4.8 8.33333 2.83333 11 2C12 2 19 5 19 6C19 11 18 15 11 18C2 14.5 3 7.5 3 6Z" fill="white" stroke="white"/>
-                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M12.21 2.98146C11.4396 2.65466 10.5604 2.65466 9.79005 2.98146L5.20871 4.92506C4.12255 5.38585 3.43422 6.40399 3.5005 7.49026C3.66198 10.1364 4.14481 11.9666 5.06269 13.4607C5.98172 14.9566 7.37667 16.1811 9.49324 17.5489C10.402 18.1362 11.6003 18.137 12.5065 17.5499C14.6269 16.1764 16.0112 14.9404 16.9216 13.4422C17.8318 11.9446 18.3072 10.1206 18.4831 7.50512C18.5566 6.41041 17.8665 5.38122 16.7731 4.91735L12.21 2.98146ZM9.2316 1.78208C10.3574 1.30446 11.6426 1.30445 12.7684 1.78208L17.3316 3.71797C18.9069 4.38631 19.9686 5.90183 19.8552 7.58915C19.6724 10.3092 19.1695 12.359 18.111 14.1008C17.0528 15.8422 15.4781 17.2112 13.2786 18.636C11.9048 19.5259 10.0953 19.523 8.72239 18.6358C6.53236 17.2205 4.94531 15.8642 3.87659 14.1246C2.80671 12.3831 2.29602 10.3228 2.12783 7.56658C2.02547 5.88909 3.08612 4.38926 4.65027 3.72568L9.2316 1.78208Z" fill="white"/>
-                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M14.2027 7.38112C14.4885 7.61979 14.5174 8.03438 14.2674 8.30714L11.6366 11.177C11.0713 11.7937 10.0976 11.8763 9.42728 11.3644L7.82052 10.1374C7.52403 9.91103 7.47596 9.49806 7.71315 9.21504C7.95035 8.93203 8.38299 8.88614 8.67948 9.11255L10.2862 10.3395C10.382 10.4127 10.5211 10.4009 10.6019 10.3128L13.2326 7.44286C13.4826 7.17009 13.917 7.14246 14.2027 7.38112Z" fill="black"/>
-                                        </svg>                                    
-                                    </span>
-                                    <p style="padding-left: 2px;">
-                                        <b>OTP Spam Preventer</b>
-                                    </p>
-                                </li>
+                                <li class="feature-snippet">
+                                    <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
+                                    <b><p class="m-mo-0">' . esc_html( mo_( 'Transaction Report.' ) ) . '</p></b>
+                                </li> 
                                 
                                 <li class="feature-snippet">
                                     <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
@@ -202,11 +194,7 @@ echo '
                                     <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
                                     <p class="m-mo-0">' . esc_html( mo_( 'OTP for selected countries.' ) ) . '</p>
                                 </li>   
-
-                                <li class="feature-snippet">
-                                    <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                    <p class="m-mo-0">' . esc_html( mo_( 'Transaction Report.' ) ) . '</p>
-                                </li>  
+ 
                             </ul>
                             <button class="w-full mo-button primary" onclick="mo_otp_upgradeform_submit(\'wp_email_verification_intranet_enterprise_plan\')">Upgrade Now</button>
                         </div>
@@ -482,7 +470,7 @@ echo '
 
                              <tr class="bg-white border-b">
                                 <th scope="row" class="mo-caption-pricing py-mo-2 px-mo-6">
-                                    WS Pro Contact Forms
+                                    WS Forms Pro - Contact form
                                 </th>
                                 <td class="flex flex-row items-center justify-center py-mo-2 px-mo-6">
                                     ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
@@ -693,10 +681,10 @@ echo '
                                     OTP Spam Preventer
                                 </th>
                                 <td class="flex flex-row items-center justify-center py-mo-2 px-mo-6">
-                                    ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
+                                    ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
                                 </td>
                                 <td class="py-mo-2 pl-mo-24">
-                                    ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
+                                    ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
                                 </td>
                                 <td class="py-mo-2 pl-mo-24">
                                     ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
@@ -981,6 +969,18 @@ echo '
                                     <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
                                     <p class="m-mo-0">Unlimited Validity on Transactions.</p>
                                 </li>
+
+                                <li class="flex gap-mo-2">
+                                    <span style="margin-top: 0.2rem; margin-left: -8px;" >
+                                        <svg width="22" height="21" viewBox="0 0 22 24" fill="none">
+                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M13.32 3.40738C12.4796 3.0339 11.5204 3.0339 10.68 3.40738L5.68223 5.62864C4.49733 6.15526 3.74642 7.31885 3.81873 8.5603C3.99488 11.5845 4.52161 13.6761 5.52293 15.3836C6.52551 17.0933 8.04727 18.4927 10.3563 20.0559C11.3477 20.7271 12.6549 20.728 13.6435 20.0571C15.9566 18.4874 17.4668 17.0747 18.46 15.3626C19.4529 13.651 19.9715 11.5664 20.1633 8.57728C20.2436 7.32618 19.4908 6.14997 18.298 5.61983L13.32 3.40738ZM10.0708 2.03667C11.299 1.49081 12.701 1.49081 13.9292 2.03667L18.9072 4.24911C20.6258 5.01293 21.784 6.74495 21.6603 8.67332C21.4608 11.782 20.9122 14.1246 19.7575 16.1152C18.603 18.1053 16.8852 19.67 14.4858 21.2983C12.9871 22.3153 11.0131 22.312 9.51534 21.298C7.12621 19.6805 5.39489 18.1305 4.229 16.1424C3.06186 14.1521 2.50475 11.7975 2.32127 8.64752C2.2096 6.73039 3.36667 5.0163 5.07302 4.25792L10.0708 2.03667Z" fill="#0A0B0B"/>
+                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M15.4939 8.43557C15.8056 8.70833 15.8372 9.18215 15.5644 9.49388L12.6945 12.7738C12.0778 13.4786 11.0156 13.5729 10.2843 12.9879L8.53148 11.5857C8.20803 11.3269 8.15559 10.8549 8.41435 10.5315C8.67311 10.208 9.14508 10.1556 9.46852 10.4143L11.2213 11.8166C11.3258 11.9002 11.4776 11.8867 11.5657 11.786L14.4356 8.50612C14.7083 8.19439 15.1822 8.16281 15.4939 8.43557Z" fill="#0A0B0B"/>
+                                        </svg>
+                                    </span>
+                                    <p style="padding-left: 2px;">
+                                        <b>OTP Spam Preventer</b>
+                                    </p>
+                                </li>
                                 
                                 <li class="feature-snippet">
                                     <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
@@ -1035,19 +1035,11 @@ echo '									</select>
                                     </span> 
                                     <p class="m-mo-0"><b>All features</b> from Custom & Twilio Gateway Plan</b></p>
                                 </li>
-
-                                <li class="flex gap-mo-2">
-                                    <span style="margin-top: 0.2rem; margin-left: -8px;" >
-                                        <svg width="22" height="21" viewBox="0 0 22 21" fill="none" >
-                                            <path d="M3 6C3 4.8 8.33333 2.83333 11 2C12 2 19 5 19 6C19 11 18 15 11 18C2 14.5 3 7.5 3 6Z" fill="white" stroke="white"/>
-                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M12.21 2.98146C11.4396 2.65466 10.5604 2.65466 9.79005 2.98146L5.20871 4.92506C4.12255 5.38585 3.43422 6.40399 3.5005 7.49026C3.66198 10.1364 4.14481 11.9666 5.06269 13.4607C5.98172 14.9566 7.37667 16.1811 9.49324 17.5489C10.402 18.1362 11.6003 18.137 12.5065 17.5499C14.6269 16.1764 16.0112 14.9404 16.9216 13.4422C17.8318 11.9446 18.3072 10.1206 18.4831 7.50512C18.5566 6.41041 17.8665 5.38122 16.7731 4.91735L12.21 2.98146ZM9.2316 1.78208C10.3574 1.30446 11.6426 1.30445 12.7684 1.78208L17.3316 3.71797C18.9069 4.38631 19.9686 5.90183 19.8552 7.58915C19.6724 10.3092 19.1695 12.359 18.111 14.1008C17.0528 15.8422 15.4781 17.2112 13.2786 18.636C11.9048 19.5259 10.0953 19.523 8.72239 18.6358C6.53236 17.2205 4.94531 15.8642 3.87659 14.1246C2.80671 12.3831 2.29602 10.3228 2.12783 7.56658C2.02547 5.88909 3.08612 4.38926 4.65027 3.72568L9.2316 1.78208Z" fill="white"/>
-                                            <path fill-rule="evenodd" clip-rule="evenodd" d="M14.2027 7.38112C14.4885 7.61979 14.5174 8.03438 14.2674 8.30714L11.6366 11.177C11.0713 11.7937 10.0976 11.8763 9.42728 11.3644L7.82052 10.1374C7.52403 9.91103 7.47596 9.49806 7.71315 9.21504C7.95035 8.93203 8.38299 8.88614 8.67948 9.11255L10.2862 10.3395C10.382 10.4127 10.5211 10.4009 10.6019 10.3128L13.2326 7.44286C13.4826 7.17009 13.917 7.14246 14.2027 7.38112Z" fill="black"/>
-                                        </svg>                                    
-                                    </span>
-                                    <p style="padding-left: 2px;">
-                                        <b>OTP Spam Preventer</b>
-                                    </p>
-                                </li>
+                                
+                                <li class="feature-snippet">
+                                    <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
+                                    <b><p class="m-mo-0">' . esc_html( mo_( 'Transaction Report.' ) ) . '</p></b>
+                                </li> 
                                 
                                 <li class="feature-snippet">
                                     <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
@@ -1067,12 +1059,7 @@ echo '									</select>
                                 <li class="feature-snippet">
                                     <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
                                     <p class="m-mo-0">' . esc_html( mo_( 'OTP for selected countries.' ) ) . '</p>
-                                </li>   
-
-                                <li class="feature-snippet">
-                                    <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                    <p class="m-mo-0">' . esc_html( mo_( 'Transaction Report.' ) ) . '</p>
-                                </li> 
+                                </li>
                             </ul>
                             <button class="w-full mo-button primary" onclick="mo_otp_upgradeform_submit(\'wp_email_verification_intranet_enterprise_plan\')">Upgrade Now</button>
                         </div>
@@ -1317,7 +1304,7 @@ echo '									</select>
 
                             <tr class="bg-white border-b">
                                 <th scope="row" class="mo-caption-pricing py-mo-2 px-mo-6">
-                                    WS Pro Contact Forms
+                                    WS Forms Pro - Contact form
                                 </th>
                                 <td class="flex flex-row items-center justify-center py-mo-2 px-mo-6">
                                     ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
@@ -1480,7 +1467,7 @@ echo '									</select>
                                     OTP Spam Preventer
                                 </th>
                                 <td class="flex flex-row items-center justify-center py-mo-2 px-mo-6">
-                                    ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
+                                    ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
                                 </td>
                                 <td class="py-mo-2 pl-mo-24">
                                     ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '

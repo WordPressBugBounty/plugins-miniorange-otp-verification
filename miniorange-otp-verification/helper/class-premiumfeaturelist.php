@@ -440,11 +440,11 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 
 			$this->premium_forms = array(
 				'ELEMENTOR_PRO'                 => array(
-					'name'      => 'Elementor Pro Forms ',
+					'name'      => 'Elementor Pro Forms',
 					'plan_name' => 'Enterprise Plan',
 				),
 				'USERREG'                       => array(
-					'name'      => 'User Registration Forms - WP Everest ',
+					'name'      => 'User Registration Forms - WP Everest',
 					'plan_name' => 'Twilio Gateway Plan',
 				),
 				'JETENGINEFORM'                 => array(
@@ -452,11 +452,11 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 					'plan_name' => 'Enterprise Plan',
 				),
 				'WCFM'                          => array(
-					'name'      => 'WooCommerce Frontend Manager Form (WCFM) ',
+					'name'      => 'WooCommerce Frontend Manager Form (WCFM)',
 					'plan_name' => 'Enterprise Plan',
 				),
 				'HOUZEZ_REG'                    => array(
-					'name'      => 'Houzez - Real Estate Theme ',
+					'name'      => 'Houzez - Real Estate Theme',
 					'plan_name' => 'Enterprise Plan',
 				),
 				'TUTOR_LMS_LOGIN'               => array(
@@ -464,23 +464,23 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 					'plan_name' => 'Twilio Gateway Plan',
 				),
 				'TUTOR_LMS_INSTRUCTOR_REG_FORM' => array(
-					'name'      => 'Tutor LMS Instructor Registration Form ',
+					'name'      => 'Tutor LMS Instructor Registration Form',
 					'plan_name' => 'Twilio Gateway Plan',
 				),
 				'TUTOR_LMS_STUDENT_REG_FORM'    => array(
-					'name'      => 'Tutor LMS Student Registration Form ',
+					'name'      => 'Tutor LMS Student Registration Form',
 					'plan_name' => 'Twilio Gateway Plan',
 				),
 				'CHECKOUT_WC_FORM'              => array(
-					'name'      => 'Checkout WC Form ',
+					'name'      => 'Checkout WC Form',
 					'plan_name' => 'WooCommerce OTP and Notification Plan',
 				),
 				'JET_BUILDER_FORM'              => array(
-					'name'      => 'JetFormBuilder Form by Crocoblock ',
+					'name'      => 'JetFormBuilder Form by Crocoblock',
 					'plan_name' => 'Enterprise Plan',
 				),
 				'MO_WS_FORMS'                   => array(
-					'name'      => 'WS Pro Contact Forms ',
+					'name'      => 'WS Forms - Contact Forms',
 					'plan_name' => 'Enterprise Plan',
 				),
 

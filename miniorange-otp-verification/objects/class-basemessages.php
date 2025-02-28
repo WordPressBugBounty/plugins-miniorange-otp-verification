@@ -299,7 +299,11 @@ if ( ! class_exists( 'BaseMessages' ) ) {
 		const ENTER_VERIFICATION_CODE              = 'ENTER_VERIFICATION_CODE';
 		const REMOVE_PLUS_MESSAGE                  = 'REMOVE_PLUS_MESSAGE';
 		const REMOVE_PLUS_MESSAGE_HEADER           = 'REMOVE_PLUS_MESSAGE_HEADER';
-
-
+		const USER_IS_BLOCKED                      = 'USER_IS_BLOCKED';
+		const LIMIT_OTP_SENT                       = 'LIMIT_OTP_SENT';
+		const USER_IS_BLOCKED_AJAX                 = 'USER_IS_BLOCKED_AJAX';
+		const ENTER_VALID_INT                      = 'ENTER_VALID_INT';
+		const ENTER_VALID_BLOCK_TIME               = 'ENTER_VALID_BLOCK_TIME';
+		const ERROR_OTP_VERIFY                     = 'ERROR_OTP_VERIFY';
 	}
 }

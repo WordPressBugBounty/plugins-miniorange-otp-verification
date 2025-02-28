@@ -22,5 +22,5 @@ $button_text              = $handler->get_button_text();
 $form_name                = $handler->get_form_name();
 $enter_otp_text           = $handler->get_enter_otp_field_text();
 
-require_once MOV_DIR . 'views/forms/visualformbuilder.php';
+require_once MOV_DIR . 'views/forms/movisualformbuilder.php';
 get_plugin_form_link( $handler->get_form_documents() );

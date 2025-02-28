@@ -20,5 +20,5 @@ $userpro_type_phone     = $handler->get_phone_html_tag();
 $userpro_type_email     = $handler->get_email_html_tag();
 $form_name              = $handler->get_form_name();
 
-require_once MOV_DIR . 'views/forms/userproregistrationform.php';
+require_once MOV_DIR . 'views/forms/mouserproregistrationform.php';
 get_plugin_form_link( $handler->get_form_documents() );

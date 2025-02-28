@@ -76,7 +76,7 @@ echo '	<form name="f" method="post" action="" id="sms-configuration-form">';
 											'class' => array(),
 											'id'    => array(),
 										),
-										'span'      => array(
+										'span'     => array(
 											'style' => array(),
 											'class' => array(),
 											'id'    => array(),

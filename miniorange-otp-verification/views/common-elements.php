@@ -324,7 +324,7 @@ function show_all_form_list( $current_form, $premium_forms, $count ) {
 		echo 'href="' . esc_url( $url ) . '" data-value="' . esc_attr( $current_form['name'] ) . '" >';
 		echo '<span class=" ">';
 		echo esc_attr( $count ) . '.&nbsp';
-		echo ' ' . esc_attr( $current_form['name'] ) . '<span class="tooltip">' . wp_kses( $premium_form_image, MoUtility::mo_allow_svg_array() ) . '
+		echo ' ' . esc_attr( $current_form['name'] ) . '&nbsp&nbsp<span class="tooltip">' . wp_kses( $premium_form_image, MoUtility::mo_allow_svg_array() ) . '
 	<span class="tooltiptext" style="background-color:#dcd9d9; color:black;">
 	<span class="header" style="color:red;"><b>' . esc_attr( $current_form['plan_name'] ) . esc_html( mo_( ' Feature ' ) ) . '</b></span><br>
 	<span class="body">' . esc_html( mo_( 'Check the Licencing plans to upgrade to Premium plan to unlock this feature.' ) ) . '</span>
@@ -509,8 +509,8 @@ function show_low_transaction_alert( $remaining_sms, $remaining_email, $transact
                     </div>
 
                 <div class="px-mo-5 ">';
-	if ( '0' == $remaining_sms && 'DEMO' == $license_plan ) {
-			echo '<div class="py-mo-2 rounded-lg ">
+	if ( 0 === (int) $remaining_sms && 'DEMO' === (string) $license_plan ) {
+			echo '<div class="py-mo-2 rounded-lg">
 					<div class="p-mo-4 text-xs font-semibold rounded-lg bg-blue-50" role="alert">
 						' . esc_html( MoMessages::showMessage( MoMessages::ZERO_TRANSACTION_ALERT ) ) . '
 						<div class="mo-popup-error-wrapper" role="alert">
@@ -521,7 +521,7 @@ function show_low_transaction_alert( $remaining_sms, $remaining_email, $transact
 						Contact us at <a style="cursor:pointer;" onClick="otpSupportOnClick(\'Hi! Could you please provide me with the 10 free SMS Transactions for testing purposes? \');"><u> otpsupport@xecurify.com</u></a> to avail one-time 10 free SMS transactions for testing purposes.
 					</div>';
 	} else {
-			echo '<div class="py-mo-2 rounded-lg ">
+			echo '<div class="py-mo-2 rounded-lg">
 					<div class="p-mo-4 text-xs font-semibold rounded-lg bg-blue-50" role="alert">
 						' . esc_html( MoMessages::showMessage( MoMessages::LOW_TRANSACTION_ALERT ) ) . '
 					<div class="mo-popup-error-wrapper" role="alert">

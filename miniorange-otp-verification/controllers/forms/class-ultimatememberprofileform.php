@@ -23,5 +23,5 @@ $um_acc_restrict_duplicates = $handler->restrict_duplicates() ? 'checked' : '';
 $form_name                  = $handler->get_form_name();
 $um_acc_button_text         = $handler->get_button_text();
 
-require_once MOV_DIR . 'views/forms/ultimatememberprofileform.php';
+require_once MOV_DIR . 'views/forms/moultimatememberprofileform.php';
 get_plugin_form_link( $handler->get_form_documents() );

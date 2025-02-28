@@ -19,7 +19,8 @@ use OTP\Helper\SessionUtils;
 use OTP\Objects\BaseActionHandler;
 use OTP\Objects\VerificationType;
 use OTP\Traits\Instance;
-
+use OTP\Helper\MoConstants;
+use ROC\Handler\ResendControlHandler;
 /**
  * This is the Custom Form class. This class handles all the
  * functionality related to Custom Form. It extends the FormHandler
@@ -99,7 +100,12 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 		 * @param array  $extra_data    an array containing all the extra data submitted by the user.
 		 */
 		private function handleOTPAction( $user_login, $user_email, $phone_number, $otp_type, $from_both, $extra_data ) {
-			do_action( 'mo_generate_or_resend_otp', $user_login, $user_email, $phone_number, $otp_type, $from_both, $extra_data );
+			if ( MoPHPSessions::get_session_var( 'mo_blocked_time' ) && time() - MoPHPSessions::get_session_var( 'mo_blocked_time' ) < get_mo_option( 'otp_timer', 'mo_rc_sms_' ) * 60 ) {
+				apply_filters( 'mo_add_script', '' );
+			}
+			if ( get_mo_option( 'otp_timer_enable', 'mo_rc_sms_' ) ) {
+				$this->check_if_user_is_blocked( $user_login, $otp_type );
+			}
 			global $phone_logic, $email_logic;
 			switch ( $otp_type ) {
 				case VerificationType::PHONE:
@@ -139,6 +145,42 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 			$url = MoPHPSessions::get_session_var( 'current_url' );
 			do_action( 'unset_session_variable' );
 			header( 'location:' . $url );
+		}
+
+		/**
+		 * This function handles if the user is blocked.
+		 *
+		 * @param string $user_login username submitted by the user.
+		 * @param string $otp_type   email or sms verification.
+		 */
+		private function check_if_user_is_blocked( $user_login, $otp_type ) {
+
+			$is_ajax_form       = apply_filters( 'is_ajax_form', false );
+			$initial_block_time = (int) MoPHPSessions::get_session_var( 'MO_OTP_BLOCKED_TIME' );
+
+			if ( ! $is_ajax_form && ! $initial_block_time ) {
+				MoPHPSessions::add_session_var( 'MO_OTP_BLOCKED_TIME', time() - 1 );
+			}
+			$block_time        = (int) MoPHPSessions::get_session_var( 'MO_OTP_BLOCKED_TIME' );
+			$cooldown_duration = get_mo_option( 'otp_timer', 'mo_rc_sms_' ) * 60;
+			$current_time      = ! $is_ajax_form ? time() - 1 : time();
+			$remaining_time    = max( 0, $cooldown_duration - ( $current_time - $block_time ) );
+
+			if ( $remaining_time <= 0 || $current_time === $block_time ) {
+				MoPHPSessions::unset_session( 'MO_OTP_BLOCKED_TIME' );
+				return;
+			}
+
+			$formatted_time = gmdate( 'i:s', $remaining_time );
+			$message        = MoMessages::showMessage( MoMessages::USER_IS_BLOCKED, array( 'remaining_time' => $formatted_time ) );
+			if ( ( $is_ajax_form || 'ajax_phone' === $user_login ) && 'external' !== $otp_type ) {
+				$message .= ResendControlHandler::mo_get_resend_timer_script( 'ajax_form', '', $remaining_time );
+				wp_send_json( MoUtility::create_json( $message, MoConstants::ERROR_JSON_TYPE ) );
+			} else {
+				ResendControlHandler::mo_get_timer_script( 'pop-up', '' );
+				miniorange_site_otp_validation_form( null, null, null, MoMessages::showMessage( MoMessages::USER_IS_BLOCKED, array( 'remaining_time' => $formatted_time ) ), null, null );
+			}
+
 		}
 
 

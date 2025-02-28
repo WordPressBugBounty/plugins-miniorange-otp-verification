@@ -15,5 +15,5 @@ $mo_social_login_enabled = (bool) $handler->is_form_enabled() ? 'checked' : '';
 $mo_social_login_hidden  = 'checked' === $mo_social_login_enabled ? '' : 'hidden';
 $form_name               = $handler->get_form_name();
 
-require_once MOV_DIR . 'views/forms/socialloginintegration.php';
+require_once MOV_DIR . 'views/forms/mosocialloginintegration.php';
 get_plugin_form_link( $handler->get_form_documents() );

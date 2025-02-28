@@ -22,5 +22,5 @@ $mrp_singlereg_both_type   = $handler->get_both_html_tag();
 $form_name                 = $handler->get_form_name();
 $mpr_single_anon_only      = $handler->bypass_for_logged_in_users() ? 'checked' : '';
 
-require_once MOV_DIR . 'views/forms/memberpresssinglecheckoutform.php';
+require_once MOV_DIR . 'views/forms/momemberpresssinglecheckoutform.php';
 get_plugin_form_link( $handler->get_form_documents() );

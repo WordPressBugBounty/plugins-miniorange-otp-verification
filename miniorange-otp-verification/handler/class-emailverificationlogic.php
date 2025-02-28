@@ -135,6 +135,7 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 		 * @param string $from_both     string has user enabled from both.
 		 */
 		public function start_otp_verification( $user_login, $user_email, $phone_number, $otp_type, $from_both ) {
+			do_action( 'mo_generate_or_resend_otp', $user_login, $user_email, $phone_number, $otp_type, $from_both );
 			$gateway = GatewayFunctions::instance();
 			$content = $gateway->mo_send_otp_token( 'EMAIL', $user_email, '' );
 			switch ( $content['status'] ) {

@@ -21,5 +21,5 @@ $upme_type_email  = $handler->get_email_html_tag();
 $upme_type_both   = $handler->get_both_html_tag();
 $form_name        = $handler->get_form_name();
 
-require_once MOV_DIR . 'views/forms/userprofilemadeeasyregistrationform.php';
+require_once MOV_DIR . 'views/forms/mouserprofilemadeeasyregistrationform.php';
 get_plugin_form_link( $handler->get_form_documents() );

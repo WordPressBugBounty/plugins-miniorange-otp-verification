@@ -33,5 +33,5 @@ $is_ajax_mode_enabled                   = $is_ajax_form ? 'checked' : '';
 $wc_button_text                         = $handler->get_button_text();
 $is_redirect_after_registration_enabled = $handler->isredirectToPageEnabled() ? 'checked' : '';
 
-require_once MOV_DIR . 'views/forms/woocommerceregistrationform.php';
+require_once MOV_DIR . 'views/forms/mowoocommerceregistrationform.php';
 get_plugin_form_link( $handler->get_form_documents() );

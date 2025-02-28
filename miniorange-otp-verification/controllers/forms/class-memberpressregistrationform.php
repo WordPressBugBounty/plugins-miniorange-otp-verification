@@ -22,5 +22,5 @@ $mrpreg_both_type   = $handler->get_both_html_tag();
 $form_name          = $handler->get_form_name();
 $mpr_anon_only      = $handler->bypass_for_logged_in_users() ? 'checked' : '';
 
-require_once MOV_DIR . 'views/forms/memberpressregistrationform.php';
+require_once MOV_DIR . 'views/forms/momemberpressregistrationform.php';
 get_plugin_form_link( $handler->get_form_documents() );

@@ -20,5 +20,5 @@ $edumalog_phone_field_key = $handler->get_phone_key_details();
 $form_name                = $handler->get_form_name();
 $edumalog_log_bypass      = $handler->byPassCheckForAdmins() ? 'checked' : '';
 
-require_once MOV_DIR . 'views/forms/edumalog.php';
+require_once MOV_DIR . 'views/forms/moedumalog.php';
 get_plugin_form_link( $handler->get_form_documents() );

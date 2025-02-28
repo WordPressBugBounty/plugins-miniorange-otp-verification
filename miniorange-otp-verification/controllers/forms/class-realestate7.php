@@ -19,5 +19,5 @@ $realestate_type_email   = $handler->get_email_html_tag();
 $form_name               = $handler->get_form_name();
 $verify_button_text      = $handler->get_verify_button_text();
 
-require_once MOV_DIR . 'views/forms/realestate7.php';
+require_once MOV_DIR . 'views/forms/morealestate7.php';
 get_plugin_form_link( $handler->get_form_documents() );

@@ -29,7 +29,7 @@ use OTP\Objects\TabDetails;
 use OTP\Objects\Tabs;
 use OTP\Traits\Instance;
 use OTP\Helper\MoAddonListContent;
-use OTP\Handler\CustomForm;
+use OTP\Handler\MoCustomForm;
 use OTP\Helper\MocURLCall;
 use OTP\Objects\BaseMessages;
 use OTP\Helper\MoVersionUpdate;
@@ -146,7 +146,7 @@ if ( ! class_exists( 'MoInit' ) ) {
 			ExternalPopup::instance();
 			UserChoicePopup::instance();
 			MoRegistrationHandler::instance();
-			CustomForm::instance();
+			MoCustomForm::instance();
 		}
 
 		/**

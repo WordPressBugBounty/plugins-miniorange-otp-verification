@@ -506,7 +506,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 				$this->fetchPhoneAndStartVerification( $username, $password, $phone_number, $req_data );
 			} elseif ( VerificationType::EMAIL === $otp_type ) {
 				$email = $user->data->user_email;
-				$this->startEmailVerification( $username, $email );
+				$this->startEmailVerification( $username, $email, $password, $req_data  );
 			}
 		}
 
@@ -621,9 +621,10 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 * @param array $email - email to send otp to.
 		 * @throws ReflectionException .
 		 */
-		private function startEmailVerification( $username, $email ) {
+		private function startEmailVerification( $username, $email, $password, $req_data  ) {
 			MoUtility::initialize_transaction( $this->form_session_var2 );
-			$this->send_challenge( $username, $email, null, null, VerificationType::EMAIL );
+			$redirect_to = isset( $req_data['redirect_to'] ) ? sanitize_text_field( $req_data['redirect_to'] ) : MoUtility::current_page_url();
+			$this->send_challenge( $username, $email, null, null, VerificationType::EMAIL, $password, $redirect_to, false );
 		}
 
 
@@ -790,9 +791,11 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 * @param array $phone - check the phone length.
 		 */
 		private function check_phone_length( $phone ) {
-			$phone_check = MoUtility::process_phone_number( $phone );
-			return strlen( $phone_check ) >= 5 ? $phone_check : '';
-
+			if( $phone ){
+				$phone_check = MoUtility::process_phone_number( $phone );
+				return strlen( $phone_check ) >= 5 ? $phone_check : '';
+			}
+			return;
 		}
 
 		/**

@@ -1,4 +1,5 @@
-﻿===  OTP Verification / Email Verification / SMS Verification / OTP Authentication / WooCommerce Notification ===
+﻿
+===  OTP Verification / Email Verification / SMS Verification / OTP Authentication / WooCommerce Notification ===
 Contributors: cyberlord92, geniuszealot
 Donate link: https://miniorange.com/
 Tags: OTP, OTP Verification, SMS Notifications, Phone Verification, Email Verification, Mobile Verification, Login with Phone, WooCommerce SMS, Order Status Updates, WooCommerce Notifications, Order Status Notifications
@@ -6,7 +7,7 @@ Tags: OTP, OTP Verification, SMS Notifications, Phone Verification, Email Verifi
 Requires at least: 3.5
 Tested up to: 6.7
 Requires PHP: 5.3.0
-Stable tag: 5.2.6
+Stable tag: 5.2.8
 License: MIT/Expat
 License URI: https://docs.miniorange.com/mit-license
 
@@ -218,6 +219,12 @@ Please email us at **otpsupport@xecurify.com/info@xecurify.com** . You can also 
 8. OTP Verification Plugin Settings
 
 == Changelog ==
+= 5.2.8 =
+* miniOrange WordPress OTP Verification
+ * Released Limit OTP Timer Addon to enhance security and prevent spamming attacks
+ * WooCommece Login form: Redirection fixes
+ * Fluent form: Hidden attribute issue
+
 = 5.2.6 =
 * miniOrange WordPress OTP Verification
  * Bug fixes - Gravity Forms
@@ -1020,6 +1027,12 @@ Please email us at **otpsupport@xecurify.com/info@xecurify.com** . You can also 
 * First version of plugin.
 
 == Upgrade Notice ==
+= 5.2.8 =
+* miniOrange WordPress OTP Verification
+ * Released Limit OTP Addon to enhance security and prevent spamming attacks
+ * WooCommece Login form: Redirection fixes
+ * Fluent form: Hidden attribute issue
+
 = 5.2.6 =
 * miniOrange WordPress OTP Verification
  * Bug fixes - Gravity Forms

@@ -75,15 +75,15 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 			}
 			if ( 'mo_hide_notice' !== $is_notice_closed ) {
 				if ( ( ! strcmp( MOV_TYPE, 'EnterpriseGatewayWithAddons' ) !== 0 ) && ( $current_url !== $license_page_url ) ) {
-					echo '<div class="mo_notice updated notice is-dismissible" >
-        <p style ="font-size:14px;"><img src="' . esc_url( MOV_FEATURES_GRAPHIC ) . '" class="show_mo_icon_form" style="width: 3%;margin-bottom: -1%;">&ensp;<b>We support OTP Verification on 50+ forms, PasswordLess Login, WooCommerce SMS Notifications for Admins, Vendors & Customers, Password Reset via OTP and many more.<br><br>AWS SNS, Twilio Gateway & more gateways supported! Want to know more? Check it out here : <a href=' . esc_url( $license_page_url ) . '>Plan Details</a>.</b></p>
-         </div>';
+					echo '	<div class="mo_notice updated notice is-dismissible" >
+								<p class="text-xs"><img src="' . esc_url( MOV_FEATURES_GRAPHIC ) . '" class="show_mo_icon_form" >&ensp;<b>We support OTP Verification on 50+ forms, PasswordLess Login, WooCommerce SMS Notifications for Admins, Vendors & Customers, Password Reset via OTP and many more.<br><br>AWS SNS, Twilio Gateway & more gateways supported! Want to know more? Check it out here : <a href=' . esc_url( $license_page_url ) . '>Plan Details</a>.</b></p>
+							</div>';
 				}
 			}
 
 		}
 
-        /**
+		/**
 		 * This function we used to update the value on click of hide admin alert.
 		 * This is the check for notification on click of close notification.
 		 */

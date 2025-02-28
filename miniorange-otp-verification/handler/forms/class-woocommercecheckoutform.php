@@ -355,112 +355,34 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 			if ( $this->guest_check_out_only && is_user_logged_in() ) {
 				return;
 			}
-			$mo_is_timer_on = get_mo_option( 'otp_timer_enable', 'mo_rc_sms_' ) ? "enabled" : "not_enabled";
-			$show_button    = $this->show_button ? 'show_button' : 'show_link';
 			$this->show_validation_button_or_text( 'miniorange_wc_popup_send_otp_token' );
 			$this->common_button_or_link_enable_disable_script();
 			echo ',$mo("#miniorange_wc_popup_send_otp_token, #mo_otp_verification_resend").off("click");
-					var resendAjaxFlag=true;
 					$mo("#miniorange_wc_popup_send_otp_token, #mo_otp_verification_resend ").click(function(o){
 					img = "<div class= \'moloader\'></div>";
-					jQuery("#wc_pop_up_message_box").empty().append(img).show();
+					jQuery("#mo_message_wc_pop_up").empty().append(img).show();
 					var requiredFields = areAllMandotryFieldsFilled();
 					var placeholder = "{{MO_OTP_TEXT}}";
 					$mo(".mo_customer_validation-login-container").show();
 					email=$mo("input[name=billing_email]").val(),
 					phone=$mo("#billing_phone").val(),
 					a=$mo("div.woocommerce");
-					var isTimerEnabled="' . esc_html( $mo_is_timer_on ) . '";
 					if(requiredFields=="")
 					{
 						a.addClass("processing").block({message:null,overlayCSS:{background:"#fff",opacity:.6}});
-						if (resendAjaxFlag) {
 							$mo.ajax({
 								url:"' . esc_url( site_url() ) . '/?option=miniorange-woocommerce-checkout",type:"POST",
 								data:{user_email:email,user_phone:phone},crossDomain:!0,dataType:"json",
 								success:function(o){
-									if (o.result == "success") {
-										if (isTimerEnabled === "enabled") {
-											setTimeout(function() {
-												resendAjaxFlag=false;
-												resendButtonSelector = $mo("#mo_otp_verification_resend");
-												hideSelector = "a[id=\'mo_otp_verification_resend\']";
-												sendButtonSelector = $mo("#miniorange_wc_popup_send_otp_token");
-												let elements = document.querySelectorAll(\'[name="otpTimer"]\');
-												elements.forEach(element => {
-													element.remove();
-												});
-												
-												timerHtml = "<p name=\'otpTimer\' hidden style=\'float:right;margin-top:5px\'></p>";
-												$mo(timerHtml).insertAfter(resendButtonSelector);
-												$mo(timerHtml).insertAfter(sendButtonSelector);
-										
-												if (resendButtonSelector.length > 0) {
-													buttonTimer(hideSelector);
-												}
-				
-												function buttonTimer(hideSelector) {
-													timeLeftUnblock = ' . esc_html( get_mo_option( 'otp_timer', 'mo_rc_sms_' ) * 60 ) . ';
-													displays = document.querySelectorAll(\'[name="otpTimer"]\');
-													displays.forEach(display => {
-													$mo(display).show();
-													$mo(hideSelector).hide();
-													$mo("#miniorange_wc_popup_send_otp_token").remove();
-													startTimer(timeLeftUnblock, display, hideSelector);
-													});
-													
-												}
-				
-												function startTimer(duration, display, hideSelector) {
-													var timer = duration, minutes, seconds;
-													var timerFunction = setInterval(function () {
-														minutes = parseInt(timer / 60, 10);
-														seconds = parseInt(timer % 60, 10);
-				
-														minutes = minutes < 10 ? "0" + minutes : minutes;
-														seconds = seconds < 10 ? "0" + seconds : seconds;
-				
-														display.textContent = minutes + ":" + seconds + " minutes.";
-														if (timer < 1) {
-															var show_button = "' . esc_html( $show_button ) . '";
-															var buttonHtml = "<div style=\'margin-bottom: 15px;\'><a href=\'#\' style=\'text-align:center;color:grey;pointer-events:initial;\' id=\'miniorange_wc_popup_send_otp_token\'>' . esc_html( mo_( $this->button_text ) ) . '</a></div>";
-															var inputHtml = "<input type=\'button\' class=\'button alt\' style=\'" 
-																+ ( ' . json_encode( $this->popup_enabled ) . ' ? \'float: right; line-height: 1; margin-right: 2em; padding: 1em 2em;\' : \'width: 100%; margin-bottom: 15px;\' )
-																+ "\' id=\'miniorange_wc_popup_send_otp_token\' value=\'' . esc_attr( mo_( $this->button_text ) ) . '\'>";
-
-															if (show_button !== "show_button") {
-																if ($mo("#miniorange_wc_popup_send_otp_token").length === 0) {
-																	$mo(".woocommerce-terms-and-conditions-wrapper").append(buttonHtml);
-																	$mo("#miniorange_wc_popup_send_otp_token").click(function(o){ $mo("#mo_otp_verification_resend").click();});
-																} else {
-																	$mo("#miniorange_wc_popup_send_otp_token").show();
-																}
-															} else {
-																if ($mo("#miniorange_wc_popup_send_otp_token").length === 0) {
-																	$mo(".woocommerce-terms-and-conditions-wrapper").append(inputHtml);
-																	$mo("#miniorange_wc_popup_send_otp_token").click(function(o){ $mo("#mo_otp_verification_resend").click();});
-																} else {
-																	$mo("#miniorange_wc_popup_send_otp_token").show();
-																}
-															}
-															resendAjaxFlag= true;
-															$mo(display).hide();
-															$mo(hideSelector).show();
-															clearInterval(timerFunction);
-														}
-														if (--timer < 0) {
-															timer = duration;
-														}
-													}, 1000);
-												}
-											}, 100);
-										}
-										$mo(".blockUI").hide();
-										jQuery("#wc_pop_up_message_box").text(o.message);
-										$mo(".digit-group input[type=\'text\']").val("");
-										$mo("input[name=\'order_verify\']").val("");
-										$mo("#popup_wc_mo").show();
+								if (o.result == "success") {
+									window.mo_wc_otp_initialized = true;
+									$mo(".blockUI").hide();
+									jQuery("#mo_message_wc_pop_up").text(o.message);
+									$mo(".digit-group input[type=\'text\']").val("");
+									$mo("input[name=\'order_verify\']").val("");
+									$mo("#popup_wc_mo").show();
 								} else {
+									window.mo_wc_otp_initialized = false;
 									$mo(".blockUI").hide();
 									var wc_error_div = `<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout">`+
 												`<ul class="woocommerce-error" role="alert">{{errors}}</ul>`+
@@ -472,8 +394,9 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 							},
 							error:function(o,e,m){}
 						});
-					}	
 					}else{
+					
+						window.mo_wc_otp_initialized = false;
 						$mo(".woocommerce-NoticeGroup-checkout").empty();
 						$mo("form.woocommerce-checkout").prepend(requiredFields);
 						$mo("html, body").animate({scrollTop: $mo(".woocommerce-error").offset().top}, 2000);
@@ -544,7 +467,7 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 		 */
 		public function load_mo_popup() {
 			$default_popup_handler = DefaultPopup::instance();
-			$message               = '<div id="wc_pop_up_message_box"></div>';
+			$message               = '<div id="mo_message_wc_pop_up"></div>';
 			$otp_type              = 'phone';
 			$from_both             = 'from_both';
 			$html_content          = '<div id="popup_wc_mo" style="display:none">' . apply_filters( 'mo_template_build', '', $default_popup_handler->get_template_key(), $message, $otp_type, $from_both ) . '</div>';

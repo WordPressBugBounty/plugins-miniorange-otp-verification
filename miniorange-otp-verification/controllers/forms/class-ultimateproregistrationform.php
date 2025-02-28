@@ -19,5 +19,5 @@ $umpro_type_phone        = $handler->get_phone_html_tag();
 $umpro_type_email        = $handler->get_email_html_tag();
 $form_name               = $handler->get_form_name();
 
-require_once MOV_DIR . 'views/forms/ultimateproregistrationform.php';
+require_once MOV_DIR . 'views/forms/moultimateproregistrationform.php';
 get_plugin_form_link( $handler->get_form_documents() );
