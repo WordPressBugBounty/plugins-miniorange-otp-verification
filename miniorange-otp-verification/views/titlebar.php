@@ -20,13 +20,34 @@ echo '
 			<h5 class="text-lg font-bold" style="flex: 1 1 0%;">' . esc_html( mo_( 'OTP Verification' ) ) . '</h5>';
 echo '      
 	        <div class="mo-otp-help-button static">';
-
-if ( $is_logged_in && ( 'MoGateway' === $gateway_type || $is_free_plugin ) ) {
-	echo '
-			<div class="flex text-white text-xs">
-				<div id="mo_check_transactions" class="mo-transaction-show ' . esc_attr( $active_class ) . '">
-					Email:' . esc_attr( $remaining_email ) . '  |  SMS: ' . esc_attr( $remaining_sms ) . '		
-					<button class="mo-refresh-btn ' . esc_attr( $active_class ) . '">
+if ( $is_logged_in ) {
+	if ( $mo_whatsapp_gateway_enabled ) {
+		if ( $is_free_plugin || ( 'MoGateway' === $gateway_type && $mo_smtp_enabled ) ) {
+			$mo_transactions = 'WhatsApp: ' . esc_attr( $remaining_whatsapp ) . '  |  SMS: ' . esc_attr( $remaining_sms ) . ' | Email: ' . esc_attr( $remaining_email );
+		} elseif ( 'MoGateway' === $gateway_type && ! $mo_smtp_enabled ) {
+			$mo_transactions = 'WhatsApp: ' . esc_attr( $remaining_whatsapp ) . '  |  SMS: ' . esc_attr( $remaining_sms );
+		} elseif ( 'MoGateway' !== $gateway_type && $mo_smtp_enabled ) {
+			$mo_transactions = 'WhatsApp: ' . esc_attr( $remaining_whatsapp ) . '  | Email: ' . esc_attr( $remaining_email );
+		} else {
+			$mo_transactions = 'WhatsApp: ' . esc_attr( $remaining_whatsapp );
+		}
+	} elseif ( $is_free_plugin ) {
+		$mo_transactions = 'SMS: ' . esc_attr( $remaining_sms ) . ' | Email: ' . esc_attr( $remaining_email );
+	} elseif ( 'MoGateway' === $gateway_type ) {
+		if ( $mo_smtp_enabled ) {
+			$mo_transactions = 'SMS: ' . esc_attr( $remaining_sms ) . ' | Email: ' . esc_attr( $remaining_email );
+		} else {
+			$mo_transactions = 'SMS: ' . esc_attr( $remaining_sms );
+		}
+	} elseif ( $mo_smtp_enabled ) {
+		$mo_transactions = 'Email: ' . esc_attr( $remaining_email );
+	}
+}
+$hidden = is_null( $mo_transactions ) ? 'hidden' : '';
+echo '<div class="flex text-white text-xs ' . esc_attr( $hidden ) . '">
+	<div id="mo_check_transactions" class="mo-transaction-show ' . esc_attr( $active_class ) . '">';
+echo esc_html( $mo_transactions );
+echo '				<button class="mo-refresh-btn ' . esc_attr( $active_class ) . '">
 						<svg width="18" height="18" viewBox="0 0 512 512">
 							<path d="M320,146s24.36-12-64-12A160,160,0,1,0,416,294" style="fill:none;stroke:#000;stroke-linecap:square;stroke-miterlimit:10;stroke-width:32px"/>
 							<polyline points="256 58 336 138 256 218" style="fill:none;stroke:#000;stroke-linecap:square;stroke-miterlimit:10;stroke-width:32px"/>
@@ -34,11 +55,9 @@ if ( $is_logged_in && ( 'MoGateway' === $gateway_type || $is_free_plugin ) ) {
 					</button>
 				</div>
 				<div> 
-					<a href="' . esc_url( MOV_PORTAL ) . '/initializePayment?requestOrigin=wp_otp_verification_basic_plan" target="_blank" type="button" class="mo-button recharge">Recharge</a>
+					<a href="' . esc_url( MOV_PORTAL . '/initializePayment?requestOrigin=wp_otp_verification_basic_plan' ) . '" target="_blank" type="button" class="mo-button recharge">Recharge</a>
 				</div>
-			</div>';
-}
-echo '
+			</div>
         </div>
     </div>
 	<form id="mo_check_transactions_form" style="display:none;" action="" method="post">';
@@ -68,6 +87,6 @@ if ( $is_logged_in && is_array( $modal_notice ) && $remaining_sms + $remaining_e
 if ( 'mo_hide_sms_notice' !== $is_sms_notice_closed ) {
 	echo '<div  style="border: none;"
 						class="notice mo_sms_notice is-dismissible font-normal rounded-smooth bg-blue-50 py-mo-3">
-						<h2>Due to recent changes in the SMS Delivery rules by the government of some countries like Singapore, Vietnam, etc , you might face issues with SMS Delivery. In this case, contact us at <a style="cursor:pointer;" class="text-green-800 font-semibold" onclick="otpSupportOnClick();">otpsupport@xecurify.com</a>.</h2>
+						<h2>' . esc_html( mo_( 'Due to recent changes in the SMS Delivery rules by the government of some countries like Singapore, Vietnam, Italy etc., you might face issues with SMS Delivery. In this case, contact us at ' ) ) . '<a style="cursor:pointer;" class="text-green-800 font-semibold" onclick="otpSupportOnClick(\'Hi! My target country is Singapore/ Italy/ Vietnam. Please share the process to enable OTPs for these countries.\');">otpsupport@xecurify.com</a>.</h2>
 		  </div>';
 }

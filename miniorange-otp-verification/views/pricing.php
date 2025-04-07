@@ -63,9 +63,15 @@ echo '
                 <path fill="#FFCA28" d="M17.346 5.251c.43-.41.873-.271.985.31l2.334 13.58-7.742 4.648c-.272.152-.992.211-.992.211s-.655-.08-.906-.218l-7.689-4.528 14.01-14.003z"></path>
                 <path fill="#FFA000" d="m10.086 6.408-6.75 12.846L6.344.477c.113-.582.443-.641.74-.126l3.002 6.057z"></path>
             </svg>
-            <span>Firebase Gateway Plan</span>
+            <span>' . esc_html( mo_( 'Firebase Gateway Plan' ) ) . '</span>
         </a>
-        <a class="mo-button secondary medium" href="#otp_pay_method">Supported Payments Methods</a>
+        <a class="mo-button secondary medium" href="#otp_pay_method">' . esc_html( mo_( 'Payments Methods' ) ) . '</a>
+         <a class="mo-button secondary medium flex" href="#mo_whatsapp_otp_notif_marketing" style="padding-left: 2rem;">
+            <svg viewBox="0 0 58 27" id="whatsapp" height="50px" width="40px" class="flex-2" style="position: absolute; margin-right: 4rem;">
+                <path fill="#25D366" d="M12 3a9 9 0 00-9 9c0 1.75.51 3.37 1.37 4.75l-1.08 3.53c-.08.27 0 .55.19.75.19.2.49.27.75.19l3.78-1.16.006-.002A8.962 8.962 0 0012 21a9 9 0 000-18zM6.01 16.5c-.41-.55-.76-1.15-1.01-1.81v-.02c-.33-.83-.5-1.74-.5-2.68C4.5 7.86 7.86 4.5 12 4.5c4.14 0 7.5 3.36 7.5 7.5 0 4.14-3.36 7.5-7.5 7.5a7.6 7.6 0 01-1.59-.19l-.015.005a7.375 7.375 0 01-2.215-.875v-.01l-1.84.56-1.21.37.36-1.16.52-1.7zm2.14-8.54a.89.89 0 01.63-.27l.01-.02c.083 0 .163.003.24.005.072.003.142.005.21.005.17.01.35.02.52.4.11.241.289.688.438 1.06.123.305.225.56.252.61.05.11.09.24.01.39l-.028.054c-.063.12-.107.202-.212.316-.04.043-.081.09-.122.137a3.417 3.417 0 01-.247.262c-.108.107-.228.227-.101.451.13.22.59.96 1.27 1.57a6.162 6.162 0 001.692 1.072c.07.032.127.057.168.078.23.12.37.1.51-.05.13-.14.59-.64.75-.86.16-.22.32-.18.53-.1.21.08 1.35.64 1.58.76l.133.068c.155.078.26.13.307.202.05.09.04.54-.16 1.06-.21.52-1.17 1.01-1.6 1.04a5.012 5.012 0 00-.124.01c-.397.038-.893.085-2.666-.62-2.2-.876-3.617-2.986-3.889-3.39a2.432 2.432 0 00-.051-.074c-.144-.195-.92-1.246-.9-2.316.019-1.035.56-1.565.807-1.808l.043-.042z"></path>
+           </svg>
+            <span>' . esc_html( mo_( 'WhatsApp' ) ) . '</span>
+        </a>
     </div>
     <div class="text-center pt-mo-3 pl-mo-6" >
         <p>The plans depend on your chosen SMS Gateway. Discover more about <a href="https://faq.miniorange.com/knowledgebase/use-own-gateway-plugin/" target="_blank"><b><u>SMS Gateway</u></b></a></p>
@@ -170,10 +176,10 @@ echo '
                                     <p class="m-mo-0"><b>All features</b> from Custom & Twilio Gateway Plan</p>
                                 </li>
 
-                                <li class="feature-snippet">
+                                 <li class="feature-snippet">
                                     <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
                                     <b><p class="m-mo-0">' . esc_html( mo_( 'Transaction Report.' ) ) . '</p></b>
-                                </li> 
+                                </li>
                                 
                                 <li class="feature-snippet">
                                     <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
@@ -212,20 +218,24 @@ echo '
                             
                             <ul class="mt-mo-4 grow">
                                 <li class="feature-snippet">
-                                    <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                    <p class="m-mo-0">WooCommerce order status notifications.</p>
-                                </li> 
-                                <li class="feature-snippet">
-                                    <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                    <p class="m-mo-0">WooCommerce stock notifications.</p>
+                                    <span class="mt-mo-2.5" style="margin-left:-6px;margin-top:-10px;margin-right:8px;margin-bottom:5px;">
+                                        <svg viewBox="0 0 58 27" id="whatsapp" height="50px" width="50px" class="flex-2" style="position: absolute; margin-right: 4rem;">
+                                                <path fill="#25D366" d="M12 3a9 9 0 00-9 9c0 1.75.51 3.37 1.37 4.75l-1.08 3.53c-.08.27 0 .55.19.75.19.2.49.27.75.19l3.78-1.16.006-.002A8.962 8.962 0 0012 21a9 9 0 000-18zM6.01 16.5c-.41-.55-.76-1.15-1.01-1.81v-.02c-.33-.83-.5-1.74-.5-2.68C4.5 7.86 7.86 4.5 12 4.5c4.14 0 7.5 3.36 7.5 7.5 0 4.14-3.36 7.5-7.5 7.5a7.6 7.6 0 01-1.59-.19l-.015.005a7.375 7.375 0 01-2.215-.875v-.01l-1.84.56-1.21.37.36-1.16.52-1.7zm2.14-8.54a.89.89 0 01.63-.27l.01-.02c.083 0 .163.003.24.005.072.003.142.005.21.005.17.01.35.02.52.4.11.241.289.688.438 1.06.123.305.225.56.252.61.05.11.09.24.01.39l-.028.054c-.063.12-.107.202-.212.316-.04.043-.081.09-.122.137a3.417 3.417 0 01-.247.262c-.108.107-.228.227-.101.451.13.22.59.96 1.27 1.57a6.162 6.162 0 001.692 1.072c.07.032.127.057.168.078.23.12.37.1.51-.05.13-.14.59-.64.75-.86.16-.22.32-.18.53-.1.21.08 1.35.64 1.58.76l.133.068c.155.078.26.13.307.202.05.09.04.54-.16 1.06-.21.52-1.17 1.01-1.6 1.04a5.012 5.012 0 00-.124.01c-.397.038-.893.085-2.666-.62-2.2-.876-3.617-2.986-3.889-3.39a2.432 2.432 0 00-.051-.074c-.144-.195-.92-1.246-.9-2.316.019-1.035.56-1.565.807-1.808l.043-.042z"></path>
+                                        </svg>
+                                    </span>    
+                                    <p class="m-mo-0">' . esc_html( mo_( 'OTP & Notifications Via WhatsApp.' ) ) . '</p>
                                 </li>  
                                 <li class="feature-snippet">
                                     <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                    <p class="m-mo-0">WCFM Form Support.</p>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'WooCommerce order status notifications.' ) ) . '</p>
                                 </li> 
-                                    <li class="feature-snippet">
+                                <li class="feature-snippet">
                                     <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                    <p class="m-mo-0">WCFM and Dokan vendor notifications.</p>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'WooCommerce stock notifications.' ) ) . '</p>
+                                </li>  
+                                <li class="feature-snippet">
+                                    <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'WCFM and Dokan vendor notifications.' ) ) . '</p>
                                 </li>                       
                             </ul>
                             <a class="w-full mo-button primary" href="https://wordpress.org/plugins/miniorange-sms-order-notification-otp-verification/" target="_blank">Try The Free Plan Now!</a><br>
@@ -486,6 +496,24 @@ echo '
                                 </td>
                             </tr>
 
+                             <tr class="bg-white border-b">
+                                <th scope="row" class="mo-caption-pricing py-mo-2 px-mo-6">
+                                    ' . esc_html( mo_( 'Fluent Conversational Form' ) ) . '
+                                </th>
+                                <td class="flex flex-row items-center justify-center py-mo-2 px-mo-6">
+                                    ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                            </tr>
+
 
                             <tr>
                                 <th scope="row" class="py-mo-4 px-mo-6 text-md" style="background-color: #ecf0ff; text-align: left; padding-left: 2rem;">
@@ -640,6 +668,25 @@ echo '
                                 <th scope="row" class="py-mo-4 px-mo-6 " style="background-color: #ecf0ff;">
                                 </th>
 							</tr>
+
+                            <tr class="bg-white border-b">
+                                <th scope="row" class="mo-caption-pricing py-mo-2 px-mo-6 ">
+                                WhatsApp OTP & Notifications 
+                                </th>
+                                <td class="flex flex-row items-center justify-center py-mo-2 px-mo-6">
+                                    ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                            </tr>
+
                             <tr class="bg-white border-b">
                                 <th scope="row" class="mo-caption-pricing py-mo-2 px-mo-6 ">
                                 WooCommerce Order Status SMS Notifications 
@@ -1035,8 +1082,8 @@ echo '									</select>
                                     </span> 
                                     <p class="m-mo-0"><b>All features</b> from Custom & Twilio Gateway Plan</b></p>
                                 </li>
-                                
-                                <li class="feature-snippet">
+
+                                 <li class="feature-snippet">
                                     <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
                                     <b><p class="m-mo-0">' . esc_html( mo_( 'Transaction Report.' ) ) . '</p></b>
                                 </li> 
@@ -1059,7 +1106,8 @@ echo '									</select>
                                 <li class="feature-snippet">
                                     <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
                                     <p class="m-mo-0">' . esc_html( mo_( 'OTP for selected countries.' ) ) . '</p>
-                                </li>
+                                </li>   
+
                             </ul>
                             <button class="w-full mo-button primary" onclick="mo_otp_upgradeform_submit(\'wp_email_verification_intranet_enterprise_plan\')">Upgrade Now</button>
                         </div>
@@ -1077,25 +1125,29 @@ echo '									</select>
                             
                             <ul class="mt-mo-4 grow">
                                 <li class="feature-snippet">
+                                    <span class="mt-mo-2.5" style="margin-left:-6px;margin-top:-10px;margin-right:8px;margin-bottom:5px;">
+                                        <svg viewBox="0 0 58 27" id="whatsapp" height="50px" width="50px" class="flex-2" style="position: absolute; margin-right: 4rem;">
+                                                <path fill="#25D366" d="M12 3a9 9 0 00-9 9c0 1.75.51 3.37 1.37 4.75l-1.08 3.53c-.08.27 0 .55.19.75.19.2.49.27.75.19l3.78-1.16.006-.002A8.962 8.962 0 0012 21a9 9 0 000-18zM6.01 16.5c-.41-.55-.76-1.15-1.01-1.81v-.02c-.33-.83-.5-1.74-.5-2.68C4.5 7.86 7.86 4.5 12 4.5c4.14 0 7.5 3.36 7.5 7.5 0 4.14-3.36 7.5-7.5 7.5a7.6 7.6 0 01-1.59-.19l-.015.005a7.375 7.375 0 01-2.215-.875v-.01l-1.84.56-1.21.37.36-1.16.52-1.7zm2.14-8.54a.89.89 0 01.63-.27l.01-.02c.083 0 .163.003.24.005.072.003.142.005.21.005.17.01.35.02.52.4.11.241.289.688.438 1.06.123.305.225.56.252.61.05.11.09.24.01.39l-.028.054c-.063.12-.107.202-.212.316-.04.043-.081.09-.122.137a3.417 3.417 0 01-.247.262c-.108.107-.228.227-.101.451.13.22.59.96 1.27 1.57a6.162 6.162 0 001.692 1.072c.07.032.127.057.168.078.23.12.37.1.51-.05.13-.14.59-.64.75-.86.16-.22.32-.18.53-.1.21.08 1.35.64 1.58.76l.133.068c.155.078.26.13.307.202.05.09.04.54-.16 1.06-.21.52-1.17 1.01-1.6 1.04a5.012 5.012 0 00-.124.01c-.397.038-.893.085-2.666-.62-2.2-.876-3.617-2.986-3.889-3.39a2.432 2.432 0 00-.051-.074c-.144-.195-.92-1.246-.9-2.316.019-1.035.56-1.565.807-1.808l.043-.042z"></path>
+                                        </svg>
+                                    </span>    
+                                    <p class="m-mo-0">' . esc_html( mo_( 'OTP & Notifications Via WhatsApp.' ) ) . '</p>
+                                </li>                               
+                                <li class="feature-snippet">
                                     <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                    <p class="m-mo-0">WooCommerce order status notifications.</p>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'WooCommerce order status notifications.' ) ) . '</p>
                                 </li>  
                                 <li class="feature-snippet">
                                     <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                    <p class="m-mo-0">WooCommerce stock notifications.</p>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'WooCommerce stock notifications.' ) ) . '</p>
                                 </li>  
                                 <li class="feature-snippet">
                                     <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                    <p class="m-mo-0">WCFM Form Support.</p>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'WCFM Form Support.' ) ) . '</p>
                                 </li> 
                                 <li class="feature-snippet">
                                     <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                    <p class="m-mo-0">Dokan vendor notifications.</p>
-                                </li> 
-                                <li class="feature-snippet">
-                                    <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                    <p class="m-mo-0">WCFM notifications.</p>
-                                </li>                        
+                                    <p class="m-mo-0">' . esc_html( mo_( 'WCFM & Dokan vendor notifications.' ) ) . '</p>
+                                </li>                       
                             </ul>
                             <a class="w-full mo-button primary" href="https://wordpress.org/plugins/miniorange-sms-order-notification-otp-verification/" target="_blank">Try The Free Plan Now!</a><br>
                             <button class="w-full mo-button primary" onclick="mo_otp_upgradeform_submit(\'wp_email_verification_intranet_woocommerce_plan\')">Upgrade Now</button>
@@ -1317,6 +1369,21 @@ echo '									</select>
                                 </td>
                             </tr>
 
+                            <tr class="bg-white border-b">
+                                <th scope="row" class="mo-caption-pricing py-mo-2 px-mo-6">
+                                    ' . esc_html( mo_( 'Fluent Conversational Form' ) ) . '
+                                </th>
+                                <td class="flex flex-row items-center justify-center py-mo-2 px-mo-6">
+                                    ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                            </tr>
+
                             <tr>
                                 <th scope="row" class="py-mo-4 px-mo-6 text-md" style="background-color: #ecf0ff; text-align: left; padding-left: 2rem;">
                                     Gateways Supported<br>
@@ -1431,6 +1498,21 @@ echo '									</select>
                                 <th scope="row" class="py-mo-4 px-mo-6 " style="background-color: #ecf0ff;">
                                 </th>
 							</tr>
+
+                            <tr class="bg-white border-b">
+                                <th scope="row" class="mo-caption-pricing py-mo-2 px-mo-6 ">
+                                WhatsApp OTP & Notifications 
+                                </th>
+                                <td class="flex flex-row items-center justify-center py-mo-2 px-mo-6">
+                                    ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $red_cross, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                                <td class="py-mo-2 pl-mo-24">
+                                    ' . wp_kses( $checkmark, MoUtility::mo_allow_svg_array() ) . '
+                                </td>
+                            </tr>
 
                             <tr class="bg-white border-b">
                                 <th scope="row" class="mo-caption-pricing py-mo-2 px-mo-6 ">
@@ -1793,7 +1875,59 @@ MoAddonListContent::show_addons_content();
 echo '
            
     </div>
-</div>
+</div>';
+
+echo '<div class="m-mo-4 border dark:border-gray-700" id="mo_whatsapp_otp_notif_marketing" >
+                <div class="mo-header">
+                    <div class="flex flex-1 gap-mo-4">
+                        <img src="' . esc_url( MOV_WHATSAPP ) . '" style="height:40px;width:40px;" >
+                        <p class="mo-heading flex-1 mt-mo-2">' . esc_html( mo_( 'OTP & Notifications Via WhatsApp' ) ) . '</p>
+                    </div>
+                    <a class="mo-button inverted flex-2"  onclick="otpSupportOnClick(\'Hi! I am interested in using WhatsApp for my website, can you please schedule a demo?\');">Get Demo</a><br>
+                </div>
+                <div class="py-mo-8">
+                    <div class="px-mo-8 py-mo-3">' . esc_html( mo_( 'We provide OTP & Notifications via WhatsApp in our plugin. Use your own buisness account or miniOrange business account for sending the WhatsApp OTPs & Notifications.' ) ) . '
+                    </div>
+                    <div class="flex ml" style="margin-left:3%;">
+                            <div class="flex-1 p-mo-3">
+                                <li class="feature-snippet">
+                                    <span class="mt-mo-1.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'OTP Verification on ' ) ) . '<a class="mo_links" href="https://plugins.miniorange.com/otp-verification-forms" target="_blank">' . esc_html( mo_( ' 60+ Forms' ) ) . '</a></p>
+                                </li>
+                                <li class="feature-snippet">
+                                    <span class="mt-mo-1.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'WooCommerce Order Status Notifications to Admin, Customer, Vendors' ) ) . '</p>
+                                </li>
+                                <li class="feature-snippet">
+                                    <span class="mt-mo-1.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'Use your own Facebook Meta Business account' ) ) . '</p>
+                                </li>
+                                <li class="feature-snippet">
+                                    <span class="mt-mo-1.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'miniOrange Buisness Account Supported' ) ) . '</p>
+                                </li>
+                            </div>
+                            <div class="flex-1 p-mo-3">
+                                <li class="feature-snippet">
+                                    <span class="mt-mo-1.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'Fallback to SMS for non-WhatsApp numbers' ) ) . '</p>
+                                </li>
+                                <li class="feature-snippet">
+                                    <span class="mt-mo-1.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'miniOrange Login and Registration form' ) ) . '</p>
+                                </li>
+                                <li class="feature-snippet">
+                                    <span class="mt-mo-1.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'Custom Redirection on Login Form & Registration Form' ) ) . '</p>
+                                </li>
+                                <li class="feature-snippet">
+                                    <span class="mt-mo-1.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'WhatsApp Transaction Logs' ) ) . '</p>
+                                </li>
+                            </div>
+                    </div>
+                </div>
+            </div>
             <div class="m-mo-4 border dark:border-gray-700" id="mo_registration_firebase_layout" >
                 <div class="mo-header">
                     <div class="flex flex-1 gap-mo-4">
@@ -1803,49 +1937,36 @@ echo '
                     <a href="https://wordpress.org/plugins/miniorange-firebase-sms-otp-verification/" class="mo-button inverted flex-2" target="_blank" id="mo_firebase_plan_download">Get this Plugin</a>
                 </div>
                 <div class="py-mo-8">
-                    <div class="px-mo-8">We have a seperate plugin for the OTP Verification using the Firebase Gateway. Use Firebase as your custom SMS gateway with <a href="https://firebase.google.com/pricing"target="_blank" class="font-bold">10K free transactions</a> 
-                        <span class="tooltip">
-                            <span class="dashicons dashicons-info"></span>
-                            <span class="tooltiptext" style="background-color:#EFF6FF; color:black; margin-top:20px; left: 50%; transform: translateX(-70%);">
-                                <span class="body"><b>This may change based on the pricing of Firebase Gateway.</b></span>
-                            </span>
-                        </span> to send One Time Passcodes (OTP).
+                    <div class="px-mo-8 py-mo-3">' . esc_html( mo_( ' We have a seperate plugin for the OTP Verification using the Firebase Gateway. Use Firebase as your custom SMS gateway to send One Time Passcodes (OTP).' ) ) . '
                     </div>
-                    <div class="mo_firebase_feature_container" style="display:flex;border-radius: 7px;margin-left: 3%;line-height: 175%;">
-                            <div class="flex-1 p-mo-8">
+                    <div id="mo_firebase_feature_container" <div class="flex ml" style="margin-left:3%;">
+                            <div class="flex-1 p-mo-3">
                                 <li class="feature-snippet">
                                     <span class="mt-mo-1.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                    <p class="m-mo-0">Login With Phone</p>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'Login With Phone' ) ) . '</p>
                                 </li>
                                 <li class="feature-snippet">
                                     <span class="mt-mo-1.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                    <p class="m-mo-0">Custom Redirection on Login Form & Registration Form</p>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'OTP Verification on Registration Form' ) ) . '</p>
                                 </li>
                                 <li class="feature-snippet">
                                     <span class="mt-mo-1.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                    <p class="m-mo-0">Custom CSS for Login and Registration Forms</p>
-                                </li>
-                                <li class="feature-snippet">
-                                    <span class="mt-mo-1.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                    <p class="m-mo-0">Country Code Dropdown with Flag</p>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'Custom CSS for Login and Registration Forms' ) ) . '</p>
                                 </li>
                             </div>
-                            <div class="flex-1 p-mo-8">
+                            <div class="flex-1 p-mo-3">
                                 <li class="feature-snippet">
                                     <span class="mt-mo-1.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                    <p class="m-mo-0">OTP Verification on WooCommerce Login, Registration and Checkout Form</p>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'OTP Verification on WooCommerce Login, Registration and Checkout Form' ) ) . '</p>
                                 </li>
                                 <li class="feature-snippet">
                                     <span class="mt-mo-1.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                    <p class="m-mo-0">OTP Verification on Ultimate Member and Gravity Form</p>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'OTP Verification on Ultimate Member and Gravity Form' ) ) . '</p>
                                 </li>
+                                
                                 <li class="feature-snippet">
                                     <span class="mt-mo-1.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                    <p class="m-mo-0">OTP Verification on Registration Form</p>
-                                </li>
-                                <li class="feature-snippet">
-                                    <span class="mt-mo-1.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                    <p class="m-mo-0">User role Selection on registration</p>
+                                    <p class="m-mo-0">' . esc_html( mo_( 'User role Selection on registration' ) ) . '</p>
                                 </li>
                             </div>
                     </div>
@@ -1893,7 +2014,7 @@ echo '
             <p class="mo-heading flex-1 mt-mo-2">' . esc_html( mo_( 'Refund and Privacy Policy' ) ) . '</p>        
         </div>
         <div class="mo_otp_note px-mo-8 pb-mo-4 mx-mo-16 my-mo-4">
-            <p><b>Note :</b> Please read the <i><u><a class="font-semibold" href="https://plugins.miniorange.com/end-user-license-agreement" target="_blank">Refund Policy</a></u></i>  and <i><u><a class="font-semibold" href="https://plugins.miniorange.com/wp-content/uploads/2023/08/Plugins-Privacy-Policy.pdf" target="_blank">Plugin Privacy Policy</a></u></i> before upgrading to any plan.</p>
+            <p><b>' . esc_html( mo_( 'Note ' ) ) . ':</b>' . esc_html( mo_( ' Please read the ' ) ) . '<i><u><a class="font-semibold" href="https://plugins.miniorange.com/end-user-license-agreement#v5-software-warranty-refund-policy" target="_blank">' . esc_html( mo_( 'Refund Policy' ) ) . '</a></u></i>  and <i><u><a class="font-semibold" href="https://plugins.miniorange.com/wp-content/uploads/2023/08/Plugins-Privacy-Policy.pdf" target="_blank">' . esc_html( mo_( 'Plugin Privacy Policy' ) ) . '</a></u></i>' . esc_html( mo_( ' before upgrading to any plan.' ) ) . '</p>
         </div>
     </div>
     
@@ -1957,5 +2078,3 @@ echo '
             otpSupportOnClick(queryReplaced);
         }
     </script>';
-
-

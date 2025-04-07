@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use OTP\Helper\MoUtility;
+use OTP\Helper\MoMessages;
 echo '
 			<div class="border-b flex flex-col gap-mo-6 px-mo-4" id="mo-sms-configuration">
 				<div class="w-full flex m-mo-4">
@@ -40,12 +41,15 @@ echo '
 				<div class="w-full flex m-mo-4">
 					<div class="flex-1">
 						<h5 class="mo-title">' . esc_html( $email_title ) . '</h5>
-						<p class="mo-caption mt-mo-2 mr-mo-8">' . esc_html( $email_note ) . '</p>
-						<p class="mt-mo-4 pr-mo-8" style="font-size:11px;" >
+						<p class="mo-caption mt-mo-2 mr-mo-8">' . esc_html( $email_note ) . '</p>';
+if ( ! $smtp_type ) {
+	echo '				<p class="mt-mo-4 pr-mo-8" style="font-size:11px;" >
 							' . wp_kses( mo_( "<b>Note</b>: You can configure your SMTP gateway from any third party SMTP plugin( For e.g <u><i><a href='https://wordpress.org/plugins/wp-mail-smtp/' target='_blank' >WP SMTP</a></i></u> ) or php.ini file.<br><b>You don't need to configure any extra settings in our plugin.</b>" ), MoUtility::mo_allow_html_array() ) . '
-						</p>
-					</div>
-					<div class="flex-1 pr-mo-4 pl-mo-2 pb-mo-4" id="email">
+						</p>';
+}
+	echo '			</div>';
+if ( ! $smtp_type ) {
+	echo '			<div class="flex-1 pr-mo-4 pl-mo-2 pb-mo-4" id="email">
 						<div class="flex-1 flex my-mo-8 gap-mo-4">
 							<div class="mo-input-wrapper">
 								<label class="mo-input-label">' . esc_html( $from_id ) . '</label>
@@ -63,8 +67,21 @@ echo '
 
 							wp_editor( $content, $editor_id, $template_settings );
 
-echo '						
-					</div>
-				</div>
+	echo '						
+					</div>';
+} else {
+	echo '			<div class="flex-1">
+						<div class="pr-mo-8 my-mo-6">
+							<div class="mo_otp_note">
+								' . wp_kses( mo_( 'To prevent spamming, we have enabled secure customization of Email templates. Contact us at <b>otpsupport@xecurify.com</b>.' ), MoUtility::mo_allow_html_array() );
+								mo_draw_tooltip(
+									MoMessages::showMessage( MoMessages::EMAIL_SENDER_HEADER ),
+									MoMessages::showMessage( MoMessages::EMAIL_SENDER_BODY )
+								);
+				echo '   	</div>
+						</div>
+					</div>';
+}
+echo '				</div>
 			</div>';
 

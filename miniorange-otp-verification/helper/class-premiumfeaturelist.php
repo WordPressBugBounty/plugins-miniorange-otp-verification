@@ -483,6 +483,14 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 					'name'      => 'WS Forms - Contact Forms',
 					'plan_name' => 'Enterprise Plan',
 				),
+				'FLUENT_CONV_FORM'              => array(
+					'name'      => 'Fluent Conversational Forms',
+					'plan_name' => 'Enterprise Plan',
+				),
+				'MO_LOGIN_REG_USING_PHONE_FORM' => array(
+					'name'      => 'miniOrange - Login and register using phone only',
+					'plan_name' => 'WooCommerce OTP and Notification Plan',
+				),
 
 			);
 

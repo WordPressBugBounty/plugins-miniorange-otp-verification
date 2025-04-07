@@ -151,9 +151,7 @@ if ( ! class_exists( 'MoRegistrationHandler' ) ) {
 		private function handle_without_ckey_cid_regisgtration( $email, $company, $password, $phone, $first_name, $last_name ) {
 			$customer_key = json_decode( MocURLCall::create_customer( $email, $company, $password, $phone, $first_name, $last_name ), true );
 
-			if ( strcasecmp( $customer_key['status'], 'CUSTOMER_USERNAME_ALREADY_EXISTS' ) === 0 ) {
-				$this->mo_get_current_customer( $email, $password );
-			} elseif ( strcasecmp( $customer_key['status'], 'ENDUSER_EMAIL_EXISTS' ) === 0 ) {
+			if ( (strcasecmp( $customer_key['status'], 'CUSTOMER_USERNAME_ALREADY_EXISTS' ) === 0 ) || ( strcasecmp( $customer_key['status'], 'ENDUSER_EMAIL_EXISTS' ) === 0 ) ) {
 				do_action( 'mo_registration_show_message', MoMessages::showMessage( MoMessages::ACCOUNT_EXISTS ), 'ERROR' );
 			} elseif ( strcasecmp( $customer_key['status'], 'EMAIL_BLOCKED' ) === 0 && 'error.enterprise.email' === $customer_key['message'] ) {
 				do_action( 'mo_registration_show_message', MoMessages::showMessage( MoMessages::ENTERPRIZE_EMAIL ), 'ERROR' );
@@ -161,6 +159,8 @@ if ( ! class_exists( 'MoRegistrationHandler' ) ) {
 				do_action( 'mo_registration_show_message', MoMessages::showMessage( MoMessages::REGISTRATION_ERROR ), 'ERROR' );
 			} elseif ( strcasecmp( $customer_key['status'], 'INVALID_EMAIL' ) === 0 || strcasecmp( $customer_key['status'], 'INVALID_EMAIL_QUICK_EMAIL' ) === 0 ) {
 				do_action( 'mo_registration_show_message', MoMessages::showMessage( MoMessages::INVALID_EMAIL ), 'ERROR' );
+			} elseif ( strcasecmp( $customer_key['status'], 'TRANSACTION_LIMIT_EXCEEDED' ) === 0 ) {
+				do_action( 'mo_registration_show_message', MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ), 'ERROR' );
 			} elseif ( strcasecmp( $customer_key['status'], 'SUCCESS' ) === 0 ) {
 				$this->save_success_customer_config( $customer_key['id'], $customer_key['apiKey'], $customer_key['token'], $customer_key['appSecret'] );
 				update_mo_option( 'registration_status', 'MO_CUSTOMER_VALIDATION_REGISTRATION_COMPLETE' );
@@ -215,6 +215,10 @@ if ( ! class_exists( 'MoRegistrationHandler' ) ) {
 				);
 				MoUtility::handle_mo_check_ln( false, $customer_key['id'], $customer_key['apiKey'] );
 				do_action( 'mo_registration_show_message', MoMessages::showMessage( MoMessages::REG_SUCCESS ), 'SUCCESS' );
+			} elseif ( MoMessages::showMessage( MoMessages::INVALID_USER ) === $content ) {
+				do_action( 'mo_registration_show_message', $content, 'ERROR' );
+			} elseif ( MoMessages::showMessage( MoMessages::INVALID_USER ) === $content ) {
+				do_action( 'mo_registration_show_message', $content, 'ERROR' );
 			} else {
 				update_mo_option( 'admin_email', $email );
 				update_mo_option( 'verify_customer', 'true' );

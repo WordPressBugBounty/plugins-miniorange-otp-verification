@@ -38,6 +38,7 @@ if ( ! class_exists( 'MoMessages' ) ) {
 						'##phone## is not a Globally valid phone number.
 														Please enter a valid Phone Number.'
 					),
+					self::VOIP_PHONE_FORMAT             => mo_( '##phone## is not a valid phone number. Please enter a valid Phone Number.' ),
 					self::INVALID_SCRIPTS               => mo_( 'You cannot add script tags in the pop up template.' ),
 
 					self::OTP_SENT_PHONE                => mo_(
@@ -77,6 +78,10 @@ if ( ! class_exists( 'MoMessages' ) ) {
 										Please register using a valid Email Address or contact us at <b><i><a style='cursor:pointer;' onClick='otpSupportOnClick();'> <u>otpsupport@xecurify.com</u></a></i></b> to know more."
 					),
 
+					self::INVALID_USER                  => mo_( 'The customer is not valid' ),
+
+					self::INVALID_PASSWORD              => mo_( 'Invalid username or password. Please try again.' ),
+
 					self::CHOOSE_METHOD                 => mo_(
 						'Please select one of the methods below to verify your account.
 														A One time passcode will be sent to the selected method.'
@@ -109,14 +114,11 @@ if ( ! class_exists( 'MoMessages' ) ) {
 					),
 					self::FORM_NOT_AVAIL_HEAD           => mo_( 'MY FORM IS NOT IN THE LIST' ),
 
-					self::FORM_NOT_AVAIL_BODY           => mo_(
-						"We are actively adding support for more forms. Please contact
-														us using the support form on your right or email us at 
-														<a style='cursor:pointer;' onClick='otpSupportOnClick();'><span style=\"color:white\"><u>" . MoConstants::FEEDBACK_EMAIL . '</u>.</span></a> While contacting us please include
-														enough information about your registration form and how you
-														intend to use this plugin. We will respond promptly.'
+					self::FORM_NOT_FOUND                => mo_( 'Not able to find your form.' ),
+					self::FORM_NOT_AVAIL_BODY => mo_(
+						'We are continuously adding support for more forms. Contact us via the support form or email us at <a onClick=\'otpSupportOnClick();\'><span style=\'color:white;\'><u>'
+						. esc_html( MoConstants::FEEDBACK_EMAIL ) . '</u></span></a> with details about your form and its usage.'
 					),
-
 					self::CHANGE_SENDER_ID_BODY         => mo_(
 						'SenderID/Number is gateway specific.
 														You will need to use your own SMS gateway for this.'
@@ -136,9 +138,9 @@ if ( ! class_exists( 'MoMessages' ) ) {
 					self::META_KEY_HEADER               => mo_( 'WHAT IS A META KEY?' ),
 
 					self::META_KEY_BODY                 => mo_(
-						'WordPress stores addtional user data like phone number, age
-														etc in the usermeta table in a key value pair. MetaKey is
-														the key against which the additional value is stored in the 
+						'WordPress stores addtional user data like phone number, username
+														etc in the usermeta table in a key value pair. Phone Meta Key is
+														the key against which the users phone number is stored in the 
 														usermeta table.'
 					),
 
@@ -559,12 +561,12 @@ if ( ! class_exists( 'MoMessages' ) ) {
 					self::WC_BILLING_CHOOSE             => mo_( 'Please Choose a verification method for Woocommerce Billing Form' ),
 					self::ENTERPRIZE_EMAIL              => mo_( "Please use Enterprize Email for registration or contact us at <b><i><a style='cursor:pointer;' onClick='otpSupportOnClick();'> <u>otpsupport@xecurify.com</u></a></i></b> to know more." ),
 					self::REGISTRATION_ERROR            => mo_( "There is some issue proccessing the request. Please try again or contact us at <b><i><a onClick='otpSupportOnClick();'> <u>otpsupport@xecurify.com</u></a></i></b> to know more. " ),
-					self::FORGOT_PASSWORD_MESSAGE       => mo_( "Please<a href='https://login.xecurify.com/moas/idp/resetpassword ' target='_blank'> Click here </a>to reset your password" ),
+					self::FORGOT_PASSWORD_MESSAGE       => mo_( "Please<a href='https://portal.miniorange.com/forgotpassword ' target='_blank'> Click here </a>to reset your password" ),
 
 					self::CUSTOM_CHOOSE                 => mo_( 'Please choose a Verification Method for Your Own Form.' ),
 
 					self::GATEWAY_PARAM_NOTE            => mo_(
-						"You will need to place your SMS gateway URL in the above field.<br><br>Example:-http://alerts.sinfini.com/api/web2sms.php?username=XYZ&password=password& to=<b>##phone##</b>&sender=senderid& message=<b>##message##</b>"
+						'You will need to place your SMS gateway URL in the above field.<br><br>Example:-http://alerts.sinfini.com/api/web2sms.php?username=XYZ&password=password& to=<b>##phone##</b>&sender=senderid& message=<b>##message##</b>'
 					),
 					self::CUSTOM_FORM_MESSAGE           => mo_( "<b>Your test was succesful!</b> <br> Please contact us at <a style='cursor:pointer;' href='mailto:otpsupport@xecurify.com'>otpsupport@xecurify.com</a> for full integration of your form." ),
 					self::LOW_TRANSACTION_ERROR         => mo_( 'There was an error in sending the OTP. Please try again or contact site admin.' ),
@@ -584,6 +586,10 @@ if ( ! class_exists( 'MoMessages' ) ) {
 					self::ENTER_VALID_INT               => mo_( 'Please enter a valid integer in the fields.' ),
 					self::ENTER_VALID_BLOCK_TIME        => mo_( 'The block timer should be greater than resend OTP timer' ),
 					self::ERROR_OTP_VERIFY              => mo_( 'The next OTP can be sent after {minutes}:{seconds} minutes' ),
+					self::VOIP_PHONE_TITLE              => mo_( 'What are VOIP Phone numbers?' ),
+					self::VOIP_PHONE_BODY               => mo_( 'A VOIP phone number is a virtual number that uses the internet for calls, not tied to a physical location.' ),
+					self::USE_YOUR_SMTP                 => mo_( 'You can configure your SMTP gateway from any third party SMTP plugin( For e.g <u><i><a href="https://wordpress.org/plugins/wp-mail-smtp/" target="_blank" >WP SMTP</a></i></u> ) or php.ini file.<br><b>Note:</b> You don\'t need to configure any extra settings in our plugin.' ),
+					self::USE_YOUR_SMTP_HEADER          => mo_( 'CONFIGURE YOUR OWN SMTP' ),
 				)
 			);
 
@@ -726,6 +732,8 @@ if ( ! class_exists( 'MoMessages' ) ) {
 					self::USER_IS_BLOCKED_AJAX          => mo_( 'You have exceeded the limit to send OTP. Please wait for {minutes}:{seconds} minutes' ),
 
 					self::ERROR_OTP_VERIFY              => mo_( 'The next OTP can be sent after {minutes}:{seconds} minutes' ),
+
+					self::VOIP_PHONE_FORMAT             => mo_( '##phone## is not a valid phone number. Please enter a valid Phone Number.' ),
 
 				)
 			);

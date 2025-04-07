@@ -84,7 +84,7 @@ function moroc_( $string ) {
 
 	$string = preg_replace( '/\s+/S', ' ', $string );
 	return is_scalar( $string )
-			? ( is_morc_polylang_installed() ? pll__( $string ) : __( $string, 'resendcontrol' ) ) // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText --common function for string translation.
+			? ( is_morc_polylang_installed() ? pll__( $string ) : __( $string, 'miniorange-otp-verification' ) ) // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText --common function for string translation.
 			: $string;
 }
 

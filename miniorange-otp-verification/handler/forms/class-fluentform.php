@@ -60,7 +60,8 @@ if ( ! class_exists( 'FluentForm' ) ) {
 		public function handle_form() {
 			$this->otp_type     = get_mo_option( 'fluentform_enable_type' );
 			$this->form_details = maybe_unserialize( get_mo_option( 'fluentform_forms' ) );
-			if ( $this->otp_type === $this->type_phone_tag ) {
+
+			if ( $this->otp_type === $this->type_phone_tag && $this->form_details ) {
 				foreach ( $this->form_details as $key => $value ) {
 					array_push( $this->phone_form_id, '#ff_' . $key . '_' . $value['phonekey'] );
 				}

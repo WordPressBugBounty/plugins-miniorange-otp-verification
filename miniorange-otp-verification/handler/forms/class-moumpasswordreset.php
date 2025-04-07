@@ -475,7 +475,7 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 							__(
 								'You have reached the limit for requesting password ".
                     "change for this user already. Contact support if you cannot open the email',
-								'ultimate-member'
+								'miniorange-otp-verification'
 							)
 						);
 					} else {

@@ -21,6 +21,7 @@ if ( ! class_exists( 'FormSessionVars' ) ) {
 	class FormSessionVars {
 
 		const FLUENTFORM                    = 'fluent_form';
+		const FLUENT_CONV_FORM              = 'fluent_conv_form';
 		const WC_PROFILE_UPDATE             = 'wc_account_form';
 		const FORMINATOR                    = 'forminator';
 		const EASY_REG_FORM                 = 'mo_easyreg_form';

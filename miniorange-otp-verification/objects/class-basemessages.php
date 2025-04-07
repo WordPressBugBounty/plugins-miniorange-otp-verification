@@ -20,6 +20,7 @@ if ( ! class_exists( 'BaseMessages' ) ) {
 		const BLOCKED_COUNTRY               = 'BLOCKED_COUNTRY';
 		const NEED_TO_REGISTER              = 'NEED_TO_REGISTER';
 		const GLOBALLY_INVALID_PHONE_FORMAT = 'GLOBALLY_INVALID_PHONE_FORMAT';
+		const VOIP_PHONE_FORMAT             = 'VOIP_PHONE_FORMAT';
 		const WPUSERNAME_MISMATCH           = 'WPUSERNAME_MISMATCH';
 		const WPUSERNAME_NOT_EXIST          = 'WPUSERNAME_NOT_EXIST';
 		const WPRESET_LABEL                 = 'WPRESET_LABEL';
@@ -43,6 +44,7 @@ if ( ! class_exists( 'BaseMessages' ) ) {
 		const ERROR_PHONE_BLOCKED     = 'ERROR_PHONE_BLOCKED';
 		const ERROR_EMAIL_BLOCKED     = 'ERROR_EMAIL_BLOCKED';
 		const FORM_NOT_AVAIL_HEAD     = 'FORM_NOT_AVAIL_HEAD';
+		const FORM_NOT_FOUND          = 'FORM_NOT_FOUND';
 		const FORM_NOT_AVAIL_BODY     = 'FORM_NOT_AVAIL_BODY';
 		const CHANGE_SENDER_ID_BODY   = 'CHANGE_SENDER_ID_BODY';
 		const CHANGE_SENDER_ID_HEAD   = 'CHANGE_SENDER_ID_HEAD';
@@ -196,6 +198,8 @@ if ( ! class_exists( 'BaseMessages' ) ) {
 		const WC_BILLING_CHOOSE       = 'WC_BILLING_CHOOSE';
 		const EMAIL_EXISTS            = 'EMAIL_EXISTS';
 		const INSTALL_PREMIUM_PLUGIN  = 'INSTALL_PREMIUM_PLUGIN';
+		const INVALID_USER            = 'INVALID_USER';
+		const INVALID_PASSWORD        = 'INVALID_PASSWORD';
 
 		const USERNAME_MISMATCH  = 'USERNAME_MISMATCH';
 		const USERNAME_NOT_EXIST = 'USERNAME_NOT_EXIST';
@@ -305,5 +309,9 @@ if ( ! class_exists( 'BaseMessages' ) ) {
 		const ENTER_VALID_INT                      = 'ENTER_VALID_INT';
 		const ENTER_VALID_BLOCK_TIME               = 'ENTER_VALID_BLOCK_TIME';
 		const ERROR_OTP_VERIFY                     = 'ERROR_OTP_VERIFY';
+		const VOIP_PHONE_TITLE                     = 'VOIP_PHONE_TITLE';
+		const VOIP_PHONE_BODY                      = 'VOIP_PHONE_BODY';
+		const USE_YOUR_SMTP                        = 'USE_YOUR_SMTP';
+		const USE_YOUR_SMTP_HEADER                 = 'USE_YOUR_SMTP_HEADER';
 	}
 }

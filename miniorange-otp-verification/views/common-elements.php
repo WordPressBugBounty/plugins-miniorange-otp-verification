@@ -89,13 +89,13 @@ function get_plugin_form_link( $formalink ) {
  * @param  string $message - the body of the tooltip message.
  */
 function mo_draw_tooltip( $header, $message ) {
-	echo '        <span class="tooltip">
-            <span class="dashicons dashicons-editor-help"></span>
-            <span class="tooltiptext">
-                <span class="header"><b><i>' . esc_html( mo_( $header ) ) . '</i></b></span><br/><br/>
-                <span class="body">' . esc_html( mo_( $message ) ) . '</span>
-            </span>
-          </span>';
+	echo '  <span class="tooltip">
+				<span class="dashicons dashicons-editor-help"></span>
+				<span class="tooltiptext">
+					<span class="header"><b><i>' . esc_html( mo_( $header ) ) . '</i></b></span><br/><br/>
+					<span class="body">' . wp_kses( mo_( $message ), MoUtility::mo_allow_html_array() ) . '</span>
+				</span>
+			</span>';
 }
 
 

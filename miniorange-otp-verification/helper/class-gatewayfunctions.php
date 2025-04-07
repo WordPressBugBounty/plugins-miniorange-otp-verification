@@ -155,17 +155,6 @@ if ( ! class_exists( 'GatewayFunctions' ) ) {
 		 * @return array
 		 */
 		public function mo_send_otp_token( $auth_type, $email, $phone, $data = array() ) {
-			if ( ! function_exists( 'is_plugin_active' ) ) {
-				include_once ABSPATH . 'wp-admin/includes/plugin.php';
-			}
-			if ( is_plugin_active( 'mowhatsapp/miniorange-custom-validation.php' ) && get_mo_option( 'mo_whatsapp_enable', 'mo_wp_sms_' ) ) {
-				$content = apply_filters( 'mo_wp_send_otp_token', 'WHATSAPP', $email, $phone, $data );
-				$content = json_decode( $content );
-				if ( 'SEND SMS' !== $content->status ) {
-					$content = wp_json_encode( $content );
-					return json_decode( $content, true );
-				}
-			}
 			return $this->gateway->mo_send_otp_token( $auth_type, $email, $phone, $data );
 		}
 
@@ -212,20 +201,11 @@ if ( ! class_exists( 'GatewayFunctions' ) ) {
 		 *
 		 * @param string $tx_id Transaction ID from session.
 		 * @param string $otp_token OTP Token to validate.
+		 * @param string $otp_type Type of OTP Verification.
 		 * @return array
 		 */
-		public function mo_validate_otp_token( $tx_id, $otp_token ) {
-			if ( ! function_exists( 'is_plugin_active' ) ) {
-				include_once ABSPATH . 'wp-admin/includes/plugin.php';
-			}
-			if ( is_plugin_active( 'mowhatsapp/miniorange-custom-validation.php' ) && get_mo_option( 'mo_whatsapp_enable', 'mo_wp_sms_' ) ) {
-				$content = apply_filters( 'mo_wp_validate_otp_token', $tx_id, $otp_token );
-				if ( 'VALIDATE SMS' !== $content['status'] ) {
-					return $content;
-				}
-			}
-
-			return $this->gateway->mo_validate_otp_token( $tx_id, $otp_token );
+		public function mo_validate_otp_token( $tx_id, $otp_token, $otp_type ) {
+			return $this->gateway->mo_validate_otp_token( $tx_id, $otp_token, $otp_type );
 		}
 
 		/**

@@ -407,6 +407,38 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		}
 
 		/**
+		 * Process the phone number, return the country code appended to the phone number. If
+		 * country code is not appended then return the default country code if set any by the
+		 * admin.
+		 *
+		 * @param string $phone - the phone number to be processed.
+		 *
+		 * @return mixed
+		 */
+		public static function get_country_code( $phone ) {
+			if ( ! $phone ) {
+				return;
+			}
+			$phone                = preg_replace( MoConstants::PATTERN_SPACES_HYPEN, '', ltrim( trim( $phone ), '0' ) );
+			$default_country_code = CountryList::get_default_countrycode();
+			$country_list         = CountryList::get_countrycode_list();
+			if ( ! self::is_country_code_appended( $phone ) ) {
+				return $default_country_code;
+			}
+			usort(
+				$country_list,
+				function( $country_a, $country_b ) {
+					return strlen( $country_b['countryCode'] ) - strlen( $country_a['countryCode'] );
+				}
+			);
+			foreach ( $country_list as $country_data ) {
+				if ( strpos( $phone, $country_data['countryCode'] ) === 0 ) {
+					return $country_data['countryCode'];
+				}
+			}
+		}
+
+		/**
 		 * Process the phone number. Check if country code is appended to the phone number. If
 		 * country code is not appended then add the default country code if set any by the
 		 * admin.
@@ -614,6 +646,17 @@ if ( ! class_exists( 'MoUtility' ) ) {
 			return $temp;
 		}
 
+		/**
+		 * Checks if the whatsapp notifications and presonal business account is enabled
+		 *
+		 * @return bool
+		 */
+		public static function mo_is_whatsapp_notif_enabled() {
+			return get_mo_option( 'mo_whatsapp_enable' )
+			&& get_mo_option( 'mo_whatsapp_notification_enable' )
+			&& get_mo_option( 'mo_whatsapp_type' ) === 'bussiness_whatsapp';
+		}
+
 
 		/**
 		 * Send the notification to the number provided and
@@ -657,12 +700,12 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		 *
 		 * @return bool
 		 */
-		public static function send_whatsapp_notif( $number, $template_name, $sms_tags ) {
+		public static function mo_send_whatsapp_notif( $number, $template_name, $sms_tags ) {
 			$api_call_result = function( $number, $data ) {
-				return apply_filters( 'mo_wp_send_otp_token', 'WHATSAPP_NOTIFICATION', null, $number, $data );
+				return apply_filters( 'mo_wa_send_otp_token', 'WHATSAPP_NOTIFICATION', null, null, $number, $data );
 			};
 
-			$data = array(
+			$data         = array(
 				'template_name' => $template_name,
 				'sms_tags'      => $sms_tags,
 			);
@@ -670,7 +713,7 @@ if ( ! class_exists( 'MoUtility' ) ) {
 			$content      = MO_TEST_MODE ? self::test_result() : $api_call_result( $number, $data );
 			$notif_status = strcasecmp( $content->status, 'SUCCESS' ) === 0 ? 'SMS_NOTIF_SENT' : 'SMS_NOTIF_FAILED';
 			$tx_id        = isset( $content->txId ) ? $content->txId : '';  //phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- API response from IDP returns txId.
-			apply_filters( 'mo_start_reporting', $tx_id, $number, $number, 'NOTIFICATION', $template_name, $notif_status );
+			apply_filters( 'mo_start_reporting', $tx_id, $number, $number, 'WHATSAPP_NOTIFICATION', $template_name, $notif_status );
 			return strcasecmp( $content->status, 'SUCCESS' ) === 0 ? true : false;
 		}
 
@@ -697,7 +740,7 @@ if ( ! class_exists( 'MoUtility' ) ) {
 			$content         = MO_TEST_MODE ? self::test_result() : $api_call_result( $from_email, $from_name, $to_email, $subject, $message );
 			$notif_status    = strcasecmp( $content->status, 'SUCCESS' ) === 0 ? 'EMAIL_NOTIF_SENT' : 'EMAIL_NOTIF_FAILED';
 			$tx_id           = isset( $content->txId ) ? $content->txId : ''; //phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- API response from IDP returns txId.
-			apply_filters( 'mo_start_reporting', $tx_id, $to_email, $to_email, 'NOTIFICATION', '', $notif_status );
+			apply_filters( 'mo_start_reporting', $tx_id, $to_email, $to_email, 'EMAIL_NOTIFICATION', '', $notif_status );
 			return strcasecmp( $content->status, 'SUCCESS' ) === 0 ? true : false;
 		}
 		/**
@@ -770,8 +813,8 @@ if ( ! class_exists( 'MoUtility' ) ) {
 				/**
 				 * Update SMS Email transaction in DataBase
 				 *
-				 * @param string $response      Resposne form Gateway.
-				 * @param string $type Message type type email or phone.
+				 * @param string $response Response form Gateway.
+				 * @param string $type     OTP Type email or phone.
 				 */
 		public static function mo_update_sms_email_transations( $response, $type ) {
 			$content = json_decode( $response );
@@ -780,6 +823,21 @@ if ( ! class_exists( 'MoUtility' ) ) {
 				$remaining_txn = get_mo_option( $option_type );
 				if ( $remaining_txn > 0 ) {
 					update_mo_option( $option_type, $remaining_txn - 1 );
+				}
+			}
+		}
+
+		/**
+		 * Update WhatsApp transaction in DataBase
+		 *
+		 * @param string $response      Resposne form Gateway.
+		 */
+		public static function mo_update_whatsapp_transations( $response ) {
+			$content = json_decode( $response );
+			if ( isset( $content->status ) && strcasecmp( $content->status, 'SUCCESS' ) === 0 ) {
+				$remaining_txn = get_mo_option( 'whatsapp_transactions_remaining', 'mowp_customer_validation_' );
+				if ( $remaining_txn > 0 ) {
+					update_mo_option( 'whatsapp_transactions_remaining', $remaining_txn - 1, 'mowp_customer_validation_' );
 				}
 			}
 		}

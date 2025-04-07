@@ -376,7 +376,7 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 				if ( MoUtility::is_blank( $password ) ) {
 					throw new MoException(
 						'registration-error-invalid-password',
-						mo_( 'Please enter a valid account password.' ),
+						esc_html( mo_( 'Please enter a valid account password.' ) ),
 						204
 					);
 				}
@@ -393,14 +393,14 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			if ( MoUtility::is_blank( $email ) || ! is_email( $email ) ) {
 				throw new MoException(
 					'registration-error-invalid-email',
-					mo_( 'Please enter a valid email address.' ),
+					esc_html( mo_( 'Please enter a valid email address.' ) ),
 					202
 				);
 			}
 			if ( email_exists( $email ) ) {
 				throw new MoException(
 					'registration-error-email-exists',
-					mo_( 'An account is already registered with your email address. Please login.' ),
+					esc_html( mo_( 'An account is already registered with your email address. Please login.' ) ),
 					203
 				);
 			}
@@ -418,14 +418,14 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 				if ( MoUtility::is_blank( $username ) || ! validate_username( $username ) ) {
 					throw new MoException(
 						'registration-error-invalid-username',
-						mo_( 'Please enter a valid account username.' ),
+						esc_html( mo_( 'Please enter a valid account username.' ) ),
 						200
 					);
 				}
 				if ( username_exists( $username ) ) {
 					throw new MoException(
 						'registration-error-username-exists',
-						mo_( 'An account is already registered with that username. Please choose another.' ),
+						esc_html( mo_( 'An account is already registered with that username. Please choose another.' ) ),
 						201
 					);
 				}

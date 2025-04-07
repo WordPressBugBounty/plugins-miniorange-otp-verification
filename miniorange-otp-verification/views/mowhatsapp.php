@@ -23,7 +23,7 @@ $whatsapp_view = '
 
 		<!--  TABS  -->
 		<div class="mo-tab-container" style="padding-top: 10px; padding-bottom: 20px;">
-			<h2 style=" font-size:1.300rem;" class="mo-heading pl-mo-4">' . esc_html( mo_( 'WhastApp For OTP Verification And Notifications' ) ) . '</h2>          
+			<h2 style=" font-size:1.300rem;" class="mo-heading pl-mo-4">' . esc_html( mo_( 'WhatsApp OTP Verification And Notifications' ) ) . '</h2>          
 		</div>
 
 		<!--  TABS CONTENT  -->
@@ -48,10 +48,19 @@ $whatsapp_view = '
 				<div class="mo-whatsapp-snippet-grid">
 					<div class="mo-whatsapp-card" >
 						<div class="mo-whatsapp-header">
-								<h5>WhatsApp Premium Plan</h5>
-								<div class="mt-mo-4 flex gap-mo-1">
-									<div class="text-lg font-bold">$49</div><span style="margin-top:3%"> + (transaction-based pricing)</span>
-								</div>
+								<h5>' . esc_html( mo_( 'WhatsApp Premium Plan Features' ) ) . '</h5> &nbsp;&nbsp; 
+								<div class="mb-mo-1"> [
+									<i><a href="' . esc_url( $license_url ) . '"	target="_blank">' . esc_html( mo_( ' Supported in WooCommerce Plan ' ) ) . '</a></i> ]
+								</div>	
+								<svg width="18" class="ml-mo-2 mr-mo-2 mb-mo-1" height="18" viewBox="0 0 24 24" fill="none">
+											<g id="d4a43e0162b45f718f49244b403ea8f4">
+												<g id="4ea4c3dca364b4cff4fba75ac98abb38">
+													<g id="2413972edc07f152c2356073861cb269">
+														<path id="2deabe5f8681ff270d3f37797985a977" d="M20.8007 20.5644H3.19925C2.94954 20.5644 2.73449 20.3887 2.68487 20.144L0.194867 7.94109C0.153118 7.73681 0.236091 7.52728 0.406503 7.40702C0.576651 7.28649 0.801941 7.27862 0.980492 7.38627L7.69847 11.4354L11.5297 3.72677C11.6177 3.54979 11.7978 3.43688 11.9955 3.43531C12.1817 3.43452 12.3749 3.54323 12.466 3.71889L16.4244 11.3598L23.0197 7.38654C23.1985 7.27888 23.4233 7.28702 23.5937 7.40728C23.7641 7.52754 23.8471 7.73707 23.8056 7.94136L21.3156 20.1443C21.2652 20.3887 21.0501 20.5644 20.8007 20.5644Z" fill="orange"></path>
+													</g>
+												</g>
+											</g>
+								</svg>
 						</div> 
 
 						<ul class="mt-mo-4 grow" >
@@ -78,14 +87,14 @@ $whatsapp_view = '
 
 						</ul>
 
-						<a class="w-full mo-button primary"  onclick="otpSupportOnClick(\'Hi! I am interested in using WhatsApp for my website, can you please provide more information?\');">Upgrade Now</a><br>
+						<a class="w-full mo-button primary" href="' . esc_url( $license_url ) . '" target="_blank">' . esc_html( mo_( 'Upgrade Now' ) ) . '</a><br>
 					</div>
 				</div>   
 			</section> 
 		</div>
 	</div>';
 
-$whatsapp_view = apply_filters( 'wa_premium_view', $whatsapp_view );
+$whatsapp_view = apply_filters( 'mo_wa_premium_view', $whatsapp_view );
 
 echo wp_kses(
 	$whatsapp_view,
@@ -137,9 +146,11 @@ echo wp_kses(
 			'hidden' => array(),
 		),
 		'a'        => array(
-			'onclick' => array(),
-			'class'   => array(),
+			'href'   => array(),
+			'target' => array(),
+			'class'  => array(),
 		),
+		'i'        => array(),
 		'p'        => array(
 			'class' => array(),
 			'style' => array(),

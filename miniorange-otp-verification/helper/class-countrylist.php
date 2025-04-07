@@ -1251,6 +1251,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 
 		/**
 		 * Returns list of countries.
+		 * @return array
 		 */
 		public static function get_countrycode_list() {
 			return self::$countries;

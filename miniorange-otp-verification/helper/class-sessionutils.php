@@ -209,7 +209,7 @@ if ( ! class_exists( 'SessionUtils' ) ) {
 				switch ( $otp_type ) {
 					case VerificationType::EMAIL:
 						return $transaction_data->get_email_transaction_id();
-					case VerificationType::PHONE:
+					case VerificationType::PHONE || VerificationType::WHATSAPP:
 						return $transaction_data->get_phone_transaction_id();
 					case VerificationType::BOTH:
 						return MoUtility::is_blank( $transaction_data->get_phone_transaction_id() )

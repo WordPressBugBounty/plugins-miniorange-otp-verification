@@ -137,6 +137,7 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 			$gateway           = GatewayFunctions::instance();
 			$verification_type = 'SMS';
 			$content           = $gateway->mo_send_otp_token( $verification_type, '', $phone_number );
+			$otp_type          = isset( $content['moAuthType'] ) ? $content['moAuthType'] : $otp_type;
 			switch ( $content['status'] ) {
 				case 'SUCCESS':
 					$this->handle_otp_sent( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content );

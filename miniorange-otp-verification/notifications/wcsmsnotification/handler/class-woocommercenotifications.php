@@ -319,7 +319,7 @@ if ( ! class_exists( 'WooCommerceNotifications' ) ) {
 			if ( ! class_exists( 'WooCommerce' ) ) {
 				return;
 			}
-			$screen = wc_get_container()->get( CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled()
+			$screen = wc_get_container()->has( CustomOrdersTableController::class ) && wc_get_container()->get( CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled()
 				? wc_get_page_screen_id( 'shop-order' )
 				: 'shop_order';
 

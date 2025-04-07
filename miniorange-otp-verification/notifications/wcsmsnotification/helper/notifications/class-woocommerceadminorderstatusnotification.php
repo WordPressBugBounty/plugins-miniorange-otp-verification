@@ -124,8 +124,8 @@ if ( ! class_exists( 'WooCommerceAdminOrderstatusNotification' ) ) {
 				return;
 			}
 			foreach ( $phone_numbers as $phone_number ) {
-				if ( get_wc_option( 'mo_whatsapp_notification_enable', 'mo_wp_sms_' ) ) {
-					MoUtility::send_whatsapp_notif( $phone_number, $this->template_name, $sms_tags );
+				if ( MoUtility::mo_is_whatsapp_notif_enabled() ) {
+					MoUtility::mo_send_whatsapp_notif( $phone_number, $this->template_name, $sms_tags );
 				} else {
 					MoUtility::send_phone_notif( $phone_number, $sms_body );
 				}

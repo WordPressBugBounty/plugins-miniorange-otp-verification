@@ -10,13 +10,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 use OTP\Handler\Forms\PaidMembershipForm;
 
-$handler            = PaidMembershipForm::instance();
-$pmpro_enabled      = $handler->is_form_enabled() ? 'checked' : '';
-$pmpro_hidden       = 'checked' === $pmpro_enabled ? '' : 'hidden';
-$pmpro_enabled_type = $handler->get_otp_type_enabled();
-$pmpro_type_phone   = $handler->get_phone_html_tag();
-$pmpro_type_email   = $handler->get_email_html_tag();
-$form_name          = $handler->get_form_name();
+$handler                   = PaidMembershipForm::instance();
+$pmpro_enabled             = $handler->is_form_enabled() ? 'checked' : '';
+$pmpro_hidden              = 'checked' === $pmpro_enabled ? '' : 'hidden';
+$pmpro_enabled_type        = $handler->get_otp_type_enabled();
+$pmpro_type_phone          = $handler->get_phone_html_tag();
+$pmpro_type_email          = $handler->get_email_html_tag();
+$form_name                 = $handler->get_form_name();
+$pmpro_restrict_duplicates = (bool) $handler->restrict_duplicates() ? 'checked' : '';
 
 require_once MOV_DIR . 'views/forms/mopaidmembershipform.php';
 get_plugin_form_link( $handler->get_form_documents() );

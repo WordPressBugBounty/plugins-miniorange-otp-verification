@@ -21,5 +21,6 @@ if ( ! class_exists( 'VerificationType' ) ) {
 		const BOTH     = 'both';
 		const EXTERNAL = 'external';
 		const TEST     = 'test';
+		const WHATSAPP = 'whatsapp';
 	}
 }

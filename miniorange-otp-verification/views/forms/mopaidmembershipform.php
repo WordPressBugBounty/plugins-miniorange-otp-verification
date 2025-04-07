@@ -11,9 +11,17 @@ echo '	<div class="mo_otp_form" id="' . esc_attr( get_mo_class( $handler ) ) . '
 echo '		<div class="mo_registration_help_desc" id="pmpro_options">
 				<b>Choose between Phone or Email Verification</b>
 				<div>
-					<input type="radio" ' . esc_attr( $disabled ) . ' id="pmpro_phone" class="app_enable" name="mo_customer_validation_pmpro_contact_type" value="' . esc_attr( $pmpro_type_phone ) . '"
+					<input type="radio" ' . esc_attr( $disabled ) . ' id="pmpro_phone" class="app_enable" data-toggle="pmpro_phone_options" name="mo_customer_validation_pmpro_contact_type" value="' . esc_attr( $pmpro_type_phone ) . '"
 						' . ( esc_attr( $pmpro_enabled_type ) === esc_attr( $pmpro_type_phone ) ? 'checked' : '' ) . '/>
 						<strong>' . esc_html( mo_( 'Enable Phone Verification' ) ) . '</strong>
+				</div>
+				<div    ' . ( esc_attr( $pmpro_enabled_type ) !== esc_attr( $pmpro_type_phone ) ? 'hidden' : '' ) . '  
+                        class="mo_registration_help_desc_internal" 
+						id="pmpro_phone_options" >
+					<input  type="checkbox" ' . esc_attr( $disabled ) . '  
+                            name="mo_customer_validation_pmpro_restrict_duplicates" value="1"
+                            ' . esc_attr( $pmpro_restrict_duplicates ) . '  />
+                    <strong>' . esc_html( mo_( 'Do not allow users to use the same phone number for multiple accounts.' ) ) . ' </strong>
 				</div>
 				<div>
 					<input type="radio" ' . esc_attr( $disabled ) . ' id="pmpro_email" class="app_enable" name="mo_customer_validation_pmpro_contact_type" value="' . esc_attr( $pmpro_type_email ) . '"

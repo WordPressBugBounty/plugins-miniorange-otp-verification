@@ -42,7 +42,7 @@ echo '				<div>
 										<h5 class="mo-title">SMS Template</h5>
 										<p class="mo-caption mt-mo-2">' . esc_html( $sms_settings->page_description ) . '</p>
 									</div>';
-if ( get_wc_option( 'mo_whatsapp_notification_enable', 'mo_wp_sms_' ) ) {
+if ( MoUtility::mo_is_whatsapp_notif_enabled() ) {
 	echo '
 			<div class="flex flex-col gap-mo-4 flex-1">
 				<div class="mo-input-wrapper">

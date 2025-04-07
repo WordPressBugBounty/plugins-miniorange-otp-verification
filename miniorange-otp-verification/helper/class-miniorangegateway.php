@@ -339,13 +339,13 @@ if ( ! class_exists( 'MiniOrangeGateway' ) ) {
 			$data                      = MoUtility::mo_sanitize_array( $_POST );
 			$test_configuration_number = isset( $data['test_config_number'] ) ? $data['test_config_number'] : '';
 			$test_configuration_type   = isset( $data['action'] ) ? $data['action'] : '';
-			$test_gateway_response     = 'wa_miniorange_get_test_response' === $test_configuration_type ? $this->mo_send_otp_token( 'WHATSAPP', '', $test_configuration_number, $data ) : $this->mo_send_otp_token( 'SMS', '', $test_configuration_number, $data );
+			$test_gateway_response     = 'wa_miniorange_get_test_response' === $test_configuration_type ? $this->mo_send_otp_token( VerificationType::WHATSAPP, '', $test_configuration_number, $data ) : $this->mo_send_otp_token( 'SMS', '', $test_configuration_number, $data );
 			echo esc_attr( $test_gateway_response );
 			die();
 		}
 
 		/**
-		 * Calls the server to send OTP to the user's phone or email
+		 * Calls the server to send an OTP to the user's phone or email
 		 *
 		 * @param string $auth_type  OTP Type - EMAIL or SMS.
 		 * @param string $email     Email Address of the user.
@@ -360,10 +360,18 @@ if ( ! class_exists( 'MiniOrangeGateway' ) ) {
 					'txId'   => MoUtility::rand(),
 				);
 			} else {
-				$auth_type = apply_filters( 'otp_over_call_activation', $auth_type );
-				$content   = 'WHATSAPP' === $auth_type ? apply_filters( 'mo_wa_send_otp_token', $auth_type, $email, $phone, $data ) : MocURLCall::mo_send_otp_token( $auth_type, $email, $phone );
-				if ( isset( $data['action'] ) && 'wa_miniorange_get_test_response' === ( $data['action'] ) ) {
-					return $content;
+				$auth_type                = apply_filters( 'otp_over_call_activation', $auth_type );
+				$whatsapp_enabled         = get_mo_option( 'mo_whatsapp_enable' );
+				$mo_whatsapp_type_enabled = get_mo_option( 'mo_whatsapp_type' );
+				$business_acc_enabled     = 'bussiness_whatsapp' === $mo_whatsapp_type_enabled ? get_mo_option( 'mo_whatsapp_otp_enable' ) : true;
+				$mo_wa_otp_enabled        = $whatsapp_enabled && $business_acc_enabled;
+				if ( file_exists( MOV_DIR . 'helper' . DIRECTORY_SEPARATOR . 'class-mowhatsapp.php' ) && $mo_wa_otp_enabled && 'EMAIL' !== $auth_type ) {
+					$content = apply_filters( 'mo_wa_send_otp_token', VerificationType::WHATSAPP, null, $email, $phone, null );
+					if ( ! $content && get_mo_option( 'mo_sms_as_backup' ) ) {
+						$content = MocURLCall::mo_send_otp_token( $auth_type, $email, $phone );
+					}
+				} else {
+					$content = MocURLCall::mo_send_otp_token( $auth_type, $email, $phone );
 				}
 				return json_decode( $content, true );
 			}
@@ -419,17 +427,24 @@ if ( ! class_exists( 'MiniOrangeGateway' ) ) {
 		 *
 		 * @param string $tx_id      Transaction ID from session.
 		 * @param string $otp_token OTP Token to validate.
+		 * @param string $otp_type Type of OTP Verification.
 		 * @return array
 		 */
-		public function mo_validate_otp_token( $tx_id, $otp_token ) {
+		public function mo_validate_otp_token( $tx_id, $otp_token, $otp_type ) {
 			if ( MO_TEST_MODE ) {
 				return MO_FAIL_MODE ? array( 'status' => '' ) : array( 'status' => 'SUCCESS' );
 			} else {
-				$content = '';
-				if ( get_mo_option( 'wa_only' ) || get_mo_option( 'wa_otp' ) ) {
-					$content = apply_filters( 'mo_wa_validate_otp_token', $tx_id, $otp_token );
-				}
-				if ( ! $content ) {
+				$whatsapp_enabled         = get_mo_option( 'mo_whatsapp_enable' );
+				$mo_whatsapp_type_enabled = get_mo_option( 'mo_whatsapp_type' );
+				$business_acc_enabled     = 'bussiness_whatsapp' === $mo_whatsapp_type_enabled ? get_mo_option( 'mo_whatsapp_otp_enable' ) : true;
+				$mo_wa_otp_enabled        = $whatsapp_enabled && $business_acc_enabled;
+				if ( file_exists( MOV_DIR . 'helper' . DIRECTORY_SEPARATOR . 'class-mowhatsapp.php' ) && $mo_wa_otp_enabled && 'EMAIL' !== $otp_type ) {
+					if ( ! MoPHPSessions::get_session_var( 'mo_otptoken' ) && get_mo_option( 'mo_sms_as_backup' ) ) {
+						$content = MocURLCall::validate_otp_token( $tx_id, $otp_token );
+					} else {
+						$content = apply_filters( 'mo_wa_validate_otp_token', $tx_id, $otp_token );
+					}
+				} else {
 					$content = MocURLCall::validate_otp_token( $tx_id, $otp_token );
 				}
 				return json_decode( $content, true );

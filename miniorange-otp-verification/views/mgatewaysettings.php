@@ -6,6 +6,9 @@
  */
 
 use OTP\Helper\MoConstants;
+use OTP\Helper\MoMessages;
+use OTP\Helper\MoUtility;
+
 $request_uri = remove_query_arg( array( 'addon', 'form', 'subpage' ), isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ); // phpcs:ignore -- false positive.
 $license_url = add_query_arg( array( 'page' => 'mootppricing' ), $request_uri );
 
@@ -74,21 +77,41 @@ echo '						</div>
 						</div>
 						<div class="flex-1 pr-mo-4 pl-mo-2 py-mo-4">
 							<div class="flex-1">
-								<div class="pb-mo-2 pr-mo-10">
-									<div class="mo_otp_note flex gap-mo-1 my-mo-4">
-										<svg width="18" class="my-mo-4 ml-mo-4" height="18" viewBox="0 0 24 24" fill="none">
-												<g id="d4a43e0162b45f718f49244b403ea8f4">
-													<g id="4ea4c3dca364b4cff4fba75ac98abb38">
-														<g id="2413972edc07f152c2356073861cb269">
-															<path id="2deabe5f8681ff270d3f37797985a977" d="M20.8007 20.5644H3.19925C2.94954 20.5644 2.73449 20.3887 2.68487 20.144L0.194867 7.94109C0.153118 7.73681 0.236091 7.52728 0.406503 7.40702C0.576651 7.28649 0.801941 7.27862 0.980492 7.38627L7.69847 11.4354L11.5297 3.72677C11.6177 3.54979 11.7978 3.43688 11.9955 3.43531C12.1817 3.43452 12.3749 3.54323 12.466 3.71889L16.4244 11.3598L23.0197 7.38654C23.1985 7.27888 23.4233 7.28702 23.5937 7.40728C23.7641 7.52754 23.8471 7.73707 23.8056 7.94136L21.3156 20.1443C21.2652 20.3887 21.0501 20.5644 20.8007 20.5644Z" fill="orange"></path>
-														</g>
+								<div class="pb-mo-2 pr-mo-10 flex flex-col gap-mo-4">
+									<div>
+										<input  type="radio" ' . esc_attr( $disabled ) . ' 
+												id="mo_smtp_enable" 
+												name="mo_customer_validation_smtp_enable_type"
+												class="app_enable"
+												value="mo_smtp_enable" 
+												checked />
+										' . esc_html( mo_( 'Enable miniOrange SMTP' ) ) . '
+									</div>
+									<div class="flex gap-mo-4">
+										<p>
+											<input  type="radio" disabled 
+													id="mo_your_own_smtp_enable"
+													name="mo_customer_validation_smtp_enable_type"
+													class="app_enable"
+													value="mo_your_own_smtp_enable" />
+											' . esc_html( mo_( 'Enable your own SMTP' ) ) . '
+										
+										';
+		mo_draw_tooltip(
+			MoMessages::showMessage( MoMessages::USE_YOUR_SMTP_HEADER ),
+			MoMessages::showMessage( MoMessages::USE_YOUR_SMTP )
+		);
+									echo '
+										</p>
+										<svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+											<g id="d4a43e0162b45f718f49244b403ea8f4">
+												<g id="4ea4c3dca364b4cff4fba75ac98abb38">
+													<g id="2413972edc07f152c2356073861cb269">
+														<path id="2deabe5f8681ff270d3f37797985a977" d="M20.8007 20.5644H3.19925C2.94954 20.5644 2.73449 20.3887 2.68487 20.144L0.194867 7.94109C0.153118 7.73681 0.236091 7.52728 0.406503 7.40702C0.576651 7.28649 0.801941 7.27862 0.980492 7.38627L7.69847 11.4354L11.5297 3.72677C11.6177 3.54979 11.7978 3.43688 11.9955 3.43531C12.1817 3.43452 12.3749 3.54323 12.466 3.71889L16.4244 11.3598L23.0197 7.38654C23.1985 7.27888 23.4233 7.28702 23.5937 7.40728C23.7641 7.52754 23.8471 7.73707 23.8056 7.94136L21.3156 20.1443C21.2652 20.3887 21.0501 20.5644 20.8007 20.5644Z" fill="orange"></path>
 													</g>
 												</g>
-											</svg>
-										<div class="my-mo-5 mr-mo-4">To use your custom SMTP Gateway, upgrade to the premium plan. 
-													<br>Check <a class="font-semibold text-yellow-500" href="' . esc_url( $license_url ) . '">Licensing Tab</a> to learn more.
-													</a>
-										</div>
+											</g>
+										</svg>
 									</div>
 								</div>
 							</div>
@@ -96,29 +119,29 @@ echo '						</div>
 					</div>
 				</div>';
 
-	echo '  <div class="border-b flex flex-col gap-mo-6 px-mo-4">
-				<div class="w-full flex m-mo-4">
-					<div class="flex-1">
-						<h5 class="mo-title">' . esc_html( 'SMS Backup Gateway Configuration' ) . '</h5>
-						<p class="mo-caption mt-mo-2 mr-mo-20">' . esc_html( mo_( 'When the primary gateway is unavailable, the backup SMS gateway takes over and sends the SMS messages to recipients.' ) ) . '</p>
-					</div>
-					<div class="flex-1">
-						<div class="pb-mo-2 pr-mo-10">
-							<div class="mo_otp_note flex gap-mo-1 my-mo-4 w-[96%]">
-								<svg width="18" class="my-mo-4 ml-mo-4" height="18" viewBox="0 0 24 24" fill="none">
-										<g id="d4a43e0162b45f718f49244b403ea8f4">
-											<g id="4ea4c3dca364b4cff4fba75ac98abb38">
-												<g id="2413972edc07f152c2356073861cb269">
-													<path id="2deabe5f8681ff270d3f37797985a977" d="M20.8007 20.5644H3.19925C2.94954 20.5644 2.73449 20.3887 2.68487 20.144L0.194867 7.94109C0.153118 7.73681 0.236091 7.52728 0.406503 7.40702C0.576651 7.28649 0.801941 7.27862 0.980492 7.38627L7.69847 11.4354L11.5297 3.72677C11.6177 3.54979 11.7978 3.43688 11.9955 3.43531C12.1817 3.43452 12.3749 3.54323 12.466 3.71889L16.4244 11.3598L23.0197 7.38654C23.1985 7.27888 23.4233 7.28702 23.5937 7.40728C23.7641 7.52754 23.8471 7.73707 23.8056 7.94136L21.3156 20.1443C21.2652 20.3887 21.0501 20.5644 20.8007 20.5644Z" fill="orange"></path>
+		echo '	<div class="border-b flex flex-col gap-mo-6 px-mo-4">
+					<div class="w-full flex m-mo-4">
+						<div class="flex-1">
+							<h5 class="mo-title">' . esc_html( 'SMS Backup Gateway Configuration' ) . '</h5>
+							<p class="mo-caption mt-mo-2 mr-mo-20">' . esc_html( mo_( 'When the primary gateway is unavailable, the backup SMS gateway takes over and sends the SMS messages to recipients.' ) ) . '</p>
+						</div>
+						<div class="flex-1">
+							<div class="pb-mo-2 pr-mo-10">
+								<div class="mo_otp_note flex gap-mo-1 my-mo-4 w-[96%]">
+									<svg width="18" class="my-mo-4 ml-mo-4" height="18" viewBox="0 0 24 24" fill="none">
+											<g id="d4a43e0162b45f718f49244b403ea8f4">
+												<g id="4ea4c3dca364b4cff4fba75ac98abb38">
+													<g id="2413972edc07f152c2356073861cb269">
+														<path id="2deabe5f8681ff270d3f37797985a977" d="M20.8007 20.5644H3.19925C2.94954 20.5644 2.73449 20.3887 2.68487 20.144L0.194867 7.94109C0.153118 7.73681 0.236091 7.52728 0.406503 7.40702C0.576651 7.28649 0.801941 7.27862 0.980492 7.38627L7.69847 11.4354L11.5297 3.72677C11.6177 3.54979 11.7978 3.43688 11.9955 3.43531C12.1817 3.43452 12.3749 3.54323 12.466 3.71889L16.4244 11.3598L23.0197 7.38654C23.1985 7.27888 23.4233 7.28702 23.5937 7.40728C23.7641 7.52754 23.8471 7.73707 23.8056 7.94136L21.3156 20.1443C21.2652 20.3887 21.0501 20.5644 20.8007 20.5644Z" fill="orange"></path>
+													</g>
 												</g>
 											</g>
-										</g>
 									</svg>
-								<div class="my-mo-5 mr-mo-4">This is a Enterprise Plan feature. Check <a class="font-semibold text-yellow-500" href="' . esc_url( $license_url ) . '">Licensing Tab</a> to learn more.
-											</a>
+									<div class="my-mo-5 mr-mo-4">' . wp_kses( mo_( 'This is a Enterprise Plan feature. Check <a class="font-semibold text-yellow-500" href="' . esc_url( $license_url ) . '">Licensing Tab</a> to learn more.' ), MoUtility::mo_allow_html_array() ) . ' 
+										</a>
+									</div>
 								</div>
 							</div>
 						</div>
 					</div>
-				</div>
-			</div>';
+				</div>';

@@ -22,7 +22,7 @@ echo '		<input type="hidden" name="option" value="mo_registration_connect_verify
 						 name="password" placeholder="" />
 		 </div>			
 
-		 <div><a href="https://login.xecurify.com/moas/idp/resetpassword" target="_blank" class="text-right font-bold hover:underline float-right">Forgot Password</a></div>
+		 <div><a href="https://portal.miniorange.com/forgotpassword" target="_blank" class="text-right font-bold hover:underline float-right">' . esc_attr( mo_( "Forgot Password" ) ) . '</a></div>
 		 <input type="submit" class="mo-button inverted" value="Login"/>
 		 <a href="#goBackButton" class="mo-button secondary">Register</a>
 

@@ -7,7 +7,7 @@ Tags: OTP, OTP Verification, SMS Notifications, Phone Verification, Email Verifi
 Requires at least: 3.5
 Tested up to: 6.7
 Requires PHP: 5.3.0
-Stable tag: 5.2.8
+Stable tag: 5.2.9
 License: MIT/Expat
 License URI: https://docs.miniorange.com/mit-license
 
@@ -219,6 +219,15 @@ Please email us at **otpsupport@xecurify.com/info@xecurify.com** . You can also 
 8. OTP Verification Plugin Settings
 
 == Changelog ==
+= 5.2.9 =
+* miniOrange WordPress OTP Verification
+ * Paid Membership Pro Form, Tutor LMS Login Form, WooCommerce Notifications: Bug fixes
+ * Added miniOrange SMTP support for email verification in premium plans
+ * Released OTP Verification on Fluent Conversational Form
+ * Released miniOrange SMTP in premium plans
+ * Feature improvements in Elementor Pro Form
+ * Improvements - CSS of tooltips
+
 = 5.2.8 =
 * miniOrange WordPress OTP Verification
  * Released Limit OTP Timer Addon to enhance security and prevent spamming attacks
@@ -1027,6 +1036,15 @@ Please email us at **otpsupport@xecurify.com/info@xecurify.com** . You can also 
 * First version of plugin.
 
 == Upgrade Notice ==
+= 5.2.9 =
+* miniOrange WordPress OTP Verification
+ * Paid Membership Pro Form, Tutor LMS Login Form, WooCommerce Notifications: Bug fixes
+ * Added miniOrange SMTP support for email verification in premium plans
+ * Released OTP Verification on Fluent Conversational Form
+ * Released miniOrange SMTP in premium plans
+ * Feature improvements in Elementor Pro Form
+ * Improvements - CSS of tooltips
+
 = 5.2.8 =
 * miniOrange WordPress OTP Verification
  * Released Limit OTP Addon to enhance security and prevent spamming attacks

@@ -120,9 +120,10 @@ interface IGatewayFunctions {
 	 *
 	 * @param string $tx_id Transaction ID from session.
 	 * @param string $otp_token OTP Token to validate.
+	 * @param string $otp_type Type of OTP Verification.
 	 * @return array
 	 */
-	public function mo_validate_otp_token( $tx_id, $otp_token);
+	public function mo_validate_otp_token( $tx_id, $otp_token, $otp_type );
 
 	/**Config Page
 	 *

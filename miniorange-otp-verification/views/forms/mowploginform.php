@@ -119,7 +119,7 @@ echo '	    <div class="mo_registration_help_desc" id="wp_login_options">
 						</div>	
 					
 					
-						<b>' . esc_html( mo_( 'Advance Settings for Phone & Email verification:' ) ) . '</b>
+					<div class="mt-mo-2">	<u><b>' . esc_html( mo_( 'Advance Settings for Phone & Email verification:' ) ) . '</b></u></div>
 					<div class= "flex" style="border-radius: 5px;padding: 6px;border: 1px groove; background-color: #FCFCFB;margin-left:10px;">
 						<div>
 							<input  type="radio" ' . esc_attr( $disabled ) . '

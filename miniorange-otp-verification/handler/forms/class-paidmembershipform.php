@@ -14,6 +14,7 @@ use OTP\Helper\FormSessionVars;
 use OTP\Helper\MoFormDocs;
 use OTP\Helper\MoUtility;
 use OTP\Helper\SessionUtils;
+use OTP\Helper\MoMessages;
 use OTP\Objects\FormHandler;
 use OTP\Objects\IFormHandler;
 use OTP\Objects\VerificationType;
@@ -46,6 +47,7 @@ if ( ! class_exists( 'PaidMembershipForm' ) ) {
 			$this->type_email_tag          = 'pmpro_email_enable';
 			$this->is_form_enabled         = get_mo_option( 'pmpro_enable' );
 			$this->form_documents          = MoFormDocs::PAID_MEMBERSHIP_PRO;
+			$this->restrict_duplicates     = get_mo_option( 'pmpro_restrict_duplicates' );
 			parent::__construct();
 		}
 
@@ -59,7 +61,7 @@ if ( ! class_exists( 'PaidMembershipForm' ) ) {
 		public function handle_form() {
 			$this->otp_type = get_mo_option( 'pmpro_otp_type' );
 			add_action( 'wp_enqueue_scripts', array( $this, 'show_phone_field_on_page' ) );
-			add_filter( 'pmpro_checkout_before_processing', array( $this, 'paidMembershipProRegistrationCheck' ), 1, 1 );
+			add_filter( 'pmpro_registration_checks', array( $this, 'paidMembershipProRegistrationCheck' ), 1, 1 );
 			add_filter( 'pmpro_checkout_confirmed', array( $this, 'isValidated' ), 99, 2 );
 			add_action( 'user_register', array( $this, 'miniorange_registration_save' ), 10, 1 );
 
@@ -70,8 +72,9 @@ if ( ! class_exists( 'PaidMembershipForm' ) ) {
 		 * @param string $user_id fetching userid.
 		 **/
 		public function miniorange_registration_save( $user_id ) {
-
-			update_user_meta( $user_id, 'mo_phone_number', sanitize_text_field( isset( $_POST['phone_paidmembership'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+			if ( isset( $_POST['phone_paidmembership'] ) ) {// phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+				update_user_meta( $user_id, 'mo_phone_number', sanitize_text_field( wp_unslash( $_POST['phone_paidmembership'] ) ) );// phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+			}
 		}
 
 		/**
@@ -99,7 +102,7 @@ if ( ! class_exists( 'PaidMembershipForm' ) ) {
 
 			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->get_verification_type() ) ) {
 				$this->unset_otp_session_variables();
-				return;
+				return true;
 			}
 
 			$this->validatePhone( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
@@ -142,6 +145,17 @@ if ( ! class_exists( 'PaidMembershipForm' ) ) {
 				return;
 			}
 			$phone_value = sanitize_text_field( $data['phone_paidmembership'] );
+			if ( $this->restrict_duplicates ) {
+				global $wpdb;
+				$existing_user = $wpdb->get_row( $wpdb->prepare( "SELECT user_id FROM $wpdb->usermeta WHERE meta_key = 'mo_phone_number' AND meta_value = %s", $phone_value	) );// phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, Direct database call without caching detected -- DB Direct Query is necessary here.
+				if ( $existing_user ) {
+					$message              = MoMessages::showMessage( MoMessages::PHONE_EXISTS );
+					$pmpro_msgt           = 'pmpro_error';
+					$pmpro_requirebilling = false;
+					$pmpro_msg            = apply_filters( 'pmpro_set_message', $message, $pmpro_msgt );
+					return;
+				}
+			}
 			if ( ! MoUtility::validate_phone_number( $phone_value ) ) {
 				$message              = str_replace( '##phone##', $phone_value, $phone_logic->get_otp_invalid_format_message() );
 				$pmpro_msgt           = 'pmpro_error';
@@ -233,11 +247,13 @@ if ( ! class_exists( 'PaidMembershipForm' ) ) {
 				return;
 			}
 
-			$this->is_form_enabled = $this->sanitize_form_post( 'pmpro_enable' );
-			$this->otp_type        = $this->sanitize_form_post( 'pmpro_contact_type' );
+			$this->is_form_enabled     = $this->sanitize_form_post( 'pmpro_enable' );
+			$this->otp_type            = $this->sanitize_form_post( 'pmpro_contact_type' );
+			$this->restrict_duplicates = $this->sanitize_form_post( 'pmpro_restrict_duplicates' );
 
 			update_mo_option( 'pmpro_enable', $this->is_form_enabled );
 			update_mo_option( 'pmpro_otp_type', $this->otp_type );
+			update_mo_option( 'pmpro_restrict_duplicates', $this->restrict_duplicates );
 		}
 	}
 }

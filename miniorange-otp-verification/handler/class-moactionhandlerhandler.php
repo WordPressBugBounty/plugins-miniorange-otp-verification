@@ -76,7 +76,7 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 			if ( 'mo_hide_notice' !== $is_notice_closed ) {
 				if ( ( ! strcmp( MOV_TYPE, 'EnterpriseGatewayWithAddons' ) !== 0 ) && ( $current_url !== $license_page_url ) ) {
 					echo '	<div class="mo_notice updated notice is-dismissible" >
-								<p class="text-xs"><img src="' . esc_url( MOV_FEATURES_GRAPHIC ) . '" class="show_mo_icon_form" >&ensp;<b>We support OTP Verification on 50+ forms, PasswordLess Login, WooCommerce SMS Notifications for Admins, Vendors & Customers, Password Reset via OTP and many more.<br><br>AWS SNS, Twilio Gateway & more gateways supported! Want to know more? Check it out here : <a href=' . esc_url( $license_page_url ) . '>Plan Details</a>.</b></p>
+								<p class="text-sm"><img src="' . esc_url( MOV_FEATURES_GRAPHIC ) . '" class="show_mo_icon_form" >' . wp_kses( mo_( '&ensp;<b>We support OTP Verification on 60+ forms, PasswordLess Login, WooCommerce SMS Notifications for Admins, Vendors & Customers, Password Reset via OTP and many more.<br><br>AWS SNS, Twilio Gateway & more gateways supported! Want to know more? Check it out here : <a href=' . esc_url( $license_page_url ) . '>Plan Details</a>.</b>' ), MoUtility::mo_allow_html_array() ) . '</p>
 							</div>';
 				}
 			}
@@ -153,6 +153,12 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 						wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 					}
 					$this->mo_save_extra_settings( $_POST ); //phpcs:ignore -- sanitized within the function.
+					break;
+				case 'mo_otp_whatsapp_settings':
+					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->nonce ) ) {
+						wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
+					}
+					$this->mo_save_whatsapp_settings( $_POST ); //phpcs:ignore -- sanitized within the function.
 					break;
 				case 'mo_general_settings':
 					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->nonce ) ) {
@@ -319,6 +325,49 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 			update_mo_option( 'masterotp_specific_user_details', MoUtility::sanitize_check( 'masterotp_specific_user_details', $posted ) );
 			$this->mo_configure_sms_template( $posted );
 
+			do_action( 'mo_registration_show_message', MoMessages::showMessage( MoMessages::EXTRA_SETTINGS_SAVED ), 'SUCCESS' );
+		}
+
+		/**
+		 * This function sets the extra OTP related settings in the
+		 * plugin.
+		 *
+		 * @param array $posted   the post data containing all settings data admin saved.
+		 */
+		private function mo_save_whatsapp_settings( $posted ) {
+
+			if ( ! MoUtility::sanitize_check( 'mo_whatsapp_enable', $posted ) ) {
+				update_mo_option( 'mo_whatsapp_enable', MoUtility::sanitize_check( 'mo_whatsapp_enable', $posted ) );
+				do_action( 'mo_registration_show_message', MoMessages::showMessage( MoMessages::EXTRA_SETTINGS_SAVED ), 'SUCCESS' );
+				return;
+			}
+			if ( MoUtility::sanitize_check( 'mo_whatsapp_type', $posted ) === 'mo_whatsapp' ) {
+				$mo_email    = MoUtility::sanitize_check( 'mo_whatsapp_email_id', $posted );
+				$mo_password = MoUtility::sanitize_check( 'mo_whatsapp_password', $posted );
+				$content     = MocURLCall::get_customer_key( $mo_email, $mo_password );
+				if ( MoMessages::showMessage( MoMessages::INVALID_USER ) === $content || MoMessages::showMessage( MoMessages::INVALID_PASSWORD ) === $content ) {
+					do_action( 'mo_registration_show_message', $content, 'ERROR' );
+					return;
+				} else {
+					$customer_key             = is_array( json_decode( $content, true ) ) ? json_decode( $content, true ) : array( 'id' => 0 );
+					$check_whatsapp_remaining = json_decode( MocURLCall::call_api( MoConstants::HOSTNAME . '/moas/api/plugin/whatsapp/viewtransactions?customerId=' . $customer_key['id'] . '', null, array( 'Content-Type' => 'application/json' ), 'GET' ) );
+					$whatsapp_remaining       = isset( $check_whatsapp_remaining->message ) && ! empty( $check_whatsapp_remaining->message ) ? $check_whatsapp_remaining->message : 0;
+
+					update_mo_option( 'whatsapp_transactions_remaining', $whatsapp_remaining, 'mowp_customer_validation_' );
+					update_mo_option( 'mo_whatsapp_email_id', $mo_email );
+					update_mo_option( 'mo_whatsapp_password', $mo_password );
+				}
+			} else {
+				update_mo_option( 'mo_whatsapp_access_token', MoUtility::sanitize_check( 'mo_whatsapp_access_token', $posted ) );
+				update_mo_option( 'mo_whatsapp_phone_number_id', MoUtility::sanitize_check( 'mo_whatsapp_phone_number_id', $posted ) );
+				update_mo_option( 'mo_whatsapp_template_name', MoUtility::sanitize_check( 'mo_whatsapp_template_name', $posted ) );
+				update_mo_option( 'mo_whatsapp_template_language', MoUtility::sanitize_check( 'mo_whatsapp_template_language', $posted ) );
+				update_mo_option( 'mo_whatsapp_otp_enable', MoUtility::sanitize_check( 'mo_whatsapp_otp_enable', $posted ) );
+				update_mo_option( 'mo_whatsapp_notification_enable', MoUtility::sanitize_check( 'mo_whatsapp_notification_enable', $posted ) );
+			}
+			update_mo_option( 'mo_whatsapp_type', MoUtility::sanitize_check( 'mo_whatsapp_type', $posted ) );
+			update_mo_option( 'mo_whatsapp_enable', MoUtility::sanitize_check( 'mo_whatsapp_enable', $posted ) );
+			update_mo_option( 'mo_sms_as_backup', MoUtility::sanitize_check( 'mo_sms_as_backup', $posted ) );
 			do_action( 'mo_registration_show_message', MoMessages::showMessage( MoMessages::EXTRA_SETTINGS_SAVED ), 'SUCCESS' );
 		}
 

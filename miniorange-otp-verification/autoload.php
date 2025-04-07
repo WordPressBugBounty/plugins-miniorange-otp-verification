@@ -43,6 +43,7 @@ define( 'MOV_LOADER_URL', MOV_URL . 'includes/images/loader.gif' );
 define( 'MOV_DONATE', MOV_URL . 'includes/images/donate.png' );
 define( 'MOV_PAYPAL', MOV_URL . 'includes/images/paypal.png' );
 define( 'MOV_FIREBASE', MOV_URL . 'includes/images/firebase.png' );
+define( 'MOV_WHATSAPP', MOV_URL . 'includes/images/tourIcons/whatsApp.svg' );
 define( 'MOV_NETBANK', MOV_URL . 'includes/images/netbanking.png' );
 define( 'MOV_CARD', MOV_URL . 'includes/images/card.png' );
 define( 'MOV_LOGO_URL', MOV_URL . 'includes/images/logo.png' );
@@ -203,7 +204,7 @@ function initialize_package_json() {
 	$package = wp_json_encode(
 		array(
 			'name'         => 'miniorange-otp-verification',
-			'version'      => '5.2.8',
+			'version'      => '5.2.9',
 			'type'         => 'MiniOrangeGateway',
 			'testmode'     => false,
 			'failmode'     => false,

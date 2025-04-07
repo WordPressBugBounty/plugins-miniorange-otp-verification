@@ -201,18 +201,11 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 			$extra_data   = MoPHPSessions::get_session_var( 'extra_data' );
 
 			$tx_id = Sessionutils::get_transaction_id( $otp_type );
-			if ( ! function_exists( 'is_plugin_active' ) ) {
-				include_once ABSPATH . 'wp-admin/includes/plugin.php';
-			}
-			if ( is_plugin_active( 'mowhatsapp/miniorange-custom-validation.php' ) && get_mo_option( 'mo_whatsapp_enable', 'mo_wp_sms_' ) && ( MoPHPSessions::get_session_var( 'sent_type' ) !== 'SMS' ) ) {
-				$tx_id = MoPHPSessions::get_session_var( 'mo_wp_otp_site_tx_id' );
-			}
 			$token = MoUtility::sanitize_check( $request_var, MoUtility::mo_sanitize_array( $_REQUEST ) );// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- No need for nonce verification as the function is called on third party plugin hook.
 			$token = ! $token ? $otp : $token;
 			if ( ! is_null( $tx_id ) ) {
-
 				$gateway           = GatewayFunctions::instance();
-				$content           = $gateway->mo_validate_otp_token( $tx_id, $token );
+				$content           = $gateway->mo_validate_otp_token( $tx_id, $token, $otp_type );
 				$validation_status = 'SUCCESS' === $content['status'] ? 'OTP_VERIFIED' : 'VERIFICATION_FAILED';
 				apply_filters( 'mo_update_reporting', $tx_id, $validation_status );
 				switch ( $content['status'] ) {

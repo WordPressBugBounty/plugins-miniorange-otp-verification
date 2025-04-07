@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 use OTP\Helper\MoConstants;
 use OTP\Helper\MoMessages;
+use OTP\Helper\MoUtility;
 
 $class_name  = 'YourOwnForm';
 $class_name  = $class_name . '#' . $class_name;
@@ -42,13 +43,14 @@ echo '							<div class="flex flex-2 gap-mo-8">
 								</div>    
 							</div>';
 echo '                     	
-							<div class="py-mo-4 px-mo-8 text-mo-lg"><b>Not able to find your form.</b>';
+							<div class="py-mo-4 px-mo-8 text-mo-lg"><b>' . esc_html( MoMessages::showMessage( MoMessages::FORM_NOT_FOUND ) ) . '</b>';
 echo '                          	<span class="tooltip">
 									<span class="dashicons dashicons-editor-help"></span>
 									<span class="tooltiptext">
 										<span class="header"><b><i>' . esc_html( MoMessages::showMessage( MoMessages::FORM_NOT_AVAIL_HEAD ) ) . '</i></b></span><br/><br/>
-										<span class="body">We are actively adding support for more forms. Please contact us using the support form on your right or email us at <a onClick="otpSupportOnClick();""><span style="color:white"><u>' . esc_html( MoConstants::FEEDBACK_EMAIL ) . '</u>.</span></a> While contacting us please include enough information about your registration form and how you intend to use this plugin. We will respond promptly.</span>
-									</span>
+										<span class="body">' . wp_kses( MoMessages::showMessage( MoMessages::FORM_NOT_AVAIL_BODY ), MoUtility::mo_allow_html_array() ) . '</span>
+
+										</span>
 								</span>
 							</div>';
 							get_otp_verification_form_dropdown();
