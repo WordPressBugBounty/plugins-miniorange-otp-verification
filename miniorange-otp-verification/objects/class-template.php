@@ -192,9 +192,13 @@ if ( ! class_exists( 'Template' ) ) {
 			$this->validateRequiredFields( $template );
 			$from_both     = false;
 			$this->preview = true;
+			$preview_popup = $this->parse( $template, $message, $otp_type, $from_both );
+			if( 'EXTERNAL' === $_POST['popuptype'] ){
+				$preview_popup = preg_replace('#<script(.*?)>(.*?)</script>#is', '', $preview_popup );
+			}
 			wp_send_json(
 				MoUtility::create_json(
-					$this->parse( $template, $message, $otp_type, $from_both ),
+					$preview_popup,
 					MoConstants::SUCCESS_JSON_TYPE
 				)
 			);

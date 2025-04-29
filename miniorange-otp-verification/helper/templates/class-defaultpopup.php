@@ -239,12 +239,12 @@ if ( ! class_exists( 'DefaultPopup' ) ) {
 		<form name="f" method="post" action="" id="verification_resend_otp_form">
 			<input type="hidden" id="mopopup_wpnonce" name="mopopup_wpnonce" value="' . wp_create_nonce( $this->nonce ) . '"/>
 			<input id="verification_resend_otp" name="option" value="verification_resend_otp" type="hidden"/>
-			<input name="otp_type" value="' . $otp_type . '" type="hidden"/>
-			<input type="hidden" id="from_both" name="from_both" value="' . $from_both . '"/> {{EXTRA_POST_DATA}}
+			<input name="otp_type" value="' . esc_attr( $otp_type ) . '" type="hidden"/>
+			<input type="hidden" id="from_both" name="from_both" value="' . esc_attr( $from_both ) . '"/> {{EXTRA_POST_DATA}}
 		</form>
 		<form name="f" method="post" action="" id="goBack_choice_otp_form">
 			<input id="verification_resend_otp" name="option" value="verification_resend_otp_both" type="hidden"/>
-			<input type="hidden" id="from_both" name="from_both" value="true">{{EXTRA_POST_DATA}}</form>{{SCRIPTS}}';
+			<input type="hidden" id="from_both" name="from_both" value="' . esc_attr( $from_both ) . '">{{EXTRA_POST_DATA}}</form>{{SCRIPTS}}';
 			$required_fields = str_replace( '{{SCRIPTS}}', $this->getRequiredScripts(), $required_fields );
 			return $required_fields;
 		}
@@ -327,8 +327,8 @@ if ( ! class_exists( 'DefaultPopup' ) ) {
 		 * @return string
 		 */
 		private function getExtraFormFields( $otp_type, $from_both ) {
-			return ' <input type="hidden" name="otp_type" value="' . $otp_type . '">
-                 <input type="hidden" id="from_both" name="from_both" value="' . $from_both . '">
+			return ' <input type="hidden" name="otp_type" value="' . esc_attr( $otp_type ) . '">
+                 <input type="hidden" id="from_both" name="from_both" value="' . esc_attr( $from_both ) . '">
                  {{EXTRA_POST_DATA}}';
 		}
 	}

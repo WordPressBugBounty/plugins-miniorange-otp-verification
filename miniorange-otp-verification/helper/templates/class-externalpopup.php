@@ -143,9 +143,9 @@ if ( ! class_exists( 'ExternalPopup' ) ) {
 		 * preview mode.
 		 */
 		private function getRequiredScripts() {
-			do_action( 'mo_include_js' );
 			$scripts = '<style>.mo_customer_validation-modal{display:block!important}</style>';
 			if ( ! $this->preview ) {
+				do_action( 'mo_include_js' );
 				$scripts .=
 				'<script>function mo_validation_goback(){
                document.getElementById("validation_goBack_form").submit()};' .

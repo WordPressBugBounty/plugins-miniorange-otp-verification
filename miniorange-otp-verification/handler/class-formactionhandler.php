@@ -203,7 +203,7 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 			$tx_id = Sessionutils::get_transaction_id( $otp_type );
 			$token = MoUtility::sanitize_check( $request_var, MoUtility::mo_sanitize_array( $_REQUEST ) );// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- No need for nonce verification as the function is called on third party plugin hook.
 			$token = ! $token ? $otp : $token;
-			if ( ! is_null( $tx_id ) ) {
+			if ( ! is_null( esc_attr( $tx_id ) ) ) {
 				$gateway           = GatewayFunctions::instance();
 				$content           = $gateway->mo_validate_otp_token( $tx_id, $token, $otp_type );
 				$validation_status = 'SUCCESS' === $content['status'] ? 'OTP_VERIFIED' : 'VERIFICATION_FAILED';

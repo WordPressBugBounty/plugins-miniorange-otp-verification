@@ -515,7 +515,7 @@ if ( ! class_exists( 'ResendControlHandler' ) ) {
 			if($mo("#wc-timer-left").length>0)
 			{
 			 	startTimerVar(timeLeft, displayVarWc);
-				$mo(".close").click();
+				document.getElementById("validation_goBack_form").submit();
 			}
 			$mo(".mo_customer_validation-login-container").hide();
 
@@ -536,7 +536,8 @@ if ( ! class_exists( 'ResendControlHandler' ) ) {
 						$mo("#miniorange_wc_popup_send_otp_token").show();
 						$mo("#miniorange_otp_token_submit").show();
 						$mo("#wc-timer-left").parent().remove();
-						jQuery(".close").click();
+						document.getElementById("validation_goBack_form").submit();
+
 						clearInterval(timerFunction);
 						mo_messageSelector = "div[id*=\'mo_message\']";
 						jQuery($mo(mo_messageSelector)).empty().hide();
@@ -644,7 +645,8 @@ if ( ! class_exists( 'ResendControlHandler' ) ) {
 							$mo("#popup_wc_mo").hide();
 							$mo("#miniorange_wc_popup_send_otp_token").show();
 							$mo("#wc-timer-left").parent().remove();
-							jQuery(".close").click();
+							document.getElementById("validation_goBack_form").submit();
+
 							clearInterval(blockTimerFunction);
 							jQuery($mo(blockMessageSelector)).empty().hide();
 							jQuery(".mo_message_box").empty().hide();

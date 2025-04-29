@@ -182,9 +182,52 @@ function miniorange_site_otp_validation_form( $user_login, $user_email, $phone_n
 	$html_content          = MoUtility::is_blank( $user_email ) && MoUtility::is_blank( $phone_number ) ?
 					apply_filters( 'mo_template_build', '', $error_popup_handler->get_template_key(), $message, $otp_type, $from_both )
 					: apply_filters( 'mo_template_build', '', $default_popup_handler->get_template_key(), $message, $otp_type, $from_both );
-	echo htmlspecialchars_decode( mo_( $html_content ) ); // phpcs:ignore -- No need to escape the variable as varibale contains html of poppup which is coming from Database.
+	$html_content          = mo_allow_otp_scripts_only( $html_content );
+
+	echo wp_kses( htmlspecialchars_decode( mo_( $html_content ) ), MoUtility::mo_allow_html_array() );
 	$default_popup_handler->getCatchyRequiredScripts();
 	exit();
+}
+
+/**
+ * Function filters and allows only specific safe <script> blocks from a given HTML string.
+ *
+ * @param string $html popup html
+ * 
+ * @return string The sanitized HTML with only allowed <script> blocks.
+ */
+function mo_allow_otp_scripts_only( $html ) {
+	preg_match_all( '/<script\b[^>]*>(.*?)<\/script>/is', $html, $matches );
+
+	foreach ( $matches[0] as $i => $full_script_tag ) {
+		$script_body = $matches[1][ $i ];
+
+		// Allow if it contains any of the OTP pop-up script functions.
+		$allow            = false;
+		$allowed_patterns = array(
+			'mo_validation_goback',
+			'mo_validate_form',
+			'mo_otp_verification_resend',
+			'mo_select_goback',
+			'$mo=',
+			'miniorange-ajax-otp',
+			'moOtpTimerScript'
+		);
+
+		foreach ( $allowed_patterns as $pattern ) {
+			if ( strpos( $script_body, $pattern ) !== false ) {
+				$allow = true;
+				break;
+			}
+		}
+
+		// Remove disallowed script.
+		if ( ! $allow ) {
+			$html = str_replace( $full_script_tag, '', $html );
+		}
+	}
+
+	return $html;
 }
 
 

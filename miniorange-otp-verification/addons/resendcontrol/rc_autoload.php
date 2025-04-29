@@ -81,11 +81,7 @@ function update_mo_rc_option( $option_name, $value, $prefix = null ) {
  * @param string $string - option name to be deleted.
  */
 function moroc_( $string ) {
-
-	$string = preg_replace( '/\s+/S', ' ', $string );
-	return is_scalar( $string )
-			? ( is_morc_polylang_installed() ? pll__( $string ) : __( $string, 'miniorange-otp-verification' ) ) // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText --common function for string translation.
-			: $string;
+	return $string;
 }
 
 /**

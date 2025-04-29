@@ -126,11 +126,7 @@ function wp_ajax_url() {
  * @param string $string - option name to be deleted.
  */
 function mo_( $string ) {
-
-	$string = preg_replace( '/\s+/S', ' ', $string );
-	return is_scalar( $string )
-			? ( MoUtility::is_polylang_installed() && MOV_USE_POLYLANG ? pll__( $string ) : __( $string, 'miniorange-otp-verification' ) ) // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText --common function for string translation.
-			: $string;
+	return $string;
 }
 
 /**
@@ -204,7 +200,7 @@ function initialize_package_json() {
 	$package = wp_json_encode(
 		array(
 			'name'         => 'miniorange-otp-verification',
-			'version'      => '5.2.9',
+			'version'      => '5.3.0',
 			'type'         => 'MiniOrangeGateway',
 			'testmode'     => false,
 			'failmode'     => false,
