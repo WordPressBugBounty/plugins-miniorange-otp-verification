@@ -200,7 +200,7 @@ function initialize_package_json() {
 	$package = wp_json_encode(
 		array(
 			'name'         => 'miniorange-otp-verification',
-			'version'      => '5.3.0',
+			'version'      => '5.3.1',
 			'type'         => 'MiniOrangeGateway',
 			'testmode'     => false,
 			'failmode'     => false,

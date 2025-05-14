@@ -3,15 +3,15 @@
  * Plugin Name: Email Verification / SMS Verification / Mobile Verification
  * Plugin URI: http://miniorange.com
  * Description: Email & SMS OTP Verification for all forms. WooCommerce SMS Notification. PasswordLess Login. External Gateway for OTP Verification. 24/7 support.
- * Version: 5.3.0
+ * Version: 5.3.1
  * Author: miniOrange
  * Author URI: http://miniorange.com
  * Text Domain: miniorange-otp-verification
  * Domain Path: /lang
  * WC requires at least: 2.0.0
  * WC tested up to: 8.2.1
- * License: MIT/Expat
- * License URI: https://docs.miniorange.com/mit-license
+ * License: Expat
+ * License URI: https://plugins.miniorange.com/mit-license
  *
  * @package miniorange-otp-verification
  */
