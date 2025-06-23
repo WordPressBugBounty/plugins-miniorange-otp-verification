@@ -102,10 +102,8 @@ if ( ! class_exists( 'MocURLCall' ) ) {
 		public static function mo_send_otp_token( $auth_type, $email = '', $phone = '' ) {
 			$email        = 'SMS' === $auth_type ? null : $email;
 			$url          = MoConstants::HOSTNAME . '/moas/api/auth/challenge';
-			$customer_key = ! MoUtility::is_blank( get_mo_option( 'admin_customer_key' ) )
-						? get_mo_option( 'admin_customer_key' ) : MoConstants::DEFAULT_CUSTOMER_KEY;
-			$api_key      = ! MoUtility::is_blank( get_mo_option( 'admin_api_key' ) )
-						? get_mo_option( 'admin_api_key' ) : MoConstants::DEFAULT_API_KEY;
+			$customer_key = get_mo_option( 'admin_customer_key' );
+			$api_key      = get_mo_option( 'admin_api_key' );
 			$fields       = array(
 				'customerKey'     => $customer_key,
 				'email'           => $email,
@@ -128,10 +126,8 @@ if ( ! class_exists( 'MocURLCall' ) ) {
 		 */
 		public static function validate_otp_token( $transaction_id, $otp_token ) {
 			$url          = MoConstants::HOSTNAME . '/moas/api/auth/validate';
-			$customer_key = ! MoUtility::is_blank( get_mo_option( 'admin_customer_key' ) )
-						? get_mo_option( 'admin_customer_key' ) : MoConstants::DEFAULT_CUSTOMER_KEY;
-			$api_key      = ! MoUtility::is_blank( get_mo_option( 'admin_api_key' ) )
-						? get_mo_option( 'admin_api_key' ) : MoConstants::DEFAULT_API_KEY;
+			$customer_key = get_mo_option( 'admin_customer_key' );
+			$api_key      = get_mo_option( 'admin_api_key' );
 			$fields       = array(
 				'txId'  => $transaction_id,
 				'token' => $otp_token,
@@ -172,25 +168,6 @@ if ( ! class_exists( 'MocURLCall' ) ) {
 			$auth_header  = self::create_auth_header( $customer_key, $api_key );
 			$response     = self::call_api( $url, $field_string, $auth_header );
 			return true;
-		}
-
-		/** MoInternal Function
-		 *
-		 * @param string $email email address.
-		 */
-		public static function forgot_password( $email ) {
-			$url          = MoConstants::HOSTNAME . '/moas/rest/customer/password-reset';
-			$customer_key = get_mo_option( 'admin_customer_key' );
-			$api_key      = get_mo_option( 'admin_api_key' );
-
-			$fields = array(
-				'email' => $email,
-			);
-
-			$json        = wp_json_encode( $fields );
-			$auth_header = self::create_auth_header( $customer_key, $api_key );
-			$response    = self::call_api( $url, $json, $auth_header );
-			return $response;
 		}
 
 

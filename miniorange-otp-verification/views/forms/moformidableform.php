@@ -59,10 +59,6 @@ echo '		<div class="mo_registration_help_desc"
                                     <input  type="button"  
                                             value="+" ' . esc_attr( $disabled ) . '
                                             onclick="add_frm(\'email\',1);" 
-                                            class="mo-form-button secondary" />&nbsp;
-                                    <input  type="button"    
-                                            value="-" ' . esc_attr( $disabled ) . '
-                                            onclick="remove_frm(1);" 
                                             class="mo-form-button secondary" />
                                     <br/><br/>';
 
@@ -118,10 +114,6 @@ echo '		<div class="mo_registration_help_desc"
                                 <input  type="button"  
                                         value="+" ' . esc_attr( $disabled ) . '
                                         onclick="add_frm(\'phone\',2);" 
-                                        class="mo-form-button secondary" />&nbsp;
-                                <input  type="button" 
-                                        value="-" ' . esc_attr( $disabled ) . '
-                                        onclick="remove_frm(2);" 
                                         class="mo-form-button secondary" /><br/><br/>';
 
 									$form_results = get_multiple_form_select(

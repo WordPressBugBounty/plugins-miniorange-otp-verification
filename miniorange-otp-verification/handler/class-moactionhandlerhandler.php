@@ -33,6 +33,7 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 	class MoActionHandlerHandler extends BaseActionHandler {
 
 		use Instance;
+
 		/**
 		 * Initializes values
 		 */
@@ -50,7 +51,6 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 			add_action( 'wp_ajax_mo_dismiss_sms_notice', array( $this, 'dismiss_sms_notice' ) );
 			add_action( 'wp_ajax_mo_modal_action', array( $this, 'mo_transaction_modal_action' ) );
 			add_action( 'wp_ajax_miniorange_get_message_value', array( $this, 'get_message_value' ) );
-			add_action( 'wp_ajax_mo_dismiss_alert', array( $this, 'dismiss_alert' ) );
 		}
 
 
@@ -65,31 +65,12 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 			$query_string     = isset( $_SERVER['QUERY_STRING'] ) ? sanitize_text_field( wp_unslash( $_SERVER['QUERY_STRING'] ) ) : ''; //phpcs:ignore -- false positive.
 			$current_url      = admin_url() . 'admin.php?' . $query_string;
 			$is_notice_closed = get_mo_option( 'mo_hide_notice' );
-			$is_alert_closed  = get_mo_option( 'mo_hide_alert' );
-			if ( 'mo_hide_alert' !== $is_alert_closed ) {
-				echo '<div style="display:flex;" class="notice notice-error is-dismissible" id="close_alert">
-						<p class="mo-lic-admin-notice-text">
-							<b>ALERT:</b> We have released some changes to our miniOrange gateway guidelines. According to the new guidelines, you cannot add any special character without spaces around it.
-						</p>
-					</div>';
-			}
 			if ( 'mo_hide_notice' !== $is_notice_closed ) {
 				if ( ( ! strcmp( MOV_TYPE, 'EnterpriseGatewayWithAddons' ) !== 0 ) && ( $current_url !== $license_page_url ) ) {
 					echo '	<div class="mo_notice updated notice is-dismissible" >
 								<p class="text-sm"><img src="' . esc_url( MOV_FEATURES_GRAPHIC ) . '" class="show_mo_icon_form" >' . wp_kses( mo_( '&ensp;<b>We support OTP Verification on 60+ forms, PasswordLess Login, WooCommerce SMS Notifications for Admins, Vendors & Customers, Password Reset via OTP and many more.<br><br>AWS SNS, Twilio Gateway & more gateways supported! Want to know more? Check it out here : <a href=' . esc_url( $license_page_url ) . '>Plan Details</a>.</b>' ), MoUtility::mo_allow_html_array() ) . '</p>
 							</div>';
 				}
-			}
-
-		}
-
-		/**
-		 * This function we used to update the value on click of hide admin alert.
-		 * This is the check for notification on click of close notification.
-		 */
-		public function dismiss_alert() {
-			if ( current_user_can( 'manage_options' ) ) {
-				update_mo_option( 'mo_hide_alert', 'mo_hide_alert' );
 			}
 		}
 
@@ -214,7 +195,6 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 			update_mo_option( 'cf_field_id', MoUtility::sanitize_check( 'cf_field_id', $post ), 'mo_otp_' );
 			update_mo_option( 'cf_enable_type', MoUtility::sanitize_check( 'cf_enable_type', $post ), 'mo_otp_' );
 			update_mo_option( 'cf_button_text', MoUtility::sanitize_check( 'cf_button_text', $post ), 'mo_otp_' );
-
 		}
 
 		/**
@@ -324,8 +304,6 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 			update_mo_option( 'masterotp_specific_user', MoUtility::sanitize_check( 'mo_masterotp_specific_user', $posted ) );
 			update_mo_option( 'masterotp_specific_user_details', MoUtility::sanitize_check( 'masterotp_specific_user_details', $posted ) );
 			$this->mo_configure_sms_template( $posted );
-
-			do_action( 'mo_registration_show_message', MoMessages::showMessage( MoMessages::EXTRA_SETTINGS_SAVED ), 'SUCCESS' );
 		}
 
 		/**
@@ -461,7 +439,6 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 
 			update_mo_option( 'mo_transaction_notice', $array );
 			wp_send_json( MoUtility::create_json( $transaction, MoConstants::SUCCESS_JSON_TYPE ) );
-
 		}
 
 
@@ -576,7 +553,7 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 		 */
 		private function get_feedback_html() {
 			$template =
-			'<html><head><title></title></head><body> <div> First Name :{{FIRST_NAME}}<br/><br/> Last Name :{{LAST_NAME}}<br/><br/> Server Name :{{SERVER}}<br/><br/> Email :{{EMAIL}}<br/><br/>Plugin Type : {{PLUGIN_TYPE}}<br/><br/> {{TYPE}}: [{{PLUGIN}} - {{VERSION}}] : <br/><br/><strong><em>Feedback : </em></strong>{{FEEDBACK}}<br/><br/>Enabled Forms : {{ENABLED_FORMS}}</div></body></html>';
+			'<html><head><title></title></head><body> <div> First Name :{{FIRST_NAME}}<br/><br/> Last Name :{{LAST_NAME}}<br/><br/> Server Name :{{SERVER}}<br/><br/> Email :{{EMAIL}}<br/><br/>Plugin Type : {{PLUGIN_TYPE}}<br/><br/> {{TYPE}}: [{{PLUGIN}} - {{VERSION}}] : <br/><br/><strong><em>Feedback : </em></strong>{{FEEDBACK}}<br/><br/>Enabled Forms : {{ENABLED_FORMS}}<br/><br/><strong><em>Contact me: </em></strong>{{User_consent}}</div></body></html>';
 			return $template;
 		}
 		/**
@@ -606,7 +583,8 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 					}
 				}
 			}
-			$feedback = implode( ' , ', $views ) . ' , ' . sanitize_text_field( $posted['query_feedback'] );
+			$feedback            = implode( ' , ', $views ) . ' , ' . sanitize_text_field( $posted['query_feedback'] );
+			$mo_otp_contact_back = isset( $posted['mo_otp_contact_back'] ) ? 'Yes' : 'No';
 
 			$feedback_template = $this->get_feedback_html();
 
@@ -628,6 +606,7 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 			$feedback_template = str_replace( '{{TYPE}}', $type, $feedback_template );
 			$feedback_template = str_replace( '{{FEEDBACK}}', $feedback, $feedback_template );
 			$feedback_template = str_replace( '{{ENABLED_FORMS}}', $this->enabled_form_list(), $feedback_template );
+			$feedback_template = str_replace( '{{User_consent}}', $mo_otp_contact_back, $feedback_template );
 
 			$notif = MoUtility::send_email_notif(
 				$email,
@@ -685,8 +664,13 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 		 */
 		private function mo_configure_sms_template( $posted ) {
 			$gateway = GatewayFunctions::instance();
-			$gateway->mo_configure_sms_template( $posted );
+			$sms_setting = $gateway->mo_configure_sms_template( $posted );
 			$gateway->mo_configure_email_template( $posted );
+			if ( ! $sms_setting ) {
+				do_action( 'mo_registration_show_message', MoMessages::showMessage( MoMessages::MSG_TEMPLATE_SAVED ), 'SUCCESS' );
+			} else {
+				do_action( 'mo_registration_show_message', MoMessages::showMessage( MoMessages::TEMPLATE_GUIDELINE_ALERT ), 'SUCCESS' );
+			}
 		}
 
 		/**

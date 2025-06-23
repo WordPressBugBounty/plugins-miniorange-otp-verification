@@ -464,12 +464,16 @@ if ( ! class_exists( 'FormCraftPremiumForm' ) ) {
 			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option() ) ) {
 				return;
 			}
-			if ( ! MoUtility::get_active_plugin_version( 'FormCraft' ) || ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->admin_nonce ) ) {
+			if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->admin_nonce ) ) {
 				return;
 			}
 
 			$data = MoUtility::mo_sanitize_array( $_POST );
-
+			if ( isset( $data['mo_customer_validation_fcpremium_enable'] ) && ! $this->isFormCraftVersion3Installed() ) {
+				$message  = MoMessages::showMessage( MoMessages::PLUGIN_INSTALL, array( 'formname' => $this->form_name ) );
+				do_action( 'mo_registration_show_message', $message, MoConstants::ERROR );
+				return;
+			}
 			$form = array();
 
 			if ( isset( $data['fcpremium_form']['form'] ) ) {

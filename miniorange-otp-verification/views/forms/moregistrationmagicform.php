@@ -32,8 +32,7 @@ echo '					<div ' . ( esc_attr( $crf_enable_type ) !== esc_attr( $crf_type_phone
 								<li>' . wp_kses( mo_( 'Enable <b>Define New User Meta Key</b> under <b>Add Field to WordPress User Profile</b> section.' ), array( 'b' => array() ) ) . '</li>
 								<li>' . wp_kses( mo_( 'Enter the meta key as <b>rm_phone_number</b>.' ), array( 'b' => array() ) ) . '</li>
 								<li>' . wp_kses( mo_( 'Click on <b>Save</b> button to save your new field.' ), array( 'b' => array() ) ) . '<br/>
-								<br/>' . esc_html( mo_( 'Add Form' ) ) . ' : <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_crf(\'phone\',2);" class="mo-form-button secondary" />&nbsp;
-								<input type="button" value="-" ' . esc_attr( $disabled ) . ' onclick="remove_crf(2);" class="mo-form-button secondary" /><br/><br/>';
+								<br/>' . esc_html( mo_( 'Add Form' ) ) . ' : <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_crf(\'phone\',2);" class="mo-form-button secondary" /><br/><br/>';
 
 								$form_results = get_multiple_form_select( $crf_form_otp_enabled, false, true, $disabled, 2, 'crf', 'Label' );
 								$crfcounter2  = ! MoUtility::is_blank( $form_results['counter'] ) ? max( $form_results['counter'] - 1, 0 ) : 0;
@@ -63,8 +62,7 @@ echo '
 							<li>' . wp_kses( mo_( 'Enter the <b>Label</b> of your new field. Keep this handy as you will need it later.' ), array( 'b' => array() ) ) . '</li>
 							<li>' . wp_kses( mo_( 'Under RULES section check the box which says <b>Is Required</b>.' ), array( 'b' => array() ) ) . '</li>
 							<li>' . wp_kses( mo_( 'Click on <b>Save</b> button to save your new field.' ), array( 'b' => array() ) ) . '<br/>
-							<br/>' . esc_html( mo_( 'Add Form' ) ) . ' : <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_crf(\'email\',1);" class="mo-form-button secondary"/>&nbsp;
-								<input type="button" value="-" ' . esc_attr( $disabled ) . ' onclick="remove_crf(1);" class="mo-form-button secondary" /><br/><br/>';
+							<br/>' . esc_html( mo_( 'Add Form' ) ) . ' : <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_crf(\'email\',1);" class="mo-form-button secondary"/><br/><br/>';
 
 								$form_results = get_multiple_form_select( $crf_form_otp_enabled, false, true, $disabled, 1, 'crf', 'Label' );
 								$crfcounter1  = ! MoUtility::is_blank( $form_results['counter'] ) ? max( $form_results['counter'] - 1, 0 ) : 0;
@@ -91,8 +89,7 @@ echo '</li>
 								<li>' . wp_kses( mo_( 'Enable <b>Associate with Existing User Meta Keys</b> under <b>Add Field to WordPress User Profile</b> section.' ), array( 'b' => array() ) ) . '</li>
 								<li>' . wp_kses( mo_( 'Select your user meta key as <b>pmpro_bphone</b>.' ), array( 'b' => array() ) ) . '</li>
 							<li>' . wp_kses( mo_( 'Click on <b>Save</b> button to save your new field.' ), array( 'b' => array() ) ) . '<br/>
-							<br/>' . esc_html( mo_( 'Add Form' ) ) . ' : <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_crf(\'both\',3);" class="mo-form-button secondary"/>&nbsp;
-								<input type="button" value="-" ' . esc_attr( $disabled ) . ' onclick="remove_crf(3);" class="mo-form-button secondary" /><br/><br/>';
+							<br/>' . esc_html( mo_( 'Add Form' ) ) . ' : <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_crf(\'both\',3);" class="mo-form-button secondary"/><br/><br/>';
 
 								$form_results = get_multiple_form_select( $crf_form_otp_enabled, false, true, $disabled, 3, 'crf', 'Label' );
 								$crfcounter3  = ! MoUtility::is_blank( $form_results['counter'] ) ? max( $form_results['counter'] - 1, 0 ) : 0;

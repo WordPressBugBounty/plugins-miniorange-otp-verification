@@ -30,7 +30,7 @@ echo '           <div class="mo_registration_help_desc"
 								value= "' . esc_attr( $wc_acc_type_email ) . '"
 								data-toggle="wc_profile_email_instructions" 
 								' . ( esc_attr( $wc_acc_enabled_type ) === esc_attr( $wc_acc_type_email ) ? 'checked' : '' ) . '/>
-							<strong>' . esc_html( mo_( 'Email Verification' ) ) . '</strong>
+							<strong>' . esc_html( mo_( 'Enable Email Verification' ) ) . '</strong>
 							<i>' . esc_html( mo_( '( On change of Email Address )' ) ) . '</i>
 						</div>
 						<div>
@@ -41,7 +41,7 @@ echo '           <div class="mo_registration_help_desc"
 									value= "' . esc_attr( $wc_acc_type_phone ) . '"
 									data-toggle="wc_profile_phone_instructions" 
 									' . ( esc_attr( $wc_acc_enabled_type ) === esc_attr( $wc_acc_type_phone ) ? 'checked' : '' ) . '/>
-							<strong>' . esc_html( mo_( 'Phone Verification' ) ) . '</strong>
+							<strong>' . esc_html( mo_( 'Enable Phone Verification' ) ) . '</strong>
 							<i>' . esc_html( mo_( '(On change of Mobile Number)' ) ) . '</i>
 							<div    ' . ( esc_attr( $wc_acc_enabled_type ) !== esc_attr( $wc_acc_type_phone ) ? 'hidden' : '' ) . '
 									id="wc_profile_phone_instructions" 

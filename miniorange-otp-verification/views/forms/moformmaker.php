@@ -29,8 +29,7 @@ echo '       <div class = "mo_registration_help_desc" id="formMaker_form_options
                     <li>' . wp_kses( mo_( 'Add an Email Field to your form. Note the <b>Email Field label</b>.' ), array( 'b' => array() ) ) . '</li>
                     <li>' . wp_kses( mo_( 'Add a Verification Field to your form where users will enter the OTP received. Keep the field <b>required</b>. Note the Field label of the verification field.' ), array( 'b' => array() ) ) . '</li>
                     <li>' . esc_html( mo_( 'Enter your Form ID, the Email Field label and the Verification Field label below' ) ) . ':<br>
-                        <br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_formmaker(\'email\',1);" class="mo-form-button secondary" />&nbsp;
-                                                    <input type="button" value="-" ' . esc_attr( $disabled ) . ' onclick="remove_formmaker(1);" class="mo-form-button secondary" /><br/><br/>';
+                        <br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_formmaker(\'email\',1);" class="mo-form-button secondary" /><br/><br/>';
 
 						$form_results = get_multiple_form_select( $form_maker_form_otp_enabled, true, true, $disabled, 1, 'formmaker', 'Label' );
 						$counter1     = ! MoUtility::is_blank( $form_results['counter'] ) ? max( $form_results['counter'] - 1, 0 ) : 0;
@@ -53,8 +52,7 @@ echo '					</li>
                      <li>' . wp_kses( mo_( 'Add an Phone Field to your form. Note the <b>Phone Field label</b>.' ), array( 'b' => array() ) ) . '</li>
                      <li>' . wp_kses( mo_( 'Add a Verification Field to your form where users will enter the OTP received. Keep the field <b>required</b>. Note the Field label of the verification field.' ), array( 'b' => array() ) ) . '</li>
                      <li>' . esc_html( mo_( 'Enter your Form ID, the Phone Field label and the Verification Field label below' ) ) . ':<br>
-                        <br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_formmaker(\'phone\',2);" class="mo-form-button secondary" />&nbsp;
-                                                    <input type="button" value="-" ' . esc_attr( $disabled ) . ' onclick="remove_formmaker(2);" class="mo-form-button secondary" /><br/><br/>';
+                        <br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_formmaker(\'phone\',2);" class="mo-form-button secondary" /><br/><br/>';
 
 						$form_results = get_multiple_form_select( $form_maker_form_otp_enabled, true, true, $disabled, 2, 'formmaker', 'Label' );
 						$counter2     = ! MoUtility::is_blank( $form_results['counter'] ) ? max( $form_results['counter'] - 1, 0 ) : 0;

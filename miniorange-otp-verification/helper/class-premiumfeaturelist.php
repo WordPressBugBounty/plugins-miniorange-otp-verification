@@ -27,6 +27,7 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 	final class PremiumFeatureList {
 
 		use Instance;
+
 		/** Variable declaration
 		 *
 		 * @var $premium_addon
@@ -491,7 +492,10 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 					'name'      => 'miniOrange - Login and register using phone only',
 					'plan_name' => 'WooCommerce OTP and Notification Plan',
 				),
-
+				'DOKAN_REG_FORM'                => array(
+					'name'      => 'Dokan Registration Form',
+					'plan_name' => 'WooCommerce OTP and Notification Plan',
+				),
 			);
 
 			$this->both_email_phone_addon_forms = array(

@@ -35,6 +35,7 @@ if ( ! class_exists( 'VisualFormBuilder' ) ) {
 	class VisualFormBuilder extends FormHandler implements IFormHandler {
 
 		use Instance;
+
 		/**
 		 * Initializes values
 		 */
@@ -343,17 +344,16 @@ if ( ! class_exists( 'VisualFormBuilder' ) ) {
 			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option() ) || ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->admin_nonce ) ) {
 				return;
 			}
-
+			$data = MoUtility::mo_sanitize_array( $_POST );
 			if ( ! function_exists( 'is_plugin_active' ) ) {
 				include_once ABSPATH . 'wp-admin/includes/plugin.php';
 			}
-			if ( ! is_plugin_active( 'visual-form-builder/visual-form-builder.php' ) ) {
+			if ( isset( $data['mo_customer_validation_visual_form_enable'] ) && ! is_plugin_active( 'visual-form-builder/visual-form-builder.php' ) ) {
+				$message  = MoMessages::showMessage( MoMessages::PLUGIN_INSTALL, array( 'formname' => $this->form_name ) );
+				do_action( 'mo_registration_show_message', $message, MoConstants::ERROR );
 				return;
 			}
-
-			$data = MoUtility::mo_sanitize_array( $_POST );
 			$form = $this->parseFormDetails( $data );
-
 			$this->is_form_enabled = $this->sanitize_form_post( 'visual_form_enable' );
 			$this->otp_type        = $this->sanitize_form_post( 'visual_form_enable_type' );
 			$this->form_details    = ! empty( $form ) ? $form : '';
@@ -368,8 +368,6 @@ if ( ! class_exists( 'VisualFormBuilder' ) ) {
 				update_mo_option( 'visual_form_otp_enabled', maybe_serialize( $this->form_details ) );
 			}
 		}
-
-
 
 		/**
 		 * To parse the form details from settings page
@@ -409,6 +407,5 @@ if ( ! class_exists( 'VisualFormBuilder' ) ) {
 			$result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM `{$wpdb->prefix}visual_form_builder_fields` WHERE `field_name` = %s AND `form_id` = %d;", array( $key, intval( $form_id ) ) ) );// phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, Direct database call without caching detected -- DB Direct Query is necessary here.			
 			return ! MoUtility::is_blank( $result ) ? 'vfb-' . $result->field_id : '';
 		}
-
 	}
 }

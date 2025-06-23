@@ -48,12 +48,12 @@ if ( ! $smtp_type ) {
 						</p>';
 }
 	echo '			</div>';
-if ( ! $smtp_type ) {
+
 	echo '			<div class="flex-1 pr-mo-4 pl-mo-2 pb-mo-4" id="email">
 						<div class="flex-1 flex my-mo-8 gap-mo-4">
 							<div class="mo-input-wrapper">
 								<label class="mo-input-label">' . esc_html( $from_id ) . '</label>
-								<input  ' . esc_attr( $disabled ) . ' class=" mo-input" id="custom_email_from_id" placeholder="' . esc_attr( $mail_frm_addr ) . '" value="' . esc_attr( $email_from_id ) . '" type="text" name="mo_customer_validation_custom_email_from_id" >
+								<input  ' . esc_attr( $disabled ) . esc_attr( $smtp_disabled ) . ' class=" mo-input" id="custom_email_from_id" placeholder="' . esc_attr( $mail_frm_addr ) . '" value="' . esc_attr( $email_from_id ) . '" type="text" name="mo_customer_validation_custom_email_from_id" >
 							</div>
 							<div class="mo-input-wrapper">
 								<label class="mo-input-label">' . esc_html( $from_name ) . '</label>
@@ -69,19 +69,6 @@ if ( ! $smtp_type ) {
 
 	echo '						
 					</div>';
-} else {
-	echo '			<div class="flex-1">
-						<div class="pr-mo-8 my-mo-6">
-							<div class="mo_otp_note">
-								' . wp_kses( mo_( 'To prevent spamming, we have enabled secure customization of Email templates. Contact us at <b>otpsupport@xecurify.com</b>.' ), MoUtility::mo_allow_html_array() );
-								mo_draw_tooltip(
-									MoMessages::showMessage( MoMessages::EMAIL_SENDER_HEADER ),
-									MoMessages::showMessage( MoMessages::EMAIL_SENDER_BODY )
-								);
-				echo '   	</div>
-						</div>
-					</div>';
-}
+
 echo '				</div>
 			</div>';
-

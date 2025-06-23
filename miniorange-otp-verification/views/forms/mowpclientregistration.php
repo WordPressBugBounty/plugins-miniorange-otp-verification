@@ -29,7 +29,7 @@ echo '		<div class="mo_otp_form" id="' . esc_attr( get_mo_class( $handler ) ) . 
 						        name="mo_customer_validation_wp_client_enable_type" 
 						        value="' . esc_attr( $wp_client_type_phone ) . '"
 							    ' . ( esc_attr( $wp_client_enable_type ) === esc_attr( $wp_client_type_phone ) ? 'checked' : '' ) . ' />
-                        <strong>' . esc_html( mo_( 'Enable Phone verification' ) ) . '</strong>
+                        <strong>' . esc_html( mo_( 'Enable Phone Verification' ) ) . '</strong>
 						
 						<div    ' . ( esc_attr( $wp_client_enable_type ) !== esc_attr( $wp_client_type_phone ) ? 'hidden' : '' ) . ' 
 						        id="wp_client_phone_instructions" 

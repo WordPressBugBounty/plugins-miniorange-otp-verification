@@ -193,9 +193,9 @@ if ( ! class_exists( 'Template' ) ) {
 			$from_both     = false;
 			$this->preview = true;
 			$preview_popup = $this->parse( $template, $message, $otp_type, $from_both );
-			if( 'EXTERNAL' === $_POST['popuptype'] ){
-				$preview_popup = preg_replace('#<script(.*?)>(.*?)</script>#is', '', $preview_popup );
-			}
+			$preview_popup = preg_replace('#<script(.*?)>(.*?)</script>#is', '', $preview_popup );
+			$preview_popup = preg_replace('#onclick\s*=\s*["\'].*?["\']#is', '', $preview_popup);
+
 			wp_send_json(
 				MoUtility::create_json(
 					$preview_popup,

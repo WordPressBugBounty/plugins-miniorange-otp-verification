@@ -22,7 +22,7 @@ echo '			<div class="mo_registration_help_desc" id="cf7_contact_options">
 						data-toggle="cf7_contact_email_instructions" name="mo_customer_validation_cf7_contact_type" 
 						value="' . esc_attr( $cf7_type_email ) . '"
 						' . ( esc_attr( $cf7_enabled_type ) === esc_attr( $cf7_type_email ) ? 'checked' : '' ) . ' /><strong>
-						' . esc_html( mo_( 'Enable Email verification' ) ) . '</strong>
+						' . esc_html( mo_( 'Enable Email Verification' ) ) . '</strong>
 					</div>
 					<div ' . ( esc_attr( $cf7_enabled_type ) !== esc_attr( $cf7_type_email ) ? 'hidden' : '' ) . ' class="mo_registration_help_desc_internal" 
 							id="cf7_contact_email_instructions" >
@@ -63,8 +63,8 @@ echo '			<div class="mo_registration_help_desc" id="cf7_contact_options">
 							</ol>
 					</div>
 					<div><input type="radio" ' . esc_attr( $disabled ) . ' id="cf7_contact_phone" class="app_enable" data-toggle="cf7_contact_phone_instructions" name="mo_customer_validation_cf7_contact_type" value="' . esc_attr( $cf7_type_phone ) . '"
-						' . ( esc_attr( $cf7_enabled_type ) === esc_attr( $cf7_type_phone ) ? 'checked' : '' ) . ' /><strong>' . esc_html( mo_( 'Enable Phone verification' ) ) . '</strong>
-					</div>
+					' . ( esc_attr( $cf7_enabled_type ) === esc_attr( $cf7_type_phone ) ? 'checked' : '' ) . ' />
+						<strong>' . esc_html( mo_( 'Enable Phone Verification' ) ) . '</strong></div>
 					<div ' . ( esc_attr( $cf7_enabled_type ) !== esc_attr( $cf7_type_phone ) ? 'hidden' : '' ) . ' class="mo_registration_help_desc_internal" id="cf7_contact_phone_instructions" >
 							' . esc_html( mo_( 'Follow the following steps to enable Phone Verification for Contact form 7' ) ) . ': 
 							<ol>

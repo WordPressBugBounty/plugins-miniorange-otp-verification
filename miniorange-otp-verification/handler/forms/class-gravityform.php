@@ -335,10 +335,15 @@ if ( ! class_exists( 'GravityForm' ) ) {
 		 * Handles saving all the Gravity form related options by the admin.
 		 */
 		public function handle_form_options() {
-			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option() ) || ! MoUtility::get_active_plugin_version( 'Gravity Forms' ) || ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->admin_nonce ) ) {
+			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option() ) || ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->admin_nonce ) ) {
 				return;
 			}
-			$data                  = MoUtility::mo_sanitize_array( $_POST );
+			$data = MoUtility::mo_sanitize_array( $_POST );
+			if ( isset( $data['mo_customer_validation_gf_contact_enable'] ) && ! MoUtility::get_active_plugin_version( 'Gravity Forms' ) ) {
+				$message  = MoMessages::showMessage( MoMessages::PLUGIN_INSTALL, array( 'formname' => $this->form_name ) );
+				do_action( 'mo_registration_show_message', $message, MoConstants::ERROR );
+				return;
+			}
 			$this->is_form_enabled = $this->sanitize_form_post( 'gf_contact_enable' );
 			$this->otp_type        = $this->sanitize_form_post( 'gf_contact_type' );
 			$this->button_text     = $this->sanitize_form_post( 'gf_button_text' );
@@ -363,7 +368,7 @@ if ( ! class_exists( 'GravityForm' ) ) {
 		 */
 		private function parseform_datails( $data ) {
 			$forms         = array();
-			$get_field_key = function( $field_details, $field_label, $type ) {
+			$get_field_key = function ( $field_details, $field_label, $type ) {
 				foreach ( $field_details as $field ) {
 					if ( get_class( $field ) === $type
 					&& $field['label'] === $field_label ) {

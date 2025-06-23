@@ -32,6 +32,8 @@ use OTP\Objects\Tabs;
  *                              guide Link['guideLink] and Video Tutotial['videoLink].
  */
 function get_plugin_form_link( $formalink ) {
+	$req_url         = get_site_url() . '/wp-admin/admin.php?page=addon';
+	$limit_otp_addon = add_query_arg( array( 'addon' => 'otp_control' ), $req_url );
 	echo '<div class="my-mo-10 border-l border-lightgrey-500">';
 	if ( MoUtility::sanitize_check( 'formLink', $formalink ) ) {
 		echo '<div class="flex gap-mo-1 pl-mo-2 py-mo-4" >
@@ -78,6 +80,19 @@ function get_plugin_form_link( $formalink ) {
 				</a>
 			</div>';
 	}
+	echo '<div class="flex gap-mo-1 pl-mo-2 py-mo-4">
+				<svg width="24" height="23" viewBox="0 0 24 23" fill="none">
+					<path fill-rule="evenodd" clip-rule="evenodd" d="M4.53033 0.46967C4.82322 0.762563 4.82322 1.23744 4.53033 1.53033L1.53033 4.53033C1.23744 4.82322 0.762563 4.82322 0.46967 4.53033C0.176777 4.23744 0.176777 3.76256 0.46967 3.46967L3.46967 0.46967C3.76256 0.176777 4.23744 0.176777 4.53033 0.46967ZM2.75 12C2.75 6.89137 6.89137 2.75 12 2.75C17.1086 2.75 21.25 6.89137 21.25 12C21.25 17.1086 17.1086 21.25 12 21.25C6.89137 21.25 2.75 17.1086 2.75 12ZM12 1.25C6.06294 1.25 1.25 6.06294 1.25 12C1.25 17.9371 6.06294 22.75 12 22.75C17.9371 22.75 22.75 17.9371 22.75 12C22.75 6.06294 17.9371 1.25 12 1.25ZM12.75 8C12.75 7.58579 12.4142 7.25 12 7.25C11.5858 7.25 11.25 7.58579 11.25 8V12C11.25 12.2508 11.3753 12.4849 11.584 12.624L14.584 14.624C14.9286 14.8538 15.3943 14.7607 15.624 14.416C15.8538 14.0714 15.7607 13.6057 15.416 13.376L12.75 11.5986V8ZM19.4697 1.53033C19.1768 1.23744 19.1768 0.762563 19.4697 0.46967C19.7626 0.176777 20.2374 0.176777 20.5303 0.46967L23.5303 3.46967C23.8232 3.76256 23.8232 4.23744 23.5303 4.53033C23.2374 4.82322 22.7626 4.82322 22.4697 4.53033L19.4697 1.53033Z" fill="#2563EE"/>
+				</svg>
+
+				<a class="mo-form-links text-blue-600"
+					href="' . esc_url( $limit_otp_addon ) . '"
+					title="Enable Resend OTP Timer"
+					id="mo_limit_otp"  
+					target="_blank">
+					' . esc_html( mo_( 'Enable Resend OTP Timer' ) ) . '
+				</a>
+			</div>';
 	echo '</div>';
 }
 
@@ -206,12 +221,9 @@ function mo_allow_otp_scripts_only( $html ) {
 		$allow            = false;
 		$allowed_patterns = array(
 			'mo_validation_goback',
-			'mo_validate_form',
 			'mo_otp_verification_resend',
 			'mo_select_goback',
-			'$mo=',
 			'miniorange-ajax-otp',
-			'moOtpTimerScript'
 		);
 
 		foreach ( $allowed_patterns as $pattern ) {
@@ -229,7 +241,6 @@ function mo_allow_otp_scripts_only( $html ) {
 
 	return $html;
 }
-
 
 /**
  * Display the user choice popup where user can choose between email or
@@ -368,13 +379,12 @@ function show_all_form_list( $current_form, $premium_forms, $count ) {
 		echo '<span class=" ">';
 		echo esc_attr( $count ) . '.&nbsp';
 		echo ' ' . esc_attr( $current_form['name'] ) . '&nbsp&nbsp<span class="tooltip">' . wp_kses( $premium_form_image, MoUtility::mo_allow_svg_array() ) . '
-	<span class="tooltiptext" style="background-color:#dcd9d9; color:black;">
-	<span class="header" style="color:red;"><b>' . esc_attr( $current_form['plan_name'] ) . esc_html( mo_( ' Feature ' ) ) . '</b></span><br>
+	<span class="tooltiptext prem_form_tooltip" >
+	<span  class="header prem_form_header" ><b>' . esc_attr( $current_form['plan_name'] ) . esc_html( mo_( ' Feature ' ) ) . '</b></span>
 	<span class="body">' . esc_html( mo_( 'Check the Licencing plans to upgrade to Premium plan to unlock this feature.' ) ) . '</span>
 	</span></span>';
 		echo '</span></a></div>';
-	} else {
-		if ( $current_form->get_form_key() !== null ) {
+	} elseif ( $current_form->get_form_key() !== null ) {
 			$class_name = get_mo_class( $current_form );
 			$class_name = $current_form->is_form_enabled() ? 'configured_forms#' . $class_name : $class_name . '#' . $class_name;
 			$url        = add_query_arg(
@@ -402,7 +412,6 @@ function show_all_form_list( $current_form, $premium_forms, $count ) {
 					),
 				)
 			) . '</span></a></div>';
-		}
 	}
 	return $count;
 }
@@ -614,13 +623,14 @@ function show_low_transaction_alert( $remaining_sms, $remaining_email, $transact
  */
 function get_multiple_form_select( $form_details, $show_verify_field, $show_email_and_phone_field, $disabled, $key, $form_name, $key_type ) {
 
-	$row_template = "	<div id='row{FORM}{KEY}_{INDEX}' class='flex gap-mo-4'>
+	$row_template = "	<div id='row{FORM}{KEY}_{INDEX}' class='flex gap-mo-2'>
 							<div class='mo-forms-input-wrapper'>
 								<label class='mo-input-label'>" . esc_html( mo_( 'Form ID' ) ) . "</label>
 								<input class=' mo-form-input' id='{FORM}_form_{KEY}_{INDEX}' value='{FORM_ID_VAL}' type='text' name='{FORM}_form[form][]' >
 							</div>
 									{EMAIL_AND_PHONE_FIELD}
 									{VERIFY_FIELD}
+									{REMOVE_BTN}
 						</div>";
 
 	$email_and_phone_field = " <span {HIDDEN1}>
@@ -642,6 +652,8 @@ function get_multiple_form_select( $form_details, $show_verify_field, $show_emai
 								<input class=' mo-form-input' id='{FORM}_form_verify_{KEY}_{INDEX}' value='{VERIFY_KEY_VAL}' type='text' name='{FORM}_form[verifyKey][]' >
 							</div>
                         </span>";
+
+	$remove_btn_template = "<button type='button' class='mo-form-button secondary mo-remove-btn' onclick='removeSpecific_{FORM}(this);'>-</button>";
 
 	$verify_field = $show_verify_field ? $verify_field : '';
 
@@ -667,6 +679,7 @@ function get_multiple_form_select( $form_details, $show_verify_field, $show_emai
 			'EMAIL_KEY_VAL'  => '',
 			'PHONE_KEY_VAL'  => '',
 			'VERIFY_KEY_VAL' => '',
+			'REMOVE_BTN'     => '',
 		);
 		echo wp_kses(
 			MoUtility::replace_string( $details, $row_template ),
@@ -686,10 +699,23 @@ function get_multiple_form_select( $form_details, $show_verify_field, $show_emai
 				'span'  => array(
 					'hidden' => array(),
 				),
+				'button' => array(
+					'type'    => array(),
+					'class'   => array(),
+					'onclick' => array(),
+				),
 			)
 		);
 	} else {
+		$total_rows = count( $form_details );
 		foreach ( $form_details as $form_key => $form_detail ) {
+			$remove_button = $total_rows > 1
+			? str_replace(
+				array( '{FORM}', '{KEY}', '{INDEX}' ),
+				array( $form_name, $key, $counter ),
+				$remove_btn_template
+			)
+			: '';
 			$details = array(
 				'KEY'            => $key,
 				'INDEX'          => $counter,
@@ -700,6 +726,7 @@ function get_multiple_form_select( $form_details, $show_verify_field, $show_emai
 				'EMAIL_KEY_VAL'  => $show_email_and_phone_field ? $form_detail['email_show'] : '',
 				'PHONE_KEY_VAL'  => $show_email_and_phone_field ? $form_detail['phone_show'] : '',
 				'VERIFY_KEY_VAL' => $show_verify_field ? $form_detail['verify_show'] : '',
+				'REMOVE_BTN'     => $remove_button,
 			);
 			echo wp_kses(
 				MoUtility::replace_string( $details, $row_template ),
@@ -718,6 +745,11 @@ function get_multiple_form_select( $form_details, $show_verify_field, $show_emai
 					),
 					'span'  => array(
 						'hidden' => array(),
+					),
+					'button' => array(
+						'type'    => array(),
+						'class'   => array(),
+						'onclick' => array(),
 					),
 				)
 			);
@@ -739,7 +771,7 @@ function get_multiple_form_select( $form_details, $show_verify_field, $show_emai
  * @param string $counters the counters.
  */
 function multiple_from_select_script_generator( $show_verify_field, $show_email_and_phone_field, $form_name, $key_type, $counters ) {
-	$row_template = "	<div id='row{FORM}{KEY}_{INDEX}' class='flex gap-mo-4 mt-mo-4'>
+	$row_template = "	<div id='row{FORM}{KEY}_{INDEX}' class='flex gap-mo-2'>
 							<div class='mo-forms-input-wrapper'>
 								<label class='mo-input-label'>" . esc_html( mo_( 'Form ID' ) ) . "</label>
 								<input class=' mo-form-input' id='{FORM}_form_{KEY}_{INDEX}' value='' type='text' name='{FORM}_form[form][]' >
@@ -787,8 +819,8 @@ function multiple_from_select_script_generator( $show_verify_field, $show_email_
 		mo_( 'Verification Field' . $key_type )
 	);
 
-	$row_template = trim( preg_replace( '/\s\s+/', ' ', $row_template ) );
-
+	$row_template    = trim( preg_replace( '/\s\s+/', ' ', $row_template ) );
+	$remove_row      = "<button type='button' class='mo-form-button secondary mo-remove-btn' onclick='removeSpecific_{FORM}(this);'>-</button></div>";
 	$script_template = '<script>
                                 var {FORM}_counter1, {FORM}_counter2, {FORM}_counter3;
                                 jQuery(document).ready(function(){  
@@ -796,33 +828,70 @@ function multiple_from_select_script_generator( $show_verify_field, $show_email_
                                 });
                             </script>
                             <script>
-                                function add_{FORM}( t, n )
-                                {
-                                    var count = this['{FORM}_counter'+n];
-                                    var hidden1='',hidden2='',both='';
-                                    var html = \"" . $row_template . "\";
-                                    if(n===1) hidden2 = 'hidden';
-                                    if(n===2) hidden1 = 'hidden';
-                                    if(n===3) both = 'both_';
-                                    count++;
-                                    html = html.replace('{KEY}', n).replace('{INDEX}',count).replace('{HIDDEN1}',hidden1).replace('{HIDDEN2}',hidden2);
-									if(count!==0) {
-                                        \$mo(html.replace('{KEY}', n).replace('{INDEX}',count).replace('{HIDDEN1}',hidden1).replace('{HIDDEN2}',hidden2)).insertAfter(\$mo('#row{FORM}'+n+'_'+(count-1)+''));
-                                    }
-                                    this['{FORM}_counter'+n]=count;
-                                }
-                            
-                                function remove_{FORM}( n )
-                                {
-                                    var count =   Math.max(this['{FORM}_counter1'],this['{FORM}_counter2'],this['{FORM}_counter3']);
-                                    if(count !== 0) {
-                                        \$mo('#row{FORM}1_' + count).remove();
-                                        \$mo('#row{FORM}2_' + count).remove();
-                                        \$mo('#row{FORM}3_' + count).remove();
-                                        count--;
-                                        this['{FORM}_counter3']=this['{FORM}_counter1']=this['{FORM}_counter2']=count;
-                                    }       
-                                }
+                                function add_{FORM}(t, n) {
+									const existingRows = \$mo('[id^=\'row{FORM}' + n + '_\']');
+									let maxIndex = -1;
+
+									existingRows.each(function () {
+										const id = \$mo(this).attr('id');
+										const match = id.match(/row{FORM}\d+_(\d+)/);
+											if( match[1] ) {
+												const index = parseInt(match[1]);
+												maxIndex = Math.max(index, maxIndex);
+											}
+									});
+
+									const newIndex = maxIndex + 1;
+									let hidden1 = '', hidden2 = '', both = '';
+									if (n === 1) hidden2 = 'hidden';
+									if (n === 2) hidden1 = 'hidden';
+									if (n === 3) both = 'both_';
+
+									let html = \"" . $row_template . "\";
+									html = html.replace('{KEY}', n).replace('{INDEX}', newIndex)
+										.replace('{HIDDEN1}', hidden1).replace('{HIDDEN2}', hidden2);
+
+									const lastDivIndex = html.lastIndexOf('</div>');
+									if (lastDivIndex !== -1) {
+										html = html.slice(0, lastDivIndex) + \"" . $remove_row . "\" + html.slice(lastDivIndex + 6);
+									}
+
+									const targetElement = existingRows.last();
+										if (targetElement.length) {
+										\$mo(html).insertAfter(targetElement);;
+									}
+
+									this['{FORM}_counter' + n] = existingRows.length + 1;
+									if (existingRows.length + 1 === 2) {
+										const firstRow = \$mo('[id^=\'row{FORM}' + n + '_\']').first();
+										firstRow.find('.mo-form-button.secondary').remove();
+										firstRow.append(\"" . $remove_row . "\");
+									}
+								}
+
+								function removeSpecific_{FORM}(button) {
+									var row = \$mo(button).closest('.flex');
+									var id = row.attr('id');
+									var match = id.match(/row{FORM}(\d+)_(\d+)/);
+									
+									const existingRows = \$mo('[id^=\'row{FORM}' + 1 + '_\']');
+									var count =   Math.max(this['{FORM}_counter1'],this['{FORM}_counter2'],this['{FORM}_counter3'], existingRows.length);
+
+									if (match) {
+										const index = parseInt(match[2]);
+										row.remove();
+										\$mo('#row{FORM}1_' + index).remove();
+										\$mo('#row{FORM}2_' + index).remove();
+										\$mo('#row{FORM}3_' + index).remove();
+									}
+										count--;
+										this['{FORM}_counter3']=this['{FORM}_counter1']=this['{FORM}_counter2']=count;
+
+										if (count === 1) {
+											\$mo('.mo-remove-btn').remove();
+										}						
+								}
+
                             </script>";
 	$script_template = MoUtility::replace_string( array( 'FORM' => $form_name ), $script_template );
 	echo wp_kses(
@@ -856,6 +925,12 @@ function multiple_from_select_script_generator( $show_verify_field, $show_email_
 				'style'       => array(),
 				'placeholder' => array(),
 				'disabled'    => array(),
+			),
+			'button' => array(
+				'type'     => array(),
+				'class'    => array(),
+				'onclick'  => array(),
+				'disabled' => array(),
 			),
 		)
 	);

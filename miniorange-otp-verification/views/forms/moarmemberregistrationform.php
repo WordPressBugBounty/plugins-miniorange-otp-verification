@@ -40,10 +40,7 @@ echo '
                         <li>' . wp_kses( mo_( 'Please note that the default Email Field Metakey is <b> user_email </b>.' ), array( 'b' => array() ) ) . '</li>
                         <li>' . esc_html( mo_( 'Enter your Form ID, Default Email Field Metakey and Verification Field Metakey below' ) ) . ':<br>
                             <br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . '
-                            onclick="add_armember(\'email\',1);" class="mo-form-button secondary" />&nbsp;
-
-                            <input type="button" value="-" ' . esc_attr( $disabled ) . ' onclick="remove_armember(1);" class="mo-form-button secondary" />
-                            <br/><br/>';
+                            onclick="add_armember(\'email\',1);" class="mo-form-button secondary" /><br/><br/>';
 						$form_results = get_multiple_form_select( $armember_list_of_forms_otp_enabled, true, true, $disabled, 1, 'armember', 'Metakey' );
 						$counter1     = ! MoUtility::is_blank( $form_results['counter'] ) ? max( $form_results['counter'] - 1, 0 ) : 0;
 
@@ -70,8 +67,7 @@ echo '              </ol>
                         <li>' . wp_kses( mo_( 'Make sure Both Phone Field and Verification Field are <b>required Fields</b>.' ), array( 'b' => array() ) ) . '</li>
                         <li>' . esc_html( mo_( 'Enter your Form ID, Phone Field Metakey and Verification Metakey below' ) ) . ':<br>
                             <br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_armember(\'phone\',2);
-                                " class="mo-form-button secondary" />&nbsp; <input type="button" value="-" ' . esc_attr( $disabled ) . '
-                                onclick="remove_armember(2);" class="mo-form-button secondary" /><br/><br/>';
+                                " class="mo-form-button secondary" /><br/><br/>';
 
 								$form_results = get_multiple_form_select( $armember_list_of_forms_otp_enabled, true, true, $disabled, 2, 'armember', 'Metakey' );
 								$counter2     = ! MoUtility::is_blank( $form_results['counter'] ) ? max( $form_results['counter'] - 1, 0 ) : 0;

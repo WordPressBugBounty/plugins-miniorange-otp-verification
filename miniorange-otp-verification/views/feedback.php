@@ -40,12 +40,17 @@ echo '                                   <textarea id="query_feedback"
 													class="mo-textarea"
 													name="query_feedback" 
 													style="width:100%" 
-													rows="4" 
+													rows="3" 
 													placeholder="Type your feedback here"></textarea>
 										<div class="mo_otp_note" hidden id="feedback_message" style="padding:10px;color:darkred;"></div>
 										<textarea hidden id="feedback" name="feedback" style="width:100%" rows="2" placeholder="Type your feedback here"></textarea>
 		';
-echo '                           <div>    
+echo '                           <div>
+								<label class="mo-checkbox-container flex my-mo-3 mo-user-consent-checkbox">
+									<input type="checkbox" name="mo_otp_contact_back" id="mo_otp_contact_back" value="Yes" checked class="sr-only" />
+									<div class="mo-checkmark"></div>
+									<p class="font-normal pl-mo-8">' . esc_html( mo_( 'Allow us to contact you on your registered email address' ) ) . '</p>
+								</label>    
 									<input type="submit" name="miniorange_feedback_submit" class="mo-button primary"  style="float: right;"
 										data-sm="' . esc_attr( $submit_message ) . '" data-sm2="' . esc_attr( $submit_message ) . '" value="' . esc_attr( $submit_message ) . '" />';
 echo '                                        

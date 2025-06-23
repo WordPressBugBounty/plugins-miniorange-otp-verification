@@ -35,10 +35,7 @@ echo '<div class="mo_registration_help_desc" id="wpform_options">
                         <li>' . esc_html( mo_( 'Add an Email Field to your form. Note the Field Label of the Email field.' ) ) . '</li>
                         <li>' . esc_html( mo_( 'Enter your Form ID, Email Field Label below' ) ) . ':<br>
                             <br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . '
-                            onclick="add_wpform(\'email\',1);" class="mo-form-button secondary" />&nbsp;
-
-                            <input type="button" value="-" ' . esc_attr( $disabled ) . ' onclick="remove_wpform(1);" class="mo-form-button secondary" />
-                            <br/><br/>';
+                            onclick="add_wpform(\'email\',1);" class="mo-form-button secondary" /><br/><br/>';
 
 							$form_results = get_multiple_form_select( $wpform_list_of_forms_otp_enabled, false, true, $disabled, 1, 'wpform', 'Label' );
 							$counter1     = ! MoUtility::is_blank( $form_results['counter'] ) ? max( $form_results['counter'] - 1, 0 ) : 0;
@@ -64,8 +61,7 @@ echo '              </ol>
                         <li>' . wp_kses( mo_( 'Set the Format of the Phone Field to <u>International only</u>.' ), array( 'u' => array() ) ) . '</li>
                         <li>' . esc_html( mo_( 'Enter your Form ID, Phone Field Label below' ) ) . ':<br>
                             <br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_wpform(\'phone\',2);
-                                " class="mo-form-button secondary" />&nbsp; <input type="button" value="-" ' . esc_attr( $disabled ) . ' \
-                                onclick="remove_wpform(2);" class="mo-form-button secondary" /><br/><br/>';
+                                " class="mo-form-button secondary" /><br/><br/>';
 
 								$form_results = get_multiple_form_select( $wpform_list_of_forms_otp_enabled, false, true, $disabled, 2, 'wpform', 'Label' );
 								$counter2     = ! MoUtility::is_blank( $form_results['counter'] ) ? max( $form_results['counter'] - 1, 0 ) : 0;

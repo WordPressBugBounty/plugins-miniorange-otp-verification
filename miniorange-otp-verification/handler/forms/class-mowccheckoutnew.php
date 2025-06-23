@@ -92,12 +92,15 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 			$this->form_session_var        = FormSessionVars::WC_NEW_CHECKOUT;
 			$this->type_phone_tag          = 'mo_wc_phone_enable';
 			$this->type_email_tag          = 'mo_wc_email_enable';
-			$this->form_key                = 'WC_NEW_CHECKOUT_FORM';
-			$this->form_name               = mo_( 'Woocommerce Checkout Form - Block Form' );
-			$this->is_form_enabled         = get_mo_option( 'wc_new_checkout_enable' );
+			$this->form_key                = 'WC_CHECKOUT_FORM';
+			$this->form_name               = mo_( 'Woocommerce Checkout Form' );
+			$this->is_form_enabled         = $this->mo_get_migrated_option( 'wc_new_checkout_enable', 'wc_checkout_enable' );
 			$this->form_documents          = MoFormDocs::WC_NEW_CHECKOUT_LINK;
 			$this->generate_otp_action     = 'mo_new_wc_send_otp';
 			$this->validate_otp_action     = 'mo_new_wc_verify_otp';
+			$this->button_text             = get_mo_option( 'wc_checkout_button_link_text' );
+			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text
+												: ( ! $this->popup_enabled ? mo_( 'Verify Your Purchase' ) : mo_( 'Place Order' ) );
 			parent::__construct();
 		}
 
@@ -116,18 +119,23 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 				return;
 			}
 
+			if ( ! mo_is_block_based_checkout() ) {
+				return; // Block-based checkout logic.
+			}
+
 			if ( ! class_exists( 'WC_Shipping_Zones' ) ) {
 				$this->enabled_address = 'billing';
 			} else {
 				$this->enabled_address = $this->get_woocommerce_shipping_address_setting();
 			}
 			$this->phone_form_id        = 'shipping' === $this->enabled_address ? '#shipping-phone' : '#billing-phone';
-			$this->otp_type             = get_mo_option( 'wc_new_checkout_type' );
-			$this->payment_methods      = maybe_unserialize( get_mo_option( 'wc_checkout_new_payment_type' ) );
+			$this->otp_type             = $this->mo_get_migrated_option( 'wc_new_checkout_type', 'wc_checkout_type' );
+			$this->payment_methods      = maybe_unserialize( get_mo_option( 'wc_checkout_payment_type' ) );
 			$this->payment_methods      = $this->payment_methods ? $this->payment_methods : WC()->payment_gateways->payment_gateways(); // phpcs:ignore intelephense.diagnostics.undefinedFunctions -- Default function of WooCommerce.
-			$this->selective_payment    = get_mo_option( 'wc_checkout_new_selective_payment' );
-			$this->popup_enabled        = get_mo_option( 'wc_new_checkout_popup' );
-			$this->guest_check_out_only = get_mo_option( 'wc_new_checkout_guest' );
+			$this->selective_payment    = get_mo_option( 'wc_checkout_selective_payment' );
+			$this->popup_enabled        = $this->mo_get_migrated_option( 'wc_new_checkout_popup', 'wc_checkout_popup' );
+			$this->guest_check_out_only = $this->mo_get_migrated_option( 'wc_new_checkout_guest', 'wc_checkout_guest' );
+			$this->restrict_duplicates  = get_mo_option( 'wc_checkout_restrict_duplicates' );
 
 			if ( $this->guest_check_out_only && is_user_logged_in() ) {
 				return;
@@ -144,6 +152,21 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 
 			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_script_on_page' ) );
 			add_action( 'woocommerce_store_api_checkout_order_processed', array( $this, 'my_custom_checkout_field_process' ), 99, 1 );
+		}
+
+		/**
+		 * Check if block checkout option was enabled on the instance.
+		 *
+		 * @param string $key1 the first key.
+		 * @param string $key2 the second key.
+		 */
+		private function mo_get_migrated_option( $key1, $key2 ) {
+			$first_option_saved = get_mo_option( $key1 );
+			if ( $first_option_saved ) {
+				update_mo_option( $key2, $first_option_saved );
+				delete_mo_option( $key1 );
+			}
+			return get_mo_option( $key2 );
 		}
 
 		/**
@@ -175,7 +198,7 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 			echo '<script type="text/javascript">
 					document.addEventListener(\'DOMContentLoaded\', function() {
 						function mo_check_form_loaded() {
-							if (jQuery(".wc-block-components-address-form__phone input[type=tel]").length > 0) {
+							if (jQuery(".wc-block-components-address-form__phone input[type=tel]").length || jQuery(".wc-block-components-text-input input[type=tel]").length ) {
 								mo_add_custom_popup();
 							} else {
 								setTimeout(mo_check_form_loaded, 100);
@@ -254,11 +277,45 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 			MoPHPSessions::check_session();
 			MoUtility::initialize_transaction( $this->form_session_var );
 			if ( MoUtility::sanitize_check( 'otpType', $data ) === VerificationType::PHONE ) {
+				$this->checkPhoneValidity( $data );
 				$this->process_phone_and_send_otp( $data );
 			}
 			if ( MoUtility::sanitize_check( 'otpType', $data ) === VerificationType::EMAIL ) {
 				$this->process_email_and_send_otp( $data );
 			}
+		}
+
+		/**
+		 * Checks if the phone is valid and not a duplicate
+		 * if admin has enabled the restrictDuplicate option
+		 *
+		 * @param array $get_data    $_GET data.
+		 */
+		private function checkPhoneValidity( $get_data ) {
+			if ( $this->isPhoneNumberAlreadyInUse( sanitize_text_field( $get_data['user_phone'] ) ) && $this->restrict_duplicates ) {
+				wp_send_json(
+					MoUtility::create_json(
+						MoMessages::showMessage( MoMessages::PHONE_EXISTS ),
+						MoConstants::ERROR_JSON_TYPE
+					)
+				);
+				exit;
+			}
+		}
+
+		/**
+		 * Checks if the Phone number is already associated with any other account.
+		 *
+		 * @param string $phone Phone number in the checkout form.
+		 * @return boolean
+		 */
+		private function isPhoneNumberAlreadyInUse( $phone ) {
+			global $wpdb;
+			$phone            = MoUtility::process_phone_number( $phone );
+			$key              = $this->enabled_address . '_phone';
+			$current_user_i_d = strval( wp_get_current_user()->ID );
+			$results          = $wpdb->get_row( $wpdb->prepare( "SELECT `user_id` FROM `{$wpdb->prefix}usermeta` WHERE `meta_key` = %s AND `meta_value` =  %s", array( $key, $phone ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, Direct database call without caching detected -- DB Direct Query is necessary here.
+			return MoUtility::is_blank( $results ) ? false : $results->user_id !== $current_user_i_d;
 		}
 
 		/**
@@ -409,6 +466,8 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 
 		/**
 		 * Checks if OTP Verification is enabled for the current.
+		 *
+		 * @param string $payment_method - payment method selected.
 		 */
 		private function isPaymentVerificationNeeded( $payment_method ) {
 			return $this->selective_payment ? array_key_exists( $payment_method, $this->payment_methods ) : true;
@@ -492,7 +551,6 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 		 */
 		public function handle_post_verification( $redirect_to, $user_login, $user_email, $password, $phone_number, $extra_data, $otp_type ) {
 			SessionUtils::add_status( $this->form_session_var, self::VALIDATED, $otp_type );
-
 		}
 
 
@@ -520,6 +578,7 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 					'otp_timer'               => get_mo_option( 'otp_timer', 'mo_rc_sms_' ),
 					'paymentMethods'          => $this->payment_methods,
 					'selectivePaymentEnabled' => $this->selective_payment,
+					'buttonText'              => $this->button_text,
 				)
 			);
 			wp_enqueue_script( 'wccheckout' );
@@ -562,30 +621,38 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 			if ( ! function_exists( 'is_plugin_active' ) ) {
 				include_once ABSPATH . 'wp-admin/includes/plugin.php';
 			}
-			if ( ! is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
+			$data            = MoUtility::mo_sanitize_array( $_POST );
+			if ( isset( $data['mo_customer_validation_wc_checkout_enable'] ) && ! is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
+				$message  = MoMessages::showMessage( MoMessages::PLUGIN_INSTALL, array( 'formname' => $this->form_name ) );
+				do_action( 'mo_registration_show_message', $message, MoConstants::ERROR );
 				return;
 			}
-
-			$data            = MoUtility::mo_sanitize_array( $_POST );
 			$payment_methods = array();
 			if ( array_key_exists( 'wc_payment', $data ) ) { //phpcs:ignore -- $data is an array but considered as a string (false positive).
 				foreach ( ( $data['wc_payment'] ) as $selected ) { //phpcs:ignore -- $data is an array but considered as a string (false positive).
 					$payment_methods[ $selected ] = $selected;
 				}
 			}
-			$this->is_form_enabled      = $this->sanitize_form_post( 'wc_new_checkout_enable' );
-			$this->otp_type             = $this->sanitize_form_post( 'wc_new_checkout_type' );
-			$this->selective_payment    = $this->sanitize_form_post( 'wc_checkout_new_selective_payment' );
-			$this->payment_methods      = $payment_methods;
-			$this->guest_check_out_only = $this->sanitize_form_post( 'wc_new_checkout_guest' );
-			$this->popup_enabled        = $this->sanitize_form_post( 'wc_new_checkout_popup' );
 
-			update_mo_option( 'wc_new_checkout_enable', $this->is_form_enabled );
-			update_mo_option( 'wc_new_checkout_type', $this->otp_type );
-			update_mo_option( 'wc_checkout_new_selective_payment', $this->selective_payment );
-			update_mo_option( 'wc_checkout_new_payment_type', maybe_serialize( $payment_methods ) );
-			update_mo_option( 'wc_new_checkout_guest', $this->guest_check_out_only );
-			update_mo_option( 'wc_new_checkout_popup', $this->popup_enabled );
+			$this->is_form_enabled      = $this->sanitize_form_post( 'wc_checkout_enable' );
+			$this->otp_type             = $this->sanitize_form_post( 'wc_checkout_type' );
+			$this->guest_check_out_only = $this->sanitize_form_post( 'wc_checkout_guest' );
+			$this->popup_enabled        = $this->sanitize_form_post( 'wc_checkout_popup' );
+			$this->selective_payment    = $this->sanitize_form_post( 'wc_checkout_selective_payment' );
+			$this->button_text          = $this->sanitize_form_post( 'wc_checkout_button_link_text' );
+			$this->payment_methods      = $payment_methods;
+			$this->restrict_duplicates  = $this->sanitize_form_post( 'wc_checkout_restrict_duplicates' );
+
+			if ( $this->basic_validation_check( BaseMessages::WC_CHECKOUT_CHOOSE ) ) {
+				update_mo_option( 'wc_checkout_restrict_duplicates', $this->restrict_duplicates );
+				update_mo_option( 'wc_checkout_enable', $this->is_form_enabled );
+				update_mo_option( 'wc_checkout_type', $this->otp_type );
+				update_mo_option( 'wc_checkout_guest', $this->guest_check_out_only );
+				update_mo_option( 'wc_checkout_popup', $this->popup_enabled );
+				update_mo_option( 'wc_checkout_selective_payment', $this->selective_payment );
+				update_mo_option( 'wc_checkout_button_link_text', $this->button_text );
+				update_mo_option( 'wc_checkout_payment_type', maybe_serialize( $payment_methods ) );
+			}
 		}
 
 		/**

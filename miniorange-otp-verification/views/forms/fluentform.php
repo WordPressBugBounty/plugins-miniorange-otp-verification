@@ -36,10 +36,7 @@ echo '<div class="mo_registration_help_desc" id="fluentform_options">
                         <li>' . esc_html( mo_( 'Click on Advance Options and copy the Name attribute.' ) ) . '</li>
                         <li>' . esc_html( mo_( 'Enter your Form ID, Email Field Name attribute below' ) ) . ':<br>
                             <br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . '
-                            onclick="add_fluentform(\'email\',1);" class="mo-form-button secondary" />&nbsp;
-
-                            <input type="button" value="-" ' . esc_attr( $disabled ) . ' onclick="remove_fluentform(1);" class="mo-form-button secondary" />
-                            <br/><br/>';
+                            onclick="add_fluentform(\'email\',1);" class="mo-form-button secondary" /><br/><br/>';
 
 							$form_results = get_multiple_form_select( $fluentform_list_of_forms_otp_enabled, false, true, $disabled, 1, 'fluentform', ' Name Attribute' );
 							$counter1     = ! MoUtility::is_blank( $form_results['counter'] ) ? max( $form_results['counter'] - 1, 0 ) : 0;
@@ -65,8 +62,7 @@ echo '              </ol>
                         <li>' . esc_html( mo_( 'Click on Advance Options and copy the Name attribute.' ) ) . '</li>
                         <li>' . esc_html( mo_( 'Enter your Form ID, Phone Field Name attribute below' ) ) . ':<br>
                             <br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_fluentform(\'phone\',2);
-                                " class="mo-form-button secondary" />&nbsp; <input type="button" value="-" ' . esc_attr( $disabled ) . ' \
-                                onclick="remove_fluentform(2);" class="mo-form-button secondary" /><br/><br/>';
+                                " class="mo-form-button secondary" /><br/><br/>';
 
 								$form_results = get_multiple_form_select( $fluentform_list_of_forms_otp_enabled, false, true, $disabled, 2, 'fluentform', ' Name Attribute' );
 								$counter2     = ! MoUtility::is_blank( $form_results['counter'] ) ? max( $form_results['counter'] - 1, 0 ) : 0;

@@ -41,7 +41,7 @@ echo '		<div class="mo_otp_form" id="' . esc_attr( get_mo_class( $handler ) ) . 
 						        name="mo_customer_validation_bbp_enable_type" 
 						        value="' . esc_attr( $bbp_type_phone ) . '"
 							    ' . ( esc_attr( $bbp_enable_type ) === esc_attr( $bbp_type_phone ) ? 'checked' : '' ) . ' />
-                        <strong>' . esc_html( mo_( 'Enable Phone verification' ) ) . '</strong>
+                        <strong>' . esc_html( mo_( 'Enable Phone Verification' ) ) . '</strong>
 						
 						<div    ' . ( esc_attr( $bbp_enable_type ) !== esc_attr( $bbp_type_phone ) ? 'hidden' : '' ) . ' 
 						        id="bbp_phone_instructions" 
@@ -85,7 +85,7 @@ echo '		<div class="mo_otp_form" id="' . esc_attr( get_mo_class( $handler ) ) . 
 						        name="mo_customer_validation_bbp_enable_type" 
 						        value="' . esc_attr( $bbp_type_email ) . '"
 						        ' . ( esc_attr( $bbp_enable_type ) === esc_attr( $bbp_type_email ) ? 'checked' : '' ) . ' />
-						<strong>' . esc_html( mo_( 'Enable Email verification' ) ) . '</strong>
+						<strong>' . esc_html( mo_( 'Enable Email Verification' ) ) . '</strong>
 					</div>
 					<div>
 					    <input  type="radio" 

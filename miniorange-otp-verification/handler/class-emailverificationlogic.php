@@ -162,7 +162,8 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 		 */
 		public function handle_otp_sent( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content ) {
 			SessionUtils::set_email_transaction_id( $content['txId'] );
-			$message = str_replace( '##email##', $user_email, $this->get_otp_sent_message() );
+			$masked_user_email = MoUtility::mo_mask_email( $user_email );
+			$message           = str_replace( '##email##', $masked_user_email, $this->get_otp_sent_message() );
 			apply_filters( 'mo_start_reporting', $content['txId'], $user_email, $user_email, $otp_type, $message, 'OTP_SENT' );
 			if ( $this->is_ajax_form() ) {
 				wp_send_json( MoUtility::create_json( $message, MoConstants::SUCCESS_JSON_TYPE ) );

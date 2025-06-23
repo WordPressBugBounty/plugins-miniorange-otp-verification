@@ -124,7 +124,7 @@ if ( ! class_exists( 'GatewayFunctions' ) ) {
 		 * @param string $posted simply the $_POST array.
 		 */
 		public function mo_configure_sms_template( $posted ) {
-			$this->gateway->mo_configure_sms_template( $posted );
+			return $this->gateway->mo_configure_sms_template( $posted );
 		}
 
 		/**

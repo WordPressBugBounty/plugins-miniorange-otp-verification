@@ -95,6 +95,7 @@ if ( ! class_exists( 'FormList' ) ) {
 				'FORMINATOR',
 				'WPFORMS',
 				'ULTIMATE_FORM',
+				'MO_LOGIN_REG_USING_PHONE_FORM',
 			);
 			return $this->important_forms; }
 

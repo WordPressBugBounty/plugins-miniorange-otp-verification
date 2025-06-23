@@ -1205,7 +1205,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 			array(
 				'name'        => 'Vatican City (Città del Vaticano)',
 				'alphacode'   => 'va',
-				'countryCode' => '+379',
+				'countryCode' => '+39',
 			),
 			array(
 				'name'        => 'Venezuela',

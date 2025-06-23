@@ -10,11 +10,16 @@ use OTP\Objects\NotificationSettings;
 use OTP\Objects\TabDetails;
 use OTP\Objects\Tabs;
 use OTP\Objects\VerificationType;
-use \ReflectionClass;
+use ReflectionClass;
 use ReflectionException;
-use \stdClass;
+use stdClass;
 use OTP\LicenseLibrary\Mo_License_Service;
 use OTP\Helper\MoConstants;
+use libphonenumber\PhoneNumberUtil;
+use libphonenumber\NumberParseException;
+use libphonenumber\PhoneNumberFormat;
+use OTP\Helper\CountryList;
+
 
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -31,6 +36,12 @@ if ( ! class_exists( 'MoUtility' ) ) {
 	 * MoUtility class
 	 */
 	class MoUtility {
+		/**
+		 * Summary of __construct
+		 */
+		public function __construct() {
+			$this->phone_util = PhoneNumberUtil::getInstance();
+		}
 
 
 		/**Checking Script tags
@@ -40,7 +51,6 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		 */
 		public static function check_for_script_tags( $template ) {
 			return preg_match( '<script>', $template, $match );
-
 		}
 
 		/**Sanitizing array
@@ -263,6 +273,37 @@ if ( ! class_exists( 'MoUtility' ) ) {
 			return $allowed_tags;
 		}
 
+
+		/**
+		 * Masking the Phone Number of User
+		 *
+		 * @param string $phone   Phone Number of the user.
+		 */
+		public static function mo_mask_phone_number($phone) {
+			$length = strlen($phone);
+			$masked_part = str_repeat('*', max(0, $length - 3)); // repeat * for all but last 3 characters
+			$last_three = substr($phone, -3); // get last 3 characters
+			return $masked_part . $last_three;
+		}
+
+
+		/**
+		 * Masking the Email of User
+		 *
+		 * @param string $email    email of the user.
+		 */
+		public static function mo_mask_email( $email ) {
+			$parts = explode( '@', $email );
+			if ( count( $parts ) !== 2 ) {
+				return $email;
+			}
+			$username     = $parts[0];
+			$domain       = $parts[1];
+			$visible_part = substr( $username, 0, 2 );
+			$masked_part  = str_repeat( '*', max( 0, strlen( $username ) - 2 ) );
+			return $visible_part . $masked_part . '@' . $domain;
+		}
+
 		/** Process the phone number and get_hidden_phone.
 		 *
 		 * @param string $phone - the phone number to processed.
@@ -390,7 +431,32 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		 * @return false|int
 		 */
 		public static function validate_phone_number( $phone ) {
-			return preg_match( MoConstants::PATTERN_PHONE, self::process_phone_number( $phone ), $matches );
+			$phone = self::process_phone_number( $phone );
+
+			if ( ! ( file_exists( MOV_DIR . '/lib/vendor/autoload.php' ) ) || ! preg_match( MoConstants::PATTERN_PHONE, $phone, $matches ) ) {
+				return preg_match( MoConstants::PATTERN_PHONE, $phone, $matches );
+			} else {
+				$default_country_code = CountryList::get_default_countrycode();
+				$default_country_code = $default_country_code ? $default_country_code : null;
+				$country_code         = isset( $_POST['country_code'] ) ? sanitize_text_field( $_POST['country_code'] ) : $default_country_code;
+
+				if ( ! self::is_country_code_appended( $phone ) ) {
+					return false;
+				}
+				foreach ( CountryList::get_countrycode_list() as $country ) {
+					if ( ! empty( $country['countryCode'] ) && strpos( $phone, $country['countryCode'] ) === 0 ) {
+						$country_code = $country['countryCode'];
+						break;
+					}
+				}
+				try {
+					$phone_util   = PhoneNumberUtil::getInstance();
+					$number_proto = $phone_util->parse( $phone, strtoupper( $country_code ) );
+					return $phone_util->isValidNumber( $number_proto );
+				} catch ( Exception $e ) {
+					return false;
+				}
+			}
 		}
 
 
@@ -427,7 +493,7 @@ if ( ! class_exists( 'MoUtility' ) ) {
 			}
 			usort(
 				$country_list,
-				function( $country_a, $country_b ) {
+				function ( $country_a, $country_b ) {
 					return strlen( $country_b['countryCode'] ) - strlen( $country_a['countryCode'] );
 				}
 			);
@@ -671,7 +737,7 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		 */
 		public static function send_phone_notif( $number, $msg ) {
 
-			$api_call_result = function( $number, $msg ) {
+			$api_call_result = function ( $number, $msg ) {
 				return json_decode( MocURLCall::send_notif( new NotificationSettings( $number, $msg ) ) );
 			};
 
@@ -701,7 +767,7 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		 * @return bool
 		 */
 		public static function mo_send_whatsapp_notif( $number, $template_name, $sms_tags ) {
-			$api_call_result = function( $number, $data ) {
+			$api_call_result = function ( $number, $data ) {
 				return apply_filters( 'mo_wa_send_otp_token', 'WHATSAPP_NOTIFICATION', null, null, $number, $data );
 			};
 
@@ -733,7 +799,7 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		 * @return bool
 		 */
 		public static function send_email_notif( $from_email, $from_name, $to_email, $subject, $message ) {
-			$api_call_result = function( $from_email, $from_name, $to_email, $subject, $message ) {
+			$api_call_result = function ( $from_email, $from_name, $to_email, $subject, $message ) {
 				$notification_settings = new NotificationSettings( $from_email, $from_name, $to_email, $subject, $message );
 				return json_decode( MocURLCall::send_notif( $notification_settings ) );
 			};

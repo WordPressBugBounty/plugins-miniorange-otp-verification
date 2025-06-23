@@ -56,6 +56,7 @@ if ( ! class_exists( 'MoInit' ) ) {
 	final class MoInit {
 
 		use Instance;
+
 		/** Constructor */
 		private function __construct() {
 			$this->initialize_hooks();
@@ -153,7 +154,7 @@ if ( ! class_exists( 'MoInit' ) ) {
 		 * Initialize all the global variables.
 		 */
 		private function initialize_globals() {
-			global $phone_logic,$email_logic;
+			global $phone_logic, $email_logic;
 			$phone_logic = PhoneVerificationLogic::instance();
 			$email_logic = EmailVerificationLogic::instance();
 		}
@@ -196,8 +197,24 @@ if ( ! class_exists( 'MoInit' ) ) {
 		 * and enqueue_scripts WordPress hook.
 		 */
 		public function mo_registration_plugin_settings_script() {
-			$country_val = array();
+			$country_val      = array();
+			$whatsapp_enabled = get_mo_option( 'mo_whatsapp_enable' );
+			$request_uri      = remove_query_arg( array( 'mosettings', 'form', 'subpage' ), isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ); // phpcs:ignore -- false positive.
+			$whatsapp_tab_url = add_query_arg( array( 'page' => 'mowhatsapp' ), $request_uri );
+			$whatsapp_file    = file_exists( MOV_DIR . 'helper' . DIRECTORY_SEPARATOR . 'class-mowhatsapp.php' );
+
 			wp_enqueue_script( 'mo_customer_validation_admin_settings_script', MOV_JS_URL, array( 'jquery' ), MOV_VERSION, false );
+			wp_localize_script(
+				'mo_customer_validation_admin_settings_script',
+				'moadminsettings',
+				array(
+					'iswhatsappenable'       => $whatsapp_enabled,
+					'whatsapp_tab'           => $whatsapp_tab_url,
+					'whatsapp_file'          => $whatsapp_file,
+					'whatsapp_enabled_text'  => mo_( 'OTP Over WhatsApp Enabled' ),
+					'whatsapp_disabled_text' => mo_( 'Enable OTP Over WhatsApp?' ),
+				)
+			);
 			wp_enqueue_script( 'mo_customer_validation_form_validation_script', VALIDATION_JS_URL, array( 'jquery' ), MOV_VERSION, false );
 			wp_register_script( 'mo_customer_validation_inttelinput_script', MO_INTTELINPUT_JS, array( 'jquery' ), MOV_VERSION, false );
 			$countriesavail = CountryList::get_countrycode_list();
@@ -286,6 +303,10 @@ if ( ! class_exists( 'MoInit' ) ) {
 		 * tools can read it and use it for automatic translation.
 		 */
 		public function otp_load_textdomain() {
+			initialize_forms();
+			if ( file_exists( __DIR__ . DIRECTORY_SEPARATOR . 'lib/vendor/autoload.php' ) ) {
+				require_once __DIR__ . DIRECTORY_SEPARATOR . 'lib/vendor/autoload.php';
+			}
 			load_plugin_textdomain( 'miniorange-otp-verification', false, dirname( plugin_basename( __FILE__ ) ) . '/lang/' );
 			do_action( 'mo_otp_verification_add_on_lang_files' );
 		}

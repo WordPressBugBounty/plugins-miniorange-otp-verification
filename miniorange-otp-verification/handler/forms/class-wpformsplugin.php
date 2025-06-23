@@ -423,12 +423,33 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 			$data = MoUtility::mo_sanitize_array( $_POST );
 			$form = $this->parseFormDetails( $data );
 
+			$valid_forms      = array();
+			$invalid_form_ids = array();
+
+			foreach ( $form as $form_id => $form_config ) {
+				if ( isset( $form_config['error'] ) || ( empty( $form_config['email_show'] ) && empty( $form_config['phone_show'] ) ) ) {
+					$invalid_form_ids[] = $form_id;
+				} else {
+					$valid_forms[ $form_id ] = $form_config;
+				}
+			}
+			if ( empty( $valid_forms ) && isset( $data['mo_customer_validation_wpform_enable'] ) ) {
+				$message = MoMessages::showMessage( MoMessages::INVALID_FORM_DETAILS );
+				do_action( 'mo_registration_show_message', $message, MoConstants::ERROR );
+				return;
+			}
+			if ( ! empty( $invalid_form_ids ) ) {
+				$ids_str = implode( ', ', $invalid_form_ids );
+				$message = MoMessages::showMessage( MoMessages::INVALID_PHONE_EMAIL_LABEL, array( 'form_ids' => $ids_str ) );
+				do_action( 'mo_registration_show_message', $message, MoConstants::ERROR );
+			}
+
 			$this->is_form_enabled    = $this->sanitize_form_post( 'wpform_enable' );
 			$this->otp_type           = $this->sanitize_form_post( 'wpform_enable_type' );
 			$this->button_text        = $this->sanitize_form_post( 'wpforms_sendotp_button_text' );
 			$this->verify_button_text = $this->sanitize_form_post( 'wpforms_verify_button_text' );
 			$this->enter_otp_text     = $this->sanitize_form_post( 'wpforms_enterotp_field_text' );
-			$this->form_details       = ! empty( $form ) ? $form : '';
+			$this->form_details       = $valid_forms;
 
 			update_mo_option( 'wpform_enable', $this->is_form_enabled );
 			update_mo_option( 'wpform_enable_type', $this->otp_type );
@@ -451,6 +472,9 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 			foreach ( array_filter( ( $data['wpform_form']['form'] ) ) as $key => $value ) {
 				$form_data = $this->getFormDataFromID( $value );
 				if ( MoUtility::is_blank( $form_data ) ) {
+					$form[ $value ] = array(
+						'error' => 'Invalid or missing form data.',
+					);
 					continue;
 				}
 				$field_ids                             = $this->getFieldIDs( $data, $key, $form_data );
@@ -473,14 +497,11 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 		 * @return string | array
 		 */
 		private function getFormDataFromID( $id ) {
-			if ( MoUtility::is_blank( $id ) ) {
-				return '';
+			$form = MoUtility::is_blank( $id ) ? null : get_post( absint( $id ) );
+			if ( ! is_null( $form ) && isset( $form->post_content ) ) {
+				return wp_unslash( json_decode( $form->post_content ) );
 			}
-			$form = get_post( absint( $id ) );
-			if ( MoUtility::is_blank( $id ) ) {
-				return '';
-			}
-			return wp_unslash( json_decode( $form->post_content ) );
+			return '';
 		}
 
 
@@ -501,15 +522,17 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 			if ( empty( $data ) ) {
 				return $field_ids;
 			}
-			foreach ( $form_data->fields as $field ) {
-				if ( ! property_exists( $field, 'label' ) ) {
-					continue;
-				}
-				if ( strcasecmp( $field->label, $data['wpform_form']['emailkey'][ $key ] ) === 0 ) {
-					$field_ids['emailKey'] = $field->id;
-				}
-				if ( strcasecmp( $field->label, $data['wpform_form']['phonekey'][ $key ] ) === 0 ) {
-					$field_ids['phoneKey'] = $field->id;
+			if ( isset( $form_data->fields ) && ( is_object( $form_data->fields ) ) ) {
+				foreach ( $form_data->fields as $field ) {
+					if ( ! property_exists( $field, 'label' ) ) {
+						continue;
+					}
+					if ( strcasecmp( $field->label, $data['wpform_form']['emailkey'][ $key ] ) === 0 ) {
+						$field_ids['emailKey'] = $field->id;
+					}
+					if ( strcasecmp( $field->label, $data['wpform_form']['phonekey'][ $key ] ) === 0 ) {
+						$field_ids['phoneKey'] = $field->id;
+					}
 				}
 			}
 			return $field_ids;

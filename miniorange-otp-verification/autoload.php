@@ -15,7 +15,6 @@ use OTP\MoOTPSplClassLoader;
 use OTP\LicenseLibrary\Classes\Mo_License_Library;
 use OTP\Helper\MoConstants;
 
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -68,7 +67,6 @@ require 'class-mootpsplclassloader.php';
 $idp_class_loader = new MoOTPSplClassLoader( 'OTP', realpath( __DIR__ . DIRECTORY_SEPARATOR . '..' ) );
 $idp_class_loader->register();
 require_once 'views/common-elements.php';
-initialize_forms();
 
 if ( file_exists( MOV_DIR . MoConstants::LICENCE_SERVICE_FILE ) ) {
 	new Mo_License_Library();
@@ -95,8 +93,11 @@ function initialize_forms() {
 	);
 
 	foreach ( $iterator as $it ) {
-		$filename   = $it->getFilename();
-		$filename   = str_replace( 'class-', '', $filename );
+		$filename = $it->getFilename();
+		$filename = str_replace( 'class-', '', $filename );
+		if ( 'mowccheckoutnew.php' === $filename || 'woocommercecheckoutform.php' === $filename ) {
+			$class_name = mo_is_block_based_checkout() ? 'OTP\\Handler\\Forms\\' . str_replace( '.php', '', 'mowccheckoutnew.php' ) : 'OTP\\Handler\\Forms\\' . str_replace( '.php', '', 'woocommercecheckoutform.php' );
+		}
 		$class_name = 'OTP\\Handler\\Forms\\' . str_replace( '.php', '', $filename );
 
 		$handler_list = FormList::instance();
@@ -106,7 +107,20 @@ function initialize_forms() {
 	}
 }
 
-
+/**
+ * Returns if block checkout is enabled.
+ */
+function mo_is_block_based_checkout() {
+	if ( ! function_exists( 'is_plugin_active' ) ) {
+		include_once ABSPATH . 'wp-admin/includes/plugin.php';
+	}
+	if ( ! is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
+		return false;
+	}
+	if ( class_exists( Automattic\WooCommerce\Internal\Utilities\BlocksUtil::class ) ) {
+		return WC_Blocks_Utils::has_block_in_page( wc_get_page_id( 'checkout' ), 'woocommerce/checkout' );
+	}
+}
 
 /**
  * Returns admin post url.
@@ -200,7 +214,7 @@ function initialize_package_json() {
 	$package = wp_json_encode(
 		array(
 			'name'         => 'miniorange-otp-verification',
-			'version'      => '5.3.1',
+			'version'      => '5.3.2',
 			'type'         => 'MiniOrangeGateway',
 			'testmode'     => false,
 			'failmode'     => false,
@@ -216,4 +230,3 @@ function initialize_package_json() {
 	);
 	return $package;
 }
-

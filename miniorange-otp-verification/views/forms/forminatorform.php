@@ -35,10 +35,7 @@ echo '
                         <li>' . esc_html( mo_( 'Make sure the Email Field is required Field.' ) ) . '</li>
                         <li>' . esc_html( mo_( 'Enter your Form ID, Email Field slug below' ) ) . ':<br>
                             <br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . ' 
-                            onclick="add_forminator(\'email\',1);" class="mo-form-button secondary" />&nbsp;
-
-                            <input type="button" value="-" ' . esc_attr( $disabled ) . ' onclick="remove_forminator(1);" class="mo-form-button secondary" />
-                            <br/><br/>';
+                            onclick="add_forminator(\'email\',1);" class="mo-form-button secondary" /><br/><br/>';
 
 						$form_results = get_multiple_form_select( $forminator_list_of_forms_otp_enabled, false, true, $disabled, 1, 'forminator', 'Slug' );
 						$counter1     = ! MoUtility::is_blank( $form_results['counter'] ) ? max( $form_results['counter'] - 1, 0 ) : 0;
@@ -64,8 +61,7 @@ echo '              </ol>
                         <li>' . esc_html( mo_( 'Make sure the Phone Field is required Field.' ) ) . '</li>
                         <li>' . esc_html( mo_( 'Enter your Form ID, Phone Field slug below' ) ) . ':<br>
                             <br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_forminator(\'phone\',2);
-                                " class="mo-form-button secondary" />&nbsp; <input type="button" value="-" ' . esc_attr( $disabled ) . ' 
-                                onclick="remove_forminator(2);" class="mo-form-button secondary" /><br/><br/>';
+                                " class="mo-form-button secondary" /><br/><br/>';
 
 								$form_results = get_multiple_form_select( $forminator_list_of_forms_otp_enabled, false, true, $disabled, 2, 'forminator', 'Slug' );
 								$counter2     = ! MoUtility::is_blank( $form_results['counter'] ) ? max( $form_results['counter'] - 1, 0 ) : 0;

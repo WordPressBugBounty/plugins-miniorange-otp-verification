@@ -29,8 +29,7 @@ echo '							<div class="mo_registration_help_desc" id="ninja_ajax_form_options"
 												<li>' . esc_html( mo_( 'Add an Verification Field to your form where users will enter the OTP received. Note the Field Key of the verification field.' ) ) . '</li>
 												<li>' . wp_kses( mo_( 'Please set the Verification Field as <b>required</b>.' ), array( 'b' => array() ) ) . '</li>
 												<li>' . esc_html( mo_( 'Select your Form ID, the Email Field Key and the Verification Field Key below' ) ) . ':<br>
-													<br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_ninja_ajax(\'email\',1);" class="mo-form-button secondary" />&nbsp;
-													<input type="button" value="-" ' . esc_attr( $disabled ) . ' onclick="remove_ninja_ajax(1);" class="mo-form-button secondary" /><br/><br/>';
+													<br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_ninja_ajax(\'email\',1);" class="mo-form-button secondary" /><br/><br/>';
 
 													$form_results = get_multiple_form_select( $ninja_ajax_form_otp_enabled, true, true, $disabled, 1, 'ninja_ajax', 'Key' );
 													$counter1     = ! MoUtility::is_blank( $form_results['counter'] ) ? max( $form_results['counter'] - 1, 0 ) : 0;
@@ -53,8 +52,7 @@ echo '											</li>
 												<li>' . esc_html( mo_( 'Add an Verification Field to your form where users will enter the OTP received. Note the Field Key of the verification field.' ) ) . '</li>
 												<li>' . wp_kses( mo_( 'Please set the Verification Field and Phone Field as <b>required</b>.' ), array( 'b' => array() ) ) . '</li>
 												<li>' . esc_html( mo_( 'Select your Form ID, the Phone Field Key and the Verification Field Key below' ) ) . ':<br>
-													<br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_ninja_ajax(\'phone\',2);" class="mo-form-button secondary" />&nbsp;
-													<input type="button" value="-" ' . esc_attr( $disabled ) . ' onclick="remove_ninja_ajax(2);" class="mo-form-button secondary" /><br/><br/>';
+													<br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_ninja_ajax(\'phone\',2);" class="mo-form-button secondary" /><br/><br/>';
 
 													$form_results = get_multiple_form_select( $ninja_ajax_form_otp_enabled, true, true, $disabled, 2, 'ninja_ajax', 'Key' );
 													$counter2     = ! MoUtility::is_blank( $form_results['counter'] ) ? max( $form_results['counter'] - 1, 0 ) : 0;

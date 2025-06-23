@@ -205,7 +205,8 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 		 */
 		public function handle_otp_sent( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content ) {
 			SessionUtils::set_phone_transaction_id( $content['txId'] );
-			$message = str_replace( '##phone##', $phone_number, $this->get_otp_sent_message() );
+			$masked_phone_number = MoUtility::mo_mask_phone_number( $phone_number );
+			$message = str_replace( '##phone##', $masked_phone_number, $this->get_otp_sent_message() );
 			apply_filters( 'mo_start_reporting', $content['txId'], $phone_number, $phone_number, $otp_type, $message, 'OTP_SENT' );
 			if ( $this->is_ajax_form() ) {
 				wp_send_json( MoUtility::create_json( $message, MoConstants::SUCCESS_JSON_TYPE ) );

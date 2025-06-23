@@ -85,7 +85,7 @@ if ( ! class_exists( 'MiniOrangeGateway' ) ) {
 				WooCommercePasswordReset::instance();
 			}
 			if ( file_exists( MOV_DIR . 'addons/regwithphone' ) ) {
-				RegisterWithPhoneOnly::instance();
+				require MOV_DIR . 'addons/regwithphone/miniorange-rwp-validation.php';
 			}
 			if ( file_exists( MOV_DIR . 'addons/wpsmsnotification' ) ) {
 				WordPressSmsNotification::instance();

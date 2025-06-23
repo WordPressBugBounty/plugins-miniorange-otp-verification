@@ -68,9 +68,6 @@ if ( ! class_exists( 'MoRegistrationHandler' ) ) {
 				case 'mo_registration_go_back':
 					$this->mo_revert_back_registration();
 					break;
-				case 'mo_registration_forgot_password':
-					$this->mo_reset_password();
-					break;
 				case 'mo_go_to_login_page':
 				case 'remove_account':
 					$this->removeAccount();
@@ -262,27 +259,6 @@ if ( ! class_exists( 'MoRegistrationHandler' ) ) {
 				return;
 			}
 			$this->mo_get_current_customer( $email, $password );
-		}
-
-
-		/**
-		 * Reset Administrator's miniOrange password.
-		 * This calls the server to send a forgot password email.
-		 */
-		private function mo_reset_password() {
-			$this->is_valid_request();
-			$email = get_mo_option( 'admin_email' );
-			if ( ! $email ) {
-				do_action( 'mo_registration_show_message', MoMessages::showMessage( MoMessages::FORGOT_PASSWORD_MESSAGE ), 'SUCCESS' );
-			} else {
-				$forgot_password_response = json_decode( MocURLCall::forgot_password( $email ) );
-				if ( 'SUCCESS' === $forgot_password_response->status ) {
-					do_action( 'mo_registration_show_message', MoMessages::showMessage( MoMessages::RESET_PASS ), 'SUCCESS' );
-				} else {
-					do_action( 'mo_registration_show_message', MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ), 'ERROR' );
-				}
-			}
-
 		}
 
 

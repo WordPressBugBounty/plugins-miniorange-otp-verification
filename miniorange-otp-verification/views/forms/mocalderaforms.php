@@ -37,10 +37,7 @@ echo '
                         <li>' . esc_html( mo_( 'Make sure Both Email Field and Verification Field are required Fields.' ) ) . '</li>
                         <li>' . esc_html( mo_( 'Enter your Form ID, Email Field ID and Verification Field ID below' ) ) . ':<br>
                             <br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . '
-                            onclick="add_caldera(\'email\',1);" class="mo-form-button secondary" />&nbsp;
-
-                            <input type="button" value="-" ' . esc_attr( $disabled ) . ' onclick="remove_caldera(1);" class="mo-form-button secondary" />
-                            <br/><br/>';
+                            onclick="add_caldera(\'email\',1);" class="mo-form-button secondary" /><br/><br/>';
 
 						$form_results = get_multiple_form_select( $caldera_list_of_forms_otp_enabled, true, true, $disabled, 1, 'caldera', 'ID' );
 						$counter1     = ! MoUtility::is_blank( $form_results['counter'] ) ? max( $form_results['counter'] - 1, 0 ) : 0;
@@ -70,8 +67,7 @@ echo '              </ol>
 						. '</li>
                         <li>' . esc_html( mo_( 'Enter your Form ID, Phone Field ID and Verification Field ID below' ) ) . ':<br>
                             <br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_caldera(\'phone\',2);
-                                " class="mo-form-button secondary" />&nbsp; <input type="button" value="-" ' . esc_attr( $disabled ) . '
-                                onclick="remove_caldera(2);" class="mo-form-button secondary" /><br/><br/>';
+                                " class="mo-form-button secondary" /><br/><br/>';
 
 								$form_results = get_multiple_form_select( $caldera_list_of_forms_otp_enabled, true, true, $disabled, 2, 'caldera', 'ID' );
 								$counter2     = ! MoUtility::is_blank( $form_results['counter'] ) ? max( $form_results['counter'] - 1, 0 ) : 0;

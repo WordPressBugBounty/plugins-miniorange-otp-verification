@@ -408,5 +408,10 @@ if ( ! class_exists( 'MoFormDocs' ) ) {
 			'guideLink' => '',
 			'videoLink' => '',
 		);
+		const LOGIN_REGISTER_WITH_PHONE = array(
+			'formLink'  => '',
+			'guideLink' => 'https://plugins.miniorange.com/register-login-account-phone-miniorange-otp',
+			'videoLink' => '',
+		);
 	}
 }

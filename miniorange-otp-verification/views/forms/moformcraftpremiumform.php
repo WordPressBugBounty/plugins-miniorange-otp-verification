@@ -27,8 +27,7 @@ echo '							<div class="mo_registration_help_desc" id="fcpremium_options">
 												<li>' . esc_html( mo_( 'Add an Email Field to your form. Note the Label of the email field.' ) ) . '</li>
 												<li>' . esc_html( mo_( 'Add an Verification Field to your form where users will enter the OTP received. Note the Label of the verification field.' ) ) . '</li>
 												<li>' . esc_html( mo_( 'Enter your Form ID, the label of the Email Field and Verification Field below' ) ) . ':<br>
-													<br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_fcpremium(\'email\',1);" class="mo-form-button secondary" />&nbsp;
-													<input type="button" value="-" ' . esc_attr( $disabled ) . ' onclick="remove_fcpremium(1);" class="mo-form-button secondary" /><br/><br/>';
+													<br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_fcpremium(\'email\',1);" class="mo-form-button secondary" /><br/><br/>';
 
 													$form_results = get_multiple_form_select( $fcpremium_otp_enabled, true, true, $disabled, 1, 'fcpremium', 'Label' );
 													$counter1     = ! MoUtility::is_blank( $form_results['counter'] ) ? max( $form_results['counter'] - 1, 0 ) : 0;
@@ -49,8 +48,7 @@ echo '											</li>
 												<li>' . esc_html( mo_( 'Add a Phone Field to your form. Note the Label of the phone field.' ) ) . '</li>
 												<li>' . esc_html( mo_( 'Add an Verification Field to your form where users will enter the OTP received. Note the Label of the verification field.' ) ) . '</li>
 												<li>' . esc_html( mo_( 'Enter your Form ID, the label of the Email Field and Verification Field below' ) ) . ':<br>
-													<br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_fcpremium(\'phone\',2);" class="mo-form-button secondary" />&nbsp;
-													<input type="button" value="-" ' . esc_attr( $disabled ) . ' onclick="remove_fcpremium(2);" class="mo-form-button secondary" /><br/><br/>';
+													<br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_fcpremium(\'phone\',2);" class="mo-form-button secondary" /><br/><br/>';
 
 													$form_results = get_multiple_form_select( $fcpremium_otp_enabled, true, true, $disabled, 2, 'fcpremium', 'Label' );
 													$counter2     = ! MoUtility::is_blank( $form_results['counter'] ) ? max( $form_results['counter'] - 1, 0 ) : 0;

@@ -21,15 +21,6 @@ echo ' 	<div class="mo_otp_form" id="' . esc_attr( get_mo_class( $handler ) ) . 
  	                ' . esc_attr( $wc_checkout ) . ' />
             <strong>' . esc_html( $form_name ) . '</strong>';
 
-if ( class_exists( Automattic\WooCommerce\Internal\Utilities\BlocksUtil::class ) ) {
-	if ( WC_Blocks_Utils::has_block_in_page( wc_get_page_id( 'checkout' ), 'woocommerce/checkout' ) ) {
-		echo '	<div style="border: none;background-color: #ffdede; color: #fc6060;" class="notice mo_sms_notice font-normal rounded-md py-mo-3">
-					It seems you are using Block Checkout form. Please choose <b>WooCommerce Checkout Form - Block Form</b> from the list.
-					<i><a target="_blank" href="https://plugins.miniorange.com/block-or-classic-wc-checkout-form-otp">[Know more about WooCommerce checkout form]</a></i>
-				</div>';
-	}
-}
-
 echo '		<div class="mo_registration_help_desc" id="wc_checkout_options">
 				<b>' . esc_html( mo_( 'Choose between Phone or Email Verification' ) ) . '</b>
 				<div>
@@ -60,7 +51,7 @@ echo '		<div class="mo_registration_help_desc" id="wc_checkout_options">
 						    ' . ( esc_attr( $wc_checkout_enable_type ) === esc_attr( $wc_type_email ) ? 'checked' : '' ) . ' />
                     <strong>' . esc_html( mo_( 'Enable Email Verification' ) ) . '</strong>
 				</div>
-				<div style="margin-top:3%;">
+				<div class="mt-mo-2">
 					<input  type="checkbox" 
 					        ' . esc_attr( $disabled ) . ' 
 					        ' . esc_attr( $guest_checkout ) . ' 
@@ -75,28 +66,6 @@ echo '		<div class="mo_registration_help_desc" id="wc_checkout_options">
 				);
 
 				echo '
-				</div>
-				<div>
-					<input  type="checkbox" 
-					        ' . esc_attr( $disabled ) . ' 
-					        ' . esc_attr( $disable_autologin ) . ' 
-					        class="app_enable" 
-					        name="mo_customer_validation_wc_checkout_disable_auto_login" 
-					        value="1" 
-					        type="checkbox">
-                    <b>' . esc_html( mo_( 'Disable Auto Login after checkout.' ) ) . '</b>
-                    <br/>
-				</div>
-				<div>
-					<input  type="checkbox" 
-					        ' . esc_attr( $disabled ) . ' 
-					        ' . esc_attr( $checkout_button ) . ' 
-					        class="app_enable" 
-					        name="mo_customer_validation_wc_checkout_button" 
-					        value="1" 
-					        type="checkbox">
-                    <b>' . esc_html( mo_( 'Show a verification button instead of a link on the WooCommerce Checkout Page.' ) ) . '</b>
-                    <br/>
 				</div>
 				<div>
 					<input  type="checkbox" 

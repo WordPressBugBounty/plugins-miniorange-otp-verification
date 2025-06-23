@@ -515,7 +515,10 @@ if ( ! class_exists( 'ResendControlHandler' ) ) {
 			if($mo("#wc-timer-left").length>0)
 			{
 			 	startTimerVar(timeLeft, displayVarWc);
-				document.getElementById("validation_goBack_form").submit();
+				var form_goback = document.getElementById("validation_goBack_form");
+				if (form_goback && $mo(form_goback).is(":visible")) {
+					form_goback.submit();
+				}
 			}
 			$mo(".mo_customer_validation-login-container").hide();
 
@@ -536,7 +539,10 @@ if ( ! class_exists( 'ResendControlHandler' ) ) {
 						$mo("#miniorange_wc_popup_send_otp_token").show();
 						$mo("#miniorange_otp_token_submit").show();
 						$mo("#wc-timer-left").parent().remove();
-						document.getElementById("validation_goBack_form").submit();
+						var form_goback = document.getElementById("validation_goBack_form");
+						if (form_goback && $mo(form_goback).is(":visible")) {
+							form_goback.submit();
+						}
 
 						clearInterval(timerFunction);
 						mo_messageSelector = "div[id*=\'mo_message\']";
@@ -645,7 +651,10 @@ if ( ! class_exists( 'ResendControlHandler' ) ) {
 							$mo("#popup_wc_mo").hide();
 							$mo("#miniorange_wc_popup_send_otp_token").show();
 							$mo("#wc-timer-left").parent().remove();
-							document.getElementById("validation_goBack_form").submit();
+							var form_goback = document.getElementById("validation_goBack_form");
+							if (form_goback && $mo(form_goback).is(":visible")) {
+								form_goback.submit();
+							}
 
 							clearInterval(blockTimerFunction);
 							jQuery($mo(blockMessageSelector)).empty().hide();

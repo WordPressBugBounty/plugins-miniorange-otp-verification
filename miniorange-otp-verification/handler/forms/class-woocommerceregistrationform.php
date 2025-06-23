@@ -82,6 +82,10 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			$this->redirect_after_registration = get_mo_option( 'wcreg_redirect_after_registration' );
 			$this->restrict_duplicates         = get_mo_option( 'wc_restrict_duplicates' );
 
+			if ( get_mo_option( 'dokan_default_enable' ) ) {
+				return;
+			}
+
 			add_filter( 'woocommerce_process_registration_errors', array( $this, 'woocommerce_site_registration_errors' ), 99, 4 );
 			add_action( 'woocommerce_created_customer', array( $this, 'register_woocommerce_user' ), 1, 3 );
 			add_filter( 'woocommerce_registration_redirect', array( $this, 'custom_registration_redirect' ), 99, 1 );
@@ -629,6 +633,15 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 				return;
 			}
 			if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->admin_nonce ) ) {
+				return;
+			}
+
+			if ( $this->sanitize_form_post( 'wc_default_enable' ) && get_mo_option( 'dokan_default_enable' ) ) {
+				do_action(
+					'mo_registration_show_message',
+					MoMessages::showMessage( MoMessages::DISABLE_DOKAN_REG ),
+					MoConstants::ERROR
+				);
 				return;
 			}
 

@@ -37,10 +37,7 @@ echo '
                         <li>' . esc_html( mo_( 'Add a Verification Field to your form and add <b>verify_otp</b>' ) ) . '</li>
                         <li>' . esc_html( mo_( 'Enter your Form ID, Email Field Lebel and Verification Field Label below' ) ) . ':<br>
                             <br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . ' 
-                            onclick="add_easyreg(\'email\',1);" class="mo-form-button secondary" />&nbsp;
-
-                            <input type="button" value="-" ' . esc_attr( $disabled ) . ' onclick="remove_easyreg(1);" class="mo-form-button secondary" />
-                            <br/><br/>';
+                            onclick="add_easyreg(\'email\',1);" class="mo-form-button secondary" /><br/><br/>';
 
 						$form_results = get_multiple_form_select( $easyreg_list_of_forms_otp_enabled, true, true, $disabled, 1, 'easyreg', 'Label' );
 						$counter1     = ! MoUtility::is_blank( $form_results['counter'] ) ? max( $form_results['counter'] - 1, 0 ) : 0;
@@ -67,8 +64,7 @@ echo '              </ol>
                         <li>' . esc_html( mo_( 'Add a Verification Field to your form and add <b>verify_otp</b>' ) ) . '</li>
                         <li>' . esc_html( mo_( 'Enter your Form ID, Email Field Lebel and Verification Field Label below' ) ) . ':<br>
                             <br/>' . esc_html( mo_( 'Add Form ' ) ) . ': <input type="button"  value="+" ' . esc_attr( $disabled ) . ' onclick="add_easyreg(\'phone\',2);
-                                " class="mo-form-button secondary" />&nbsp; <input type="button" value="-" ' . esc_attr( $disabled ) . ' 
-                                onclick="remove_easyreg(2);" class="mo-form-button secondary" /><br/><br/>';
+                                " class="mo-form-button secondary" /><br/><br/>';
 
 								$form_results = get_multiple_form_select( $easyreg_list_of_forms_otp_enabled, true, true, $disabled, 2, 'easyreg', 'ID' );
 								$counter2     = ! MoUtility::is_blank( $form_results['counter'] ) ? max( $form_results['counter'] - 1, 0 ) : 0;

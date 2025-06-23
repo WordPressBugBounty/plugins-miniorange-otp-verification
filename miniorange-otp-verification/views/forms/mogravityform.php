@@ -41,10 +41,7 @@ echo '							<div class="mo_registration_help_desc" id="gf_contact_options">
 												<li>' . esc_html( mo_( 'Add the form id of your form below for which you want to enable Email verification:' ) ) . '<br>
 												<br/>' . esc_html( mo_( 'Add Form' ) ) . ' : <input  type="button"  value="+" ' . esc_attr( $disabled ) . '
                                                                                             onclick="add_gravity(\'email\',1);"
-                                                                                            class="mo-form-button secondary" />&nbsp;
-													    <input  type="button" value="-" ' . esc_attr( $disabled ) . '
-													            onclick="remove_gravity(1);"
-													            class="mo-form-button secondary" /><br/><br/>';
+                                                                                            class="mo-form-button secondary" /><br/><br/>';
 
 												$gf_form_results = get_multiple_form_select(
 													$gf_otp_enabled,
@@ -81,10 +78,7 @@ echo '							<div class="mo_registration_help_desc" id="gf_contact_options">
 												<li>' . esc_html( mo_( 'Add the form id of your form below for which you want to enable Phone verification' ) ) . ':<br>
 												<br/>' . esc_html( mo_( 'Add Form' ) ) . ' : <input type="button"  value="+" ' . esc_attr( $disabled ) . '
 												                                            onclick="add_gravity(\'phone\',2);"
-												                                            class="mo-form-button secondary"/>&nbsp;
-                                                    <input  type="button" value="-" ' . esc_attr( $disabled ) . '
-                                                            onclick="remove_gravity(2);"
-                                                            class="mo-form-button secondary" /><br/><br/>';
+												                                            class="mo-form-button secondary"/><br/><br/>';
 
 												$gf_form_results = get_multiple_form_select(
 													$gf_otp_enabled,

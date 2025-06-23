@@ -313,5 +313,15 @@ if ( ! class_exists( 'BaseMessages' ) ) {
 		const VOIP_PHONE_BODY                      = 'VOIP_PHONE_BODY';
 		const USE_YOUR_SMTP                        = 'USE_YOUR_SMTP';
 		const USE_YOUR_SMTP_HEADER                 = 'USE_YOUR_SMTP_HEADER';
+		const NEW_ACCOUNT_NOTIF_SMS                = 'NEW_ACCOUNT_NOTIF_SMS';
+		const USER_LOGGING_IN                      = 'USER_LOGGING_IN';
+		const USER_LOGGED_IN                       = 'USER_LOGGED_IN';
+		const NEW_USER_REGISTERED                  = 'NEW_USER_REGISTERED';
+		const PLUGIN_INSTALL                       = 'PLUGIN_INSTALL';
+		const DISABLE_WC_REG                       = 'DISABLE_WC_REG';
+		const DISABLE_DOKAN_REG                    = 'DISABLE_DOKAN_REG';
+		const TEMPLATE_GUIDELINE_ALERT             = 'TEMPLATE_GUIDELINE_ALERT';
+		const INVALID_FORM_DETAILS                 = 'INVALID_FORM_DETAILS';
+		const INVALID_PHONE_EMAIL_LABEL            = 'INVALID_PHONE_EMAIL_LABEL';
 	}
 }

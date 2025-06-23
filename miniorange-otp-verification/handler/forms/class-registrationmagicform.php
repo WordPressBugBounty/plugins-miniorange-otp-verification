@@ -1,6 +1,6 @@
 <?php
 /**
- * Handler Functions for Custom User Registration Form Builder (Registration Magic) form
+ * Handler Functions for Registration Magic (Registration Form)
  *
  * @package miniorange-otp-verification/handler/forms
  */
@@ -45,7 +45,7 @@ if ( ! class_exists( 'RegistrationMagicForm' ) ) {
 			$this->type_email_tag          = 'mo_crf_email_enable';
 			$this->type_both_tag           = 'mo_crf_both_enable';
 			$this->form_key                = 'CRF_FORM';
-			$this->form_name               = mo_( 'Custom User Registration Form Builder (Registration Magic)' );
+			$this->form_name               = mo_( 'Registration Magic (Registration Form)' );
 			$this->is_form_enabled         = get_mo_option( 'crf_default_enable' );
 			$this->phone_form_id           = array();
 			$this->form_documents          = MoFormDocs::CRF_FORM_ENABLE;

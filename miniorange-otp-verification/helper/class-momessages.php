@@ -115,7 +115,7 @@ if ( ! class_exists( 'MoMessages' ) ) {
 					self::FORM_NOT_AVAIL_HEAD           => mo_( 'MY FORM IS NOT IN THE LIST' ),
 
 					self::FORM_NOT_FOUND                => mo_( 'Not able to find your form.' ),
-					self::FORM_NOT_AVAIL_BODY => mo_(
+					self::FORM_NOT_AVAIL_BODY           => mo_(
 						'We are continuously adding support for more forms. Contact us via the support form or email us at <a onClick=\'otpSupportOnClick();\'><span style=\'color:white;\'><u>'
 						. esc_html( MoConstants::FEEDBACK_EMAIL ) . '</u></span></a> with details about your form and its usage.'
 					),
@@ -196,6 +196,11 @@ if ( ! class_exists( 'MoMessages' ) ) {
 					self::SMS_TEMPLATE_SAVED            => mo_( 'Your SMS configurations are saved successfully.' ),
 
 					self::SMS_TEMPLATE_ERROR            => mo_( 'Please configure your gateway URL correctly.' ),
+
+					self::TEMPLATE_GUIDELINE_ALERT      => mo_(
+						'We have released some changes to our miniOrange gateway guidelines.
+						       							According to the new guidelines, you cannot add any special character without spaces around it.'
+					),
 
 					self::EMAIL_TEMPLATE_SAVED          => mo_( 'Your email configurations are saved successfully.' ),
 
@@ -459,7 +464,7 @@ if ( ! class_exists( 'MoMessages' ) ) {
 					self::MO_PAYMENT                    => mo_( 'Payment Methods which we support' ),
 
 					self::GRAVITY_CHOOSE                => mo_( 'Please choose a Verification Method for Gravity Form.' ),
-
+					self::PLUGIN_INSTALL                => mo_( 'Please install the {{formname}} plugin' ),
 					self::PHONE_NOT_FOUND               => mo_( "Sorry, but you don't have a registered phone number." ),
 
 					self::REGISTER_PHONE_LOGIN          => mo_(
@@ -590,6 +595,14 @@ if ( ! class_exists( 'MoMessages' ) ) {
 					self::VOIP_PHONE_BODY               => mo_( 'A VOIP phone number is a virtual number that uses the internet for calls, not tied to a physical location.' ),
 					self::USE_YOUR_SMTP                 => mo_( 'You can configure your SMTP gateway from any third party SMTP plugin( For e.g <u><i><a href="https://wordpress.org/plugins/wp-mail-smtp/" target="_blank" >WP SMTP</a></i></u> ) or php.ini file.<br><b>Note:</b> You don\'t need to configure any extra settings in our plugin.' ),
 					self::USE_YOUR_SMTP_HEADER          => mo_( 'CONFIGURE YOUR OWN SMTP' ),
+					self::NEW_ACCOUNT_NOTIF_SMS         => mo_( 'Thanks for creating an account on {site-name}. Your username is {username} -miniorange' ),
+					self::USER_LOGGING_IN               => mo_( 'Verified. Logging in..' ),
+					self::USER_LOGGED_IN                => mo_( 'You are already logged in!' ),
+					self::NEW_USER_REGISTERED           => mo_( 'Verified. Registering your account.' ),
+					self::DISABLE_WC_REG                => mo_( 'Please disable WooCommerce Registration form in order to enable this form.' ),
+					self::DISABLE_DOKAN_REG             => mo_( 'Please disable Dokan Registration form in order to enable this form.' ),
+					self::INVALID_FORM_DETAILS          => mo_( 'Enter valid form details.' ),
+					self::INVALID_PHONE_EMAIL_LABEL     => mo_( 'Invalid or incomplete form IDs: {{form_ids}}. Check labels and form existence.' ),
 				)
 			);
 
@@ -734,6 +747,9 @@ if ( ! class_exists( 'MoMessages' ) ) {
 					self::ERROR_OTP_VERIFY              => mo_( 'The next OTP can be sent after {minutes}:{seconds} minutes' ),
 
 					self::VOIP_PHONE_FORMAT             => mo_( '##phone## is not a valid phone number. Please enter a valid Phone Number.' ),
+					self::USER_LOGGING_IN               => mo_( 'Verified. Logging in..' ),
+					self::USER_LOGGED_IN                => mo_( 'You are already logged in!' ),
+					self::NEW_USER_REGISTERED           => mo_( 'Verified. Registering your account.' ),
 
 				)
 			);
@@ -795,7 +811,6 @@ if ( ! class_exists( 'MoMessages' ) ) {
 			$messages = maybe_unserialize( MO_ORIGINAL_MESSAGES );
 			return $messages;
 		}
-
 		/**
 		 * This function is used to fetch the original message list.
 		 *
@@ -805,7 +820,6 @@ if ( ! class_exists( 'MoMessages' ) ) {
 			$messages = maybe_unserialize( MO_FRONTEND_MESSAGES );
 			return $messages;
 		}
-
 		/**
 		 * This function is used to return the updated message list.
 		 *

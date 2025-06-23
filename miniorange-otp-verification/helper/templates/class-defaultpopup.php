@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use OTP\Objects\MoITemplate;
 use OTP\Objects\Template;
 use OTP\Traits\Instance;
+use OTP\Helper\MoUtility;
 
 /**
  * This is the Default Popup class. This class handles all the
@@ -130,7 +131,7 @@ if ( ! class_exists( 'DefaultPopup' ) ) {
 			$template = str_replace( '{{RESEND_OTP}}', mo_( 'Resend OTP' ), $template );
 
 			$template = apply_filters( 'mo_add_script', $template );
-			return $template;
+			return wp_kses( $template, MoUtility::mo_allow_html_array() );
 		}
 
 		/**
@@ -244,9 +245,9 @@ if ( ! class_exists( 'DefaultPopup' ) ) {
 		</form>
 		<form name="f" method="post" action="" id="goBack_choice_otp_form">
 			<input id="verification_resend_otp" name="option" value="verification_resend_otp_both" type="hidden"/>
-			<input type="hidden" id="from_both" name="from_both" value="' . esc_attr( $from_both ) . '">{{EXTRA_POST_DATA}}</form>{{SCRIPTS}}';
+			<input type="hidden" id="from_both" name="from_both" value"' . esc_attr( $from_both ) . '"/>{{EXTRA_POST_DATA}}</form>{{SCRIPTS}}';
 			$required_fields = str_replace( '{{SCRIPTS}}', $this->getRequiredScripts(), $required_fields );
-			return $required_fields;
+			return wp_kses( $required_fields, MoUtility::mo_allow_html_array() );
 		}
 
 		/**

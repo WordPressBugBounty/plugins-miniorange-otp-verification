@@ -25,7 +25,7 @@ $premium_notifications = array(
 	'formNotif'  => array(
 		'subtab'      => 'formNotifSubTab',
 		'filename'    => 'formsmsnotification',
-		'discription' => 'Enable SMS Notifications on submission of Login, Registration and Contact Forms. <br><br> <b>Forms Notifications</b> is a premium feature. Contact us at <a style="cursor:pointer;" onClick="otpSupportOnClick(\'Hi! I am interested in using Form Notifications feature. Please help me with more information. \');"><u> otpsupport@xecurify.com</u> to know more</a>',
+		'discription' => 'Enable SMS Notifications on submission of Login, Registration and Contact Forms. <br><br> <b>Forms Notifications</b> is a premium feature. Contact us at <a style="cursor:pointer;" onClick="otpSupportOnClick(\'Hi! I am interested in using Form Notifications feature. Please help me with more information. \');"><u> otpsupport@xecurify.com</u></a><span> to know more</span>',
 	),
 );
 

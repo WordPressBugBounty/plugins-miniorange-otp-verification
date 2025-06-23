@@ -49,11 +49,6 @@ echo '		<div    class="mo_registration_help_desc"
 								': <input   type="button"
                                             value="+" ' . esc_attr( $disabled ) . '
                                             onclick="add_visual(\'email\',1);" 
-                                            class="mo-form-button secondary" />&nbsp;
-                                    <input  type="button" 
-                                            value="-" 
-                                            ' . esc_attr( $disabled ) . '
-                                            onclick="remove_visual(1);" 
                                             class="mo-form-button secondary" /><br/><br/>';
 
 								$form_results = get_multiple_form_select(
@@ -100,11 +95,6 @@ echo '		<div    class="mo_registration_help_desc"
 								':  <input  type="button"
                                             value="+" ' . esc_attr( $disabled ) . '
                                             onclick="add_visual(\'phone\',2);" 
-                                            class="mo-form-button secondary" />&nbsp;
-                                    <input  type="button" 
-                                            value="-" 
-                                            ' . esc_attr( $disabled ) . '
-                                            onclick="remove_visual(2);" 
                                             class="mo-form-button secondary" /><br/><br/>';
 
 								$form_results = get_multiple_form_select(

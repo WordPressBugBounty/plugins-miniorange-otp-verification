@@ -26,6 +26,9 @@ if ( ! class_exists( 'MoPHPSessions' ) ) {
 		 * @param mixed  $val value of key pair.
 		 */
 		public static function add_session_var( $key, $val ) {
+			if ( empty( $key ) ) {
+				return;
+			}
 			switch ( MOV_SESSION_TYPE ) {
 				case 'COOKIE':
 					setcookie( $key, maybe_serialize( $val ) );
@@ -67,6 +70,9 @@ if ( ! class_exists( 'MoPHPSessions' ) ) {
 		 * @return mixed
 		 */
 		public static function get_session_var( $key ) {
+			if ( empty( $key ) ) {
+				return;
+			}
 			switch ( MOV_SESSION_TYPE ) {
 				case 'COOKIE':
 					return maybe_unserialize( isset( $_COOKIE[ $key ] ) ? sanitize_text_field( wp_unslash( $_COOKIE[ $key ] ) ) : null ); //phpcs:ignore -- false positive.

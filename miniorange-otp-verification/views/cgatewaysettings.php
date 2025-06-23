@@ -10,6 +10,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use OTP\Helper\MoMessages;
+use OTP\Helper\MoUtility;
+use OTP\Helper\MoConstants;
 
 $request_uri = remove_query_arg( array( 'addon', 'form', 'subpage' ), isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ); // phpcs:ignore -- false positive.
 $license_url = add_query_arg( array( 'page' => 'mootppricing' ), $request_uri );
@@ -174,6 +176,16 @@ echo '	<form name="f" method="post" action="" id="sms-configuration-form">';
 			MoMessages::showMessage( MoMessages::USE_YOUR_SMTP )
 		);
 									echo '
+									<span class="tooltip">' . wp_kses( MoConstants::MO_CROWN_SVG, MoUtility::mo_allow_svg_array() ) . '
+										<span class="tooltiptext prem_form_tooltip" >
+											<span  class="header prem_form_header" ><b>' . esc_html( mo_( 'Premium Feature ' ) ) . '</b></span>
+											<span class="body">' . esc_html( mo_( 'To use your own SMTP, upgrade to the premium plan. ' ) ) . '
+												<br>' . esc_html( mo_( 'Check ' ) ) . '<a class="font-semibold text-yellow-500" href="' . esc_url( $license_url ) . '" target="_blank">' . esc_html( mo_( 'Licensing Tab' ) ) . '</a>' . esc_html( mo_( ' to learn more.' ) ) . '
+												</a>
+											</span>
+										</span>
+									</span>';
+									echo '
 									</p>
 								</div>
 							</div>
@@ -264,8 +276,8 @@ echo '	<form name="f" method="post" action="" id="sms-configuration-form">';
 					'id'     => array(),
 				),
 				'a'        => array(
-					'href'  => array(),
-					'class' => array(),
+					'href'   => array(),
+					'class'  => array(),
 					'target' => array(),
 				),
 				'p'        => array(

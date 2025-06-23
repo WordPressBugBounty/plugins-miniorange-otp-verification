@@ -31,7 +31,7 @@ echo '	    <div class="mo_registration_help_desc" id="wp_login_options">
 							name="mo_customer_validation_wp_login_enable_type"
 							value="' . esc_attr( $wp_phone_type ) . '"
 							' . ( esc_attr( $wp_enabled_type ) === esc_attr( $wp_phone_type ) ? 'checked' : '' ) . ' />
-					<b>' . esc_html( mo_( 'Enable Phone Verification' ) ) . '</b>
+					<strong>' . esc_html( mo_( 'Enable Phone Verification' ) ) . '</strong>
 				 </div>
 				 <div   ' . ( esc_attr( $wp_enabled_type ) !== esc_attr( $wp_phone_type ) ? 'style=display:none' : '' ) . '
 						class="mo_registration_help_desc_internal"

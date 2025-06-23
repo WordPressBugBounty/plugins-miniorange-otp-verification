@@ -402,7 +402,7 @@ if ( ! class_exists( 'FormCraftBasicForm' ) ) {
 		 * @return boolean
 		 */
 		private function isFormCraftPluginInstalled() {
-			return MoUtility::get_active_plugin_version( 'FormCraft' ) < 3 ? true : false;
+			return MoUtility::get_active_plugin_version( 'FormCraft' ) < 3 ? false : true;
 		}
 
 		/**
@@ -412,14 +412,16 @@ if ( ! class_exists( 'FormCraftBasicForm' ) ) {
 			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option() ) ) {
 				return;
 			}
-			if ( ! $this->isFormCraftPluginInstalled() ) {
-				return;
-			}         if ( ! array_key_exists( 'formcraft_form', $_POST ) || ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->admin_nonce ) ) { // phpcs:ignore -- false positive.
+			if ( ! array_key_exists( 'formcraft_form', $_POST ) || ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->admin_nonce ) ) { // phpcs:ignore -- false positive.
 				return;
 			}
 
 			$data = MoUtility::mo_sanitize_array( $_POST );
-
+			if ( isset( $data['mo_customer_validation_formcraft_enable'] ) && ! $this->isFormCraftPluginInstalled() ) {
+				$message  = MoMessages::showMessage( MoMessages::PLUGIN_INSTALL, array( 'formname' => $this->form_name ) );
+				do_action( 'mo_registration_show_message', $message, MoConstants::ERROR );
+				return;
+			}
 			foreach ( array_filter( $data['formcraft_form']['form'] ) as $key => $value ) { //phpcs:ignore -- $data is an array but considered as a string (false positive).
 				$value     = sanitize_text_field( $value );
 				$form_data = $this->getFormCraftFormDataFromID( $value );
@@ -485,7 +487,7 @@ if ( ! class_exists( 'FormCraftBasicForm' ) ) {
 		 * @return array
 		 */
 		private function getFormCraftFormDataFromID( $id ) {
-			global $wpdb,$forms_table;
+			global $wpdb;
 			$meta = $wpdb->get_var( $wpdb->prepare( "SELECT meta_builder FROM {$wpdb->prefix}formcraft_b_forms WHERE id= %s", array( $id ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, Direct database call without caching detected -- DB Direct Query is necessary here.
 			$meta = json_decode( stripcslashes( $meta ), 1 );
 			return $meta['fields'];

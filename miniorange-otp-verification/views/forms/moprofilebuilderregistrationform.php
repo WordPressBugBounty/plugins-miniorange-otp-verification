@@ -17,7 +17,7 @@ echo ' 	<div class="mo_otp_form" id="' . esc_attr( get_mo_class( $handler ) ) . 
 				<div>
 					<input type="radio" ' . esc_attr( $disabled ) . ' id="pb_phone" class="app_enable" data-toggle="pb_phone_options" name="mo_customer_validation_pb_enable_type" value="' . esc_attr( $pb_reg_type_phone ) . '"
 						' . ( esc_attr( $pb_enable_type ) === esc_attr( $pb_reg_type_phone ) ? 'checked' : '' ) . '/>
-						<strong>' . esc_html( mo_( 'Enable Phone Verification' ) ) . ' <i>' . esc_html( mo_( '( Requires Hobbyist Version )' ) ) . '</i></strong>
+						<strong>' . esc_html( mo_( 'Enable Phone Verification' ) ) . '</strong> <i>' . esc_html( mo_( '( Requires Hobbyist Version )' ) ) . '</i>
 				</div>
 				<div ' . ( esc_attr( $pb_enable_type, ) !== esc_attr( $pb_reg_type_phone, ) ? 'hidden' : '' ) . ' id="pb_phone_options" class="pb_form mo_registration_help_desc_internal" >
 					<ol>

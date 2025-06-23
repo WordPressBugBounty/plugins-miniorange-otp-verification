@@ -20,6 +20,6 @@ $form_name   = $handler->get_form_name();
 $plan_name   = isset( $_GET['form_name']['plan_name'] ) ? sanitize_text_field( wp_unslash( $_GET['form_name']['plan_name'] ) ) : ''; //phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- Reading GET parameter from the URL for checking the form name, doesn't require nonce verification.
 $license_url = add_query_arg( array( 'page' => $tab_details->tab_details[ Tabs::PRICING ]->menu_slug ), $request_uri );
 
-get_plugin_form_link( $handler->get_form_documents() );
 require_once MOV_DIR . 'views/forms/premiumforms.php';
+get_plugin_form_link( $handler->get_form_documents() );
 
