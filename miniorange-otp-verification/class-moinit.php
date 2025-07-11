@@ -71,7 +71,7 @@ if ( ! class_exists( 'MoInit' ) ) {
 		 * Initialize all the main hooks needed for the plugin
 		 */
 		private function initialize_hooks() {
-			add_action( 'plugins_loaded', array( $this, 'otp_load_textdomain' ) );
+			add_action( 'plugins_loaded', array( $this, 'otp_load_textdomain' ), 1 );
 			add_action( 'admin_menu', array( $this, 'miniorange_customer_validation_menu' ) );
 			add_action( 'admin_enqueue_scripts', array( $this, 'mo_registration_plugin_settings_style' ) );
 			add_action( 'admin_enqueue_scripts', array( $this, 'mo_registration_plugin_settings_script' ) );

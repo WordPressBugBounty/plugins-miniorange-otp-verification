@@ -44,7 +44,7 @@ if ( ! class_exists( 'Edumalog' ) ) {
 		 * Constructor to declare variables of the class on initialization
 		 **/
 		protected function __construct() {
-			$this->is_login_or_social_form = false;
+			$this->is_login_or_social_form = true;
 			$this->form_session_var        = FormSessionVars::EDUMALOG;
 			$this->type_phone_tag          = 'mo_edumalog_phone_enable';
 			$this->type_email_tag          = 'mo_edumalog_email_enable';
@@ -57,6 +57,15 @@ if ( ! class_exists( 'Edumalog' ) ) {
 		}
 
 		/**
+		 * Get the option name for the phone key.
+		 *
+		 * @return string The option name for the phone key.
+		 */
+		protected function get_phone_key_option_name() {
+			return 'edumalog_phone_field_key';
+		}
+
+		/**
 		 * Function checks if form has been enabled by the admin and initializes
 		 * all the class variables. This function also defines all the hooks to
 		 * hook into to make OTP Verification possible.
@@ -64,7 +73,6 @@ if ( ! class_exists( 'Edumalog' ) ) {
 		public function handle_form() {
 
 			$this->otp_type      = get_mo_option( 'edumalog_enable_type' );
-			$this->phone_key     = get_mo_option( 'edumalog_phone_field_key' );
 			$this->by_pass_admin = get_mo_option( 'edumalog_bypass_admin' );
 
 			add_action( 'login_enqueue_scripts', array( $this, 'miniorange_register_login_script' ) );
@@ -116,7 +124,7 @@ if ( ! class_exists( 'Edumalog' ) ) {
 			}
 
 			if ( $this->otp_type === $this->type_phone_tag ) {
-				$phone_number = get_user_meta( $user->data->ID, $this->phone_key, true );
+				$phone_number = get_user_meta( $user->data->ID, $this->get_phone_key_details(), true );
 				if ( empty( $phone_number ) ) {
 					miniorange_site_otp_validation_form( null, null, null, MoMessages::showMessage( MoMessages::PHONE_NOT_FOUND ), null, null );
 				}
@@ -194,7 +202,7 @@ if ( ! class_exists( 'Edumalog' ) ) {
 				$wpdb->prepare(
 					"SELECT `user_id` FROM `{$wpdb->prefix}usermeta`"
 									. 'WHERE `meta_key` = %s AND `meta_value` = %s',
-					array( $this->phone_key, $username )
+					array( $this->get_phone_key_details(), $username )
 				)
 			);
 			return ! MoUtility::is_blank( $results ) ? get_userdata( $results->user_id ) : false;

@@ -179,13 +179,21 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		}
 
 		/**
+		 * Get the option name for the phone key.
+		 *
+		 * @return string The option name for the phone key.
+		 */
+		protected function get_phone_key_option_name() {
+			return 'wp_login_key';
+		}
+
+		/**
 		 * Function checks if form has been enabled by the admin and initializes
 		 * all the class variables. This function also defines all the hooks to
 		 * hook into to make OTP Verification possible.
 		 */
 		public function handle_form() {
 			$this->otp_type             = get_mo_option( 'wp_login_enable_type' );
-			$this->phone_key            = get_mo_option( 'wp_login_key' );
 			$this->save_phone_numbers   = get_mo_option( 'wp_login_register_phone' );
 			$this->by_pass_admin        = get_mo_option( 'wp_login_bypass_admin' );
 			$this->restrict_duplicates  = get_mo_option( 'wp_login_restrict_duplicates' );
@@ -388,7 +396,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			}
 
 			$user = $get_user_from_post( $post_data );
-			update_user_meta( $user->data->ID, $this->phone_key, $this->check_phone_length( $post_data['mo_phone_number'] ) );
+			update_user_meta( $user->data->ID, $this->get_phone_key_details(), $this->check_phone_length( $post_data['mo_phone_number'] ) );
 			$this->login_wp_user( $user->data->user_login );
 		}
 
@@ -402,7 +410,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			$user = is_email( $user_log ) ? get_user_by( 'email', $user_log ) : get_user_by( 'login', $user_log );
 			$user = $user ? $user : ( $this->allowLoginThroughPhone() && MoUtility::validate_phone_number( $user_log ) ? $this->getUserFromPhoneNumber( MoUtility::process_phone_number( $user_log ) ) : '' );
 
-			if( $user ){
+			if ( $user ) {
 				wp_set_auth_cookie( $user->data->ID, true );
 				if ( $this->delay_otp && $this->delay_otp_interval > 0 ) {
 					update_user_meta( $user->data->ID, $this->time_stamp_meta_key, time() );
@@ -410,7 +418,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 				$this->unset_otp_session_variables();
 				do_action( 'wp_login', $user->user_login, $user );
 			}
-			
+
 			if ( 'redirect_to_the_page' === $this->redirect_after_login ) {
 				wp_safe_redirect(
 					get_permalink(
@@ -469,7 +477,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 						exit;
 					}
 				}
-				
+
 				$skip_otp_process = $this->skip_otp_process( $password, $post_data, $user );
 				if ( $this->byPassLogin( $user, $skip_otp_process ) ) {
 					return $user;
@@ -500,13 +508,13 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			}
 
 			if ( VerificationType::PHONE === $otp_type ) {
-				$phone_number = get_user_meta( $user->data->ID, $this->phone_key, true );
+				$phone_number = get_user_meta( $user->data->ID, $this->get_phone_key_details(), true );
 				$phone_number = $this->check_phone_length( $phone_number );
-				$this->askPhoneAndStartVerification( $user, $this->phone_key, $username, $phone_number );
+				$this->askPhoneAndStartVerification( $user, $this->get_phone_key_details(), $username, $phone_number );
 				$this->fetchPhoneAndStartVerification( $username, $password, $phone_number, $req_data );
 			} elseif ( VerificationType::EMAIL === $otp_type ) {
 				$email = $user->data->user_email;
-				$this->startEmailVerification( $username, $email, $password, $req_data  );
+				$this->startEmailVerification( $username, $email, $password, $req_data );
 			}
 		}
 
@@ -546,7 +554,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 				$wpdb->prepare(
 					"SELECT `user_id` FROM `{$wpdb->prefix}usermeta`"
 									. 'WHERE `meta_key` = %s AND `meta_value` = %s',
-					array( $this->phone_key, $username )
+					array( $this->get_phone_key_details(), $username )
 				)
 			);
 			return ! MoUtility::is_blank( $results ) ? get_userdata( $results->user_id ) : false;
@@ -619,9 +627,11 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 *
 		 * @param array $username - the user's username.
 		 * @param array $email - email to send otp to.
+		 * @param array $password - password of the user.
+		 * @param array $req_data - $_REQUEST.
 		 * @throws ReflectionException .
 		 */
-		private function startEmailVerification( $username, $email, $password, $req_data  ) {
+		private function startEmailVerification( $username, $email, $password, $req_data ) {
 			MoUtility::initialize_transaction( $this->form_session_var2 );
 			$redirect_to = isset( $req_data['redirect_to'] ) ? sanitize_text_field( $req_data['redirect_to'] ) : MoUtility::current_page_url();
 			$this->send_challenge( $username, $email, null, null, VerificationType::EMAIL, $password, $redirect_to, false );
@@ -760,8 +770,8 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		/**
 		 * Checks if user has initiated login with OTP.
 		 *
-		 * @param array  $post_data - $_POST.
-		 * @param string $user_roles to check the user roles.
+		 * @param array $post_data - $_POST.
+		 * @param array $user_roles to check the user roles.
 		 * @return TRUE or FALSE
 		 */
 		private function isLoginWithOTP( $post_data, $user_roles = array() ) {
@@ -791,7 +801,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 * @param array $phone - check the phone length.
 		 */
 		private function check_phone_length( $phone ) {
-			if( $phone ){
+			if ( $phone ) {
 				$phone_check = MoUtility::process_phone_number( $phone );
 				return strlen( $phone_check ) >= 5 ? $phone_check : '';
 			}

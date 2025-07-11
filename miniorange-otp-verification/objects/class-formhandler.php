@@ -262,6 +262,7 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		const VALIDATED           = 'VALIDATED';
 		const VERIFICATION_FAILED = 'verification_failed';
 		const VALIDATION_CHECKED  = 'validationChecked';
+
 		/** Constructor */
 		protected function __construct() {
 
@@ -295,6 +296,7 @@ if ( ! class_exists( 'FormHandler' ) ) {
 			$handler_list = FormList::instance();
 			$handler_list->add( $this->get_form_key(), $this );
 		}
+
 		/**
 		 * This function is called by the is_login_or_social_form filter to return
 		 * the type of ignore fields to check the POST fields against so that
@@ -487,7 +489,22 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		/**Function for Getter
 		 */
 		public function get_phone_key_details() {
-			return $this->phone_key; }
+			$phone_key_option = $this->get_phone_key_option_name();
+			if ( ! empty( $phone_key_option ) ) {
+				return get_mo_option( $phone_key_option );
+			}
+			return $this->phone_key;
+		}
+
+		/**
+		 * Get the option name for the phone key. Should be overridden by child classes.
+		 * This method allows forms to define their specific option name for retrieving phone_key.
+		 *
+		 * @return string|null The option name for the phone key, or null if not defined
+		 */
+		protected function get_phone_key_option_name() {
+			return null;
+		}
 		/**Function for Getter
 		 */
 		public function get_email_key_details() {

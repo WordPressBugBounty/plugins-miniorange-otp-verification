@@ -2,12 +2,12 @@
 ===  OTP Verification / Email Verification / SMS Verification / OTP Authentication / WooCommerce Notification ===
 Contributors: cyberlord92, geniuszealot
 Donate link: https://miniorange.com/
-Tags: OTP, OTP Verification, SMS Notifications, Phone Verification, Email Verification, Mobile Verification, Login with Phone, WooCommerce SMS, Order Status Updates, WooCommerce Notifications, Order Status Notifications
+Tags: OTP, OTP Verification, SMS Notifications, Phone Verification, Email Verification, Mobile Verification, Login with Phone, WooCommerce SMS, Order Status Updates.
 
 Requires at least: 3.5
 Tested up to: 6.8
 Requires PHP: 5.3.0
-Stable tag: 5.3.2
+Stable tag: 5.3.3
 License: Expat
 License URI: https://plugins.miniorange.com/mit-license
 
@@ -25,113 +25,111 @@ The [OTP Verification](https://plugins.miniorange.com/wordpress-otp-verification
 
 Enjoy *10 free email OTPs and *10 free SMS OTPs upon installation to experience the plugin’s functionality.
 
-== KEY FEATURES AND CAPABILITIES ==
+== FEATURES OF ONE-TIME PASSWORD PLUGIN ==
 
-*[OTP Verification On 60+ forms](https://plugins.miniorange.com/otp-verification-forms)
-*[miniOrange SMS gateway support](https://plugins.miniorange.com/supported-sms-email-gateways)
-*[Login with Phone Number](https://plugins.miniorange.com/woocommerce-login-form-with-otp-verification-for-wordpress)
-*[Register with Phone Number](https://plugins.miniorange.com/how-to-configure-register-using-only-phone-addon)
-*[WooCommerce Order Status SMS Notifications](https://plugins.miniorange.com/how-to-configure-woocommerece-sms-notification)
-*[OTP Spam Preventor/Limit OTP Addon](https://plugins.miniorange.com/how-to-configure-limit-otp-request-addon)
-*[Ultimate Member SMS Notification](https://plugins.miniorange.com/ultimate-member-notification-otp-verification-plugin)
-*[Ultimate Member Password Reset](https://plugins.miniorange.com/ultimate-member-password-reset-otp-verification)
-*Passwordless Login using OTP Verification
-*Country code dropdown
-*Customize OTP length and validity
-*Block specific email domains and phone numbers
-*Customize specific SMS and Email templates
-*OTP pop-up customization (available on limited login, registration, and checkout forms)
+* [OTP Verification On 60+ forms](https://plugins.miniorange.com/otp-verification-forms)
+* [miniOrange SMS gateway support](https://plugins.miniorange.com/supported-sms-email-gateways)
+* [Login with Phone Number](https://plugins.miniorange.com/woocommerce-login-form-with-otp-verification-for-wordpress)
+* [Register with Phone Number](https://plugins.miniorange.com/how-to-configure-register-using-only-phone-addon)
+* [WooCommerce Order Status SMS Notifications](https://plugins.miniorange.com/how-to-configure-woocommerece-sms-notification)
+* [OTP Spam Preventor/Limit OTP Addon](https://plugins.miniorange.com/how-to-configure-limit-otp-request-addon)
+* [Ultimate Member SMS Notification](https://plugins.miniorange.com/ultimate-member-notification-otp-verification-plugin)
+* [Ultimate Member Password Reset](https://plugins.miniorange.com/ultimate-member-password-reset-otp-verification)
+* Passwordless Login using OTP Verification
+* Country code dropdown
+* Customize OTP length and validity
+* Block specific email domains and phone numbers
+* Customize specific SMS and Email templates
+* OTP pop-up customization (available on limited login, registration, and checkout forms)
 
 
 == PREMIUM FEATURES AVAILABLE ON UPGRADE ==
 
-*[OTP Over WhatsApp](https://plugins.miniorange.com/login-with-whatsapp-as-two-factor)
-*[Both Email and Phone Verification](https://plugins.miniorange.com/login-with-whatsapp-as-two-factor)
-*[Custom SMS & Email Gateways](https://plugins.miniorange.com/supported-sms-email-gateways)
-*[Register Using phone number Addon](https://plugins.miniorange.com/how-to-configure-register-using-only-phone-addon)
-*[Allow OTP for selected countries](https://plugins.miniorange.com/otp-verification-for-selected-countries)
-*[WCFM Vendor SMS Notifications](https://plugins.miniorange.com/wcfm-notification-vendor-notification-otp-verification-plugin)
-*[Dokan Vendor SMS Notifications](https://plugins.miniorange.com/dokan-notification-vendor-notification-otp-verification-plugin)
-*[Elementor Pro Forms](https://plugins.miniorange.com/otp-verification-for-elementor-pro-form)
-*[Checkout WC Form](https://plugins.miniorange.com/checkout-wc-form-setup-for-wordpress-otp)
-*[Jet Engine Form](https://plugins.miniorange.com/otp-verification-for-jet-engine-form-wordpress)
-*[JetFormBuilder Form by Crocoblock](https://plugins.miniorange.com/jetformbuilder-crocoblock-setup-for-otp-verification)
-*[WS Pro Contact Form](https://plugins.miniorange.com/ws-form-setup-for-otp-verification)
-*[Tutor LMS Instructor Registration Form](https://plugins.miniorange.com/tutor-lms-Instructor-registration-otp-verification)
-*[Tutor LMS Login Form](https://plugins.miniorange.com/tutor-lms-login-otp-verification)
-*[Tutor LMS Student Registration Form](https://plugins.miniorange.com/tutor-lms-student-registration-otp-verification)
-*[User Registration Forms - WP Everest](https://plugins.miniorange.com/otp-verification-for-user-registration-form)
-*[WooCommerce Frontend Manager Form (WCFM)](https://plugins.miniorange.com/otp-verification-for-woocommerce-frontend-manager-form)
-*[Houzez - Real Estate Theme](https://plugins.miniorange.com/setup-otp-verification-for-houzez-registration-form)
-*Detailed Transaction Reports and Logs
-*Login using phone number Addon
+* [OTP Over WhatsApp](https://plugins.miniorange.com/login-with-whatsapp-as-two-factor)
+* [Both Email and Phone Verification](https://plugins.miniorange.com/login-with-whatsapp-as-two-factor)
+* [Custom SMS & Email Gateways](https://plugins.miniorange.com/supported-sms-email-gateways)
+* [Register Using phone number Addon](https://plugins.miniorange.com/how-to-configure-register-using-only-phone-addon)
+* [Allow OTP for selected countries](https://plugins.miniorange.com/otp-verification-for-selected-countries)
+* [WCFM Vendor SMS Notifications](https://plugins.miniorange.com/wcfm-notification-vendor-notification-otp-verification-plugin)
+* [Dokan Vendor SMS Notifications](https://plugins.miniorange.com/dokan-notification-vendor-notification-otp-verification-plugin)
+* [Elementor Pro Forms](https://plugins.miniorange.com/otp-verification-for-elementor-pro-form)
+* [Checkout WC Form](https://plugins.miniorange.com/checkout-wc-form-setup-for-wordpress-otp)
+* [Jet Engine Form](https://plugins.miniorange.com/otp-verification-for-jet-engine-form-wordpress)
+* [JetFormBuilder Form by Crocoblock](https://plugins.miniorange.com/jetformbuilder-crocoblock-setup-for-otp-verification)
+* [WS Pro Contact Form](https://plugins.miniorange.com/ws-form-setup-for-otp-verification)
+* [Tutor LMS Instructor Registration Form](https://plugins.miniorange.com/tutor-lms-Instructor-registration-otp-verification)
+* [Tutor LMS Login Form](https://plugins.miniorange.com/tutor-lms-login-otp-verification)
+* [Tutor LMS Student Registration Form](https://plugins.miniorange.com/tutor-lms-student-registration-otp-verification)
+* [User Registration Forms - WP Everest](https://plugins.miniorange.com/otp-verification-for-user-registration-form)
+* [WooCommerce Frontend Manager Form (WCFM)](https://plugins.miniorange.com/otp-verification-for-woocommerce-frontend-manager-form)
+* [Houzez - Real Estate Theme](https://plugins.miniorange.com/setup-otp-verification-for-houzez-registration-form)
+* Detailed Transaction Reports and Logs
+* Login using phone number Addon
 
 = THIRD PARTY CUSTOM SMS GATEWAY FOR OTP Verification and SMS Notifications =
 In the OTP Verification Plugin, you can use **your third-party gateway** for sending the SMS/Email & SMS Notifications.
 You can also use the **miniOrange gateway** to perform OTP verification over Phone/SMS and Email or to send SMS notifications. We support OTP Verification worldwide.
-* Some of the well-known Gateways supported for OTP and SMS (OTP):
-	* Twilio : [Twilio](https://www.twilio.com/)
-	* Clickatell : [Clickatell](https://www.clickatell.com/)
-	* ClickSend : [ClickSend](https://www.clicksend.com/)
-	* SendGrid : [SendGrid](https://sendgrid.com/)
-	* Plivo : [Plivo](https://www.plivo.com/)
-	* AWS SNS : [AWS SNS](https://aws.amazon.com/sns/)
-	* Msg91 : [Msg91](https://msg91.com/)
+**Some of the well-known Gateways supported for OTP and SMS (OTP):**
 
-Check the list of a few of our supported SMS gateways here : [SMS Gateways](https://plugins.miniorange.com/supported-sms-email-gateways)
-Others not listed can be tested on our site, Test your Gateway: [Custom Gateway](https://login.xecurify.com/moas/login?redirectUrl=https://login.xecurify.com/moas/admin/customer/smsconfig)
-Contact us at **otpsupport@xecurify.com/info@xecurify.com** to know more.
+- [Twilio](https://www.twilio.com/)
+- [Clickatell](https://www.clickatell.com/)
+- [ClickSend](https://www.clicksend.com/)
+- [SendGrid](https://sendgrid.com/)
+- [Plivo](https://www.plivo.com/)
+- [AWS SNS](https://aws.amazon.com/sns/)
+- [Msg91](https://msg91.com/)
+
+Check the list of a few of our supported SMS gateways here : **[SMS Gateways](https://plugins.miniorange.com/supported-sms-email-gateways)**
 
 = WHATSAPP OTP VERIFICATION & NOTIFICATIONS =
 In our OTP Plugin, you can enable OTP Verification via WhatsApp as well as send custom messages & order notifications on WhatsApp.
 Enables order status notifications, new account sms notifications, and many more on WhatsApp.
-Contact us at otpsupport@xecurify.com/info@xecurify.com to know more.
+
+Contact us at **otpsupport@xecurify.com/info@xecurify.com** to know more.
 
 == FREE AND PREMIUM OTP VERIFICATION ADDONS SUPPORTED ==
 Follow the link to check free and premium addons supported in the OTP Verification plugin : [OTP Verification Addons Supported](https://plugins.miniorange.com/wordpress-otp-verification#addons-section)
 
 = LOGIN WITH PHONE NUMBER =
-The login with Phone add-on allows users to log in using a phone number only. Log in with Phone and Passwordless Login is the most feasible technique for logging in. Contact us at otpsupport@xecurify.com to know more.
+The login with Phone add-on allows users to log in using a phone number only. Log in with Phone and Passwordless Login is the most feasible technique for logging in.
+Contact us at otpsupport@xecurify.com/info@xecurify.com to know more about addons.
 
 = WOOCOMMERCE SMS NOTIFICATION =
-WooCommerce Notifications add-on allows your site to send automated [WooCommerce order notifications and WooCommerce sms notifications](https://plugins.miniorange.com/how-to-configure-woocommerece-sms-notification) to buyers, sellers, and admins. Buyer and seller both can get SMS notifications after an order is placed or when the order status changes. SMS notification options can be customized in the admin panel very easily. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more.
+WooCommerce Notifications add-on allows your site to send automated [WooCommerce order notifications and WooCommerce sms notifications](https://plugins.miniorange.com/how-to-configure-woocommerece-sms-notification) to buyers, sellers, and admins. Buyer and seller both can get SMS notifications after an order is placed or when the order status changes. SMS notification options can be customized in the admin panel very easily. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more about addons.
 
 = PASSWORDLESS LOGIN =
-Passwordless Login is a modern way of logging into your WordPress site without the use of a password. The plugin allows you to easily set up Passwordless Login for your site. Users would now be able to log in using their Username and OTP. If you wish to allow our users to fall back to Username and Password, then the plugin allows that as well. WooCommerce support.
+Passwordless Login is a modern way of logging into your WordPress site without the use of a password. The plugin allows you to easily set up Passwordless Login for your site. Users would now be able to log in using their Username and OTP. If you wish to allow our users to fall back to Username and Password, then the plugin allows that as well. WooCommerce support. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more about addons.
 
 = REGISTER USING PHONE NUMBER ONLY =
-[Register Using Phone](https://plugins.miniorange.com/how-to-configure-register-using-only-phone-addon) add-on allows Registration on your WordPress site using only a Phone Number instead of an Email address or Username. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more.
+[Register Using Phone](https://plugins.miniorange.com/how-to-configure-register-using-only-phone-addon) add-on allows Registration on your WordPress site using only a Phone Number instead of an Email address or Username. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more about addons.
 
 = WOOCOMMERCE PASSWORD RESET OVER OTP =
-[WooCommece Password Reset Addon](https://plugins.miniorange.com/how-to-configure-woocommerce-password-reset-addon) replaces the existing WooCommerce Password reset functionality with OTP Verification. Allow users to reset their password using OTP Verification instead of email links. 
+[WooCommece Password Reset Addon](https://plugins.miniorange.com/how-to-configure-woocommerce-password-reset-addon) replaces the existing WooCommerce Password reset functionality with OTP Verification. Allow users to reset their password using OTP Verification instead of email links. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more about addons.
 
 = SEND CUSTOM MESSAGE =
-This is an add-on that allows you to send customized SMS or EMAIL Messages to any Mobile Number or Email Address. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more.
+This is an add-on that allows you to send customized SMS or EMAIL Messages to any Mobile Number or Email Address. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more about addons. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more about addons.
 
 = ULTIMATE MEMBER SMS NOTIFICATION =
-The Ultimate Member SMS Notification feature allows your site to send automated Ultimate Member notifications to admins and users. SMS notification options can be customized in the admin panel very easily. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more.
+The Ultimate Member SMS Notification feature allows your site to send automated Ultimate Member notifications to admins and users. SMS notification options can be customized in the admin panel very easily. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more about addons.
 
 = ULTIMATE MEMBER PASSWORD RESET OVER OTP =
-This is an add-on that replaces the existing Ultimate Member Password reset functionality with OTP Verification. Allow users to reset their password using OTP Verification instead of email links. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more.
+This is an add-on that replaces the existing Ultimate Member Password reset functionality with OTP Verification. Allow users to reset their password using OTP Verification instead of email links. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more about addons.
 
 = OTP FOR SELECTED COUNTRIES =
-This is an add-on that allows OTP Verification to be enabled for a selected list of countries only. OTP Verification for any other country outside the selected list will be blocked by the addon. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more.
+This is an add-on that allows OTP Verification to be enabled for a selected list of countries only. OTP Verification for any other country outside the selected list will be blocked by the addon. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more about addons.
 
 = BULK SMS AND OTP =
-This is an add-on that allows Admin to send Custom SMS and OTP Verification codes in bulk. Upload the CSV file or enter the numbers manually along with the SMS template that needs to be sent as a bulk SMS. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more.
-
-= LIMIT OTP REQUEST =
-This is an add-on that allows blocking of OTP codes from being sent out before the set timer is up. This Addon helps in limiting malicious users or unwanted OTP requests to be made by blocking the user for the time limit set. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more.
+This is an add-on that allows Admin to send Custom SMS and OTP Verification codes in bulk. Upload the CSV file or enter the numbers manually along with the SMS template that needs to be sent as a bulk SMS. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more about addons. 
 
 = OTP OVER PHONE CALL =
-This is an add-on that allows OTP Verification over a Phone Call instead of SMS. The code will be received via a phone call to the customer. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more.
+This is an add-on that allows OTP Verification over a Phone Call instead of SMS. The code will be received via a phone call to the customer. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more about addons.
 
 = VERIFICATION VIA EMAIL LINK =
-This is an add-on that allows User Verification via accept/reject links received via email instead of OTP codes. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more.
+This is an add-on that allows User Verification via accept/reject links received via email instead of OTP codes. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more about addons.
 
 = OTP VERIFICATION FOR ANDROID/IOS APPS =
 This is an add-on that provides APIs to connect your WordPress site and mobile application for OTP Verification. OTP generating and validating APIs are included.
-Contact us at otpsupport@xecurify.com/info@xecurify.com to know more.
+Contact us at otpsupport@xecurify.com/info@xecurify.com to know more about addons.
 
 == Updated List Of Supported Forms ==
 [Supported WordPress Forms](https://plugins.miniorange.com/otp-verification-forms)
@@ -163,7 +161,6 @@ Contact us at otpsupport@xecurify.com/info@xecurify.com to know more.
 > + [Checkout WC](https://plugins.miniorange.com/checkout-wc-form-setup-for-wordpress-otp)
 > + [PIE Registration Form](https://plugins.miniorange.com/otp-verification-pie-registration-form)
 > + [Contact Form 7](https://plugins.miniorange.com/otp-verification-for-contact-form-7/)
-> + [Ninja Forms Below version 3.0](https://plugins.miniorange.com/otp-verification-for-ninja-forms)
 > + [Ninja Forms Above version 3.0](https://plugins.miniorange.com/otp-verification-ninja-forms-version-3-0)
 > + [Theme My Login](https://plugins.miniorange.com/otp-verification-login-form)
 > + [Gravity Forms](https://plugins.miniorange.com/otp-verification-for-gravity-form)
@@ -264,8 +261,12 @@ Please mail us at **otpsupport@xecurify.com/info@xecurify.com**. You can also su
 8. OTP Verification Plugin Settings
 
 == Changelog ==
+= 5.3.3 =
+* miniOrange WordPress OTP Verification
+ * Login using phone number method bug fixes
+
 = 5.3.2 =
- * miniOrange WordPress OTP Verification
+* miniOrange WordPress OTP Verification
  * Merged the classic and block checkout form for better user experience
  * Introduced miniOrange Login/Register using Phone form
  * Introduced Dokan Registration Form
@@ -1098,8 +1099,12 @@ Please mail us at **otpsupport@xecurify.com/info@xecurify.com**. You can also su
 * First version of the plugin.
 
 == Upgrade Notice ==
+= 5.3.3 =
+* miniOrange WordPress OTP Verification
+ * Login using phone number method bug fixes
+
 = 5.3.2 =
- * miniOrange WordPress OTP Verification
+* miniOrange WordPress OTP Verification
  * Merged the classic and block checkout form for better user experience
  * Introduced miniOrange Login/Register using Phone form
  * Introduced Dokan Registration Form

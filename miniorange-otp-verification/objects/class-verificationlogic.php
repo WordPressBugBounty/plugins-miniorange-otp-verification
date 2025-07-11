@@ -131,6 +131,10 @@ if ( ! class_exists( 'VerificationLogic' ) ) {
 		 * OTP Verification has started is an AJAX form.
 		 */
 		public static function is_ajax_form() {
+			if ( isset( $_REQUEST['mo_external_popup_option'] ) &&
+				in_array( $_REQUEST['mo_external_popup_option'], array( 'miniorange-ajax-otp-generate', 'miniorange-ajax-otp-validate', 'mo_ajax_form_validate' ) ) ) {
+				return true;
+			}
 			return (bool) apply_filters( 'is_ajax_form', false );
 		}
 	}
