@@ -42,7 +42,7 @@ echo '		<div class="mo_otp_form" id="' . esc_attr( get_mo_class( $handler ) ) . 
 						        value="' . esc_attr( $bbp_type_phone ) . '"
 							    ' . ( esc_attr( $bbp_enable_type ) === esc_attr( $bbp_type_phone ) ? 'checked' : '' ) . ' />
                         <strong>' . esc_html( mo_( 'Enable Phone Verification' ) ) . '</strong>
-						
+					</div>	
 						<div    ' . ( esc_attr( $bbp_enable_type ) !== esc_attr( $bbp_type_phone ) ? 'hidden' : '' ) . ' 
 						        id="bbp_phone_instructions" 
 						        class="mo_registration_help_desc_internal">' .
@@ -76,7 +76,7 @@ echo '		<div class="mo_otp_form" id="' . esc_attr( get_mo_class( $handler ) ) . 
 							        ' . esc_attr( $restrict_duplicates ) . '/>
 				            <strong>' . esc_html( mo_( 'Do not allow users to use the same phone number for multiple accounts.' ) ) . '</strong>
 						</div>
-					</div>
+					
 					<div>
 					    <input  type="radio" 
 					            ' . esc_attr( $disabled ) . ' 

@@ -147,8 +147,12 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 			$this->payment_methods      = $this->payment_methods ? $this->payment_methods : WC()->payment_gateways->payment_gateways(); // phpcs:ignore intelephense.diagnostics.undefinedFunctions -- Default function of WooCommerce.
 			$this->popup_enabled        = get_mo_option( 'wc_checkout_popup' );
 			$this->guest_check_out_only = get_mo_option( 'wc_checkout_guest' );
-			$saved_button               = get_mo_option( 'wc_checkout_button' );
-			$this->show_button          = $saved_button ? $saved_button : '';
+			$saved_button               = get_option('mo_customer_validation_wc_checkout_button');
+			if ($saved_button === false) {
+				$this->show_button = true; // Default for new installs
+			} else {
+				$this->show_button = ($saved_button == '1'); // Respect legacy setting
+			}
 			$this->otp_type             = get_mo_option( 'wc_checkout_type' );
 			$this->selective_payment    = get_mo_option( 'wc_checkout_selective_payment' );
 			$this->restrict_duplicates  = get_mo_option( 'wc_checkout_restrict_duplicates' );
@@ -550,10 +554,10 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 		 *  @param string $button_id ID of the button.
 		 */
 		private function show_validation_button_or_text( $button_id ) {
-			if ( '' !== $this->show_button ) {
-				$this->showTextLinkOnPage( $button_id );
-			} else {
+			 if ( $this->show_button ) {
 				$this->mo_showButtonOnPage( $button_id );
+			} else {
+				$this->showTextLinkOnPage( $button_id );
 			}
 		}
 

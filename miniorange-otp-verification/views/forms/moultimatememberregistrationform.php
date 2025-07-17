@@ -91,6 +91,7 @@ echo '		<div class="mo_registration_help_desc" id="um_default_options">
 					        value="' . esc_attr( $um_type_phone ) . '"
 					        ' . ( esc_attr( $um_enabled_type ) === esc_attr( $um_type_phone ) ? 'checked' : '' ) . '/>
 				    <strong>' . esc_html( mo_( 'Enable Phone Verification' ) ) . '</strong>
+				</div>	
 					
 					<div ' . ( esc_attr( $um_enabled_type ) !== esc_attr( $um_type_phone ) ? 'style=display:none' : '' ) . ' 
 					     id="um_phone_instructions" 
@@ -132,7 +133,6 @@ echo '		<div class="mo_registration_help_desc" id="um_default_options">
 						
 				        
 					</div>
-				</div>
 				
 				<div>
 					<input  type="radio" ' . esc_attr( $disabled ) . ' 

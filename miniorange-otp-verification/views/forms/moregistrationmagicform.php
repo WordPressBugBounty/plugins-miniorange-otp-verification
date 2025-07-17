@@ -18,7 +18,8 @@ echo '			<div class="mo_registration_help_desc" id="crf_default_options">
 					<b>' . esc_html( mo_( 'Choose between Phone or Email Verification' ) ) . '</b>
 					<div><input type="radio" ' . esc_attr( $disabled ) . ' id="crf_phone" data-toggle="crf_phone_instructions" class="form_options app_enable" name="mo_customer_validation_crf_enable_type" value="' . esc_attr( $crf_type_phone ) . '"
 						' . ( esc_attr( $crf_enable_type ) === esc_attr( $crf_type_phone ) ? 'checked' : '' ) . ' />
-							<strong>' . esc_html( mo_( 'Enable Phone Verification' ) ) . '</strong>';
+							<strong>' . esc_html( mo_( 'Enable Phone Verification' ) ) . '</strong>
+					</div>';
 
 echo '					<div ' . ( esc_attr( $crf_enable_type ) !== esc_attr( $crf_type_phone ) ? 'hidden' : '' ) . ' id="crf_phone_instructions" class="mo_registration_help_desc_internal">
 							' . esc_html( mo_( 'Follow the following steps to enable Phone Verification' ) ) . ':
@@ -49,7 +50,6 @@ echo '
 				            <strong>' . esc_html( mo_( 'Do not allow users to use the same phone number for multiple accounts.' ) ) . '</strong>
 
 						</div>
-					</div>
 					<div><input type="radio" ' . esc_attr( $disabled ) . ' id="crf_email" data-toggle="crf_email_instructions" class="form_options app_enable" name="mo_customer_validation_crf_enable_type" value="' . esc_attr( $crf_type_email ) . '"
 						' . ( esc_attr( $crf_enable_type ) === esc_attr( $crf_type_email ) ? 'checked' : '' ) . ' />
 						<strong>' . esc_html( mo_( 'Enable Email Verification' ) ) . '</strong>

@@ -304,9 +304,6 @@ if ( ! class_exists( 'MoInit' ) ) {
 		 */
 		public function otp_load_textdomain() {
 			initialize_forms();
-			if ( file_exists( __DIR__ . DIRECTORY_SEPARATOR . 'lib/vendor/autoload.php' ) ) {
-				require_once __DIR__ . DIRECTORY_SEPARATOR . 'lib/vendor/autoload.php';
-			}
 			load_plugin_textdomain( 'miniorange-otp-verification', false, dirname( plugin_basename( __FILE__ ) ) . '/lang/' );
 			do_action( 'mo_otp_verification_add_on_lang_files' );
 		}

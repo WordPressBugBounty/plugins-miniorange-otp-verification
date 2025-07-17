@@ -171,15 +171,4 @@ $woocommerce_plan_features = array(
 		mo_( 'Custom Redirection on Login Form & Registration Form' ),
 		mo_( 'WhatsApp Transaction Logs' ),
 	);
-
-	$firebase_plugin_features1 = array(
-		mo_( 'Login With Phone' ),
-		mo_( 'OTP Verification on Registration Form' ),
-		mo_( 'Custom CSS for Login and Registration Forms' ),
-	);
-	$firebase_plugin_features2 = array(
-		mo_( 'OTP Verification on WooCommerce Login, Registration and Checkout Form' ),
-		mo_( 'OTP Verification on Ultimate Member and Gravity Form' ),
-		mo_( 'User role Selection on registration' ),
-	);
 	require_once MOV_DIR . 'views/pricing.php';

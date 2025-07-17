@@ -33,10 +33,11 @@ echo '		<div class="mo_registration_help_desc" id="edumareg_options">
 							value="' . esc_attr( $edumareg_type_phone ) . '"
 							' . ( esc_attr( $edumareg_enabled_type ) === esc_attr( $edumareg_type_phone ) ? 'checked' : '' ) . '/>
 					<strong>' . esc_html( mo_( 'Enable Phone Verification' ) ) . '</strong>
-					<div ' . ( esc_attr( $edumareg_enabled_type ) !== esc_attr( $edumareg_type_phone ) ? 'hidden' : '' ) . ' id="edumareg_phone_options"
-						 class="mo_registration_help_desc_internal"
-						id="edumareg_phone_options">
-					' . esc_html( mo_( 'Follow the following steps to add a users phone number in the database' ) ) . ':
+				</div>
+				<div ' . ( esc_attr( $edumareg_enabled_type ) !== esc_attr( $edumareg_type_phone ) ? 'hidden' : '' ) . '
+						class="mo_registration_help_desc_internal"
+					id="edumareg_phone_options">
+				' . esc_html( mo_( 'Follow the following steps to add a users phone number in the database' ) ) . ':
 					<ol>
 						<li>' . esc_html( mo_( 'Enter the phone User Meta Key.' ) ) . '
 							<div class="flex gap-mo-4 mt-mo-4">
@@ -67,10 +68,9 @@ echo '		<div class="mo_registration_help_desc" id="edumareg_options">
 						<li>' . esc_html( mo_( 'Click on the Save Button to save your settings.' ) ) . '</li>
 					</ol>
 					<input  type="checkbox" ' . esc_attr( $disabled ) . ' 
-									name="mo_customer_validation_edumareg_restrict_duplicates"
-									value="1"' . esc_attr( $edumareg_restrict_duplicates ) . '/>
-							 <strong>' . esc_html( mo_( 'Do not allow users to use the same phone number for multiple accounts.' ) ) . '</strong>
-					</div>
+								name="mo_customer_validation_edumareg_restrict_duplicates"
+								value="1"' . esc_attr( $edumareg_restrict_duplicates ) . '/>
+						 <strong>' . esc_html( mo_( 'Do not allow users to use the same phone number for multiple accounts.' ) ) . '</strong>
 				</div>
 				<div>
 					<input  type="radio" ' . esc_attr( $disabled ) . ' 

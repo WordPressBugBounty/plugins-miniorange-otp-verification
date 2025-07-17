@@ -15,9 +15,6 @@ use ReflectionException;
 use stdClass;
 use OTP\LicenseLibrary\Mo_License_Service;
 use OTP\Helper\MoConstants;
-use libphonenumber\PhoneNumberUtil;
-use libphonenumber\NumberParseException;
-use libphonenumber\PhoneNumberFormat;
 use OTP\Helper\CountryList;
 
 
@@ -36,12 +33,6 @@ if ( ! class_exists( 'MoUtility' ) ) {
 	 * MoUtility class
 	 */
 	class MoUtility {
-		/**
-		 * Summary of __construct
-		 */
-		public function __construct() {
-			$this->phone_util = PhoneNumberUtil::getInstance();
-		}
 
 
 		/**Checking Script tags
@@ -154,6 +145,7 @@ if ( ! class_exists( 'MoUtility' ) ) {
 				'p'          => array(
 					'class'  => array(),
 					'hidden' => array(),
+					'style'  => array(),
 				),
 				'q'          => array(
 					'cite'  => array(),
@@ -166,6 +158,7 @@ if ( ! class_exists( 'MoUtility' ) ) {
 					'title'  => array(),
 					'style'  => array(),
 					'hidden' => array(),
+					'class'  => array(),
 				),
 				'strike'     => array(),
 				'strong'     => array(),
@@ -182,8 +175,12 @@ if ( ! class_exists( 'MoUtility' ) ) {
 					'hidden' => array(),
 				),
 				'table'      => array(
-					'class' => array(),
-					'style' => array(),
+					'class'       => array(),
+					'style'       => array(),
+					'cellpadding' => array(),
+					'cellspacing' => array(),
+					'border'      => array(),
+					'width'       => array(),
 				),
 				'tbody'      => array(),
 				'button'     => array(),
@@ -431,32 +428,7 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		 * @return false|int
 		 */
 		public static function validate_phone_number( $phone ) {
-			$phone = self::process_phone_number( $phone );
-
-			if ( ! ( file_exists( MOV_DIR . '/lib/vendor/autoload.php' ) ) || ! preg_match( MoConstants::PATTERN_PHONE, $phone, $matches ) ) {
-				return preg_match( MoConstants::PATTERN_PHONE, $phone, $matches );
-			} else {
-				$default_country_code = CountryList::get_default_countrycode();
-				$default_country_code = $default_country_code ? $default_country_code : null;
-				$country_code         = isset( $_POST['country_code'] ) ? sanitize_text_field( $_POST['country_code'] ) : $default_country_code;
-
-				if ( ! self::is_country_code_appended( $phone ) ) {
-					return false;
-				}
-				foreach ( CountryList::get_countrycode_list() as $country ) {
-					if ( ! empty( $country['countryCode'] ) && strpos( $phone, $country['countryCode'] ) === 0 ) {
-						$country_code = $country['countryCode'];
-						break;
-					}
-				}
-				try {
-					$phone_util   = PhoneNumberUtil::getInstance();
-					$number_proto = $phone_util->parse( $phone, strtoupper( $country_code ) );
-					return $phone_util->isValidNumber( $number_proto );
-				} catch ( Exception $e ) {
-					return false;
-				}
-			}
+			return preg_match( MoConstants::PATTERN_PHONE, self::process_phone_number( $phone ), $matches );
 		}
 
 

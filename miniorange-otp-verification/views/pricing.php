@@ -63,15 +63,6 @@ echo '
            </svg>
             <span>' . esc_html( mo_( 'WhatsApp' ) ) . '</span>
         </a>
-        <a class="mo-button secondary medium flex" href="#mo_registration_firebase_layout" style="padding-left: 2rem;">
-            <svg viewBox="0 0 58 27" id="firebase" height="50px" width="40px" class="flex-2" style="position: absolute; margin-right: 9rem;">
-                <path fill="#FFA000" d="m14.714 8.669-2.4 2.235-2.228-4.496 1.151-2.585c.291-.516.767-.522 1.058 0l2.419 4.846z"></path>
-                <path fill="#F57F17" d="m12.314 10.903-8.979 8.351 6.751-12.846 2.228 4.495z"></path>
-                <path fill="#FFCA28" d="M17.346 5.251c.43-.41.873-.271.985.31l2.334 13.58-7.742 4.648c-.272.152-.992.211-.992.211s-.655-.08-.906-.218l-7.689-4.528 14.01-14.003z"></path>
-                <path fill="#FFA000" d="m10.086 6.408-6.75 12.846L6.344.477c.113-.582.443-.641.74-.126l3.002 6.057z"></path>
-            </svg>
-            <span>' . esc_html( mo_( 'Firebase Gateway Plan' ) ) . '</span>
-        </a>
         <a class="mo-button secondary medium" href="#otp_pay_method">' . esc_html( mo_( 'Payments Methods' ) ) . '</a>
     </div>
     <div class="text-center pt-mo-3 pl-mo-6" >
@@ -595,47 +586,7 @@ foreach ( $whatsapp_plugin_features2 as $feature ) {
                     </div>
                 </div>
             </div>';
-echo '
-</div>
-            <div class="m-mo-4 border dark:border-gray-700" id="mo_registration_firebase_layout" >
-                <div class="mo-header">
-                    <div class="flex flex-1 gap-mo-4">
-                        <img src="' . esc_url( MOV_FIREBASE ) . '" style="height:40px;width:40px;" >
-                        <p class="mo-heading flex-1 mt-mo-2">' . esc_html( mo_( 'Firebase Gateway Plan' ) ) . '</p>
-                    </div>
-                    <a href="https://wordpress.org/plugins/miniorange-firebase-sms-otp-verification/" class="mo-button inverted flex-2" target="_blank" id="mo_firebase_plan_download">Get this Plugin</a>
-                </div>
-                <div class="pt-mo-8">
-                    <div class="px-mo-8 py-mo-3">' . esc_html( mo_( ' We have a seperate plugin for the OTP Verification using the Firebase Gateway. Use Firebase as your custom SMS gateway to send One Time Passcodes (OTP).' ) ) . '
-                    </div>
-                    <div class="mo_firebase_feature_container" style="display:flex;border-radius: 7px;margin-left: 3%;line-height: 175%;">
-                            <div class="flex-1 p-mo-8">';
-foreach ( $firebase_plugin_features1 as $feature ) {
-	echo '  <li class="feature-snippet">
-            <span class="mt-mo-1.5">';
-	echo wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() );
-	echo '  </span><p class="m-mo-0">';
-	echo esc_html( $feature );
-	echo '  </p>
-        </li>';
-}
-								echo '
-                            </div>
-                            <div class="flex-1 p-mo-8">';
-foreach ( $firebase_plugin_features2 as $feature ) {
-	echo '  <li class="feature-snippet">
-            <span class="mt-mo-1.5">';
-	echo wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() );
-	echo '  </span><p class="m-mo-0">';
-	echo esc_html( $feature );
-	echo '  </p>
-        </li>';
-}
-								echo '
-                            </div>
-                    </div>
-                </div>
-            </div>  ';
+
 
 echo '
      <div class="m-mo-4 border dark:border-gray-700" id="otp_payment">

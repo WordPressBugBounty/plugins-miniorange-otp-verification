@@ -47,7 +47,7 @@ $popup_template_change_feature = '<input type="button" class="mo-button inverted
 											<div class="font-bold text-amber-600 m-mo-0">Premium Feature</div><br>
 											<div class="text-amber-600 m-mo-0">Please Upgrade to Premium plans to use this feature.</div>
 									</div>
-									<a href="' . admin_url() . 'admin.php?page=mootppricing" id="mo_transaction_report_contact" class="mo-button primary inverted" style="cursor:pointer;float:right;" target="_blank">Upgrade</a>
+									<a href="' . admin_url() . 'admin.php?page=mootppricing" id="mo_transaction_report_contact" class="mo-button primary inverted cursor-pointer float-right" target="_blank">Upgrade</a>
 								</div>
 							</div>';
 

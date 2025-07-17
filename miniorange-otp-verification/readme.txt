@@ -7,7 +7,7 @@ Tags: OTP, OTP Verification, SMS Notifications, Phone Verification, Email Verifi
 Requires at least: 3.5
 Tested up to: 6.8
 Requires PHP: 5.3.0
-Stable tag: 5.3.3
+Stable tag: 5.3.4
 License: Expat
 License URI: https://plugins.miniorange.com/mit-license
 
@@ -261,6 +261,11 @@ Please mail us at **otpsupport@xecurify.com/info@xecurify.com**. You can also su
 8. OTP Verification Plugin Settings
 
 == Changelog ==
+= 5.3.4 =
+* miniOrange WordPress OTP Verification
+ * WooCommerce Checkout Form Bug Fixes.
+ * Forms UI fixes.
+
 = 5.3.3 =
 * miniOrange WordPress OTP Verification
  * Login using phone number method bug fixes
@@ -1099,6 +1104,11 @@ Please mail us at **otpsupport@xecurify.com/info@xecurify.com**. You can also su
 * First version of the plugin.
 
 == Upgrade Notice ==
+= 5.3.4 =
+* miniOrange WordPress OTP Verification
+ * WooCommerce Checkout Form Bug Fixes.
+ * Forms UI fixes.
+
 = 5.3.3 =
 * miniOrange WordPress OTP Verification
  * Login using phone number method bug fixes
