@@ -464,6 +464,9 @@ function show_configured_form_details( $controller, $disabled, $page_list ) {
 		if ( $form->is_form_enabled() && ! $form->is_add_on_form() ) {
 			$namespace_class = get_class( $form );
 			$class_name      = substr( $namespace_class, strrpos( $namespace_class, '\\' ) + 1 );
+			if ( 'MoWCCheckoutNew' === $class_name ) {
+				$class_name = 'WooCommerceCheckOutForm';
+			}
 			echo '<div class="flex flex-col gap-mo-2">
 					<div class="flex">';
 			include $controller . 'forms/class-' . strtolower( $class_name ) . '.php';

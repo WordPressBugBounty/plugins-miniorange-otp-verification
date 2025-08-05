@@ -31,7 +31,10 @@ $forms_list_page = add_query_arg(
 	remove_query_arg( array( 'form' ) )
 );
 
-$form_name             = isset( $_GET['form'] ) ? sanitize_text_field( wp_unslash( $_GET['form'] ) ) : false;  // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- Reading GET parameter for checking the Form name, doesn't require nonce verification.
+$form_name = isset( $_GET['form'] ) ? sanitize_text_field( wp_unslash( $_GET['form'] ) ) : false;  // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- Reading GET parameter for checking the Form name, doesn't require nonce verification.
+if ( 'MoWCCheckoutNew' === $form_name ) {
+	$form_name = 'WooCommerceCheckOutForm';
+}
 $show_configured_forms = 'configured_forms' === $form_name;
 
 $otp_settings_tab = $tab_details->tab_details[ Tabs::OTP_SETTINGS ];

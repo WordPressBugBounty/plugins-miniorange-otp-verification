@@ -7,8 +7,8 @@
  * Author: miniOrange
  * Author URI: http://miniorange.com
  * Text Domain: miniorange-otp-verification
- * License: MIT/Expat
- * License URI: https://docs.miniorange.com/mit-license
+ * License: Expat
+ * License URI: https://plugins.miniorange.com/mit-license
  *
  * @package resendcontrol
  */
