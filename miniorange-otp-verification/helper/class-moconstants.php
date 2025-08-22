@@ -50,6 +50,7 @@ if ( ! class_exists( 'MoConstants' ) ) {
 		const PATTERN_PHONE          = '/^[\+]\d{1,4}\d{7,12}$|^[\+]\d{1,4}[\s]\d{7,12}$/';
 		const PATTERN_COUNTRY_CODE   = '/^[\+]\d{1,4}.*/';
 		const PATTERN_SPACES_HYPEN   = '/([\(\) \-]+)/';
+		const POPUP_INPUT_PATTERN    = '/[^a-zA-Z0-9]/g';
 		const ERROR_JSON_TYPE        = 'error';
 		const SUCCESS_JSON_TYPE      = 'success';
 		const EMAIL_TRANS_REMAINING  = 10;

@@ -275,6 +275,8 @@ if ( ! class_exists( 'FormHandler' ) ) {
 			add_action( 'init', array( $this, 'handle_form' ), 1 );
 
 			add_filter( 'mo_phone_dropdown_selector', array( $this, 'get_phone_number_selector' ), 1, 1 );
+			add_filter( 'is_ajax_form', array( $this, 'is_ajax_form_in_play' ), 1, 1 );
+			$is_ajax_form = apply_filters( 'is_ajax_form', false );
 
 			if ( SessionUtils::is_otp_initialized( $this->form_session_var )
 			|| SessionUtils::is_otp_initialized( $this->form_session_var2 ) ) {
@@ -282,16 +284,19 @@ if ( ! class_exists( 'FormHandler' ) ) {
 				add_action( 'otp_verification_successful', array( $this, 'handle_post_verification' ), 1, 7 );
 
 				add_action( 'otp_verification_failed', array( $this, 'handle_failed_verification' ), 1, 4 );
+				if ( ! $is_ajax_form ) {
+					add_filter( 'mo_otp_verification_mismatch_for_popup_forms', array( $this, 'get_email_phone_data' ) );
+				}
 
 				add_action( 'unset_session_variable', array( $this, 'unset_otp_session_variables' ), 1, 0 );
 			}
 
-			add_filter( 'is_ajax_form', array( $this, 'is_ajax_form_in_play' ), 1, 1 );
 
 			add_filter( 'is_login_or_social_form', array( $this, 'is_login_or_social_form' ), 1, 1 );
 			if ( get_mo_option( 'autofill_otp_enabled' ) && wp_is_mobile() ) {
 				add_action( 'wp_enqueue_scripts', array( $this, 'mo_autofill_script_load' ) );
 			}
+			add_action( 'wp_enqueue_scripts', array( $this, 'mo_otp_alphanumeric_script' ) );
 
 			$handler_list = FormList::instance();
 			$handler_list->add( $this->get_form_key(), $this );
@@ -306,7 +311,22 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		 * @return bool
 		 */
 		public function is_login_or_social_form( $is_login_or_social_form ) {
-			return SessionUtils::is_otp_initialized( $this->form_session_var ) ? $this->get_is_login_or_social_form() : $is_login_or_social_form;
+			return SessionUtils::is_otp_initialized( $this->form_session_var ) || SessionUtils::is_otp_initialized( $this->form_session_var2 ) ? $this->get_is_login_or_social_form() : $is_login_or_social_form;
+		}
+
+		/**
+		 * This function registers the js file for the OTP field to accepts the alphanumeric values only.
+		 */
+		public function mo_otp_alphanumeric_script() {
+			wp_register_script( 'mootpalphanumeric', MOV_URL . 'includes/js/mootpalphanumeric.min.js', array( 'jquery' ), MOV_VERSION, true );
+			wp_localize_script(
+				'mootpalphanumeric',
+				'mootpalphanumeric',
+				array(
+					'input_pattern' => MoConstants::POPUP_INPUT_PATTERN,
+				)
+			);
+			wp_enqueue_script( 'mootpalphanumeric' );
 		}
 
 		/**
@@ -364,7 +384,7 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		 * @param string $extra_data    an array containing all the extra data submitted by the user.
 		 * @param bool   $from_both     denotes if user has a choice between email and phone verification.
 		 */
-		public function send_challenge( $user_login, $user_email, $errors, $phone_number = null, $otp_type = 'email', $password = '', $extra_data = null, $from_both = false ) {
+		public function send_challenge( $user_login, $user_email, $errors, $phone_number = null, $otp_type = 'email', $password = '', $extra_data = null, $from_both = false, $form_session_var = null ) {
 			do_action(
 				'mo_generate_otp',
 				$user_login,
@@ -374,7 +394,8 @@ if ( ! class_exists( 'FormHandler' ) ) {
 				$otp_type,
 				$password,
 				$extra_data,
-				$from_both
+				$from_both,
+				$form_session_var
 			);
 		}
 

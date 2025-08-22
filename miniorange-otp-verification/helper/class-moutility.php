@@ -47,7 +47,7 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		/**Sanitizing array
 		 *
 		 * @param array $data data array to be sanitized.
-		 * @return string
+		 * @return array
 		 */
 		public static function mo_sanitize_array( $data ) {
 			$sanitized_data = array();
@@ -428,7 +428,46 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		 * @return false|int
 		 */
 		public static function validate_phone_number( $phone ) {
-			return preg_match( MoConstants::PATTERN_PHONE, self::process_phone_number( $phone ), $matches );
+			$phone = self::process_phone_number( $phone );
+
+			// Basic format validation using regex patterns.
+			if ( ! preg_match( MoConstants::PATTERN_PHONE, $phone, $matches ) ) {
+				return false;
+			}
+
+			// Ensure country code is appended.
+			if ( ! self::is_country_code_appended( $phone ) ) {
+				return false;
+			}
+
+			// Get country code from phone number.
+			$country_code = self::get_country_code( $phone );
+			if ( ! $country_code ) {
+				return false;
+			}
+
+			// Get country data for validation.
+			$country_list = CountryList::get_countrycode_list();
+			$country_data = null;
+
+			foreach ( $country_list as $country ) {
+				if ( $country['countryCode'] === $country_code ) {
+					$country_data = $country;
+					break;
+				}
+			}
+
+			// Calculate phone length without country code.
+			$phone_without_country_code = substr( $phone, strlen( $country_code ) );
+			$phone_length               = strlen( $phone_without_country_code );
+
+			// If country has minLength/maxLength defined, use those.
+			if ( $country_data && isset( $country_data['minLength'] ) && isset( $country_data['maxLength'] ) ) {
+				return $phone_length >= $country_data['minLength'] && $phone_length <= $country_data['maxLength'];
+			}
+
+			// Default validation for countries without length data (7-15 digits).
+			return $phone_length >= 7 && $phone_length <= 15;
 		}
 
 
@@ -933,6 +972,51 @@ if ( ! class_exists( 'MoUtility' ) ) {
 				}
 			}
 			return null;
+		}
+
+		/**
+		 * Encrypts a plaintext password using AES-256-CBC encryption.
+		 *
+		 * @param string $plaintext_password The plain text password to encrypt.
+		 * @return string Base64-encoded encrypted string.
+		 */
+		public static function encrypt_password( $plaintext_password ) {
+			if ( empty( $plaintext_password ) ) {
+				return '';
+			}
+			$encryption_key = 'c3BkcG93ZXJyYW5nZXJrZGtocmZrZHNo';
+			$iv             = substr( hash( 'sha256', 'otp-plugin-password-iv' ), 0, 16 );
+			return base64_encode(// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+				openssl_encrypt(
+					$plaintext_password,
+					'AES-256-CBC',
+					base64_decode( $encryption_key ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+					0,
+					$iv
+				)
+			);
+		}
+
+		/**
+		 * Decrypts an AES-256-CBC encrypted password back to plain text.
+		 *
+		 * @param string $encrypted_password The base64-encoded encrypted password.
+		 * @return string|false Decrypted plain text password, or false on failure.
+		 */
+		public static function decrypt_password( $encrypted_password ) {
+			if ( empty( $encrypted_password ) ) {
+				return '';
+			}
+			$encryption_key = 'c3BkcG93ZXJyYW5nZXJrZGtocmZrZHNo';
+			$iv             = substr( hash( 'sha256', 'otp-plugin-password-iv' ), 0, 16 );
+			$decrypted = openssl_decrypt(
+				base64_decode( $encrypted_password ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+				'AES-256-CBC',
+				base64_decode( $encryption_key ),     // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+				0,
+				$iv
+			);
+			return $decrypted === false ? '' : $decrypted;
 		}
 	}
 }

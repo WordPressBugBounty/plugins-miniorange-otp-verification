@@ -19,13 +19,13 @@ $miniorange_gateway_plan_features = array(
 	mo_( 'Unlimited Validity on Transactions.' ),
 	mo_( 'The SMS/Email transactions will be purchased from miniOrange' ),
 	mo_( 'OTP Verification on 50+ forms' ),
+	mo_( 'Validate phone number length based on country.' ),
 );
 
 $custom_gateway_plan_features = array(
 	mo_( 'Support HTTP based custom SMS/Email gateways.' ),
 	mo_( 'The SMS/Email transactions need to be purchased from your SMS/Email gateway.' ),
 	mo_( 'miniOrange Gateway Supported.' ),
-	mo_( 'Validate phone number length based on country.' ),
 );
 
 $twilio_gateway_plan_features = array(
@@ -106,7 +106,7 @@ $woocommerce_plan_features = array(
 		mo_( 'Enable Alphanumeric OTP Format' )         => array( 'feature' => array( 'red_cross', 'checkmark', 'checkmark' ) ),
 		mo_( 'Geolocation Based Country Code Dropdown Addon' ) => array( 'feature' => array( 'red_cross', 'checkmark', 'checkmark' ) ),
 		mo_( 'Globally Banned Phone Numbers Blocking' ) => array( 'feature' => array( 'red_cross', 'checkmark', 'checkmark' ) ),
-		mo_( 'Validate Phone number length based on Country' ) => array( 'feature' => array( 'red_cross', 'checkmark', 'checkmark' ) ),
+		mo_( 'Validate Phone number length based on Country' ) => array( 'feature' => array( 'checkmark', 'checkmark', 'checkmark' ) ),
 	);
 
 	$gateways_supported = array(
@@ -156,7 +156,7 @@ $woocommerce_plan_features = array(
 		mo_( 'Enable Alphanumeric OTP Format' )         => array( 'feature' => array( 'red_cross', 'red_cross', 'checkmark', 'checkmark' ) ),
 		mo_( 'Geolocation Based Country Code Dropdown Addon' ) => array( 'feature' => array( 'red_cross', 'red_cross', 'checkmark', 'checkmark' ) ),
 		mo_( 'Globally Banned Phone Numbers Blocking' ) => array( 'feature' => array( 'red_cross', 'red_cross', 'checkmark', 'checkmark' ) ),
-		mo_( 'Validate Phone number length based on Country' ) => array( 'feature' => array( 'red_cross', 'checkmark', 'checkmark', 'checkmark' ) ),
+		mo_( 'Validate Phone number length based on Country' ) => array( 'feature' => array( 'checkmark', 'checkmark', 'checkmark', 'checkmark' ) ),
 	);
 
 	$whatsapp_plugin_features1 = array(

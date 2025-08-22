@@ -111,11 +111,11 @@ if ( ! class_exists( 'WpEmemberForm' ) ) {
 			MoUtility::initialize_transaction( $this->form_session_var );
 			$errors = new WP_Error();
 			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
-				$this->send_challenge( $username, $user_email, $errors, $phone, VerificationType::PHONE );
+				$this->send_challenge( $username, $user_email, $errors, $phone, VerificationType::PHONE, null, null, null, $this->form_session_var );
 			} elseif ( strcasecmp( $this->otp_type, $this->type_both_tag ) === 0 ) {
-				$this->send_challenge( $username, $user_email, $errors, $phone, VerificationType::BOTH );
+				$this->send_challenge( $username, $user_email, $errors, $phone, VerificationType::BOTH, null, null, null, $this->form_session_var );
 			} else {
-				$this->send_challenge( $username, $user_email, $errors, $phone, VerificationType::EMAIL );
+				$this->send_challenge( $username, $user_email, $errors, $phone, VerificationType::EMAIL, null, null, null, $this->form_session_var );
 			}
 		}
 
@@ -228,6 +228,24 @@ if ( ! class_exists( 'WpEmemberForm' ) ) {
 
 			update_mo_option( 'emember_default_enable', $this->is_form_enabled );
 			update_mo_option( 'emember_enable_type', $this->otp_type );
+		}
+
+		/**
+		 * Retrieves email and phone data from the submitted form.
+		 *
+		 * @return array {
+		 *     @type string $email email address.
+		 *     @type string $phone phone number.
+		 * }
+		 */
+		public function get_email_phone_data() {
+			$post_data = MoUtility::mo_sanitize_array( $_POST ); //phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
+			$phone     = array_key_exists( $this->phone_key, $post_data ) ? $post_data[ $this->phone_key ] : null;
+			$email     = array_key_exists( 'wp_emember_email', $post_data ) ? $post_data['wp_emember_email'] : null;
+			return array(
+				'email' => $email,
+				'phone' => MoUtility::process_phone_number( $phone ),
+			);
 		}
 	}
 }

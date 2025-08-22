@@ -272,11 +272,11 @@ if ( ! class_exists( 'UltimateMemberRegistrationForm' ) ) {
 		 */
 		private function startOtpTransaction( $username, $email, $errors, $phone_number, $password, $extra_data ) {
 			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
-				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::PHONE, $password, $extra_data );
+				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::PHONE, $password, $extra_data, null, $this->form_session_var );
 			} elseif ( strcasecmp( $this->otp_type, $this->type_both_tag ) === 0 ) {
-				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::BOTH, $password, $extra_data );
+				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::BOTH, $password, $extra_data, null, $this->form_session_var );
 			} else {
-				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::EMAIL, $password, $extra_data );
+				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::EMAIL, $password, $extra_data, null, $this->form_session_var );
 			}
 		}
 
@@ -366,7 +366,40 @@ if ( ! class_exists( 'UltimateMemberRegistrationForm' ) ) {
 				$form->add_error( $this->verify_field_meta_key, MoUtility::get_invalid_otp_method() );
 			}
 		}
+		/**
+		 * Retrieve a dynamic field value from Ultimate Member form data based on a prefix.
+		 *
+		 * @param string $prefix     The prefix used to identify the dynamic field (e.g., phone_key, user_email).
+		 * @param array  $form_data  The submitted form data (usually $_POST).
+		 *
+		 * @return string The sanitized value of the matched field or an empty string if not found.
+		 */
+		public function get_um_dynamic_field_value( $prefix, $form_data ) {
+			foreach ( $form_data as $key => $value ) {
+				if ( strpos( $key, $prefix . '-' ) === 0 ) {
+					return sanitize_text_field( $value );
+				}
+			}
+			return '';
+		}
 
+		/**
+		 * Retrieves and sanitizes email and phone data from the submitted form based on user role.
+		 *
+		 * @return array {
+		 *     @type string $email Sanitized email address from the form.
+		 *     @type string $phone Processed phone number based on role ('billing_phone' for customer, 'phone' for seller).
+		 * }
+		 */
+		public function get_email_phone_data() {
+			$args  = MoUtility::mo_sanitize_array( $_POST );// phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+			$phone = MoUtility::process_phone_number( $this->get_um_dynamic_field_value( $this->phone_key, $args ) );
+			$email = $this->get_um_dynamic_field_value( 'user_email', $args );
+			return array(
+				'email' => $email,
+				'phone' => $phone,
+			);
+		}
 
 		/**
 		 * This function checks the integrity of the phone or email value that was submitted
@@ -556,4 +589,3 @@ if ( ! class_exists( 'UltimateMemberRegistrationForm' ) ) {
 		}
 	}
 }
-

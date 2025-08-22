@@ -69,7 +69,6 @@ if ( ! class_exists( 'MoWPUserManagerForm' ) ) {
 			if ( ! empty( $errors->errors ) ) {
 				return $errors;
 			}
-
 			$data = MoUtility::mo_sanitize_array( $_POST );  // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
 			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, VerificationType::EMAIL ) ) {
 				$this->unset_otp_session_variables();
@@ -77,7 +76,7 @@ if ( ! class_exists( 'MoWPUserManagerForm' ) ) {
 			} else {
 				MoUtility::initialize_transaction( $this->form_session_var );
 				$user_email = $data['user_email'];
-				$this->send_challenge( $username, $user_email, $errors, null, VerificationType::EMAIL );
+				$this->send_challenge( $username, $user_email, $errors, null, VerificationType::EMAIL, null, null, null, $this->form_session_var );
 			}
 		}
 
@@ -100,6 +99,23 @@ if ( ! class_exists( 'MoWPUserManagerForm' ) ) {
 				MoUtility::get_invalid_otp_method(),
 				$otp_ver_type,
 				$from_both
+			);
+		}
+
+		/**
+		 * Retrieves sanitized email and phone number data from the form.
+		 *
+		 * @return array {
+		 *     @type string $email Sanitized email address.
+		 *     @type string $phone Sanitized phone number.
+		 * }
+		 */
+		public function get_email_phone_data() {
+			$email = isset( $_POST['user_email'] ) ? sanitize_text_field( wp_unslash( $_POST['user_email'] ) ) : '';
+			$phone = '';
+			return array(
+				'email' => $email,
+				'phone' => $phone,
 			);
 		}
 

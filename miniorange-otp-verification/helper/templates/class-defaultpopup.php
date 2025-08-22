@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use OTP\Helper\MoConstants;
 use OTP\Objects\MoITemplate;
 use OTP\Objects\Template;
 use OTP\Traits\Instance;
@@ -277,7 +278,29 @@ if ( ! class_exists( 'DefaultPopup' ) ) {
 						this.style.display = "none";
 						document.querySelector("#mo_message").style.display = "block";
 					});
-				});</script>';
+				});
+				document.addEventListener("DOMContentLoaded", function () {
+				const otpInputs = document.querySelectorAll(".mo_customer_validation-textbox.mo-new-ui-validation-textbox");
+				otpInputs.forEach(function (input) {
+					input.addEventListener("input", function () {
+						const originalValue = input.value;
+						const cleanedValue = originalValue.replace(' . MoConstants::POPUP_INPUT_PATTERN . ', "");
+						if (originalValue !== cleanedValue) {
+							input.value = cleanedValue;
+						}
+					});
+					input.addEventListener("paste", function (e) {
+						e.preventDefault();
+						const pasted = (e.clipboardData || window.clipboardData).getData("text");
+						const clean = pasted.replace(' . MoConstants::POPUP_INPUT_PATTERN . ', "");
+						const start = input.selectionStart;
+						const end = input.selectionEnd;
+						const currentValue = input.value;
+						input.value = currentValue.slice(0, start) + clean + currentValue.slice(end);
+						input.setSelectionRange(start + clean.length, start + clean.length);
+					});
+				});
+			});</script>';
 			} else {
 				$scripts .= '<script>document.querySelector("#mo_validate_form").addEventListener("submit", function(e) {
 					e.preventDefault();

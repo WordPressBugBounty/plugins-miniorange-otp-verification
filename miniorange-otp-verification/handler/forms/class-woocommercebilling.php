@@ -103,7 +103,7 @@ if ( ! class_exists( 'WooCommerceBilling' ) ) {
 			MoUtility::initialize_transaction( $this->form_session_var );
 			$billing_email = isset( $_POST['billing_email'] ) ? sanitize_email( wp_unslash( $_POST['billing_email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
 			$billing_phone = isset( $_POST['billing_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_phone'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
-			$this->send_challenge( null, $billing_email, null, $billing_phone, $type );
+			$this->send_challenge( null, $billing_email, null, $billing_phone, $type, null, null, null, $this->form_session_var );
 			return $value;
 		}
 
@@ -129,6 +129,22 @@ if ( ! class_exists( 'WooCommerceBilling' ) ) {
 			);
 		}
 
+		/**
+		 * Retrieves sanitized email and phone number data from the form.
+		 *
+		 * @return array {
+		 *     @type string $email Sanitized email address.
+		 *     @type string $phone Sanitized phone number.
+		 * }
+		 */
+		public function get_email_phone_data() {
+			$email = isset( $_POST['billing_email'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_email'] ) ) : '';
+			$phone = isset( $_POST[ 'billing_phone' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'billing_phone'] ) ) : '';
+			return array(
+				'email' => $email,
+				'phone' => $phone,
+			);
+		}
 		/**
 		 * This function is called to handle what needs to be done if OTP
 		 * entered by the user is validated successfully. Calls an action

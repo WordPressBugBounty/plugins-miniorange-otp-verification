@@ -113,8 +113,11 @@ if ( ! class_exists( 'BuddyPressRegistrationForm' ) ) {
 		 * number.
 		 */
 		public function validateOTPRequest() {
+			if ( ! ( $this->isPhoneVerificationEnabled() && ! is_null($this->moBBPgetphoneFieldId()) ) ) {
+				return;
+			}
 
-			global $bp,$phone_logic;
+			global $bp, $phone_logic;
 			$field_key = 'field_' . $this->moBBPgetphoneFieldId();
 			if ( isset( $_POST[ $field_key ] ) && ! MoUtility::validate_phone_number( sanitize_text_field( wp_unslash( $_POST[ $field_key ] ) ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
 				$bp->signup->errors[ $field_key ] = str_replace( '##phone##', sanitize_text_field( wp_unslash( $_POST[ $field_key ] ) ), $phone_logic->get_otp_invalid_format_message() ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
@@ -247,14 +250,31 @@ if ( ! class_exists( 'BuddyPressRegistrationForm' ) ) {
 		 */
 		private function startVerificationProcess( $username, $email, $errors, $phone_number, $password, $extra_data ) {
 			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
-				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::PHONE, $password, $extra_data );
+				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::PHONE, $password, $extra_data, null, $this->form_session_var );
 			} elseif ( strcasecmp( $this->otp_type, $this->type_both_tag ) === 0 ) {
-				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::BOTH, $password, $extra_data );
+				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::BOTH, $password, $extra_data, null, $this->form_session_var);
 			} else {
-				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::EMAIL, $password, $extra_data );
+				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::EMAIL, $password, $extra_data, null, $this->form_session_var );
 			}
 		}
-
+		/**
+		 * Retrieves sanitized email and phone number data from the form.
+		 *
+		 * @return array {
+		 *     @type string $email Sanitized email address.
+		 *     @type string $phone Sanitized phone number.
+		 * }
+		 */
+		public function get_email_phone_data() {
+			$email       = isset( $_POST['signup_email'] ) ? sanitize_text_field( wp_unslash( $_POST['signup_email'] ) ) : '';
+			$phone_field = $this->moBBPgetphoneFieldId();
+			$phone       = isset( $_POST[ 'field_' . $phone_field ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'field_' . $phone_field ] ) ) : '';
+			$phone       = MoUtility::process_phone_number( $phone );
+			return array(
+				'email' => $email,
+				'phone' => $phone,
+			);
+		}
 
 		/**
 		 * This function hooks into the bp_core_signup_user buddypress hook to automatically
@@ -294,6 +314,7 @@ if ( ! class_exists( 'BuddyPressRegistrationForm' ) ) {
 		 */
 		private function moBBPgetphoneFieldId() {
 			global $wpdb;
+			$this->phone_key = $this->phone_key ? $this->phone_key : get_mo_option( 'bbp_phone_key' );
 			return $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}bp_xprofile_fields where name = %s", array( $this->phone_key ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, Direct database call without caching detected -- DB Direct Query is necessary here.
 
 		}

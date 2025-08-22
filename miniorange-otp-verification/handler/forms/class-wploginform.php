@@ -193,6 +193,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 * hook into to make OTP Verification possible.
 		 */
 		public function handle_form() {
+
 			$this->otp_type             = get_mo_option( 'wp_login_enable_type' );
 			$this->save_phone_numbers   = get_mo_option( 'wp_login_register_phone' );
 			$this->by_pass_admin        = get_mo_option( 'wp_login_bypass_admin' );
@@ -209,7 +210,6 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 				add_filter( 'wp_authenticate_user', array( $this, 'mo_get_and_return_user' ), 99, 2 );
 				add_filter( 'um_custom_authenticate_error_codes', array( $this, 'mo_get_um_form_errors' ), 99, 1 );
 			}
-
 			$this->routeData();
 		}
 
@@ -245,7 +245,6 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 					$const
 				)
 			);
-
 		}
 
 		/**
@@ -363,12 +362,16 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		}
 
 		/**
-		 * This function is called after the OTP is verified to
-		 * login the user into WordPress.
+		 * Handle WordPress login user creation after OTP verification
 		 *
-		 * @param array $post_data - $_POST.
+		 * @param array $post_data - $_POST data.
+		 * @return void
 		 */
 		private function mo_handle_wp_login_create_user_action( $post_data ) {
+			if ( ! SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->get_verification_type() ) ) {
+				return;
+			}
+
 			/**
 			 * Anonymous function that returns the user for the email or
 			 * username that the user has submitted on the login screen
@@ -376,12 +379,13 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			 * @param $post_data
 			 * @return bool|WP_User
 			 */
-			$get_user_from_post = function( $post_data ) {
-				$username = MoUtility::sanitize_check( 'log', $post_data );
+			$get_user_from_post = function ( $post_data ) {
+				$username = MoPHPSessions::get_session_var( 'login_user_mo' );
+
 				if ( ! $username ) {
 					$array    = array_filter(
 						$post_data,
-						function( $key ) {
+						function ( $key ) {
 							return strpos( $key, 'username' ) === 0;
 						},
 						ARRAY_FILTER_USE_KEY
@@ -391,12 +395,10 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 				return is_email( $username ) ? get_user_by( 'email', $username ) : get_user_by( 'login', $username );
 			};
 
-			if ( ! SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->get_verification_type() ) ) {
-				return;
-			}
-
-			$user = $get_user_from_post( $post_data );
-			update_user_meta( $user->data->ID, $this->get_phone_key_details(), $this->check_phone_length( $post_data['mo_phone_number'] ) );
+			$user  = $get_user_from_post( $post_data );
+			$phone = MoPHPSessions::get_session_var( 'phone_number_mo' );
+			$phone = $phone ? $phone : '';
+			update_user_meta( $user->data->ID, $this->get_phone_key_details(), $phone );
 			$this->login_wp_user( $user->data->user_login );
 		}
 
@@ -455,8 +457,13 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			$post_data = MoUtility::mo_sanitize_array( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
 			$req_data  = MoUtility::mo_sanitize_array( $_REQUEST ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended -- No need for nonce verification as the function is called on third party plugin hook.
 
+			if ( isset( $post_data['mepr_process_signup_form'] ) && $post_data['mepr_process_signup_form'] ) {
+				return;
+			}
+
 			if ( ! MoUtility::is_blank( $username ) ) {
 				$user = $this->getUser( $username, $post_data, $password );
+
 				if ( is_wp_error( $user ) ) {
 					return $user;
 				}
@@ -473,17 +480,19 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 						case 'rejected':
 							um_reset_user();
 
-						wp_safe_redirect( add_query_arg( 'err', esc_attr( $status ), UM()->permalinks()->get_current_url() ) );
-						exit;
+							wp_safe_redirect( add_query_arg( 'err', esc_attr( $status ), UM()->permalinks()->get_current_url() ) );
+							exit;
 					}
 				}
 
 				$skip_otp_process = $this->skip_otp_process( $password, $post_data, $user );
+
 				if ( $this->byPassLogin( $user, $skip_otp_process ) ) {
 					return $user;
 				}
 
 				apply_filters( 'mo_master_otp_send_user', $user );
+				MoPHPSessions::add_session_var( 'login_user_mo', $username );
 				$this->startOTPVerificationProcess( $user, $username, $password, $req_data );
 			}
 			return $user;
@@ -502,6 +511,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 */
 		private function startOTPVerificationProcess( $user, $username, $password, $req_data ) {
 			$otp_type = $this->get_verification_type();
+
 			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otp_type )
 			|| SessionUtils::is_status_match( $this->form_session_var2, self::VALIDATED, $otp_type ) ) {
 				return;
@@ -599,7 +609,9 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 						'message' => MoMessages::showMessage( MoMessages::REGISTER_PHONE_LOGIN ),
 						'form'    => $key,
 						'curl'    => MoUtility::current_page_url(),
-					)
+					),
+					null,
+					$this->form_session_var
 				);
 			}
 		}
@@ -618,7 +630,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		private function fetchPhoneAndStartVerification( $username, $password, $phone_number, $req_data ) {
 			MoUtility::initialize_transaction( $this->form_session_var2 );
 			$redirect_to = isset( $req_data['redirect_to'] ) ? sanitize_text_field( $req_data['redirect_to'] ) : MoUtility::current_page_url();
-			$this->send_challenge( $username, null, null, $phone_number, VerificationType::PHONE, $password, $redirect_to, false );
+			$this->send_challenge( $username, null, null, $phone_number, VerificationType::PHONE, $password, $redirect_to, false, $this->form_session_var );
 		}
 
 
@@ -634,7 +646,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		private function startEmailVerification( $username, $email, $password, $req_data ) {
 			MoUtility::initialize_transaction( $this->form_session_var2 );
 			$redirect_to = isset( $req_data['redirect_to'] ) ? sanitize_text_field( $req_data['redirect_to'] ) : MoUtility::current_page_url();
-			$this->send_challenge( $username, $email, null, null, VerificationType::EMAIL, $password, $redirect_to, false );
+			$this->send_challenge( $username, $email, null, null, VerificationType::EMAIL, $password, $redirect_to, false, $this->form_session_var );
 		}
 
 
@@ -644,8 +656,9 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 * @param array $post_data - $_POST.
 		 */
 		private function mo_handle_wp_login_ajax_send_otp( $post_data ) {
+			$user_phone = MoUtility::process_phone_number( sanitize_text_field( $post_data['user_phone'] ) );
 			if ( $this->restrict_duplicates()
-			&& ! MoUtility::is_blank( $this->getUserFromPhoneNumber( MoUtility::process_phone_number( sanitize_text_field( $post_data['user_phone'] ) ) ) ) ) {
+			&& ! MoUtility::is_blank( $this->getUserFromPhoneNumber( $user_phone ) ) ) {
 				wp_send_json(
 					MoUtility::create_json(
 						MoMessages::showMessage( MoMessages::PHONE_EXISTS ),
@@ -653,7 +666,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 					)
 				);
 			} elseif ( SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
-				$this->send_challenge( 'ajax_phone', '', null, trim( sanitize_text_field( $post_data['user_phone'] ) ), VerificationType::PHONE, null, $post_data );
+				$this->send_challenge( 'ajax_phone', '', null, $user_phone, VerificationType::PHONE, null, $post_data, null, $this->form_session_var );
 			}
 		}
 
@@ -986,5 +999,22 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 */
 		public function get_login_with_otp_button_text() {
 			return $this->login_with_otp_button_text; }
+
+		/**
+		 * Retrieves email and phone data from the submitted form.
+		 *
+		 * @return array {
+		 *     @type string $email email address.
+		 *     @type string $phone phone number.
+		 * }
+		 */
+		public function get_email_phone_data() {
+			$data  = MoUtility::mo_sanitize_array( $_POST );// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- Nonce is already verified before.
+			$phone = isset( $data['phone_number_mo'] ) ? $data['phone_number_mo'] : '';
+			return array(
+				'email' => '',
+				'phone' => $phone,
+			);
+		}
 	}
 }

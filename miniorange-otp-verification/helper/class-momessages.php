@@ -603,6 +603,10 @@ if ( ! class_exists( 'MoMessages' ) ) {
 					self::DISABLE_DOKAN_REG             => mo_( 'Please disable Dokan Registration form in order to enable this form.' ),
 					self::INVALID_FORM_DETAILS          => mo_( 'Enter valid form details.' ),
 					self::INVALID_PHONE_EMAIL_LABEL     => mo_( 'Invalid or incomplete form IDs: {{form_ids}}. Check labels and form existence.' ),
+					self::EMAIL_ALREADY_REGISTERED      => mo_( 'An account is already registered with your email address. Please login.' ),
+					self::INVALID_ACCOUNT_USERNAME      => mo_( 'Please enter a valid account username.' ),
+					self::USERNAME_ALREADY_TAKEN        => mo_( 'An account is already registered with that username. Please choose another.' ),
+
 				)
 			);
 
@@ -750,7 +754,7 @@ if ( ! class_exists( 'MoMessages' ) ) {
 					self::USER_LOGGING_IN               => mo_( 'Verified. Logging in..' ),
 					self::USER_LOGGED_IN                => mo_( 'You are already logged in!' ),
 					self::NEW_USER_REGISTERED           => mo_( 'Verified. Registering your account.' ),
-
+				
 				)
 			);
 

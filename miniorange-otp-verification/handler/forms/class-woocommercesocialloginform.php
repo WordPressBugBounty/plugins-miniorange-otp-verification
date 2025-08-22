@@ -61,7 +61,7 @@ if ( ! class_exists( 'WooCommerceSocialLoginForm' ) ) {
 			$this->is_login_or_social_form = true;
 			$this->is_ajax_form            = true;
 			$this->form_session_var        = FormSessionVars::WC_SOCIAL_LOGIN;
-			$this->otp_type                = 'phone';
+			$this->type_phone_tag          = 'phone';
 			$this->phone_form_id           = '#mo_phone_number';
 			$this->form_key                = 'WC_SOCIAL_LOGIN';
 			$this->form_name               = mo_( 'WooCommerce Social Login ( SMS Verification Only )' );
@@ -102,7 +102,7 @@ if ( ! class_exists( 'WooCommerceSocialLoginForm' ) ) {
 					$this->mo_handle_wc_ajax_send_otp( $data );
 					break;
 				case 'miniorange-ajax-otp-validate':
-					$this->processOTPEntered( sanitize_text_field( wp_unslash( $_REQUEST ) ) ); //phpcs:ignore -- false positive.
+					$this->processOTPEntered( $data );
 					break;
 				case 'mo_ajax_form_validate':
 					$this->mo_handle_wc_create_user_action( $data );
@@ -137,10 +137,9 @@ if ( ! class_exists( 'WooCommerceSocialLoginForm' ) ) {
 		 * @throws ReflectionException .
 		 */
 		public function mo_wc_social_login_profile( $profile, $provider_id ) {
-
 			MoUtility::initialize_transaction( $this->form_session_var );
 			MoPHPSessions::add_session_var( 'wc_provider', $profile );
-			$_SESSION['wc_provider_id'] = maybe_serialize( $provider_id );
+			MoPHPSessions::add_session_var( 'wc_provider_id', maybe_serialize( $provider_id ) );
 			return $profile;
 		}
 
@@ -166,7 +165,9 @@ if ( ! class_exists( 'WooCommerceSocialLoginForm' ) ) {
 					'message' => MoMessages::showMessage( MoMessages::PHONE_VALIDATION_MSG ),
 					'form'    => 'WC_SOCIAL',
 					'curl'    => MoUtility::current_page_url(),
-				)
+				),
+				null,
+				$this->form_session_var
 			);
 		}
 
@@ -181,7 +182,7 @@ if ( ! class_exists( 'WooCommerceSocialLoginForm' ) ) {
 		public function mo_handle_wc_create_user_action( $post_data ) {
 
 			if ( ! $this->checkIfVerificationNotStarted()
-			&& SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->get_verification_type() ) ) {
+			&& SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->type_phone_tag ) ) {
 				$this->create_new_wc_social_customer( $post_data );
 			}
 		}
@@ -199,7 +200,11 @@ if ( ! class_exists( 'WooCommerceSocialLoginForm' ) ) {
 			WC_Emails::init_transactional_emails();
 
 			$auth        = MoPHPSessions::get_session_var( 'wc_provider' );
-			$provider_id = maybe_unserialize( sanitize_text_field( $_SESSION['wc_provider_id'] ) );
+			$provider_id = maybe_unserialize( sanitize_text_field( MoPHPSessions::get_session_var( 'wc_provider_id' ) ) );
+			if ( empty( $provider_id ) ) {
+				$this->redirect( 'error', 0, 'wc-social-login-missing-provider' );
+				return;
+			}
 			$this->unset_otp_session_variables();
 			$profile   = new WC_Social_Login_Provider_Profile( $provider_id, $auth );
 			$phone     = $user_data['mo_phone_number'];
@@ -221,7 +226,7 @@ if ( ! class_exists( 'WooCommerceSocialLoginForm' ) ) {
 
 			while ( username_exists( $user_data['user_login'] ) ) {
 				$user_data['user_login'] = $o_username . $append;
-				$append ++;
+				$append++;
 			}
 
 			$customer_id = wp_insert_user( $user_data );
@@ -339,7 +344,7 @@ if ( ! class_exists( 'WooCommerceSocialLoginForm' ) ) {
 		public function mo_handle_wc_ajax_send_otp( $data ) {
 
 			if ( ! $this->checkIfVerificationNotStarted() ) {
-				$this->send_challenge( 'ajax_phone', '', null, trim( $data['user_phone'] ), $this->otp_type, null, $data );
+				$this->send_challenge( 'ajax_phone', '', null, trim( $data['user_phone'] ), $this->type_phone_tag, null, $data, null, $this->form_session_var );
 			}
 		}
 
@@ -352,12 +357,11 @@ if ( ! class_exists( 'WooCommerceSocialLoginForm' ) ) {
 		 * @param array $data - the data coming in the ajax call. Mostly has the otp entered.
 		 */
 		public function processOTPEntered( $data ) {
-
 			if ( $this->checkIfVerificationNotStarted() ) {
 				return;
 			}
-
-			if ( $this->process_phone_number( $data ) ) {
+			$phone = MoPHPSessions::get_session_var( 'phone_number_mo' );
+			if ( strcmp( $phone, MoUtility::process_phone_number( $data['user_phone'] ) ) !== 0 ) {
 				wp_send_json(
 					MoUtility::create_json(
 						MoMessages::showMessage( MoMessages::PHONE_MISMATCH ),
@@ -365,22 +369,9 @@ if ( ! class_exists( 'WooCommerceSocialLoginForm' ) ) {
 					)
 				);
 			} else {
-				$this->validate_challenge( $this->get_verification_type() );
+				$this->validate_challenge( $this->type_phone_tag );
 			}
 		}
-
-		/**
-		 * Check to see if phone number OTP was sent to and the phone number
-		 * submitted in the final form submission are the same.
-		 *
-		 * @param array $data .
-		 * @return bool
-		 */
-		private function process_phone_number( $data ) {
-			$phone = MoPHPSessions::get_session_var( 'phone_number_mo' );
-			return strcmp( $phone, MoUtility::process_phone_number( $data['user_phone'] ) ) !== 0;
-		}
-
 
 		/**
 		 * This functions checks if Verification was started or not.
@@ -419,6 +410,21 @@ if ( ! class_exists( 'WooCommerceSocialLoginForm' ) ) {
 			}
 			$this->is_form_enabled = $this->sanitize_form_post( 'wc_social_login_enable' );
 			update_mo_option( 'wc_social_login_enable', $this->is_form_enabled );
+		}
+
+		/**
+		 * Retrieves email and phone data from the submitted form.
+		 *
+		 * @return array {
+		 *     @type string $email email address.
+		 *     @type string $phone phone number.
+		 * }
+		 */
+		public function get_email_phone_data() {
+			return array(
+				'email' => '',
+				'phone' => '',
+			);
 		}
 	}
 }

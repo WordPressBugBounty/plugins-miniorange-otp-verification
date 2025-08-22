@@ -20,7 +20,7 @@ use OTP\Objects\FormSessionData;
 use OTP\Objects\VerificationLogic;
 use OTP\Traits\Instance;
 use OTP\LicenseLibrary\Mo_License_Service;
-
+use OTP\Helper\MoPHPSessions;
 
 /**
  * This class handles all the phone related logic for OTP Verification
@@ -117,6 +117,10 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 				}
 			} else {
 				do_action( 'mo_globally_banned_phone_check', $phone_number, $this->is_ajax_form(), $otp_type, $from_both );
+				if ( ! $this->is_ajax_form() ) {
+					$form_session_var = MoPHPSessions::get_session_var( 'form_session_var' );
+					SessionUtils::add_phone_verified( $form_session_var, $phone_number );
+				}
 				$this->start_otp_verification( $user_login, $user_email, $phone_number, $otp_type, $from_both );
 			}
 		}
@@ -135,9 +139,15 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 		public function start_otp_verification( $user_login, $user_email, $phone_number, $otp_type, $from_both ) {
 			do_action( 'mo_generate_or_resend_otp', $user_login, $user_email, $phone_number, $otp_type, $from_both );
 			$gateway           = GatewayFunctions::instance();
-			$verification_type = 'SMS';
-			$content           = $gateway->mo_send_otp_token( $verification_type, '', $phone_number );
-			$otp_type          = isset( $content['moAuthType'] ) ? $content['moAuthType'] : $otp_type;
+			$verification_type = 'SMS';		
+		
+			// Only fail early if NOT MiniOrange Plan and no gateway type selected
+			if ( ! $gateway->is_mg() && ! get_mo_option( 'custome_gateway_type' ) ) {
+				$this->handle_otp_sent_failed( $user_login, $user_email, $phone_number, $otp_type, $from_both, [] );
+				return;
+			}
+
+			$content = $gateway->mo_send_otp_token( $verification_type, '', $phone_number );
 			switch ( $content['status'] ) {
 				case 'SUCCESS':
 					$this->handle_otp_sent( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content );

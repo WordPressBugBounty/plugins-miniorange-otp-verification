@@ -19,6 +19,7 @@ use OTP\Helper\SessionUtils;
 use OTP\Objects\VerificationLogic;
 use OTP\Traits\Instance;
 use OTP\LicenseLibrary\Mo_License_Service;
+use OTP\Helper\MoPHPSessions;
 
 /**
  * This class handles all the email related logic for OTP Verification
@@ -99,6 +100,10 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 					miniorange_site_otp_validation_form( null, null, null, $message, $otp_type, $from_both );
 				}
 			} else {
+				if ( ! $this->is_ajax_form() ) {
+					$form_session_var = MoPHPSessions::get_session_var( 'form_session_var' );
+					SessionUtils::add_email_verified( $form_session_var, $user_email );
+				}
 				$this->start_otp_verification( $user_login, $user_email, $phone_number, $otp_type, $from_both );
 			}
 		}

@@ -212,6 +212,24 @@ if ( ! class_exists( 'DefaultWordPressRegistrationForm' ) ) {
 		}
 
 		/**
+		 * Retrieves and sanitizes email and phone data from the submitted form.
+		 *
+		 * @return array {
+		 *     @type string $email Sanitized email address from the form.
+		 *     @type string $phone Processed phone number of the user.
+		 * }
+		 */
+		public function get_email_phone_data() {
+			$data  = MoUtility::mo_sanitize_array( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
+			$phone = isset( $data['phone_number_mo'] ) ? $data['phone_number_mo'] : null;
+			$email = isset( $data['user_email'] ) ? $data['user_email'] : null;
+			return array(
+				'email' => sanitize_email( $email ?? '' ),
+				'phone' => MoUtility::process_phone_number( $phone ?? '' ),
+			);
+		}
+
+		/**
 		 * The function is called to start the OTP Transaction based on the OTP Type
 		 * set by the admin in the settings.
 		 *
@@ -230,11 +248,11 @@ if ( ! class_exists( 'DefaultWordPressRegistrationForm' ) ) {
 
 			MoUtility::initialize_transaction( $this->form_session_var );
 			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
-				$this->send_challenge( $sanitized_user_login, $user_email, $errors, $phone_number, VerificationType::PHONE );
+				$this->send_challenge( $sanitized_user_login, $user_email, $errors, $phone_number, VerificationType::PHONE, null, null, null, $this->form_session_var );
 			} elseif ( strcasecmp( $this->otp_type, $this->type_both_tag ) === 0 ) {
-				$this->send_challenge( $sanitized_user_login, $user_email, $errors, $phone_number, VerificationType::BOTH );
+				$this->send_challenge( $sanitized_user_login, $user_email, $errors, $phone_number, VerificationType::BOTH,  null, null, null, $this->form_session_var );
 			} else {
-				$this->send_challenge( $sanitized_user_login, $user_email, $errors, $phone_number, VerificationType::EMAIL );
+				$this->send_challenge( $sanitized_user_login, $user_email, $errors, $phone_number, VerificationType::EMAIL, null, null, null, $this->form_session_var );
 			}
 			return $errors;
 		}

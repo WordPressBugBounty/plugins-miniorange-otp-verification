@@ -164,9 +164,9 @@ if ( ! class_exists( 'Edumareg' ) ) {
 
 			MoUtility::initialize_transaction( $this->form_session_var );
 			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
-				$this->send_challenge( $sanitized_user_login, $user_email, $errors, $phone_number, VerificationType::PHONE );
+				$this->send_challenge( $sanitized_user_login, $user_email, $errors, $phone_number, VerificationType::PHONE, null, null, null, $this->form_session_var );
 			} else {
-				$this->send_challenge( $sanitized_user_login, $user_email, $errors, $phone_number, VerificationType::EMAIL );
+				$this->send_challenge( $sanitized_user_login, $user_email, $errors, $phone_number, VerificationType::EMAIL, null, null, null, $this->form_session_var );
 			}
 			return $errors;
 		}
@@ -191,6 +191,24 @@ if ( ! class_exists( 'Edumareg' ) ) {
 				MoUtility::get_invalid_otp_method(),
 				$otp_ver_type,
 				$from_both
+			);
+		}
+		/**
+		 * Retrieves sanitized email and phone number data from the form.
+		 *
+		 * @return array {
+		 *     @type string $email Sanitized email address.
+		 *     @type string $phone Sanitized phone number.
+		 * }
+		 */
+		public function get_email_phone_data() {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce is checked in the caller function.
+			$email = isset( $_POST['user_email'] ) ? sanitize_text_field( wp_unslash( $_POST['user_email'] ) ) : '';
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce is checked in the caller function.
+			$phone = isset( $_POST['phone_number_mo'] ) ? sanitize_text_field( wp_unslash( $_POST['phone_number_mo'] ) ) : '';
+			return array(
+				'email' => $email,
+				'phone' => $phone,
 			);
 		}
 		/**

@@ -145,7 +145,7 @@ if ( ! class_exists( 'Edumalog' ) ) {
 		 */
 		public function startEmailVerification( $username, $email ) {
 			MoUtility::initialize_transaction( $this->form_session_var );
-			$this->send_challenge( $username, $email, null, null, VerificationType::EMAIL );
+			$this->send_challenge( $username, $email, null, null, VerificationType::EMAIL, null, null, null, $this->form_session_var );
 		}
 		/**
 		 * This functions is used to fetch the phone number from the database and start
@@ -159,7 +159,7 @@ if ( ! class_exists( 'Edumalog' ) ) {
 			MoUtility::initialize_transaction( $this->form_session_var );
 			$req_data    = MoUtility::mo_sanitize_array( $_REQUEST ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended -- No need for nonce verification as the function is called on third party plugin hook.
 			$redirect_to = isset( $req_data['redirect_to'] ) ? sanitize_text_field( $req_data['redirect_to'] ) : MoUtility::current_page_url();
-			$this->send_challenge( $username, null, null, $phone_number, VerificationType::PHONE, $password, $redirect_to, false );
+			$this->send_challenge( $username, null, null, $phone_number, VerificationType::PHONE, $password, $redirect_to, false, $this->form_session_var );
 		}
 		/**  Function to check the length of the phone number
 		 *
@@ -334,5 +334,20 @@ if ( ! class_exists( 'Edumalog' ) ) {
 		 */
 		public function byPassCheckForAdmins() {
 			return $this->by_pass_admin; }
+
+		/**
+		 * Retrieves email and phone data from the submitted form.
+		 *
+		 * @return array {
+		 *     @type string $email email address.
+		 *     @type string $phone phone number.
+		 * }
+		 */
+		public function get_email_phone_data() {
+			return array(
+				'email' => '',
+				'phone' => '',
+			);
+		}
 	}
 }

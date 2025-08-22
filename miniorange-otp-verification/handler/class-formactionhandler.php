@@ -41,7 +41,7 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 			parent::__construct();
 			add_action( 'init', array( $this, 'handle_formActions' ), 1 );
 			add_action( 'mo_validate_otp', array( $this, 'validateOTP' ), 1, 3 );
-			add_action( 'mo_generate_otp', array( $this, 'challenge' ), 2, 8 );
+			add_action( 'mo_generate_otp', array( $this, 'challenge' ), 2, 9 );
 			add_filter( 'mo_filter_phone_before_api_call', array( $this, 'filterPhone' ), 1, 1 );
 		}
 
@@ -60,15 +60,19 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 		 * @param bool   $from_both     denotes if user has a choice between email and phone verification.
 		 */
 		public function challenge( $user_login, $user_email, $errors, $phone_number = null,
-		$otp_type = 'email', $password = '', $extra_data = null, $from_both = false ) {
+		$otp_type = 'email', $password = '', $extra_data = null, $from_both = false, $form_session_var = null ) {
 
-			$phone_number = MoUtility::process_phone_number( $phone_number );
+			$phone_number       = MoUtility::process_phone_number( $phone_number );
+			$encrypted_password = MoUtility::encrypt_password( $password );
 			MoPHPSessions::add_session_var( 'current_url', MoUtility::current_page_url() );
 			MoPHPSessions::add_session_var( 'user_email', $user_email );
 			MoPHPSessions::add_session_var( 'user_login', $user_login );
-			MoPHPSessions::add_session_var( 'user_password', $password );
+			MoPHPSessions::add_session_var( 'user_password', $encrypted_password );
 			MoPHPSessions::add_session_var( 'phone_number_mo', $phone_number );
 			MoPHPSessions::add_session_var( 'extra_data', $extra_data );
+			if ( ! is_null( $form_session_var ) ) {
+				MoPHPSessions::add_session_var( 'form_session_var', $form_session_var );
+			}
 			$this->handleOTPAction( $user_login, $user_email, $phone_number, $otp_type, $from_both, $extra_data );
 		}
 
@@ -81,11 +85,12 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 		 */
 		private function handleResendOTP( $otp_type, $from_both ) {
 
-			$user_email   = MoPHPSessions::get_session_var( 'user_email' );
-			$user_login   = MoPHPSessions::get_session_var( 'user_login' );
-			$phone_number = MoPHPSessions::get_session_var( 'phone_number_mo' );
-			$extra_data   = MoPHPSessions::get_session_var( 'extra_data' );
-			do_action( 'mo_generate_otp', $user_login, $user_email, null, $phone_number, $otp_type, null, $extra_data, $from_both );
+			$user_email       = MoPHPSessions::get_session_var( 'user_email' );
+			$user_login       = MoPHPSessions::get_session_var( 'user_login' );
+			$phone_number     = MoPHPSessions::get_session_var( 'phone_number_mo' );
+			$extra_data       = MoPHPSessions::get_session_var( 'extra_data' );
+			$form_session_var = MoPHPSessions::get_session_var( 'form_session_var' );
+			do_action( 'mo_generate_otp', $user_login, $user_email, null, $phone_number, $otp_type, null, $extra_data, $from_both, $form_session_var );
 			$this->handleOTPAction( $user_login, $user_email, $phone_number, $otp_type, $from_both, $extra_data );
 		}
 
@@ -194,12 +199,17 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 		 * @return void
 		 */
 		public function validateOTP( $otp_type, $request_var, $otp ) {
-			$user_login   = MoPHPSessions::get_session_var( 'user_login' );
-			$user_email   = MoPHPSessions::get_session_var( 'user_email' );
-			$phone_number = MoPHPSessions::get_session_var( 'phone_number_mo' );
-			$password     = MoPHPSessions::get_session_var( 'user_password' );
-			$extra_data   = MoPHPSessions::get_session_var( 'extra_data' );
+			$user_login       = MoPHPSessions::get_session_var( 'user_login' );
+			$user_email       = MoPHPSessions::get_session_var( 'user_email' );
+			$phone_number     = MoPHPSessions::get_session_var( 'phone_number_mo' );
+			$password         = MoPHPSessions::get_session_var( 'user_password' );
+			$extra_data       = MoPHPSessions::get_session_var( 'extra_data' );
+			$form_session_var = MoPHPSessions::get_session_var( 'form_session_var' );
+			$is_ajax_form     = apply_filters( 'is_ajax_form', false );
 
+			if ( ! $is_ajax_form ) {
+				$this->mo_check_integrity( $user_login, $user_email, $password, $phone_number, $otp_type, $form_session_var );
+			}
 			$tx_id = Sessionutils::get_transaction_id( $otp_type );
 			$token = MoUtility::sanitize_check( $request_var, MoUtility::mo_sanitize_array( $_REQUEST ) );// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- No need for nonce verification as the function is called on third party plugin hook.
 			$token = ! $token ? $otp : $token;
@@ -219,6 +229,45 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 			}
 		}
 
+		/**
+		 * Validates that the verified phone number or email matches the expected value from session.
+		 *
+		 * @param string $user_login         Username of the user.
+		 * @param string $user_email         Email address submitted in the form.
+		 * @param string $password           Password submitted (unused here).
+		 * @param string $phone_number       Phone number submitted in the form.
+		 * @param string $otp_type           Type of OTP verification ('phone' or 'email').
+		 * @param string $form_session_var   Session variable key used for tracking verification.
+		 */
+		private function mo_check_integrity( $user_login, $user_email, $password, $phone_number, $otp_type, $form_session_var ) {
+			$mo_email_phone_values_for_mismatch_check = apply_filters( 'mo_otp_verification_mismatch_for_popup_forms', array() );
+			if ( empty( $mo_email_phone_values_for_mismatch_check ) || ! is_array( $mo_email_phone_values_for_mismatch_check ) ) {
+				return;
+			}
+			if ( VerificationType::PHONE === $otp_type && ! empty( trim( $mo_email_phone_values_for_mismatch_check['phone'] ) ) ) {
+				if ( ! SessionUtils::is_phone_verified_match( $form_session_var, $mo_email_phone_values_for_mismatch_check['phone'] ) ) {
+					miniorange_site_otp_validation_form(
+						null,
+						$user_email,
+						$phone_number,
+						MoMessages::showMessage( MoMessages::PHONE_MISMATCH ),
+						$otp_type,
+						false
+					);
+				}
+			} elseif ( VerificationType::EMAIL === $otp_type && ! empty( trim( $mo_email_phone_values_for_mismatch_check['email'] ) ) ) {
+				if ( ! SessionUtils::is_email_verified_match( $form_session_var, $mo_email_phone_values_for_mismatch_check['email'] ) ) {
+						miniorange_site_otp_validation_form(
+							null,
+							$mo_email_phone_values_for_mismatch_check['email'],
+							$phone_number,
+							MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ),
+							$otp_type,
+							false
+						);
+				}
+			}
+		}
 
 		/**
 		 * This function is called to handle what needs to be done if OTP
@@ -235,6 +284,7 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 		 */
 		private function onValidationSuccess( $user_login, $user_email, $password, $phone_number, $extra_data, $otp_type ) {
 			$redirect_to = array_key_exists( 'redirect_to', $_POST ) ? esc_url_raw( wp_unslash( $_POST['redirect_to'] ) ) : '';// phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
+			$password    = MoUtility::decrypt_password( $password );
 			do_action( 'otp_verification_successful', $redirect_to, $user_login, $user_email, $password, $phone_number, $extra_data, $otp_type );
 		}
 
@@ -263,11 +313,12 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 		 */
 		private function handleOTPChoice( $post_data ) {
 
-			$user_login = MoPHPSessions::get_session_var( 'user_login' );
-			$user_email = MoPHPSessions::get_session_var( 'user_email' );
-			$user_phone = MoPHPSessions::get_session_var( 'phone_number_mo' );
-			$user_pass  = MoPHPSessions::get_session_var( 'user_password' );
-			$extra_data = MoPHPSessions::get_session_var( 'extra_data' );
+			$user_login   = MoPHPSessions::get_session_var( 'user_login' );
+			$user_email   = MoPHPSessions::get_session_var( 'user_email' );
+			$user_phone   = MoPHPSessions::get_session_var( 'phone_number_mo' );
+			$user_pass    = MoPHPSessions::get_session_var( 'user_password' );
+			$extra_data   = MoPHPSessions::get_session_var( 'extra_data' );
+			$form_session = MoPHPSessions::get_session_var( 'form_session_var' );
 
 			$otp_ver_type = strcasecmp( $post_data['mo_customer_validation_otp_choice'], 'user_email_verification' ) === 0
 			? VerificationType::EMAIL : VerificationType::PHONE;

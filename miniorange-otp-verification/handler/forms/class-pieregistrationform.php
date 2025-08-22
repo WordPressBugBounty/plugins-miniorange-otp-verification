@@ -124,14 +124,36 @@ if ( ! class_exists( 'PieRegistrationForm' ) ) {
 
 			MoUtility::initialize_transaction( $this->form_session_var );
 			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
-				$this->send_challenge( '', $user_email, null, $phone, VerificationType::PHONE );
+				$this->send_challenge( '', $user_email, null, $phone, VerificationType::PHONE, null, null, null, $this->form_session_var );
 			} elseif ( strcasecmp( $this->otp_type, $this->type_both_tag ) === 0 ) {
-				$this->send_challenge( '', $user_email, null, $phone, VerificationType::BOTH );
+				$this->send_challenge( '', $user_email, null, $phone, VerificationType::BOTH, null, null, null, $this->form_session_var );
 			} else {
-				$this->send_challenge( '', $user_email, null, $phone, VerificationType::EMAIL );
+				$this->send_challenge( '', $user_email, null, $phone, VerificationType::EMAIL, null, null, null, $this->form_session_var );
 			}
 		}
 
+		/**
+		 * Retrieves sanitized email and phone number data from the form.
+		 *
+		 * @return array {
+		 *     @type string $email Sanitized email address.
+		 *     @type string $phone Sanitized phone number.
+		 * }
+		 */
+		public function get_email_phone_data() {
+			$phone = '';
+			foreach ( $_POST as $key => $value ) {
+				if ( strpos( $key, 'phone_' ) === 0 ) {
+					$phone = sanitize_text_field( wp_unslash( $value ) );
+					break;
+				}
+			}
+			$email = isset( $_POST['e_mail'] ) ? sanitize_text_field( wp_unslash( $_POST['e_mail'] ) ) : '';
+			return array(
+				'email' => $email,
+				'phone' => $phone,
+			);
+		}
 
 		/**
 		 * This function is used to generate the phone field key based on the

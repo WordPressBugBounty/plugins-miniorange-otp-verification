@@ -157,7 +157,6 @@ function mo_esc_string( $string, $type ) {
 	}
 
 	return esc_attr( $string );
-
 }
 
 /**
@@ -213,7 +212,7 @@ function initialize_package_json() {
 	$package = wp_json_encode(
 		array(
 			'name'         => 'miniorange-otp-verification',
-			'version'      => '5.3.5',
+			'version'      => '5.3.6',
 			'type'         => 'MiniOrangeGateway',
 			'testmode'     => false,
 			'failmode'     => false,

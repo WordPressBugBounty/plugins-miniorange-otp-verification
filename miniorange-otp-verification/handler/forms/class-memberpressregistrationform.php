@@ -97,8 +97,8 @@ if ( ! class_exists( 'MemberPressRegistrationForm' ) ) {
 				return $errors;
 			}
 			MoUtility::initialize_transaction( $this->form_session_var );
-			$errors = new WP_Error();
-
+			$errors   = new WP_Error();
+			$password = '';
 			foreach ( $_POST as $key => $value ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
 				if ( 'user_first_name' === $key ) {
 					$username = $value;
@@ -129,7 +129,7 @@ if ( ! class_exists( 'MemberPressRegistrationForm' ) ) {
 			if ( ! MoUtility::sanitize_check( $this->phone_key, $_POST ) ) {// phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
 				$errors[] = mo_( 'Phone number field can not be blank' );
 			} elseif ( ! MoUtility::validate_phone_number( isset( $_POST[ $this->phone_key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $this->phone_key ] ) ) : '' ) ) {// phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
-				$errors[] = $phone_logic->get_otp_invalid_format_message();
+				$errors[] = str_replace( '##phone##', isset( $_POST[ $this->phone_key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $this->phone_key ] ) ) : '', $phone_logic->get_otp_invalid_format_message() );// phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
 			}
 			return $errors;
 		}
@@ -148,11 +148,11 @@ if ( ! class_exists( 'MemberPressRegistrationForm' ) ) {
 		 */
 		private function startVerificationProcess( $username, $email, $errors, $phone_number, $password, $extra_data ) {
 			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
-				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::PHONE, $password, $extra_data );
+				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::PHONE, $password, $extra_data, null, $this->form_session_var );
 			} elseif ( strcasecmp( $this->otp_type, $this->type_both_tag ) === 0 ) {
-				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::BOTH, $password, $extra_data );
+				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::BOTH, $password, $extra_data, null, $this->form_session_var );
 			} else {
-				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::EMAIL, $password, $extra_data );
+				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::EMAIL, $password, $extra_data, null, $this->form_session_var );
 			}
 		}
 
@@ -236,6 +236,8 @@ if ( ! class_exists( 'MemberPressRegistrationForm' ) ) {
 
 			if ( self::is_form_enabled() && $this->isPhoneVerificationEnabled() ) {
 				array_push( $selector, $this->phone_form_id );
+				// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- Intentionally output CSS directly due to MemberPress form limitations
+				echo '<link rel="stylesheet" type="text/css" href="' . esc_url( MO_INTTELINPUT_CSS ) . '" />' . "\n";
 			}
 			return $selector;
 		}
@@ -291,6 +293,24 @@ if ( ! class_exists( 'MemberPressRegistrationForm' ) ) {
 				update_mo_option( 'mrp_phone_key', $this->phone_key );
 				update_mo_option( 'mrp_anon_only', $this->by_pass_login );
 			}
+		}
+
+		/**
+		 * Retrieves email and phone data from the submitted form.
+		 *
+		 * @return array {
+		 *     @type string $email email address.
+		 *     @type string $phone phone number.
+		 * }
+		 */
+		public function get_email_phone_data() {
+			$data  = MoUtility::mo_sanitize_array( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
+			$email = isset( $data['user_email'] ) ? $data['user_email'] : '';
+			$phone = isset( $data['mepr_phone'] ) ? MoUtility::process_phone_number( $data['mepr_phone'] ) : '';
+			return array(
+				'email' => $email,
+				'phone' => $phone,
+			);
 		}
 	}
 }

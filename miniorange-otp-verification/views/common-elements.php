@@ -123,6 +123,7 @@ function mo_draw_tooltip( $header, $message ) {
  * @return string
  */
 function extra_post_data( $data = null ) {
+	$form_id       = isset( $_POST['form_id'] ) ? MoUtility::sanitize_check( 'form_id', $_POST ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
 	$ignore_fields = array(
 		'moFields'          => array(
 			'option',
@@ -133,6 +134,7 @@ function extra_post_data( $data = null ) {
 			'mo_customer_validation_otp_choice',
 			'register_nonce',
 			'timestamp',
+			'log',
 		),
 		'loginOrSocialForm' => array(
 			'user_login',
@@ -141,6 +143,12 @@ function extra_post_data( $data = null ) {
 			'option',
 			'register_tml_nonce',
 			'mo_otp_token',
+			'pwd',
+			'password',
+			'log',
+			'username',
+			'user_password-' . $form_id,
+			'username-' . $form_id,
 		),
 	);
 

@@ -84,11 +84,12 @@ if ( ! class_exists( 'RegistrationMagicForm' ) ) {
 		 * @throws ReflectionException Adds exception.
 		 */
 		private function checkIfPromptForOTP() {
-			if ( array_key_exists( 'option', $_POST ) || ! array_key_exists( 'rm_form_sub_id', $_POST ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+			$data = MoUtility::mo_sanitize_array( $_POST );
+			if ( array_key_exists( 'option', $data ) || ! array_key_exists( 'stat_id', $data ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
 				return false;
 			}
 			foreach ( $this->form_details as $key => $value ) {
-				if ( strpos( sanitize_text_field( wp_unslash( $_POST['rm_form_sub_id'] ) ), 'form_' . $key . '_' ) !== false ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+				if ( array_key_exists( 'stat_id', $data ) || strpos( sanitize_text_field( wp_unslash( $data['rm_form_sub_id'] ) ), 'form_' . $key . '_' ) !== false ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
 					MoUtility::initialize_transaction( $this->form_session_var );
 					SessionUtils::set_form_or_field_id( $this->form_session_var, $key );
 					return true;
@@ -233,14 +234,39 @@ if ( ! class_exists( 'RegistrationMagicForm' ) ) {
 				);
 			}
 			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
-				$this->send_challenge( $user_name, $user_email, $errors, $phone_number, VerificationType::PHONE );
+				$this->send_challenge( $user_name, $user_email, $errors, $phone_number, VerificationType::PHONE, null, null, null, $this->form_session_var );
 			} elseif ( strcasecmp( $this->otp_type, $this->type_both_tag ) === 0 ) {
-				$this->send_challenge( $user_name, $user_email, $errors, $phone_number, VerificationType::BOTH );
+				$this->send_challenge( $user_name, $user_email, $errors, $phone_number, VerificationType::BOTH, null, null, null, $this->form_session_var );
 			} else {
-				$this->send_challenge( $user_name, $user_email, $errors, $phone_number, VerificationType::EMAIL );
+				$this->send_challenge( $user_name, $user_email, $errors, $phone_number, VerificationType::EMAIL, null, null, null, $this->form_session_var );
 			}
 		}
 
+		/**
+		 * Retrieves sanitized email and phone number data from the form.
+		 *
+		 * @return array {
+		 *     @type string $email Sanitized email address.
+		 *     @type string $phone Sanitized phone number.
+		 * }
+		 */
+		public function get_email_phone_data() {
+			$phone = '';
+			$email = '';
+			$data  = MoUtility::mo_sanitize_array( $_POST );
+			foreach ( $data as $key => $value ) {
+				if ( strpos( $key, 'Mobile_' ) === 0 ) {
+					$phone = sanitize_text_field( wp_unslash( $value ) );
+				}
+				if ( strpos( $key, 'Email_' ) === 0 ) {
+					$email = sanitize_text_field( wp_unslash( $value ) );
+				}
+			}
+			return array(
+				'email' => $email,
+				'phone' => $phone,
+			);
+		}
 		/**
 		 * This functions makes a database call to check if the phone number already exists for another user.
 		 *

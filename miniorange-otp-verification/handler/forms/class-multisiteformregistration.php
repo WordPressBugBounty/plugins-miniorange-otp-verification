@@ -19,6 +19,7 @@ use OTP\Objects\FormHandler;
 use OTP\Objects\IFormHandler;
 use OTP\Objects\VerificationType;
 use OTP\Traits\Instance;
+use OTP\Helper\MoMessages;
 use ReflectionException;
 
 /**
@@ -158,6 +159,22 @@ if ( ! class_exists( 'MultiSiteFormRegistration' ) ) {
 		}
 
 		/**
+		 * Retrieves sanitized email and phone number data from the form.
+		 *
+		 * @return array {
+		 *     @type string $email Sanitized email address.
+		 *     @type string $phone Sanitized phone number.
+		 * }
+		 */
+		public function get_email_phone_data() {
+			$email = isset( $_POST['user_email'] ) ? sanitize_text_field( wp_unslash( $_POST['user_email'] ) ) : '';
+			$phone = isset( $_POST[ 'multisite_user_phone_miniorange'] ) ? sanitize_text_field( wp_unslash( $_POST[ 'multisite_user_phone_miniorange' ] ) ) : '';
+			return array(
+				'email' => $email,
+				'phone' => $phone,
+			);
+		}
+		/**
 		 * Initialize function to send OTP.
 		 *
 		 * @param array $get_data the data posted by the user.
@@ -216,7 +233,7 @@ if ( ! class_exists( 'MultiSiteFormRegistration' ) ) {
 			if ( ! isset( $get_data['multisite_user_phone_miniorange'] ) ) {
 				return;
 			}
-			$this->send_challenge( '', '', null, trim( $get_data['multisite_user_phone_miniorange'] ), VerificationType::PHONE );
+			$this->send_challenge( '', '', null, trim( $get_data['multisite_user_phone_miniorange'] ), VerificationType::PHONE, null, null, null, $this->form_session_var );
 		}
 
 		/** Fetch the Email address entered by the user and start the otp verification process
@@ -227,7 +244,7 @@ if ( ! class_exists( 'MultiSiteFormRegistration' ) ) {
 			if ( ! isset( $get_data['user_email'] ) ) {
 				return;
 			}
-			$this->send_challenge( '', $get_data['user_email'], null, null, VerificationType::EMAIL, '' );
+			$this->send_challenge( '', $get_data['user_email'], null, null, VerificationType::EMAIL, null, null, null, $this->form_session_var );
 		}
 
 		/**
