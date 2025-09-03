@@ -86,10 +86,11 @@ $woocommerce_plan_features = array(
 		mo_( 'WS Pro Contact Forms' )                  => array( 'feature' => array( 'red_cross', 'checkmark', 'checkmark' ) ),
 		mo_( 'Fluent Conversational Form' )            => array( 'feature' => array( 'red_cross', 'checkmark', 'checkmark' ) ),
 		mo_( 'Dokan Registration Form' )               => array( 'feature' => array( 'red_cross', 'red_cross', 'checkmark' ) ),
-		mo_( 'Houzez Registration Form' )               => array( 'feature' => array( 'red_cross', 'checkmark', 'checkmark' ) ),
+		mo_( 'Houzez Registration Form' )              => array( 'feature' => array( 'red_cross', 'checkmark', 'checkmark' ) ),
 	);
 
 	$premium_features_mo = array(
+		mo_( 'OTP & Notifications Via WhatsApp' )       => array( 'feature' => array( 'red_cross', 'red_cross', 'checkmark' ) ),
 		mo_( 'WooCommerce Order Status SMS Notifications' ) => array( 'feature' => array( 'checkmark', 'checkmark', 'checkmark' ) ),
 		mo_( 'WooCommerce Stock Notifications' )        => array( 'feature' => array( 'red_cross', 'red_cross', 'checkmark' ) ),
 		mo_( 'OTP Spam Preventer' )                     => array( 'feature' => array( 'red_cross', 'checkmark', 'checkmark' ) ),
@@ -140,6 +141,7 @@ $woocommerce_plan_features = array(
 	);
 
 	$premium_features = array(
+		mo_( 'OTP & Notifications Via WhatsApp' )       => array( 'feature' => array( 'red_cross', 'red_cross', 'red_cross', 'checkmark' ) ),
 		mo_( 'WooCommerce Order Status SMS Notifications' ) => array( 'feature' => array( 'checkmark', 'checkmark', 'checkmark', 'checkmark' ) ),
 		mo_( 'WooCommerce Stock Notifications' )        => array( 'feature' => array( 'red_cross', 'red_cross', 'red_cross', 'checkmark' ) ),
 		mo_( 'OTP Spam Preventer' )                     => array( 'feature' => array( 'red_cross', 'red_cross', 'checkmark', 'checkmark' ) ),
@@ -169,6 +171,7 @@ $woocommerce_plan_features = array(
 		mo_( 'Fallback to SMS for non-WhatsApp numbers' ),
 		mo_( 'miniOrange Login and Registration form' ),
 		mo_( 'Custom Redirection on Login Form & Registration Form' ),
+		mo_( 'Use your own WhatsApp Business Service Provider' ),
 		mo_( 'WhatsApp Transaction Logs' ),
 	);
 	require_once MOV_DIR . 'views/pricing.php';

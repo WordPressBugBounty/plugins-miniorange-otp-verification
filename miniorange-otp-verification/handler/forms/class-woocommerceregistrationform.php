@@ -142,9 +142,10 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			MoUtility::initialize_transaction( $this->form_session_var );
 
 			$mobile_number = MoUtility::sanitize_check( 'user_phone', $data );
+			$mobile_number = MoUtility::process_phone_number( $mobile_number );
 			$user_email    = MoUtility::sanitize_check( 'user_email', $data );
 			if ( $this->otp_type === $this->type_phone_tag ) {
-				SessionUtils::add_phone_verified( $this->form_session_var, MoUtility::process_phone_number( $mobile_number ) );
+				SessionUtils::add_phone_verified( $this->form_session_var, $mobile_number );
 			} else {
 				SessionUtils::add_email_verified( $this->form_session_var, $user_email );
 			}
@@ -316,17 +317,18 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 		 */
 		private function checkIntegrity( $data, WP_Error $errors ) {
 			$phone_errors = new WP_Error(
-							'billing_phone_error',
-							MoMessages::showMessage( MoMessages::PHONE_MISMATCH )
-						);
+				'billing_phone_error',
+				MoMessages::showMessage( MoMessages::PHONE_MISMATCH )
+			);
 
-			$email_errors =	new WP_Error(
-						'registration-error-invalid-email',
-						MoMessages::showMessage( MoMessages::EMAIL_MISMATCH )
-					);	
+			$email_errors = new WP_Error(
+				'registration-error-invalid-email',
+				MoMessages::showMessage( MoMessages::EMAIL_MISMATCH )
+			);
 
 			if ( 0 === strcasecmp( $this->otp_type, $this->type_phone_tag ) ) {
 				$phone = isset( $data['billing_phone'] ) ? $data['billing_phone'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+				$phone = MoUtility::process_phone_number( $phone );
 				if ( ! Sessionutils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
 					return $phone_errors;
 				}
@@ -348,8 +350,8 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 		 * }
 		 */
 		public function get_email_phone_data() {
-			$data = MoUtility::mo_sanitize_array( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce is checked in the caller function.
-			$phone = isset( $data['billing_phone'] ) ?  $data['billing_phone'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+			$data  = MoUtility::mo_sanitize_array( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce is checked in the caller function.
+			$phone = isset( $data['billing_phone'] ) ? $data['billing_phone'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
 			return array(
 				'email' => isset( $data['email'] ) ? $data['email'] : '',
 				'phone' => MoUtility::process_phone_number( $phone ),
@@ -376,6 +378,7 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			}
 
 			$phone_number = isset( $_POST['billing_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_phone'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+			$phone_number = MoUtility::process_phone_number( $phone_number );
 
 			MoUtility::initialize_transaction( $this->form_session_var );
 
@@ -390,7 +393,6 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			$data = MoUtility::mo_sanitize_array( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
 			return $errors->get_error_code() ? $errors
 			: $this->processFormFields( $username, $email, $errors, $password, $phone_number, $data );
-
 		}
 
 
@@ -479,29 +481,33 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 		private function processFormFields( $username, $email, $errors, $password, $phone, $data ) {
 
 			global $phone_logic;
-			MoPHPSessions::add_session_var( 'form_session_var',  $this->form_session_var );
-			$phone_number = isset( $data['billing_phone'] ) ? sanitize_text_field( wp_unslash( $data['billing_phone'] ) ) : '';
+			MoPHPSessions::add_session_var( 'form_session_var', $this->form_session_var );
+			$phone_number = $phone ? $phone : ( isset( $data['billing_phone'] ) ? $data['billing_phone'] : '' );
+
+			$invalid_phone_errors = new WP_Error(
+				'billing_phone_error',
+				str_replace( '##phone##', $phone_number, $phone_logic->get_otp_invalid_format_message() )
+			);
+
+			$phone_exists_errors = new WP_Error(
+				'billing_phone_error',
+				MoMessages::showMessage( MoMessages::PHONE_EXISTS )
+			);
+
 			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
-				if ( ! isset( $phone ) || ! MoUtility::validate_phone_number( $phone ) ) {
-					return new WP_Error(
-						'billing_phone_error',
-						str_replace( '##phone##', $phone, $phone_logic->get_otp_invalid_format_message() )
-					);
-				} elseif ( $this->restrict_duplicates && $this->isPhoneNumberAlreadyInUse( $phone, 'billing_phone' ) ) {
-					return new WP_Error( 'billing_phone_error', MoMessages::showMessage( MoMessages::PHONE_EXISTS ) );
+				if ( ! isset( $phone_number ) || ! MoUtility::validate_phone_number( $phone_number ) ) {
+					return $invalid_phone_errors;
+				} elseif ( $this->restrict_duplicates && $this->isPhoneNumberAlreadyInUse( $phone_number, 'billing_phone' ) ) {
+					return $phone_exists_errors;
 				}
-				$this->send_challenge( $username, $email, $errors, $phone, VerificationType::PHONE, $password );
+				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::PHONE, $password );
 			} elseif ( strcasecmp( $this->otp_type, $this->type_email_tag ) === 0 ) {
-				$phone = isset( $phone ) ? $phone : '';
-				$this->send_challenge( $username, $email, $errors, $phone, VerificationType::EMAIL, $password );
+				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::EMAIL, $password );
 			} elseif ( strcasecmp( $this->otp_type, $this->type_both_tag ) === 0 ) {
-				if ( ! isset( $phone ) || ! MoUtility::validate_phone_number( $phone ) ) {
-					return new WP_Error(
-						'billing_phone_error',
-						str_replace( '##phone##', $phone_number, $phone_logic->get_otp_invalid_format_message() )
-					);
-				} elseif ( $this->restrict_duplicates && $this->isPhoneNumberAlreadyInUse( $phone, 'billing_phone' ) ) {
-					return new WP_Error( 'billing_phone_error', MoMessages::showMessage( MoMessages::PHONE_EXISTS ) );
+				if ( ! isset( $phone_number ) || ! MoUtility::validate_phone_number( $phone_number ) ) {
+					return $invalid_phone_errors;
+				} elseif ( $this->restrict_duplicates && $this->isPhoneNumberAlreadyInUse( $phone_number, 'billing_phone' ) ) {
+					return $phone_exists_errors;
 				}
 				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::BOTH, $password );
 			}

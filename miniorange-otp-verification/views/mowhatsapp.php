@@ -28,28 +28,21 @@ $whatsapp_view = '
 
 		<!--  TABS CONTENT  -->
 		<div id="whatsapp-tab-content">
-			<!--  TEST GATEWAY AND PRICING SECTION  -->
 			<section id="mo_otp_plans_pricing_table">
 				<div>
 					<div class="whatsapp-test-configuration px-mo-16">
-
-						<div class="mo-title flex-1" style="width:50%;" >
-							<p class="mo_wa_note" style="">' . esc_html( mo_( 'This feature allows you to configure WhatsApp for OTP Verification as well as sending WooCommerce notifications and alerts via WhatsApp using the default miniOrange Business account or your personal business account.' ) ) . '
+						<div class="mo-title flex-1" >
+							<p class="mo_wa_note text-gray-900">' . esc_html( mo_( 'This feature allows you to configure WhatsApp for OTP Verification as well as sending WooCommerce notifications and alerts via WhatsApp using the default miniOrange Business account or your personal business account.' ) ) . '
 							</p>
 						</div>
-						<form name="f" method="post" action="" id="mo_whatsapp_settings" >
-							<input type="hidden" id="mo_admin_actions" name="mo_admin_actions" value="' . wp_create_nonce( 'mo_admin_actions' ) . '"/>
-				
-						</form>
-
 					</div>
 				</div>
 
 				<div class="mo-whatsapp-snippet-grid">
 					<div class="mo-whatsapp-card" >
 						<div class="mo-whatsapp-header">
-								<h5>' . esc_html( mo_( 'WhatsApp Premium Plan Features' ) ) . '</h5> &nbsp;&nbsp; 
-								<div class="mb-mo-1"> [
+								<h5 class="text-gray-900">' . esc_html( mo_( 'WhatsApp Premium Plan Features' ) ) . '</h5> &nbsp;&nbsp; 
+								<div class="mb-mo-1 text-gray-900"> [
 									<i><a href="' . esc_url( $license_url ) . '"	target="_blank">' . esc_html( mo_( ' Supported in WooCommerce Plan ' ) ) . '</a></i> ]
 								</div>	
 								<svg width="18" class="ml-mo-2 mr-mo-2 mb-mo-1" height="18" viewBox="0 0 24 24" fill="none">
@@ -63,31 +56,82 @@ $whatsapp_view = '
 								</svg>
 						</div> 
 
-						<ul class="mt-mo-4 grow" >
+						<ul class="mt-mo-4 grow">
 
-							<li class="wa-feature-snippet">
-								<span class="mt-mo-1">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-								<p class="m-mo-0">Use the default <b>miniOrange business account</b>. Need to purchase WhatsApp transactions from <b>miniOrange</b>.</p>
+							<li class="flex items-start p-mo-4 bg-gray-50 rounded-lg mb-mo-4 hover:bg-gray-100 transition-colors duration-200">
+								<div class="flex-shrink-0 mt-mo-1">
+									<div class="mo-whatsapp-svg w-mo-6 h-mo-6 flex items-center justify-center">
+										<svg class="w-mo-icon h-mo-icon" fill="white" viewBox="0 0 20 20">
+											<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+										</svg>
+									</div>
+								</div>
+								<div class="ml-mo-4">
+									<p class="m-mo-0 font-semibold text-gray-900">' . esc_html( mo_( 'Default miniOrange Business Account' ) ) . '</p>
+									<p class="m-mo-0 text-sm text-gray-900 mt-mo-1">' . esc_html( mo_( 'Quick setup with our managed WhatsApp Business API. Purchase transactions directly from miniOrange.' ) ) . '</p>
+								</div>
 							</li>
 
-							<li class="wa-feature-snippet">
-								<span class="mt-mo-1">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-								<p class="m-mo-0">Use your <b>personal business account</b>. Need to purchase WhatsApp transactions from <b>Meta(Facebook)</b></p>
+							<li class="flex items-start p-mo-4 bg-gray-50 rounded-lg mb-mo-4 hover:bg-gray-100 transition-colors duration-200">
+								<div class="flex-shrink-0 mt-mo-1">
+									<div class="mo-whatsapp-svg w-mo-6 h-mo-6 flex items-center justify-center">
+										<svg class="w-mo-icon h-mo-icon" fill="white" viewBox="0 0 20 20">
+											<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+										</svg>
+									</div>
+								</div>
+								<div class="ml-mo-4">
+									<p class="m-mo-0 font-semibold text-gray-900">' . esc_html( mo_( 'Your Personal Business Account' ) ) . '</p>
+									<p class="m-mo-0 text-sm text-gray-900 mt-mo-1">' . esc_html( mo_( 'Use your own WhatsApp Business account with full control. Purchase transactions from Meta (Facebook).' ) ) . '</p>
+								</div>
 							</li>
 
-							<li class="wa-feature-snippet">
-								<span class="mt-mo-1">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-								<p class="m-mo-0">WhatsApp <b>OTP Verification</b> and <b>notification</b>.</p>
+							<li class="flex items-start p-mo-4 bg-gray-50 rounded-lg mb-mo-4 hover:bg-gray-100 transition-colors duration-200">
+								<div class="flex-shrink-0 mt-mo-1">
+									<div class="mo-whatsapp-svg w-mo-6 h-mo-6 flex items-center justify-center">
+										<svg class="w-mo-icon h-mo-icon" fill="white" viewBox="0 0 20 20">
+											<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+										</svg>
+									</div>
+								</div>
+								<div class="ml-mo-4">
+									<p class="m-mo-0 font-semibold text-gray-900">' . esc_html( mo_( 'Custom BSP/WhatsApp provider Integration' ) ) . '</p>
+									<p class="m-mo-0 text-sm text-gray-900 mt-mo-1">' . esc_html( mo_( 'Connect with your preferred WhatsApp Business Solution Provider for enterprise-level flexibility.' ) ) . '</p>
+								</div>
+							</li>
+
+							<li class="flex items-start p-mo-4 bg-gray-50 rounded-lg mb-mo-4 hover:bg-gray-100 transition-colors duration-200">
+								<div class="flex-shrink-0 mt-mo-1">
+									<div class="mo-whatsapp-svg w-mo-6 h-mo-6 flex items-center justify-center">
+										<svg class="w-mo-icon h-mo-icon" fill="white" viewBox="0 0 20 20">
+											<path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+											<path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+										</svg>
+									</div>
+								</div>
+								<div class="ml-mo-4">
+									<p class="m-mo-0 font-bold text-gray-900">' . esc_html( mo_( 'WhatsApp OTP & Notifications' ) ) . '</p>
+									<p class="m-mo-0 text-sm text-gray-900 mt-mo-1">' . esc_html( mo_( 'Send secure OTP codes and automated notifications directly through WhatsApp for better user engagement.' ) ) . '</p>
+								</div>
 							</li> 
 
-							<li class="wa-feature-snippet">
-								<span class="mt-mo-1">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-								<p class="m-mo-0"><b>Fallback to SMS</b> OTP for non-WhatsApp numbers.</p>
+							<li class="flex items-start p-mo-4 bg-gray-50 rounded-lg mb-mo-4 hover:bg-gray-100 transition-colors duration-200">
+								<div class="flex-shrink-0 mt-mo-1">
+									<div class="mo-whatsapp-svg w-mo-6 h-mo-6 flex items-center justify-center">
+										<svg class="w-mo-icon h-mo-icon" fill="white" viewBox="0 0 20 20">
+											<path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+										</svg>
+									</div>
+								</div>
+								<div class="ml-mo-4">
+									<p class="m-mo-0 font-bold text-gray-900">' . esc_html( mo_( 'Smart SMS Fallback' ) ) . '</p>
+									<p class="m-mo-0 text-sm text-gray-900 mt-mo-1">' . esc_html( mo_( 'Automatic fallback to SMS OTP for users without WhatsApp number, ensuring increased delivery success rate.' ) ) . '</p>
+								</div>
 							</li>
 
 						</ul>
 
-						<a class="w-full mo-button primary" href="' . esc_url( $license_url ) . '" target="_blank">' . esc_html( mo_( 'Upgrade Now' ) ) . '</a><br>
+						<a class="w-full ml-mo-4 mo-button primary" onClick="otpSupportOnClick(\'Hi! I am interested in using OTP/Notifcation over WhatsApp Feature for my website, can you please share the pricing details?\');" >' . esc_html( mo_( 'Upgrade Now' ) ) . '</a><br>
 					</div>
 				</div>   
 			</section> 
@@ -149,6 +193,7 @@ echo wp_kses(
 			'href'   => array(),
 			'target' => array(),
 			'class'  => array(),
+			'onclick' => array(),
 		),
 		'i'        => array(),
 		'p'        => array(
@@ -190,6 +235,7 @@ echo wp_kses(
 			'height'  => true,
 			'viewbox' => true,
 			'fill'    => true,
+			'id'      => true,
 		),
 		'circle'   => array(
 			'id'           => true,
@@ -207,6 +253,8 @@ echo wp_kses(
 		'path'     => array(
 			'd'              => true,
 			'fill'           => true,
+			'fill-rule'      => true,
+			'clip-rule'      => true,
 			'id'             => true,
 			'stroke'         => true,
 			'stroke-width'   => true,

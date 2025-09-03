@@ -4,7 +4,8 @@
  *
  * @package miniorange-otp-verification/umsmsnotification/views/smsnotifications
  */
-
+use OTP\Helper\MoMessages;
+use OTP\Helper\MoUtility;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
@@ -47,10 +48,25 @@ echo '				<div>
 								</div>
 								<div class="flex-1 flex flex-wrap">
 									<input type="text" name="' . esc_attr( $recipient_tag ) . '" id="' . esc_attr( $recipient_tag ) . '" value="' . esc_attr( $recipient_value ) . '" class="w-full mo-input" placeholder="' . esc_html( mo_( 'Enter the meta key of the Phone Number Field.' ) ) . ');"/>
-								';
-
-						echo '							</div>
+								   </div>
 							</div>
+							<div class="w-full flex">
+								<div class="flex-1">
+									<h5 class="mo-title flex items-center gap-mo-2">
+										' . esc_html( MoMessages::showMessage( MoMessages::DLT_TEMPLATE_TITLE ) ) . '
+										<span class="tooltip">
+											<span class="dashicons dashicons-editor-help"></span>
+											<span class="tooltiptext">
+												<span class="body">' . wp_kses(
+											MoMessages::showMessage( MoMessages::DLT_TEMPLATE_BODY ),
+											MoUtility::mo_allow_html_array()
+										) . '</span>
+											</span>
+										</span>
+									</h5>
+								</div>
+							</div>
+
 							<div class="w-full flex">
 								<div class="flex-1">
 									<h5 class="mo-title">SMS Template</h5>
@@ -85,11 +101,10 @@ echo '				<div>
 									<p class="mo-caption mt-mo-2"></p>
 								</div>
 								<div class="flex-1 mo-tags-section">';
-						foreach ( $tags as $val ) {
-							echo '<div class="mo-tag bg-slate-100">' . esc_attr( $val ) . ' </div>';
-						}
-
-						echo '							</div>
+foreach ( $tags as $val ) {
+	echo '							<div class="mo-tag bg-slate-100">' . esc_attr( $val ) . ' </div>';
+}
+						echo '	</div>
 							</div>
 						</div>
 					</div>';

@@ -229,7 +229,7 @@ if ( ! class_exists( 'FluentForm' ) ) {
 					)
 				);
 			} else {
-				$user_value = sanitize_email( $data['user_value'] );
+				$user_value = $data['user_value'];
 				SessionUtils::add_email_verified( $this->form_session_var, $user_value );
 				$this->send_challenge( '', $user_value, null, null, VerificationType::EMAIL );
 			}

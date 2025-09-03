@@ -119,6 +119,10 @@ if ( ! class_exists( 'MoMessages' ) ) {
 						'We are continuously adding support for more forms. Contact us via the support form or email us at <a onClick=\'otpSupportOnClick();\'><span style=\'color:white;\'><u>'
 						. esc_html( MoConstants::FEEDBACK_EMAIL ) . '</u></span></a> with details about your form and its usage.'
 					),
+					self::DLT_TEMPLATE_TITLE            => mo_( 'For Indian customers:' ),
+					self::DLT_TEMPLATE_BODY             => mo_(
+						'To edit SMS templates, please register them first on the <i><u><a href="https://plugins.miniorange.com/dlt-registration-process-for-sending-sms" target="_blank">DLT portal.</a></u></i> If you are using the miniOrange gateway, contact us at <i><a class="cursor-pointer text-blue-600 font-semibold" onclick="otpSupportOnClick(\'Hi! I would like to update the SMS template for India. Could you please provide me with the details of the DLT registration process?\');"><u>' . esc_html( MoConstants::FEEDBACK_EMAIL ) . '</u></a></i> once your template is approved.'
+					),
 					self::CHANGE_SENDER_ID_BODY         => mo_(
 						'SenderID/Number is gateway specific.
 														You will need to use your own SMS gateway for this.'
@@ -754,7 +758,7 @@ if ( ! class_exists( 'MoMessages' ) ) {
 					self::USER_LOGGING_IN               => mo_( 'Verified. Logging in..' ),
 					self::USER_LOGGED_IN                => mo_( 'You are already logged in!' ),
 					self::NEW_USER_REGISTERED           => mo_( 'Verified. Registering your account.' ),
-				
+
 				)
 			);
 

@@ -17,9 +17,8 @@ echo '
 					<div class="flex-1">
 						<h5 class="mo-title">' . esc_html( $sms_title ) . '</h5>
 						<p class="mo-caption mt-mo-2">' . esc_html( mo_( 'Personalize your SMS template according to your preferences and specific needs.' ) ) . '</p>
-						<p class="mt-mo-4 pr-mo-8" style="font-size:11px;" >
-							' . wp_kses( mo_( "<b>For Indian customers</b>: To modify SMS templates, first register them on the DLT portal. Learn about the registration process at <u><i><a href='https://plugins.miniorange.com/dlt-registration-process-for-sending-sms' target='_blank' >DLT Registration</a></i></u>.<br>( If you are using the <u>miniOrange gateway</u> once the template is registered, contact us at <u><i><a style='cursor:pointer;' onClick='otpSupportOnClick();'>otpsupport@xecurify.com</a></i></u>. )" ), MoUtility::mo_allow_html_array() ) . '
-						</p>
+						<span class="py-mo-4 text-mo-lg text-left" style="display:block;"><b>' . esc_html( MoMessages::showMessage( MoMessages::DLT_TEMPLATE_TITLE ) ) . '</b>';
+echo '                  	<span class="body">' . wp_kses( MoMessages::showMessage( MoMessages::DLT_TEMPLATE_BODY ), MoUtility::mo_allow_html_array() ) . '</span>			
 					</div>
 					<div class="flex-1">
 						<div id="sms" class="w-[95%] pt-mo-4 pr-mo-4">

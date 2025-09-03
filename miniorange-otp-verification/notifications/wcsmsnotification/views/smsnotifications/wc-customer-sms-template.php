@@ -6,6 +6,7 @@
  */
 
 use OTP\Helper\MoUtility;
+use OTP\Helper\MoMessages;
 
 $tags      = array();
 $tags      = explode( ',', $sms_settings->available_tags );
@@ -41,7 +42,18 @@ echo '				<div>
 									<div class="flex-1">
 										<h5 class="mo-title">SMS Template</h5>
 										<p class="mo-caption mt-mo-2">' . esc_html( $sms_settings->page_description ) . '</p>
-									</div>';
+						       		    <span class="py-mo-4 text-mo-lg text-left" style="display:block;"><b>' . esc_html( MoMessages::showMessage( MoMessages::DLT_TEMPLATE_TITLE ) ) . '</b>';
+echo '                          			<span class="tooltip">
+											<span class="dashicons dashicons-editor-help"></span>
+												<span class="tooltiptext">
+													<span class="body">' . wp_kses( MoMessages::showMessage( MoMessages::DLT_TEMPLATE_BODY ), MoUtility::mo_allow_html_array() ) . '</span>
+										    </span>
+										</span>
+								</span>
+							</div>';
+
+
+
 if ( MoUtility::mo_is_whatsapp_notif_enabled() ) {
 	echo '
 			<div class="flex flex-col gap-mo-4 flex-1">

@@ -244,8 +244,12 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 			if ( empty( $mo_email_phone_values_for_mismatch_check ) || ! is_array( $mo_email_phone_values_for_mismatch_check ) ) {
 				return;
 			}
-			if ( VerificationType::PHONE === $otp_type && ! empty( trim( $mo_email_phone_values_for_mismatch_check['phone'] ) ) ) {
-				if ( ! SessionUtils::is_phone_verified_match( $form_session_var, $mo_email_phone_values_for_mismatch_check['phone'] ) ) {
+			if ( VerificationType::PHONE === $otp_type ) {
+				$phone = $mo_email_phone_values_for_mismatch_check['phone'];
+				if ( ! isset( $phone ) || empty( trim( $phone ) ) ) {
+					return;
+				}
+				if ( ! SessionUtils::is_phone_verified_match( $form_session_var, $phone ) ) {
 					miniorange_site_otp_validation_form(
 						null,
 						$user_email,
@@ -254,17 +258,21 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 						$otp_type,
 						false
 					);
-				}
-			} elseif ( VerificationType::EMAIL === $otp_type && ! empty( trim( $mo_email_phone_values_for_mismatch_check['email'] ) ) ) {
-				if ( ! SessionUtils::is_email_verified_match( $form_session_var, $mo_email_phone_values_for_mismatch_check['email'] ) ) {
+				} elseif ( VerificationType::EMAIL === $otp_type ) {
+					$email = $mo_email_phone_values_for_mismatch_check['email'];
+					if ( ! isset( $email ) || empty( trim( $email ) ) ) {
+						return;
+					}
+					if ( ! SessionUtils::is_email_verified_match( $form_session_var, $email ) ) {
 						miniorange_site_otp_validation_form(
 							null,
-							$mo_email_phone_values_for_mismatch_check['email'],
+							$user_email,
 							$phone_number,
 							MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ),
 							$otp_type,
 							false
 						);
+					}
 				}
 			}
 		}

@@ -87,9 +87,10 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 				'both_email_and_phone'          => array(
 					'name'              => 'Both Email and Phone Verification Addon',
 					'description'       => array(
-						mo_( 'Reduces the risk of fraudulent accounts' ),
-						mo_( 'Enhances security by validating user information' ),
-						mo_( 'Ensures that user-provided email and phone number are accurate' ),
+						mo_( 'Verify both email and phone number during form submission' ),
+						mo_( 'Ensures more accurate data through verified user details' ),
+						mo_( 'Protect your site from fake or fraudulent Sign-ups' ),
+						mo_( 'Supported on Limited forms' ),
 					),
 					'svg'               => '<svg width="50" height="50" viewBox="0 0 100 100" fill="none">
 												<g clip-path="url(#clip0_14_116)">

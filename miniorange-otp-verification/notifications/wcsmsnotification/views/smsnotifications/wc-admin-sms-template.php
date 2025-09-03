@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 use OTP\Notifications\WcSMSNotification\Helper\MoWcAddOnUtility;
+use OTP\Helper\MoMessages;
 use OTP\Helper\MoUtility;
 
 $tags      = array();
@@ -52,10 +53,24 @@ echo '				<div>
 								</div>
 								<div class="flex-1 flex flex-wrap">
 									<input type="text" name="' . esc_attr( $recipient_tag ) . '" id="' . esc_attr( $recipient_tag ) . '" value="' . esc_attr( $recipient_value ) . '" class="w-full mo-input" placeholder="' . esc_html( mo_( 'Enter semi-colon (;) to separate multiple phone numbers' ) ) . '"/>
-								';
-
-						echo '	</div>
-							</div>
+									</div>
+        </div>
+						<div class="w-full flex">
+            <div class="flex-1">
+                <h5 class="mo-title flex items-center gap-mo-2">
+                    ' . esc_html( MoMessages::showMessage( MoMessages::DLT_TEMPLATE_TITLE ) ) . '
+                    <span class="tooltip">
+                        <span class="dashicons dashicons-editor-help"></span>
+                        <span class="tooltiptext">
+                            <span class="body">' . wp_kses(
+                                MoMessages::showMessage( MoMessages::DLT_TEMPLATE_BODY ),
+                                MoUtility::mo_allow_html_array()
+                            ) . '</span>
+                        </span>
+                    </span>
+                </h5>
+            </div>
+        </div>
 
 							<div class="w-full flex">
 								<div class="flex-1">
