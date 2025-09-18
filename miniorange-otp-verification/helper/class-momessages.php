@@ -52,7 +52,12 @@ if ( ! class_exists( 'MoMessages' ) ) {
 														If you cannot see the email in your inbox, make sure to check 
 														your SPAM folder.'
 					),
-
+					
+					self::FORM_IS_NOT_FOUND         	=> mo_(
+						"<div id='mo-no-results-message' class=' font-normal rounded-smooth bg-blue-50 py-mo-3'>
+														The form is not available in the form list. Please contact us at <a style='display:inline; color:blue; font-style:italic; text-decoration:underline; cursor:pointer; padding:0;' onClick=\"otpSupportOnClick('I want to enable OTP verification on ____ Forms. I am unable to find my form in the supported forms list of the plugin. Could you assist me with the steps to configure OTP verification on my form?');\">otpsupport@xecurify.com</a> with details about your form to check the compatibility.</div>"
+					),
+					
 					self::ERROR_OTP_EMAIL               => mo_(
 						'There was an error in sending the OTP.
 														Please enter a valid email id or contact site Admin.'

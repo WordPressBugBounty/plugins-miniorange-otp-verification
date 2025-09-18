@@ -154,8 +154,10 @@ if ( ! class_exists( 'FluentForm' ) ) {
 		private function checkIntegrity( $insert_data, $data, $form ) {
 			$email_key = $this->form_details[ $insert_data['form_id'] ]['emailkey'];
 			$phone_key = $this->form_details[ $insert_data['form_id'] ]['phonekey'];
+
 			if ( $this->otp_type === $this->type_phone_tag ) {
-				if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, sanitize_text_field( $data[ $phone_key ] ) ) ) {
+				$phone = MoUtility::process_phone_number( $data[ $phone_key ] );
+				if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
 					wp_send_json_error(
 						array(
 							'message' => MoMessages::showMessage( MoMessages::PHONE_MISMATCH ),
@@ -209,7 +211,8 @@ if ( ! class_exists( 'FluentForm' ) ) {
 					)
 				);
 			} else {
-				$user_value = sanitize_text_field( $data['user_value'] );
+				$user_value = $data['user_value'];
+				$user_value = MoUtility::process_phone_number( $user_value );
 				SessionUtils::add_phone_verified( $this->form_session_var, $user_value );
 				$this->send_challenge( '', null, null, $user_value, VerificationType::PHONE );
 			}

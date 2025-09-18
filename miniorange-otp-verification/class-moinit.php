@@ -29,7 +29,6 @@ use OTP\Objects\TabDetails;
 use OTP\Objects\Tabs;
 use OTP\Traits\Instance;
 use OTP\Helper\MoAddonListContent;
-use OTP\Handler\MoCustomForm;
 use OTP\Helper\MocURLCall;
 use OTP\Objects\BaseMessages;
 use OTP\Helper\MoVersionUpdate;
@@ -147,7 +146,6 @@ if ( ! class_exists( 'MoInit' ) ) {
 			ExternalPopup::instance();
 			UserChoicePopup::instance();
 			MoRegistrationHandler::instance();
-			MoCustomForm::instance();
 		}
 
 		/**
@@ -177,6 +175,48 @@ if ( ! class_exists( 'MoInit' ) ) {
 			include MOV_DIR . 'controllers/main-controller.php';
 		}
 
+		/**
+		 * This function checks the current page to load the main scripts and styles on admin dashboard only
+		 */
+		public function checkCurrentPage() {
+
+			// Only load scripts on OTP plugin pages.
+			$current_screen = get_current_screen();
+			if ( ! $current_screen ) {
+				return false;
+			}
+			$otp_plugin_pages = array(
+				'toplevel_page_mosettings',
+				'otp-verification_page_monotifications',
+				'otp-verification_page_otpsettings',
+				'otp-verification_page_mogateway',
+				'otp-verification_page_moreporting',
+				'otp-verification_page_mowhatsapp',
+				'otp-verification_page_addon',
+				'otp-verification_page_otpaccount',
+				'otp-verification_page_mootppricing',
+			);
+
+			// Also check by page parameter for additional safety.
+			$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
+			$otp_page_slugs = array(
+				'mosettings',
+				'monotifications',
+				'otpsettings',
+				'mogateway',
+				'moreporting',
+				'mowhatsapp',
+				'addon',
+				'otpaccount',
+				'mootppricing',
+			);
+
+			// Only load scripts if we're on an OTP plugin page.
+			if ( ! in_array( $current_screen->id, $otp_plugin_pages, true ) && ! in_array( $page, $otp_page_slugs, true ) ) {
+				return true;
+			}
+
+		}
 
 		/**
 		 * This function is called to append our CSS file
@@ -184,6 +224,12 @@ if ( ! class_exists( 'MoInit' ) ) {
 		 * and enqueue_scripts WordPress hook.
 		 */
 		public function mo_registration_plugin_settings_style() {
+			// Load feedback styles on all admin pages since feedback form appears on all pages
+			wp_enqueue_style( 'mo_customer_validation_feedback_style', MOV_CSS, array(), MOV_VERSION );
+			
+			if( $this->checkCurrentPage() ) {
+				return;
+			}
 			wp_enqueue_style( 'mo_customer_validation_admin_settings_style', MOV_CSS_URL, array(), MOV_VERSION );
 			wp_enqueue_style( 'mo_customer_validation_form_main_css', MOV_FORM_CSS, array(), MOV_VERSION );
 			wp_enqueue_style( 'mo_customer_validation_inttelinput_style', MO_INTTELINPUT_CSS, array(), MOV_VERSION );
@@ -197,6 +243,12 @@ if ( ! class_exists( 'MoInit' ) ) {
 		 * and enqueue_scripts WordPress hook.
 		 */
 		public function mo_registration_plugin_settings_script() {
+			// Load feedback script on all admin pages since feedback form appears on all pages
+			wp_enqueue_script( 'mo_customer_validation_feedback_script', MOV_FEEDBACK_JS, array( 'jquery' ), MOV_VERSION, false );
+			
+			if( $this->checkCurrentPage() ) {
+				return;
+			}
 			$country_val      = array();
 			$whatsapp_enabled = get_mo_option( 'mo_whatsapp_enable' );
 			$request_uri      = remove_query_arg( array( 'mosettings', 'form', 'subpage' ), isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ); // phpcs:ignore -- false positive.
@@ -213,6 +265,8 @@ if ( ! class_exists( 'MoInit' ) ) {
 					'whatsapp_file'          => $whatsapp_file,
 					'whatsapp_enabled_text'  => mo_( 'OTP Over WhatsApp Enabled' ),
 					'whatsapp_disabled_text' => mo_( 'Enable OTP Over WhatsApp?' ),
+					'form_is_not_found'      => MoMessages::showMessage(MoMessages::FORM_IS_NOT_FOUND)
+
 				)
 			);
 			wp_enqueue_script( 'mo_customer_validation_form_validation_script', VALIDATION_JS_URL, array( 'jquery' ), MOV_VERSION, false );

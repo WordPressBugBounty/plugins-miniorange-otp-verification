@@ -76,7 +76,7 @@ echo '<div id="generalSettingsSubTabContainer" class="mo-subpage-container ' . e
 							<div id="blocked_sms_settings" class="w-[95%] py-mo-4 pr-mo-4">
 								<div class="mo-input-wrapper">
 									<label class="mo-input-label">' . esc_attr( mo_( 'Blocked Phone Numbers' ) ) . '</label>
-									<textarea name="mo_otp_blocked_phone_numbers" placeholder="' . esc_html( mo_( 'Enter semicolon-separated phone numbers (with country code) that you want to block. Eg. +1XXXXXXXX;+91XXXXXX ' ) ) . '" rows="4" maxlength="400" class="mo-textarea" >' . esc_attr( mo_esc_string( $otp_blocked_phones, 'attr' ) ) . '</textarea>
+									<textarea name="mo_otp_blocked_phone_numbers" placeholder="' . esc_html( mo_( 'Enter semicolon-separated phone numbers (with country code) that you want to block. Eg. +1XXXXXXXX;+91XXXXXX ' ) ) . '" rows="4" maxlength="2000" class="mo-textarea" >' . esc_attr( mo_esc_string( $otp_blocked_phones, 'attr' ) ) . '</textarea>
 								</div>
 							</div>
 						</div>

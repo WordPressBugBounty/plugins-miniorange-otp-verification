@@ -591,6 +591,8 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 		 */
 		public function unset_otp_session_variables() {
 			SessionUtils::unset_session( array( $this->tx_session_id, $this->form_session_var ) );
+			MoPHPSessions::unset_session( 'is_otp_verified_phone' );
+			MoPHPSessions::unset_session( 'is_otp_verified_email' );
 		}
 
 		/**

@@ -317,7 +317,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '758',
 					'50000 ' => '3040',
 				),
-				'Congo (Republic)'               => array(
+				'Congo (Republic)'                  => array(
 					'100 '   => '20',
 					'500 '   => '95',
 					'1000 '  => '180',
@@ -325,7 +325,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '1697',
 					'50000 ' => '7735',
 				),
-				'Congo (DRC)'                    => array(
+				'Congo (DRC)'                      => array(
 					'100 '   => '26',
 					'500 '   => '125',
 					'1000 '  => '240',
@@ -1140,7 +1140,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '3815',
 					'50000 ' => '18325',
 				),
-				'Saint Kitts and Nevis'          => array(
+				'Saint Kitts and Nevis'                         => array(
 					'100 '   => '34',
 					'500 '   => '164',
 					'1000 '  => '317',

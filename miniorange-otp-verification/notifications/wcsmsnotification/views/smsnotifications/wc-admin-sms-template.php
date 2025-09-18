@@ -56,21 +56,28 @@ echo '				<div>
 									</div>
         </div>
 						<div class="w-full flex">
-            <div class="flex-1">
-                <h5 class="mo-title flex items-center gap-mo-2">
-                    ' . esc_html( MoMessages::showMessage( MoMessages::DLT_TEMPLATE_TITLE ) ) . '
-                    <span class="tooltip">
-                        <span class="dashicons dashicons-editor-help"></span>
-                        <span class="tooltiptext">
-                            <span class="body">' . wp_kses(
-                                MoMessages::showMessage( MoMessages::DLT_TEMPLATE_BODY ),
-                                MoUtility::mo_allow_html_array()
-                            ) . '</span>
-                        </span>
-                    </span>
-                </h5>
-            </div>
-        </div>
+							<div class="flex-1">
+								<h5 class="mo-title flex items-center gap-mo-2">
+									' . esc_html( MoMessages::showMessage( MoMessages::DLT_TEMPLATE_TITLE ) ) . '
+									<span class="tooltip">
+										<span class="dashicons dashicons-editor-help"></span>
+										<span class="tooltiptext">
+											<span class="body">' . wp_kses(
+												MoMessages::showMessage( MoMessages::DLT_TEMPLATE_BODY ),
+												array(
+													'a'      => array( 'href'=>true, 'target'=>true, 'rel'=>true, 'class'=>true,'onclick' => true,),
+													'i'      => array(),
+													'u'      => array(),
+													'span'   => array( 'class'=>true ),
+													'b'      => array(),
+													'strong' => array(),
+												)
+											) . '</span>
+										</span>
+									</span>
+								</h5>
+							</div>
+						</div>
 
 							<div class="w-full flex">
 								<div class="flex-1">

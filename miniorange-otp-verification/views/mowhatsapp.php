@@ -43,7 +43,7 @@ $whatsapp_view = '
 						<div class="mo-whatsapp-header">
 								<h5 class="text-gray-900">' . esc_html( mo_( 'WhatsApp Premium Plan Features' ) ) . '</h5> &nbsp;&nbsp; 
 								<div class="mb-mo-1 text-gray-900"> [
-									<i><a href="' . esc_url( $license_url ) . '"	target="_blank">' . esc_html( mo_( ' Supported in WooCommerce Plan ' ) ) . '</a></i> ]
+									<i><a href="' . esc_url( $license_url ) . '"	target="_blank">' . esc_html( mo_( ' Supported in WhatsApp + Twilio Plan ' ) ) . '</a></i> ]
 								</div>	
 								<svg width="18" class="ml-mo-2 mr-mo-2 mb-mo-1" height="18" viewBox="0 0 24 24" fill="none">
 											<g id="d4a43e0162b45f718f49244b403ea8f4">
@@ -131,7 +131,7 @@ $whatsapp_view = '
 
 						</ul>
 
-						<a class="w-full ml-mo-4 mo-button primary" onClick="otpSupportOnClick(\'Hi! I am interested in using OTP/Notifcation over WhatsApp Feature for my website, can you please share the pricing details?\');" >' . esc_html( mo_( 'Upgrade Now' ) ) . '</a><br>
+						<a class="w-full ml-mo-4 mo-button primary" onClick="otpSupportOnClick(\'Hi! I am interested in using OTP/Notifications over WhatsApp Feature for my website, can you please share the pricing details?\');" >' . esc_html( mo_( 'Upgrade Now' ) ) . '</a><br>
 					</div>
 				</div>   
 			</section> 

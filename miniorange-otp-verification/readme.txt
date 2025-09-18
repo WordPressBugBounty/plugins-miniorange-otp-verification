@@ -7,7 +7,7 @@ Tags: OTP, OTP Verification, SMS Notifications, Phone Verification, Email Verifi
 Requires at least: 3.5
 Tested up to: 6.8
 Requires PHP: 5.3.0
-Stable tag: 5.3.7
+Stable tag: 5.3.8
 License: Expat
 License URI: https://plugins.miniorange.com/mit-license
 
@@ -104,7 +104,7 @@ Passwordless Login is a modern way of logging into your WordPress site without t
 [Register Using Phone](https://plugins.miniorange.com/how-to-configure-register-using-only-phone-addon) add-on allows Registration on your WordPress site using only a Phone Number instead of an Email address or Username. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more about addons.
 
 = WOOCOMMERCE PASSWORD RESET OVER OTP =
-[WooCommece Password Reset Addon](https://plugins.miniorange.com/how-to-configure-woocommerce-password-reset-addon) replaces the existing WooCommerce Password reset functionality with OTP Verification. Allow users to reset their password using OTP Verification instead of email links. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more about addons.
+[WooCommerce Password Reset Addon](https://plugins.miniorange.com/how-to-configure-woocommerce-password-reset-addon) replaces the existing WooCommerce Password reset functionality with OTP Verification. Allow users to reset their password using OTP Verification instead of email links. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more about addons.
 
 = SEND CUSTOM MESSAGE =
 This is an add-on that allows you to send customized SMS or EMAIL Messages to any Mobile Number or Email Address. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more about addons. Contact us at otpsupport@xecurify.com/info@xecurify.com to know more about addons.
@@ -137,7 +137,7 @@ Contact us at otpsupport@xecurify.com/info@xecurify.com to know more about addon
 > + [WordPress Login Form](https://plugins.miniorange.com/wordpress-default-login-form-with-otp-verification)
 > + [Elementor Pro Forms](https://plugins.miniorange.com/otp-verification-for-elementor-pro-form)
 > + [WordPress default registration/TML Registration Form ](https://plugins.miniorange.com/configure-one-time-password-verification-wordpress-default-tml-registration-form)
-> + [WooCommece Login Form](https://plugins.miniorange.com/woocommerce-login-form-with-otp-verification-for-wordpress)
+> + [WooCommerce Login Form](https://plugins.miniorange.com/woocommerce-login-form-with-otp-verification-for-wordpress)
 > + [WooCommerce Registration Form](http://plugins.miniorange.com/otp-verification-woocommerce-registration-form/)
 > + [WooCommerce Checkout Form](https://plugins.miniorange.com/otp-verification-woocommerce-checkout-form/)
 > + [WooCommerce FrontEnd Manager Form(WCFM)](https://plugins.miniorange.com/otp-verification-for-woocommerce-frontend-manager-form)
@@ -261,6 +261,15 @@ Please mail us at **otpsupport@xecurify.com/info@xecurify.com**. You can also su
 8. OTP Verification Plugin Settings
 
 == Changelog ==
+= 5.3.8 =
+* miniOrange WordPress OTP Verification
+ * Security fixes
+ * WhatsApp OTP Verification in the Twilio Plan
+ * Minor bug fixes in Fluent Forms
+ * Minor bug fixes in Gravity Forms
+ * Bug fixes in WooCommerce Checkout Forms 
+ * UI Improvements
+
 = 5.3.7 =
 * miniOrange WordPress OTP Verification
  * Minor bug fixes
@@ -1118,6 +1127,15 @@ Please mail us at **otpsupport@xecurify.com/info@xecurify.com**. You can also su
 * First version of the plugin.
 
 == Upgrade Notice ==
+= 5.3.8 =
+* miniOrange WordPress OTP Verification
+ * Security fixes
+ * WhatsApp OTP Verification in the Twilio Plan
+ * Minor bug fixes in Fluent Forms
+ * Minor bug fixes in Gravity Forms
+ * Bug fixes in WooCommerce Checkout Forms 
+ * UI Improvements
+
 = 5.3.7 =
 * miniOrange WordPress OTP Verification
  * Minor bug fixes
@@ -1170,7 +1188,7 @@ Please mail us at **otpsupport@xecurify.com/info@xecurify.com**. You can also su
 = 5.2.8 =
 * miniOrange WordPress OTP Verification
  * Released Limit OTP Addon to enhance security and prevent spamming attacks
- * WooCommece Login form: Redirection fixes
+ * WooCommerce Login form: Redirection fixes
  * Fluent form: Hidden attribute issue
 
 = 5.2.6 =

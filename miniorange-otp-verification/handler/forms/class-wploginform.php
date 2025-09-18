@@ -229,22 +229,27 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			}
 			$post_data = MoUtility::mo_sanitize_array( $_POST );
 			$username  = MoUtility::sanitize_check( 'username', $post_data );
-			$user      = is_email( $username ) ? get_user_by( 'email', $username ) : get_user_by( 'login', $username );
-			if ( ! $user ) {
-				if ( $this->allow_login_through_phone && MoUtility::validate_phone_number( $username ) ) {
-					$username = MoUtility::process_phone_number( $username );
-					$user     = $this->getUserFromPhoneNumber( $username );
-				}
+
+			$user = is_email( $username ) ? get_user_by( 'email', $username ) : get_user_by( 'login', $username );
+
+			if ( ! $user && $this->allow_login_through_phone && $this->check_phone_length( $username ) ) {
+				$user = $this->getUserFromPhoneNumber( $username );
 			}
 
-			$const = $user ? ( in_array( 'administrator', $user->roles, true ) ? MoConstants::SUCCESS_JSON_TYPE : MoConstants::ERROR_JSON_TYPE ) : MoConstants::ERROR_JSON_TYPE;
+			if ( ! $user ) {
+				wp_send_json(
+					MoUtility::create_json(
+						MoMessages::showMessage( MoMessages::INVALID_USERNAME ),
+						MoConstants::ERROR_JSON_TYPE
+					)
+				);
+			}
 
-			wp_send_json(
-				MoUtility::create_json(
-					MoMessages::showMessage( MoMessages::PHONE_EXISTS ),
-					$const
-				)
-			);
+			$is_admin = user_can( $user, 'manage_options' );
+			$type     = $is_admin ? MoConstants::SUCCESS_JSON_TYPE : MoConstants::ERROR_JSON_TYPE;
+			$message  = $is_admin ? mo_( 'Admin user' ) : mo_( 'Not an admin user' );
+
+			wp_send_json( MoUtility::create_json( $message, $type ) );
 		}
 
 		/**
@@ -410,7 +415,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 */
 		private function login_wp_user( $user_log, $extra_data = null ) {
 			$user = is_email( $user_log ) ? get_user_by( 'email', $user_log ) : get_user_by( 'login', $user_log );
-			$user = $user ? $user : ( $this->allowLoginThroughPhone() && MoUtility::validate_phone_number( $user_log ) ? $this->getUserFromPhoneNumber( MoUtility::process_phone_number( $user_log ) ) : '' );
+			$user = $user ? $user : ( $this->allowLoginThroughPhone() && $this->check_phone_length( $user_log ) ? $this->getUserFromPhoneNumber( $user_log ) : '' );
 
 			if ( $user ) {
 				wp_set_auth_cookie( $user->data->ID, true );
@@ -540,9 +545,8 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 */
 		private function getUser( $username, $post_data, $password = null ) {
 			$user = is_email( $username ) ? get_user_by( 'email', $username ) : get_user_by( 'login', $username );
-			if ( ! $user && $this->allow_login_through_phone && MoUtility::validate_phone_number( $username ) ) {
-				$username = MoUtility::process_phone_number( $username );
-				$user     = $this->getUserFromPhoneNumber( $username );
+			if ( ! $user && $this->allow_login_through_phone && $this->check_phone_length( $username ) ) {
+				$user = $this->getUserFromPhoneNumber( $username );
 			}
 			if ( $user && ! $this->isLoginWithOTP( $post_data, $user->roles ) ) {
 				$user = wp_authenticate_username_password( null, $user->data->user_login, $password );
@@ -552,22 +556,43 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 
 
 		/**
-		 * This functions fetches the user associated with a phone number
+		 * Fetch the user associated with different input formats of the phone number.
 		 *
-		 * @param string $username  the user's username.
+		 * @param string $phone Entered phone number.
 		 * @return bool|WP_User
 		 */
-		private function getUserFromPhoneNumber( $username ) {
-			global $wpdb;
+		private function getUserFromPhoneNumber( $phone ) {
 
-			$results = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, Direct database call without caching detected -- DB Direct Query is necessary here.
+			$user_details = $this->get_user_from_db( $phone );
+
+			if ( MoUtility::is_blank( $user_details ) ) {
+				if ( ! MoUtility::is_country_code_appended( $phone ) ) {
+					$phone        = MoUtility::process_phone_number( $phone );
+					$user_details = $this->get_user_from_db( $phone );
+				} else {
+					$country_code       = MoUtility::get_country_code( $phone );
+					$phone_without_code = substr( $phone, strlen( $country_code ) );
+					$user_details       = $this->get_user_from_db( $phone_without_code );
+				}
+			}
+			return ! MoUtility::is_blank( $user_details ) ? get_userdata( $user_details->user_id ) : false;
+		}
+
+		/**
+		 * Check if user exists in the database with the phone number.
+		 *
+		 * @param string $phone Processed phone number.
+		 * @return object|false Returns row object with user_id or false when not found.
+		 */
+		private function get_user_from_db( $phone ) {
+			global $wpdb;
+			return $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, Direct database call without caching detected -- DB Direct Query is necessary here.
 				$wpdb->prepare(
 					"SELECT `user_id` FROM `{$wpdb->prefix}usermeta`"
 									. 'WHERE `meta_key` = %s AND `meta_value` = %s',
-					array( $this->get_phone_key_details(), $username )
+					array( $this->get_phone_key_details(), $phone )
 				)
 			);
-			return ! MoUtility::is_blank( $results ) ? get_userdata( $results->user_id ) : false;
 		}
 
 
@@ -656,7 +681,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 * @param array $post_data - $_POST.
 		 */
 		private function mo_handle_wp_login_ajax_send_otp( $post_data ) {
-			$user_phone = MoUtility::process_phone_number( sanitize_text_field( $post_data['user_phone'] ) );
+			$user_phone = $post_data['user_phone'];
 			if ( $this->restrict_duplicates()
 			&& ! MoUtility::is_blank( $this->getUserFromPhoneNumber( $user_phone ) ) ) {
 				wp_send_json(
@@ -809,14 +834,16 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 
 
 		/**
-		 * Function to check the length of the phone number
+		 * Function to check the length of the phone number and verify if provided value is a valid phone number.
 		 *
 		 * @param array $phone - check the phone length.
 		 */
 		private function check_phone_length( $phone ) {
 			if ( $phone ) {
 				$phone_check = MoUtility::process_phone_number( $phone );
-				return strlen( $phone_check ) >= 5 ? $phone_check : '';
+				$len         = strlen( $phone_check );
+				// Safer global bounds: 6–15 total chars (E.164 max is 15 digits plus optional '+')
+				return ( $len >= 6 && $len <= 16 ) ? $phone_check : '';
 			}
 			return;
 		}

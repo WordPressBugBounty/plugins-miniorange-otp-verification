@@ -238,6 +238,38 @@ if ( ! class_exists( 'ResendControlHandler' ) ) {
 		}
 
 		/**
+		 * Validate request context to guard against tampered option/action values.
+		 *
+		 * @param array $data Sanitized request data.
+		 * @return bool
+		 */
+		private function is_valid_request_context( $data ) {
+			$option = isset( $data['option'] ) ? $data['option'] : '';
+			$action = isset( $data['action'] ) ? $data['action'] : '';
+
+			$allowed_options = array(
+				'miniorange-validate-otp-form',
+				'miniorange-ajax-otp-generate',
+				'miniorange-ajax-otp-validate',
+				'mo_ajax_form_validate',
+				'verification_resend_otp',
+			);
+			$allowed_actions = array(
+				'',
+				'mo_control_otp_block',
+				'mo_preview_popup',
+			);
+
+			if ( $option && ! in_array( $option, $allowed_options, true ) ) {
+				return false;
+			}
+			if ( $action && ! in_array( $action, $allowed_actions, true ) ) {
+				return false;
+			}
+			return true;
+		}
+
+		/**
 		 * Enqueues and localizes the OTP timer script.
 		 *
 		 * This function checks if the OTP timer is enabled. If enabled, it registers
@@ -694,7 +726,8 @@ if ( ! class_exists( 'ResendControlHandler' ) ) {
 			$data   = MoUtility::mo_sanitize_array( $_POST );// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- Nonce is already verified before.
 			$action = isset( $data['action'] ) ? $data['action'] : '';
 
-			if ( ( isset( $data['option'] ) && 'miniorange-validate-otp-form' === $data['option'] ) || 'mo_preview_popup' === $action ) {
+			// Guard against tampered or unknown option/action values.
+			if ( ! $this->is_valid_request_context( $data ) ) {
 				return $message;
 			}
 

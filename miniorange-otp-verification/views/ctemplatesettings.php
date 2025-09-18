@@ -17,7 +17,7 @@ echo '
 					<div class="flex-1">
 						<h5 class="mo-title">' . esc_html( $sms_title ) . '</h5>
 						<p class="mo-caption mt-mo-2">' . esc_html( mo_( 'Personalize your SMS template according to your preferences and specific needs.' ) ) . '</p>
-						<span class="py-mo-4 text-mo-lg text-left" style="display:block;"><b>' . esc_html( MoMessages::showMessage( MoMessages::DLT_TEMPLATE_TITLE ) ) . '</b>';
+						<span class="py-mo-4 text-mo-lg text-left" style="display:block;"><b>' . esc_html( MoMessages::showMessage( MoMessages::DLT_TEMPLATE_TITLE ) ) . '</b></span>';
 echo '                  	<span class="body">' . wp_kses( MoMessages::showMessage( MoMessages::DLT_TEMPLATE_BODY ), MoUtility::mo_allow_html_array() ) . '</span>			
 					</div>
 					<div class="flex-1">

@@ -93,6 +93,7 @@ if ( ! class_exists( 'MoRegistrationHandler' ) ) {
 		private function mo_register_customer( $post ) {
 			$this->is_valid_request();
 			$email            = sanitize_email( $post['email'] );
+			$phone            = sanitize_text_field( $post['phone'] );
 			$company          = sanitize_text_field( $post['company'] );
 			$first_name       = sanitize_text_field( $post['fname'] );
 			$last_name        = sanitize_text_field( $post['lname'] );
@@ -117,10 +118,11 @@ if ( ! class_exists( 'MoRegistrationHandler' ) ) {
 			}
 
 			update_mo_option( 'company_name', $company );
+			update_mo_option( 'admin_phone', $phone );
 			update_mo_option( 'first_name', $first_name );
 			update_mo_option( 'last_name', $last_name );
 			update_mo_option( 'admin_email', $email );
-				update_mo_option( 'admin_password', $password );
+			update_mo_option( 'admin_password', $password );
 
 			$content = json_decode( MocURLCall::check_customer( $email ), true );
 			switch ( $content['status'] ) {

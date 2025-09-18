@@ -379,13 +379,14 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 			$form_link  = MoUtility::sanitize_check( 'mo_query_form_link', $post_data );
 			$query      = MoUtility::sanitize_check( 'query', $post_data );
 			$query_type = MoUtility::sanitize_check( 'query_type', $post_data );
+			$phone      = MoUtility::sanitize_check( 'mo_query_phone', $post_data );
 
 			if ( ! $email || ! $query || ! $form_link ) {
 				do_action( 'mo_registration_show_message', MoMessages::showMessage( MoMessages::SUPPORT_FORM_VALUES ), 'ERROR' );
 				return;
 			}
 
-			$submitted = MocURLCall::submit_contact_us( $email, null, $query, $form_link, $query_type );
+			$submitted = MocURLCall::submit_contact_us( $email, $phone, $query, $form_link, $query_type );
 
 			if ( json_last_error() === JSON_ERROR_NONE && $submitted ) {
 				do_action( 'mo_registration_show_message', MoMessages::showMessage( MoMessages::SUPPORT_FORM_SENT ), 'SUCCESS' );

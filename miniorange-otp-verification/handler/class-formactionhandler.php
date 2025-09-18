@@ -364,8 +364,9 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 				$otp_type     = MoUtility::sanitize_check( 'otp_type', $_POST );
 				$data         = MoUtility::mo_sanitize_array( $_POST );
 				$request_data = MoUtility::mo_sanitize_array( $_REQUEST );
+				$option       = trim( wp_unslash( $request_data['option'] ) );
 
-				switch ( trim( sanitize_text_field( wp_unslash( $_REQUEST['option'] ) ) ) ) { // phpcs:ignore -- false positive.
+				switch ( $option ) { // phpcs:ignore -- false positive.
 					case 'validation_goBack':
 						$this->handleGoBackAction();
 						break;
@@ -377,6 +378,16 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 						break;
 					case 'miniorange-validate-otp-choice-form':
 						$this->handleOTPChoice( $data );
+						break;
+					default:
+						miniorange_site_otp_validation_form(
+							'null',
+							'null',
+							'null',
+							MoMessages::showMessage( MoMessages::INVALID_OP ),
+							$otp_type,
+							$from_both
+						);
 						break;
 				}
 			}

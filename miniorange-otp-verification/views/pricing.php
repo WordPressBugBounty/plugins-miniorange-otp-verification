@@ -110,22 +110,34 @@ echo '                           </ul>
                             <button class="w-full mo-button primary" onclick="mo_otp_upgradeform_submit(\'wp_email_verification_intranet_basic_plan\')">Upgrade Now</button>
                         </div>
 
-                        <div class="mo-pricing-card">
-                            <div>
-                                <h5>Twilio Gateway + MSG91 <br>Plan</h5>
-                                <div class="my-mo-4 flex gap-mo-4">
-                                    <div class="flex">
-                                        <h1 class="m-mo-0">$49</h1><span style="font-size:1rem; margin-top:5%"><i>/Year</i></span>
-                                    </div>
-                                </div>
-                            </div>    
-                            
-                            <ul class="mt-mo-4 grow" >';
+						<div class="mo-pricing-card">
+							<div>
+								<h5>WhatsApp + Twilio <br>Gateway Plan</h5>
+								<div class="my-mo-4 flex gap-mo-4">
+									<div class="flex">
+										<h1 class="m-mo-0">$49</h1><span style="font-size:1rem; margin-top:5%"><i>/Year</i></span>
+									</div>
+								</div>
+							</div>    
+							
+							<ul class="mt-mo-4 grow" >';
 foreach ( $twilio_gateway_plan_features as $features ) {
-	echo '   <li class="feature-snippet">
-                                <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
-                                <p class="m-mo-0">' . wp_kses( $features, MoUtility::mo_allow_html_array() ) . '</p>
-                            </li>';
+	if ( 'OTP & Notifications Via WhatsApp' === $features ) {
+		echo '  <li class="feature-snippet">
+									<span class="mt-mo-2.5" style="margin-left:-6px;margin-top:-10px;margin-right:8px;margin-bottom:5px;">
+										<svg viewBox="0 0 58 27" id="whatsapp" height="50px" width="50px" class="flex-2" style="position: absolute; margin-right: 4rem;">
+												<path fill="#25D366" d="M12 3a9 9 0 00-9 9c0 1.75.51 3.37 1.37 4.75l-1.08 3.53c-.08.27 0 .55.19.75.19.2.49.27.75.19l3.78-1.16.006-.002A8.962 8.962 0 0012 21a9 9 0 000-18zM6.01 16.5c-.41-.55-.76-1.15-1.01-1.81v-.02c-.33-.83-.5-1.74-.5-2.68C4.5 7.86 7.86 4.5 12 4.5c4.14 0 7.5 3.36 7.5 7.5 0 4.14-3.36 7.5-7.5 7.5a7.6 7.6 0 01-1.59-.19l-.015.005a7.375 7.375 0 01-2.215-.875v-.01l-1.84.56-1.21.37.36-1.16.52-1.7zm2.14-8.54a.89.89 0 01.63-.27l.01-.02c.083 0 .163.003.24.005.072.003.142.005.21.005.17.01.35.02.52.4.11.241.289.688.438 1.06.123.305.225.56.252.61.05.11.09.24.01.39l-.028.054c-.063.12-.107.202-.212.316-.04.043-.081.09-.122.137a3.417 3.417 0 01-.247.262c-.108.107-.228.227-.101.451.13.22.59.96 1.27 1.57a6.162 6.162 0 001.692 1.072c.07.032.127.057.168.078.23.12.37.1.51-.05.13-.14.59-.64.75-.86.16-.22.32-.18.53-.1.21.08 1.35.64 1.58.76l.133.068c.155.078.26.13.307.202.05.09.04.54-.16 1.06-.21.52-1.17 1.01-1.6 1.04a5.012 5.012 0 00-.124.01c-.397.038-.893.085-2.666-.62-2.2-.876-3.617-2.986-3.889-3.39a2.432 2.432 0 00-.051-.074c-.144-.195-.92-1.246-.9-2.316.019-1.035.56-1.565.807-1.808l.043-.042z"></path>
+										</svg>
+									</span>    
+									<p class="m-mo-0 font-bold">' . esc_html( mo_( 'OTP & Notifications Via WhatsApp.' ) ) . '</p>
+								</li>';
+
+	} else {
+		echo '   <li class="feature-snippet">
+									<span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
+									<p class="m-mo-0">' . wp_kses( $features, MoUtility::mo_allow_html_array() ) . '</p>
+								</li>';
+	}
 }
 echo '                                  
                             </ul>
@@ -169,22 +181,10 @@ echo '
                             
                             <ul class="mt-mo-4 grow">';
 foreach ( $woocommerce_plan_features as $features ) {
-	if ( 'OTP & Notifications Via WhatsApp' === $features ) {
-		echo ' <li class="feature-snippet">
-                                    <span class="mt-mo-2.5" style="margin-left:-6px;margin-top:-10px;margin-right:8px;margin-bottom:5px;">
-                                        <svg viewBox="0 0 58 27" id="whatsapp" height="50px" width="50px" class="flex-2" style="position: absolute; margin-right: 4rem;">
-                                                <path fill="#25D366" d="M12 3a9 9 0 00-9 9c0 1.75.51 3.37 1.37 4.75l-1.08 3.53c-.08.27 0 .55.19.75.19.2.49.27.75.19l3.78-1.16.006-.002A8.962 8.962 0 0012 21a9 9 0 000-18zM6.01 16.5c-.41-.55-.76-1.15-1.01-1.81v-.02c-.33-.83-.5-1.74-.5-2.68C4.5 7.86 7.86 4.5 12 4.5c4.14 0 7.5 3.36 7.5 7.5 0 4.14-3.36 7.5-7.5 7.5a7.6 7.6 0 01-1.59-.19l-.015.005a7.375 7.375 0 01-2.215-.875v-.01l-1.84.56-1.21.37.36-1.16.52-1.7zm2.14-8.54a.89.89 0 01.63-.27l.01-.02c.083 0 .163.003.24.005.072.003.142.005.21.005.17.01.35.02.52.4.11.241.289.688.438 1.06.123.305.225.56.252.61.05.11.09.24.01.39l-.028.054c-.063.12-.107.202-.212.316-.04.043-.081.09-.122.137a3.417 3.417 0 01-.247.262c-.108.107-.228.227-.101.451.13.22.59.96 1.27 1.57a6.162 6.162 0 001.692 1.072c.07.032.127.057.168.078.23.12.37.1.51-.05.13-.14.59-.64.75-.86.16-.22.32-.18.53-.1.21.08 1.35.64 1.58.76l.133.068c.155.078.26.13.307.202.05.09.04.54-.16 1.06-.21.52-1.17 1.01-1.6 1.04a5.012 5.012 0 00-.124.01c-.397.038-.893.085-2.666-.62-2.2-.876-3.617-2.986-3.889-3.39a2.432 2.432 0 00-.051-.074c-.144-.195-.92-1.246-.9-2.316.019-1.035.56-1.565.807-1.808l.043-.042z"></path>
-                                        </svg>
-                                    </span>    
-                                    <p class="m-mo-0">' . esc_html( mo_( 'OTP & Notifications Via WhatsApp.' ) ) . '</p>
-                                </li>';
-
-	} else {
 		echo '   <li class="feature-snippet">
         <span class="mt-mo-2.5">' . wp_kses( $circle_icon, MoUtility::mo_allow_svg_array() ) . '</span>
         <p class="m-mo-0">' . wp_kses( $features, MoUtility::mo_allow_html_array() ) . '</p>
     </li>';
-	}
 }
 
 echo '                           

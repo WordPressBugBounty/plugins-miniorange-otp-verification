@@ -35,6 +35,7 @@ define( 'MOV_CSS_URL', MOV_URL . 'includes/css/mo_customer_validation_style.min.
 define( 'MOV_FORM_CSS', MOV_URL . 'includes/css/mo_forms_css.min.css?version=' . MOV_VERSION );
 define( 'MO_INTTELINPUT_CSS', MOV_URL . 'includes/css/intlTelInput.min.css?version=' . MOV_VERSION );
 define( 'MOV_JS_URL', MOV_URL . 'includes/js/settings.min.js?version=' . MOV_VERSION );
+define( 'MOV_FEEDBACK_JS', MOV_URL . 'includes/js/mo_feedback.min.js?version=' . MOV_VERSION );
 define( 'VALIDATION_JS_URL', MOV_URL . 'includes/js/formValidation.min.js?version=' . MOV_VERSION );
 define( 'MO_INTTELINPUT_JS', MOV_URL . 'includes/js/intlTelInput.min.js?version=' . MOV_VERSION );
 define( 'MO_DROPDOWN_JS', MOV_URL . 'includes/js/dropdown.min.js?version=' . MOV_VERSION );
@@ -58,8 +59,8 @@ define( 'MOV_OFFERS_LOGO', MOV_URL . 'includes/images/mo_sale_icon.png' );
 define( 'MOV_FEATURES_GRAPHIC', MOV_URL . 'includes/images/mo_features_graphic.png' );
 define( 'MOV_TYPE_PLAN', $package_data->typeplan );
 define( 'MOV_LICENSE_NAME', $package_data->licensename );
-
-define( 'MOV_MAIN_CSS', MOV_URL . 'includes/css/mo-main.min.css' );
+define( 'MOV_CSS', MOV_URL . 'includes/css/mo_feedback_notice.min.css?version=' . MOV_VERSION );
+define( 'MOV_MAIN_CSS', MOV_URL . 'includes/css/mo-main.min.css?version=' . MOV_VERSION );
 
 require 'class-mootpsplclassloader.php';
 
@@ -212,7 +213,7 @@ function initialize_package_json() {
 	$package = wp_json_encode(
 		array(
 			'name'         => 'miniorange-otp-verification',
-			'version'      => '5.3.7',
+			'version'      => '5.3.8',
 			'type'         => 'MiniOrangeGateway',
 			'testmode'     => false,
 			'failmode'     => false,

@@ -29,7 +29,8 @@ $custom_gateway_plan_features = array(
 );
 
 $twilio_gateway_plan_features = array(
-	mo_( 'Suitable for Twilio SMS gateway users.' ),
+	mo_( 'OTP & Notifications Via WhatsApp' ),
+	mo_( 'Twilio SMS gateway supported.' ),
 	mo_( 'SMS transactions will be purchased from twilio.' ),
 	mo_( 'miniOrange Gateway Support.' ),
 	mo_( 'All features from Custom Gateway Plan included.' ),
@@ -44,7 +45,7 @@ $enterprise_plan_features = array(
 );
 
 $woocommerce_plan_features = array(
-	mo_( 'OTP & Notifications Via WhatsApp' ),
+	mo_( '<b>All features from Enterprise Plan</b>' ),
 	mo_( 'WooCommerce order status & Stock Notifications.' ),
 	'<b><a href="https://plugins.miniorange.com/register-login-account-phone-miniorange-otp" target="_blank">' . mo_( 'Registration & Login using only Phone' ) . '</a></b>',
 	mo_( 'WCFM and Dokan Vendor Notifications.' ),
@@ -90,7 +91,7 @@ $woocommerce_plan_features = array(
 	);
 
 	$premium_features_mo = array(
-		mo_( 'OTP & Notifications Via WhatsApp' )       => array( 'feature' => array( 'red_cross', 'red_cross', 'checkmark' ) ),
+		mo_( 'OTP & Notifications Via WhatsApp' )       => array( 'feature' => array( 'red_cross', 'checkmark', 'checkmark' ) ),
 		mo_( 'WooCommerce Order Status SMS Notifications' ) => array( 'feature' => array( 'checkmark', 'checkmark', 'checkmark' ) ),
 		mo_( 'WooCommerce Stock Notifications' )        => array( 'feature' => array( 'red_cross', 'red_cross', 'checkmark' ) ),
 		mo_( 'OTP Spam Preventer' )                     => array( 'feature' => array( 'red_cross', 'checkmark', 'checkmark' ) ),
@@ -141,7 +142,7 @@ $woocommerce_plan_features = array(
 	);
 
 	$premium_features = array(
-		mo_( 'OTP & Notifications Via WhatsApp' )       => array( 'feature' => array( 'red_cross', 'red_cross', 'red_cross', 'checkmark' ) ),
+		mo_( 'OTP & Notifications Via WhatsApp' )       => array( 'feature' => array( 'red_cross', 'checkmark', 'checkmark', 'checkmark' ) ),
 		mo_( 'WooCommerce Order Status SMS Notifications' ) => array( 'feature' => array( 'checkmark', 'checkmark', 'checkmark', 'checkmark' ) ),
 		mo_( 'WooCommerce Stock Notifications' )        => array( 'feature' => array( 'red_cross', 'red_cross', 'red_cross', 'checkmark' ) ),
 		mo_( 'OTP Spam Preventer' )                     => array( 'feature' => array( 'red_cross', 'red_cross', 'checkmark', 'checkmark' ) ),
@@ -165,7 +166,7 @@ $woocommerce_plan_features = array(
 		mo_( 'OTP Verification on' ) . '<a class="mo_links" href="https://plugins.miniorange.com/otp-verification-forms" target="_blank">' . esc_html( mo_( ' 60+ Forms' ) ) . '</a>',
 		mo_( 'WooCommerce Order Status Notifications to Admin, Customer, Vendors' ),
 		mo_( 'Use your own Facebook Meta Business account' ),
-		mo_( 'miniOrange Buisness Account Supported' ),
+		mo_( 'miniOrange Business Account Supported' ),
 	);
 	$whatsapp_plugin_features2 = array(
 		mo_( 'Fallback to SMS for non-WhatsApp numbers' ),

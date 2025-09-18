@@ -18,6 +18,7 @@ if ( ! class_exists( 'BaseMessages' ) ) {
 	class BaseMessages {
 
 		const BLOCKED_COUNTRY               = 'BLOCKED_COUNTRY';
+		const FORM_IS_NOT_FOUND             = 'FORM_IS_NOT_FOUND';
 		const NEED_TO_REGISTER              = 'NEED_TO_REGISTER';
 		const GLOBALLY_INVALID_PHONE_FORMAT = 'GLOBALLY_INVALID_PHONE_FORMAT';
 		const VOIP_PHONE_FORMAT             = 'VOIP_PHONE_FORMAT';

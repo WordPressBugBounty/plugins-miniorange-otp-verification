@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use OTP\Traits\Instance;
 use OTP\Objects\BaseMessages;
+use OTP\MoInit;
 
 /**
  * This class is to enable Visual Tour and all its functions
@@ -86,30 +87,35 @@ if ( ! class_exists( 'MOVisualTour' ) ) {
 			}
 		}
 
-		/**
-		 * Function called by Enqueue Hook to register and localize the script and
-		 * script variables.
-		 */
-		public function enqueue_visual_tour_script() {
-			wp_register_script( 'tourScript', MOV_URL . 'includes/js/visualTour.min.js?version=' . MOV_VERSION, array( 'jquery' ), MOV_VERSION, false );
-			$page = MoUtility::sanitize_check( 'page', $_GET ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- Reading GET parameter from the URL for checking the page, doesn't require nonce verification.
-			wp_localize_script(
-				'tourScript',
-				'moTour',
-				array(
-					'siteURL'     => wp_ajax_url(),
-					'currentPage' => $_GET, // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- Reading GET parameter from the URL for checking the page, doesn't require nonce verification.
-				'tnonce'          => wp_create_nonce( $this->nonce ),
-				'pageID'          => $page,
-				'tourData'        => $this->get_tour_data( $page ),
-				'tourTaken'       => get_mo_option( 'tourTaken_' . $page ),
-				'ajaxAction'      => $this->tour_ajax_action,
-				'nonceKey'        => wp_create_nonce( $this->nonce_key ),
-				)
-			);
-			wp_enqueue_script( 'tourScript' );
-			wp_enqueue_style( 'mo_visual_tour_style', MOV_URL . 'includes/css/mo-card.min.css', '', MOV_VERSION );
+
+	/**
+	 * Function called by Enqueue Hook to register and localize the script and
+	 * script variables.
+	 */
+	public function enqueue_visual_tour_script() {
+		if ( MoInit::instance()->checkCurrentPage() ) {
+			return;
 		}
+		
+		wp_register_script( 'tourScript', MOV_URL . 'includes/js/visualTour.min.js?version=' . MOV_VERSION, array( 'jquery' ), MOV_VERSION, false );
+		$page = MoUtility::sanitize_check( 'page', $_GET ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- Reading GET parameter from the URL for checking the page, doesn't require nonce verification.
+		wp_localize_script(
+			'tourScript',
+			'moTour',
+			array(
+				'siteURL'     => wp_ajax_url(),
+				'currentPage' => $_GET, // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- Reading GET parameter from the URL for checking the page, doesn't require nonce verification.
+			'tnonce'          => wp_create_nonce( $this->nonce ),
+			'pageID'          => $page,
+			'tourData'        => $this->get_tour_data( $page ),
+			'tourTaken'       => get_mo_option( 'tourTaken_' . $page ),
+			'ajaxAction'      => $this->tour_ajax_action,
+			'nonceKey'        => wp_create_nonce( $this->nonce_key ),
+			)
+		);
+		wp_enqueue_script( 'tourScript' );
+		wp_enqueue_style( 'mo_visual_tour_style', MOV_URL . 'includes/css/mo-card.min.css', '', MOV_VERSION );
+	}
 
 		/**
 		 * Tour Data Template

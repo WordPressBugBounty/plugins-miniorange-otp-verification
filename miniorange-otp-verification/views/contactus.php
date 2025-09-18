@@ -83,12 +83,17 @@ echo '
                   <div id="mo_email_form_link" class="hidden flex-col gap-mo-3" style="display:flex !important">
                     <div class="mo-input-wrapper">
                       <label class="mo-input-label">Email</label>
-                        <input type="email" class="mo-input w-full" style="height: 80%;" id="mo_query_email" name="mo_query_email" value="' . esc_attr( $email ) . '"
+                        <input type="email" class="mo-input w-full mo-field-contactus" id="mo_query_email" name="mo_query_email" value="' . esc_attr( $email ) . '"
                           placeholder="' . esc_attr( mo_( 'Enter your Email' ) ) . '" required />
+                    </div>
+                    <div id="mo_query_phone_input" class="mo-input-wrapper">
+                      <label class="mo-input-label">' . esc_html( mo_( 'Phone' ) ) . '</label>
+                        <input type="text" class="mo-input w-full mo-field-contactus" id="mo_query_phone" name="mo_query_phone" value="' . esc_attr( $phone ) . '"
+                          placeholder="' . esc_attr( mo_( 'Enter your Phone' ) ) . '"/>
                     </div>
                     <div class="mo-input-wrapper">
                       <label class="mo-input-label">Form link/name</label>
-                      <input type="text" class="mo-input w-full" style="height: 80%;" id="mo_query_form_link" name="mo_query_form_link"
+                      <input type="text" class="mo-input w-full mo-field-contactus" id="mo_query_form_link" name="mo_query_form_link"
                           placeholder="' . esc_attr( mo_( 'Enter your form link/name' ) ) . '" required />
                     </div>
                   </div>

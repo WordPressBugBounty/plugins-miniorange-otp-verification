@@ -23,6 +23,12 @@ echo '		<input type="hidden" name="option" value="mo_registration_register_custo
 							required placeholder=""
 							value="' . esc_attr( sanitize_text_field( isset( $_SERVER['SERVER_NAME'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_NAME'] ) ) : '' ) ) . '" />
 				</div>
+				<div id="mo-phone-wrapper" class="w-full mo-input-wrapper group group">
+					<label class="mo-input-label">' . esc_html( mo_( 'Phone' ) ) . '</label>
+					<input class="w-full mo-input" type="text" name="phone"
+							placeholder="' . esc_attr( mo_( 'Enter your Phone' ) ) . '"
+							value="' . esc_attr( $mo_current_user->user_phone ) . '" />
+				</div>
 				
 				<div class="flex items-center gap-mo-4">
 

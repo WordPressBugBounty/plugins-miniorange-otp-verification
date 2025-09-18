@@ -160,6 +160,7 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 			if ( $this->popup_enabled ) {
 				add_action( 'woocommerce_after_checkout_billing_form', array( $this, 'add_custom_popup' ), 99 );
 				add_action( 'woocommerce_review_order_after_submit', array( $this, 'add_custom_button' ), 1, 1 );
+				add_action( 'woocommerce_after_checkout_validation', array( $this, 'mo_checkout_validation' ), 99, 2 );
 			} else {
 				add_action( 'woocommerce_after_checkout_billing_form', array( $this, 'my_custom_checkout_field' ), 99 );
 				add_action( 'woocommerce_after_checkout_validation', array( $this, 'my_custom_checkout_field_process' ), 99, 2 );
@@ -482,7 +483,7 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 		public function load_mo_popup() {
 			$default_popup_handler = DefaultPopup::instance();
 			$message               = '<div id="mo_message_wc_pop_up"></div>';
-			$otp_type              = 'phone';
+			$otp_type              = strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ? 'phone' : 'email';
 			$from_both             = 'from_both';
 			$html_content          = '<div id="popup_wc_mo" style="display:none">' . apply_filters( 'mo_template_build', '', $default_popup_handler->get_template_key(), $message, $otp_type, $from_both ) . '</div>';
 			echo '<script type="text/javascript">
@@ -692,6 +693,39 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 		}
 
 		/**
+		 * Validate checkout OTP state during WooCommerce after-checkout validation.
+		 *
+		 * Adds a notice if OTP has not been validated yet. If validation is already
+		 * successful for the current OTP type, clears OTP-related sessions.
+		 *
+		 * Hook: woocommerce_after_checkout_validation
+		 *
+		 * @param array    $data   Posted checkout data.
+		 * @param WP_Error $errors Validation errors object.
+		 * @return bool|void Returns true when adding a notice to classis checkout; otherwise void.
+		 */
+		public function mo_checkout_validation( $data, $errors ) {
+			// Respect guest-only and existing WC errors.
+			if ( $this->guest_check_out_only && is_user_logged_in() ) {
+				return;
+			}
+			if ( ! MoUtility::is_blank( $errors->get_error_messages() ) ) {
+				return;
+			}
+			// Respect selective payment setting.
+			if ( ! $this->isPaymentVerificationNeeded() ) {
+				return;
+			}
+			$otp_type = strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ? 'phone' : 'email';
+			if ( ! SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otp_type ) ) {
+				wc_add_notice( MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ), MoConstants::ERROR_JSON_TYPE ); // phpcs:ignore intelephense.diagnostics.undefinedFunctions -- Default function of WooCommerce.
+				return true;
+			}
+			$this->unset_otp_session_variables();
+			return;
+		}
+
+		/**
 		 * Process the checkout form being submitted. Validate if
 		 * OTP has been sent and the form has been submitted with an OTP.
 		 *
@@ -816,8 +850,7 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 		 * @param string $otp_type the verification type.
 		 */
 		public function handle_post_verification( $redirect_to, $user_login, $user_email, $password, $phone_number, $extra_data, $otp_type ) {
-
-			$this->unset_otp_session_variables();
+			SessionUtils::add_status( $this->form_session_var, self::VALIDATED, $otp_type );
 			MoPHPSessions::unset_session( 'specialproductexist' );
 
 			if ( $this->popup_enabled ) {
@@ -827,6 +860,8 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 						MoConstants::SUCCESS_JSON_TYPE
 					)
 				);
+			} else {
+				$this->unset_otp_session_variables();
 			}
 		}
 
