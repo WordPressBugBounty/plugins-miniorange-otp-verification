@@ -1,5 +1,6 @@
 <?php
-/**Load adminstrator changes for MoFormDocs
+/**
+ * Load administrator changes for MoFormDocs
  *
  * @package miniorange-otp-verification/helper
  */
@@ -286,7 +287,7 @@ if ( ! class_exists( 'MoFormDocs' ) ) {
 		);
 		const DOKAN_FORM_LINK        = array(
 			'formLink'  => 'https://wordpress.org/plugins/dokan-lite/',
-			'guideLink' => '',
+			'guideLink' => 'https://plugins.miniorange.com/dokan-registration-form-setup-for-otp-verification-wordpress',
 			'videoLink' => '',
 		);
 		const WP_COMMENT_LINK        = array(
@@ -378,34 +379,34 @@ if ( ! class_exists( 'MoFormDocs' ) ) {
 			'videoLink' => '',
 		);
 
-		const PREMIUM_FORM_LINK   = array(
+		const PREMIUM_FORM_LINK         = array(
 			'formLink'  => '',
 			'guideLink' => '',
 			'videoLink' => '',
 		);
-		const AR_MEMBER_FORM_LINK = array(
+		const AR_MEMBER_FORM_LINK       = array(
 			'formLink'  => 'https://wordpress.org/plugins/armember-membership/',
 			'guideLink' => 'https://plugins.miniorange.com/armember-registration-form-otp-verification-wordpress',
 			'videoLink' => '',
 		);
-		const HOUZEZ_REG_LINK     = array(
+		const HOUZEZ_REG_LINK           = array(
 			'formLink'  => 'https://themeforest.net/item/houzez-real-estate-wordpress-theme/15752549',
 			'guideLink' => 'https://plugins.miniorange.com/setup-otp-verification-for-houzez-registration-form',
 			'videoLink' => '',
 		);
-		const JETFORM_BUILDER_LINK     = array(
+		const JETFORM_BUILDER_LINK      = array(
 			'formLink'  => 'https://crocoblock.com/plugins/jetformbuilder/',
 			'guideLink' => 'https://plugins.miniorange.com/jetformbuilder-crocoblock-setup-for-otp-verification',
 			'videoLink' => '',
 		);
-		const FLUENT_FORM_LINK    = array(
-			'formLink'  => '',
+		const FLUENT_FORM_LINK          = array(
+			'formLink'  => 'https://fluentforms.com/',
 			'guideLink' => 'https://plugins.miniorange.com/wordpress-fluent-form-with-otp-verification',
 			'videoLink' => '',
 		);
-		const WS_FORM_LINK        = array(
+		const WS_FORM_LINK              = array(
 			'formLink'  => 'https://wsform.com/',
-			'guideLink' => '',
+			'guideLink' => 'https://plugins.miniorange.com/ws-form-setup-for-otp-verification',
 			'videoLink' => '',
 		);
 		const LOGIN_REGISTER_WITH_PHONE = array(

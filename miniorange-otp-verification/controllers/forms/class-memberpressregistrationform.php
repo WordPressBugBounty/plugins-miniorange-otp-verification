@@ -2,13 +2,15 @@
 /**
  * Load admin view for MemberPressRegistrationForm.
  *
- * @package miniorange-otp-verification/controller/
+ * @package miniorange-otp-verification/controller/forms
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
+
 use OTP\Handler\Forms\MemberPressRegistrationForm;
+use OTP\Helper\MoUtility;
 
 $handler            = MemberPressRegistrationForm::instance();
 $mrp_registration   = $handler->is_form_enabled() ? 'checked' : '';
@@ -22,5 +24,8 @@ $mrpreg_both_type   = $handler->get_both_html_tag();
 $form_name          = $handler->get_form_name();
 $mpr_anon_only      = $handler->bypass_for_logged_in_users() ? 'checked' : '';
 
-require_once MOV_DIR . 'views/forms/momemberpressregistrationform.php';
+$view_file_path = MOV_DIR . 'views/forms/momemberpressregistrationform.php';
+if ( MoUtility::mo_require_file( $view_file_path, MOV_DIR ) ) {
+	require $view_file_path;
+}
 get_plugin_form_link( $handler->get_form_documents() );

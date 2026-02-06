@@ -1,20 +1,21 @@
 <?php
-/**Load administrator changes for PremiumFeatureList
+/**
+ * Load administrator changes for PremiumFeatureList
  *
  * @package miniorange-otp-verification/helper
  */
 
 namespace OTP\Helper;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use OTP\Objects\BaseAddOnHandler;
 use OTP\Objects\FormHandler;
 use OTP\Objects\IFormHandler;
 use OTP\Traits\Instance;
 use OTP\Helper\MoFormDocs;
-
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
 
 /**
  * This is the constant class which lists all the texts
@@ -52,45 +53,18 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 		 */
 		private $addon_name;
 
-		/**Constructor
-		 **/
+		/**
+		 * Constructor
+		 */
 		private function __construct() {
 			$this->premium_addon = array(
-				'otp_control'                   => array(
-					'name'        => 'Limit OTP Request ',
-					'description' => array(
-						mo_( 'Set timer to resend OTP' ),
-						mo_( 'Block Sending OTP Until set timer out' ),
-						mo_( 'Limit OTPs based on IP' ),
-						mo_( 'Restrict user from multiple OTP attempts' ),
-					),
-					'svg'         => '<svg width="50" height="50" viewBox="0 0 100 100" fill="none">
-										<g id="033b90d886830bac50b11c6b379dcafe">
-										<rect width="100" height="100" rx="10" fill="url(#3495f85936cfe87c48ae6be73d1ec048)"></rect>
-										<g id="910adee180532c09d094ca011b854458">
-											<path id="88000f903c64892e337b114c0f69607c" fill-rule="evenodd" clip-rule="evenodd" d="M50 72.5C62.4264 72.5 72.5 62.4264 72.5 50C72.5 37.5736 62.4264 27.5 50 27.5C37.5736 27.5 27.5 37.5736 27.5 50C27.5 62.4264 37.5736 72.5 50 72.5ZM59 51.6875C59.932 51.6875 60.6875 50.932 60.6875 50C60.6875 49.068 59.932 48.3125 59 48.3125H41C40.068 48.3125 39.3125 49.068 39.3125 50C39.3125 50.932 40.068 51.6875 41 51.6875H59Z" fill="white"></path>
-										</g>
-										</g>
-										<defs>
-										<linearGradient id="3495f85936cfe87c48ae6be73d1ec048" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-											<stop stop-color="#FF8C8C"></stop>
-											<stop offset="1" stop-color="#FF3F3F"></stop>
-										</linearGradient>
-										</defs>
-									</svg>',
-					'price'        => '$49',
-					'guide_link'   => MoFormDocs::LIMIT_OTP_REQUEST_ADDON_LINK['guideLink'],
-					'support_msg'  => 'Hi I am interested in the Limit OTP Request addon, could you please tell me more about this addon?',
-					'plan_name'    => 'Enterprise and WooCommerce Plan',
-					'upgrade_slug' => 'wp_otp_limit_otp_addon_plan',
-				),
-				'both_email_and_phone'          => array(
-					'name'              => 'Both Email and Phone Verification Addon',
+				'both_email_and_phone'       => array(
+					'name'              => __( 'Both Email and Phone Verification Addon', 'miniorange-otp-verification' ),
 					'description'       => array(
-						mo_( 'Verify both email and phone number during form submission' ),
-						mo_( 'Ensures more accurate data through verified user details' ),
-						mo_( 'Protect your site from fake or fraudulent Sign-ups' ),
-						mo_( 'Supported on Limited forms' ),
+						__( 'Verify both email and phone number during form submission', 'miniorange-otp-verification' ),
+						__( 'Ensures more accurate data through verified user details', 'miniorange-otp-verification' ),
+						__( 'Protect your site from fake or fraudulent Sign-ups', 'miniorange-otp-verification' ),
+						__( 'Supported on Limited forms', 'miniorange-otp-verification' ),
 					),
 					'svg'               => '<svg width="50" height="50" viewBox="0 0 100 100" fill="none">
 												<g clip-path="url(#clip0_14_116)">
@@ -110,17 +84,17 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 											</svg>',
 					'price'             => '$89',
 					'guide_link'        => '',
-					'guide_request_msg' => 'Hi I am interested in the Both Email and Phone Verification addon, could you please tell me more about this addon?',
-					'support_msg'       => 'Hi! Could you please share the payment details for the Both Email and Phone Verification addon?',
+					'guide_request_msg' => __( 'Hi I am interested in the Both Email and Phone Verification addon, could you please tell me more about this addon?', 'miniorange-otp-verification' ),
+					'support_msg'       => __( 'Hi! Could you please share the payment details for the Both Email and Phone Verification addon?', 'miniorange-otp-verification' ),
 				),
-				'reg_only_phone_addon'          => array(
-					'name'        => 'Register Using Only Phone Number',
-					'description' => array(
-						mo_( 'Register with phone number and OTP' ),
-						mo_( 'No email required' ),
-						mo_( 'Supported Registration forms: WooCommerce, Ultimate Member, Wordpress etc.' ),
+				'reg_only_phone_addon'       => array(
+					'name'         => __( 'Register Using Only Phone Number', 'miniorange-otp-verification' ),
+					'description'  => array(
+						__( 'Register with phone number and OTP', 'miniorange-otp-verification' ),
+						__( 'No email required', 'miniorange-otp-verification' ),
+						__( 'Supported Registration forms: WooCommerce, Ultimate Member, Wordpress etc.', 'miniorange-otp-verification' ),
 					),
-					'svg'         => '<svg width="50" height="50" viewBox="0 0 100 100" fill="none">
+					'svg'          => '<svg width="50" height="50" viewBox="0 0 100 100" fill="none">
 										<g id="5702c03fcabb879bfe0641db68c0bd60">
 										<g id="fc53fd539e2f2cc4097cb8e3ecf1606d">
 											<path id="0b5274ab205e435baa8eb19539234e50" d="M90 0H10C4.47715 0 0 4.47715 0 10V90C0 95.5229 4.47715 100 10 100H90C95.5229 100 100 95.5229 100 90V10C100 4.47715 95.5229 0 90 0Z" fill="url(#b166b3f6e9757cea71b85b13ea51b3dd)"></path>
@@ -138,18 +112,18 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 										</linearGradient>
 										</defs>
 									</svg>',
-					'price'       => '$49',
-					'guide_link'  => MoFormDocs::REGISTER_WITH_PHONE_ADDON_LINK['guideLink'],
-					'support_msg' => 'Hi I am interested in the Register Using Only Phone Number addon, could you please tell me more about this addon?',
-				    'upgrade_slug' => 'wp_otp_register_with_phone_addon_plan',
+					'price'        => '$49',
+					'guide_link'   => MoFormDocs::REGISTER_WITH_PHONE_ADDON_LINK['guideLink'],
+					'support_msg'  => __( 'Hi I am interested in the Register Using Only Phone Number addon, could you please tell me more about this addon?', 'miniorange-otp-verification' ),
+					'upgrade_slug' => 'wp_otp_register_with_phone_addon_plan',
 				),
-				'login_with_phone_addon'        => array(
-					'name'              => 'Login Using Only Phone Number',
+				'login_with_phone_addon'     => array(
+					'name'              => __( 'Login Using Only Phone Number', 'miniorange-otp-verification' ),
 					'description'       => array(
-						mo_( 'Login using Phone Number' ),
-						mo_( 'Passwordless login' ),
-						mo_( 'Email address is not required' ),
-						mo_( 'Customizable as per Login Form' ),
+						__( 'Login using Phone Number', 'miniorange-otp-verification' ),
+						__( 'Passwordless login', 'miniorange-otp-verification' ),
+						__( 'Email address is not required', 'miniorange-otp-verification' ),
+						__( 'Customizable as per Login Form', 'miniorange-otp-verification' ),
 					),
 					'svg'               => '<svg width="50" height="50" viewBox="0 0 100 100" fill="none">
 										<g id="bdc921d4bff338c999c25cb7f7676a4d">
@@ -171,17 +145,17 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 									</svg>',
 					'price'             => '$49',
 					'guide_link'        => '',
-					'guide_request_msg' => 'Hi I am interested in the Login Using Only Phone Number addon, could you please tell me more about this addon?',
-					'support_msg'       => 'Hi! Could you please share the payment details for the Login Using Only Phone Number addon?',
+					'guide_request_msg' => __( 'Hi I am interested in the Login Using Only Phone Number addon, could you please tell me more about this addon?', 'miniorange-otp-verification' ),
+					'support_msg'       => __( 'Hi! Could you please share the payment details for the Login Using Only Phone Number addon?', 'miniorange-otp-verification' ),
 				),
-				'selected_country_addon'        => array(
-					'name'        => 'OTP Verification for Selected Countries Only',
-					'description' => array(
-						mo_( 'Add countries for which you wish to enable OTP Verification' ),
-						mo_( 'Country code dropdown will be altered accordingly' ),
-						mo_( 'Block OTP for selected countries' ),
+				'selected_country_addon'     => array(
+					'name'         => 'Country Restriction Addon',
+					'description'  => array(
+						__( 'Enable OTP Verification for selected countries', 'miniorange-otp-verification' ),
+						__( 'Restrict OTP Verification for selected countries', 'miniorange-otp-verification' ),
+						__( 'Country code dropdown will be altered accordingly', 'miniorange-otp-verification' ),
 					),
-					'svg'         => '<svg width="50" height="50" viewBox="0 0 100 100" fill="none">
+					'svg'          => '<svg width="50" height="50" viewBox="0 0 100 100" fill="none">
 										<g id="c804ab86e06907df4ede7c5996a51eee">
 										<rect width="100" height="100" rx="10" fill="url(#c631fb2424936253666f90eb3c760e43)"></rect>
 										<g id="215da64cca5e778eae54f3e9be6f6171">
@@ -199,21 +173,21 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 										</linearGradient>
 										</defs>
 									</svg>',
-					'price'       => '$39',
-					'guide_link'  => MoFormDocs::SELECTED_COUNTRY_CODE_ADDON_LINK['guideLink'],
-					'support_msg' => 'Hi I am interested in the OTP Verification for Selected Countries Only addon, could you please tell me more about this addon?',
-					'plan_name'   => 'Enterprise and WooCommerce Plan',
+					'price'        => '$39',
+					'guide_link'   => MoFormDocs::SELECTED_COUNTRY_CODE_ADDON_LINK['guideLink'],
+					'support_msg'  => __( 'Hi I am interested in the Country Restriction Addon, could you please tell me more about this addon?', 'miniorange-otp-verification' ),
+					'plan_name'    => __( 'Enterprise and WooCommerce Plan', 'miniorange-otp-verification' ),
 					'upgrade_slug' => 'wp_otp_selected_country_addon_plan',
 				),
-				'wp_pass_reset_addon'           => array(
-					'name'        => 'WordPress Password Reset Over OTP',
-					'description' => array(
-						mo_( 'Reset password using OTP instead of email links' ),
-						mo_( 'OTP Over Phone Supported' ),
-						mo_( 'OTP Over Email Supported' ),
-						mo_( 'User Friendly Password Reset' ),
+				'wp_pass_reset_addon'        => array(
+					'name'         => __( 'WordPress Password Reset Over OTP', 'miniorange-otp-verification' ),
+					'description'  => array(
+						__( 'Reset password using OTP instead of email links', 'miniorange-otp-verification' ),
+						__( 'OTP Over Phone Supported', 'miniorange-otp-verification' ),
+						__( 'OTP Over Email Supported', 'miniorange-otp-verification' ),
+						__( 'User Friendly Password Reset', 'miniorange-otp-verification' ),
 					),
-					'svg'         => '<svg width="50" height="50" viewBox="0 0 100 100" fill="none" >
+					'svg'          => '<svg width="50" height="50" viewBox="0 0 100 100" fill="none" >
 										<g id="563f69671e04ffeef3b83ea51e866208">
 										<rect width="100" height="100" rx="10" fill="url(#7df1013e6d8f719f861e1022a164bc7d)"></rect>
 										<g id="34454dd908cc56c9684f81974317ce7c">
@@ -229,17 +203,17 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 										</linearGradient>
 										</defs>
 									</svg>',
-					'price'       => '$19',
-					'guide_link'  => MoFormDocs::WORDPRESS_PASSWORD_RESET_ADDON_LINK['guideLink'],
-					'support_msg' => 'Hi! I am interested in the WordPress Password Reset Over OTP addon, could you please tell me more about this addon?',
+					'price'        => '$19',
+					'guide_link'   => MoFormDocs::WORDPRESS_PASSWORD_RESET_ADDON_LINK['guideLink'],
+					'support_msg'  => __( 'Hi! I am interested in the WordPress Password Reset Over OTP addon, could you please tell me more about this addon?', 'miniorange-otp-verification' ),
 					'upgrade_slug' => 'wp_otp_wordpress_password_reset_addon_plan',
 				),
-				'country_addon'                 => array(
-					'name'              => 'Country Code Dropdown ',
+				'country_addon'              => array(
+					'name'              => __( 'Country Code Dropdown ', 'miniorange-otp-verification' ),
 					'description'       => array(
-						mo_( 'Enable country code dropdown on any phone field' ),
-						mo_( 'Country Code with Flags' ),
-						mo_( 'All countries supported' ),
+						__( 'Enable country code dropdown on any phone field', 'miniorange-otp-verification' ),
+						__( 'Country Code with Flags', 'miniorange-otp-verification' ),
+						__( 'All countries supported', 'miniorange-otp-verification' ),
 					),
 					'svg'               => '<svg width="50" height="50" viewBox="0 0 100 100" fill="none">
 										<g id="08cefd4fa19f0717074e4fc57bc48504">
@@ -264,15 +238,15 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 									</svg>',
 					'price'             => '$19',
 					'guide_link'        => '',
-					'guide_request_msg' => 'Hi I am interested in the Country Code Dropdown addon, could you please tell me more about this addon?',
-					'support_msg'       => 'Hi! Could you please share the payment details for the Country Code Dropdown addon?',
+					'guide_request_msg' => __( 'Hi I am interested in the Country Code Dropdown addon, could you please tell me more about this addon?', 'miniorange-otp-verification' ),
+					'support_msg'       => __( 'Hi! Could you please share the payment details for the Country Code Dropdown addon?', 'miniorange-otp-verification' ),
 				),
-				'wp_sms_notification_addon'     => array(
-					'name'        => 'WordPress SMS Notification to Admin & User on Registration',
+				'wp_sms_notification_addon'  => array(
+					'name'        => __( 'WordPress SMS Notification to Admin & User on Registration', 'miniorange-otp-verification' ),
 					'description' => array(
-						mo_( 'Send SMS Notification on User Registration' ),
-						mo_( 'Customizable SMS Template' ),
-						mo_( 'Notification to Multiple Admins & Users.' ),
+						__( 'Send SMS Notification on User Registration', 'miniorange-otp-verification' ),
+						__( 'Customizable SMS Template', 'miniorange-otp-verification' ),
+						__( 'Notification to Multiple Admins & Users.', 'miniorange-otp-verification' ),
 					),
 					'svg'         => '<svg width="50" height="50" viewBox="0 0 100 100" fill="none" >
 										<g id="7964060c44d36a8760d399f2c150d191">
@@ -292,17 +266,17 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 									</svg>',
 					'price'       => '$19',
 					'guide_link'  => 'https://plugins.miniorange.com/how-to-configure-wordpress-sms-notification-addon',
-					'support_msg' => 'Hi I am interested in the WordPress SMS Notification to Admin  User on Registration addon, could you please tell me more about this addon?',
+					'support_msg' => __( 'Hi I am interested in the WordPress SMS Notification to Admin  User on Registration addon, could you please tell me more about this addon?', 'miniorange-otp-verification' ),
 				),
-				'wc_pass_reset_addon'           => array(
-					'name'        => 'WooCommerce Password Reset Over OTP ',
-					'description' => array(
-						mo_( 'Reset password using OTP' ),
-						mo_( 'OTP Over Phone' ),
-						mo_( 'OTP Over Email' ),
-						mo_( 'User Friendly Password Reset' ),
+				'wc_pass_reset_addon'        => array(
+					'name'         => 'WooCommerce Password Reset Over OTP ',
+					'description'  => array(
+						__( 'Reset password using OTP', 'miniorange-otp-verification' ),
+						__( 'OTP Over Phone', 'miniorange-otp-verification' ),
+						__( 'OTP Over Email', 'miniorange-otp-verification' ),
+						__( 'User Friendly Password Reset', 'miniorange-otp-verification' ),
 					),
-					'svg'         => '<svg width="50" height="50" viewBox="0 0 100 100" fill="none" >
+					'svg'          => '<svg width="50" height="50" viewBox="0 0 100 100" fill="none" >
 											<g id="563f69671e04ffeef3b83ea51e866208">
 											<rect width="100" height="100" rx="10" fill="url(#7df1013e6d8f719f861e1022a164bc7d)"></rect>
 											<g id="34454dd908cc56c9684f81974317ce7c">
@@ -318,17 +292,17 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 											</linearGradient>
 											</defs>
 										</svg>',
-					'price'       => '$19',
-					'guide_link'  => MoFormDocs::WOOCOMMERCE_PASSWORD_RESET_ADDON_LINK['guideLink'],
-					'support_msg' => 'Hi! I am interested in the WooCommerce Password Reset Over OTP addon, could you please tell me more about this addon?',
-					'plan_name'   => 'Enterprise and WooCommerce Plan',
+					'price'        => '$19',
+					'guide_link'   => MoFormDocs::WOOCOMMERCE_PASSWORD_RESET_ADDON_LINK['guideLink'],
+					'support_msg'  => __( 'Hi! I am interested in the WooCommerce Password Reset Over OTP addon, could you please tell me more about this addon?', 'miniorange-otp-verification' ),
+					'plan_name'    => __( 'Enterprise and WooCommerce Plan', 'miniorange-otp-verification' ),
 					'upgrade_slug' => 'wp_otp_wc_password_reset_addon_plan',
 				),
-				'otp_selected_product_addon'    => array(
-					'name'              => 'OTP on Selected Product Category',
+				'otp_selected_product_addon' => array(
+					'name'              => __( 'OTP on Selected Product Category', 'miniorange-otp-verification' ),
 					'description'       => array(
-						mo_( 'OTP verification will be enabled on the selected product category' ),
-						mo_( 'All WooCommerce categories supported' ),
+						__( 'OTP verification will be enabled on the selected product category', 'miniorange-otp-verification' ),
+						__( 'All WooCommerce categories supported', 'miniorange-otp-verification' ),
 					),
 					'svg'               => '<svg width="50" height="50" viewBox="0 0 100 100" fill="none" >
 										<g id="678c9a11">
@@ -346,15 +320,15 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 									</svg>',
 					'price'             => '$49',
 					'guide_link'        => '',
-					'guide_request_msg' => 'Hi I am interested in the Selected Product Category addon, could you please share the payment details for this addon?',
-					'support_msg'       => 'Hi I am interested in the Selected Product Category addon, could you please share the payment details for this addon?',
+					'guide_request_msg' => __( 'Hi I am interested in the Selected Product Category addon, could you please share the payment details for this addon?', 'miniorange-otp-verification' ),
+					'support_msg'       => __( 'Hi I am interested in the Selected Product Category addon, could you please share the payment details for this addon?', 'miniorange-otp-verification' ),
 				),
-				'ip_base_country_code_addon'    => array(
-					'name'              => 'Geolocation/IP Base Country Code Dropdown',
+				'ip_base_country_code_addon' => array(
+					'name'              => __( 'Geolocation/IP Base Country Code Dropdown', 'miniorange-otp-verification' ),
 					'description'       => array(
-						mo_( 'Alter the country code dropdown based on the users IP address or geolocation data.' ),
-						mo_( 'Enhances user experience' ),
-						mo_( 'Simplify the country selection process' ),
+						__( 'Alter the country code dropdown based on the users IP address or geolocation data.', 'miniorange-otp-verification' ),
+						__( 'Enhances user experience', 'miniorange-otp-verification' ),
+						__( 'Simplify the country selection process', 'miniorange-otp-verification' ),
 					),
 					'svg'               => '<svg width="50" height="50" viewBox="0 0 100 100" fill="none">
 										<g id="c804ab86e06907df4ede7c5996a51eee">
@@ -376,18 +350,18 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 									</svg>',
 					'price'             => '$39',
 					'guide_link'        => MoFormDocs::GEOLOCATION_COUNTRY_CODE_ADDON_LINK['guideLink'],
-					'guide_request_msg' => 'Hi I am interested in the Geolocation/IP Base Country Code Dropdown addon, could you please tell me more about this addon?',
-					'support_msg'       => 'Hi! Could you please share the payment details for the Geolocation/IP Base Country Code Dropdown addon?',
-					'plan_name'         => 'Enterprise and WooCommerce Plan',
+					'guide_request_msg' => __( 'Hi I am interested in the Geolocation/IP Base Country Code Dropdown addon, could you please tell me more about this addon?', 'miniorange-otp-verification' ),
+					'support_msg'       => __( 'Hi! Could you please share the payment details for the Geolocation/IP Base Country Code Dropdown addon?', 'miniorange-otp-verification' ),
+					'plan_name'         => __( 'Enterprise and WooCommerce Plan', 'miniorange-otp-verification' ),
 					'upgrade_slug'      => 'wp_otp_geolocation_countrycode_addon_plan',
 				),
-				'otp_over_call_addon'           => array(
+				'otp_over_call_addon'        => array(
 					'name'        => 'OTP Over Call',
 					'description' => array(
-						mo_( 'Send OTP Over Call instead of SMS' ),
-						mo_( 'User friendly' ),
-						mo_( 'Hassle-Free Setup' ),
-						mo_( 'This add-on works with the Twilio Gateway' ),
+						__( 'Send OTP Over Call instead of SMS', 'miniorange-otp-verification' ),
+						__( 'User friendly', 'miniorange-otp-verification' ),
+						__( 'Hassle-Free Setup', 'miniorange-otp-verification' ),
+						__( 'This add-on works with the Twilio Gateway', 'miniorange-otp-verification' ),
 					),
 					'svg'         => '<svg width="50" height="50" viewBox="0 0 100 100" fill="none">
 										<g id="bc0e8f986a2ec8b31050a44d5b1b2afb">
@@ -407,15 +381,15 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 									</svg>',
 					'price'       => '$49',
 					'guide_link'  => MoFormDocs::OTP_OVER_CALL_TWILIO_ADDON_LINK['guideLink'],
-					'support_msg' => 'Hi! I am interested in the OTP Over Phone Call addon, could you please tell me more about this addon?',
-					'plan_name'   => 'Twilio Gateway, Enterprise and WooCommerce Plan',
+					'support_msg' => __( 'Hi! I am interested in the OTP Over Phone Call addon, could you please tell me more about this addon?', 'miniorange-otp-verification' ),
+					'plan_name'   => __( 'Twilio Gateway, Enterprise and WooCommerce Plan', 'miniorange-otp-verification' ),
 				),
-				'api_otp_verification_addon'    => array(
+				'api_otp_verification_addon' => array(
 					'name'              => 'OTP Verification for Android/IOS Application',
 					'description'       => array(
-						mo_( 'Get APIs to connect WordPress site and mobile application' ),
-						mo_( 'API for Send OTP' ),
-						mo_( 'API for Verify OTP' ),
+						__( 'Get APIs to connect WordPress site and mobile application', 'miniorange-otp-verification' ),
+						__( 'API for Send OTP', 'miniorange-otp-verification' ),
+						__( 'API for Verify OTP', 'miniorange-otp-verification' ),
 					),
 					'svg'               => '<svg width="50" height="50" viewBox="0 0 100 100" fill="none">
 										<g id="7e95c2d921a95088816629c37b6984aa">
@@ -435,8 +409,37 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 									</svg>',
 					'price'             => '$89',
 					'guide_link'        => '',
-					'guide_request_msg' => 'Hi! I am interested in the OTP Verification for Android/IOS Application addon, could you please tell me more about this addon?',
-					'support_msg'       => 'Hi! Could you please share the payment details for the  OTP Verification for Android/IOS Application addon?',
+					'guide_request_msg' => __( 'Hi! I am interested in the OTP Verification for Android/IOS Application addon, could you please tell me more about this addon?', 'miniorange-otp-verification' ),
+					'support_msg'       => __( 'Hi! Could you please share the payment details for the  OTP Verification for Android/IOS Application addon?', 'miniorange-otp-verification' ),
+				),
+				'otp_spam_preventer'         => array(
+					'name'         => __( 'OTP Spam Preventer', 'miniorange-otp-verification' ),
+					'description'  => array(
+						__( 'Set timer to resend OTP', 'miniorange-otp-verification' ),
+						__( 'Block Sending OTP Until set timer out', 'miniorange-otp-verification' ),
+						__( 'Limit OTPs based on IP', 'miniorange-otp-verification' ),
+						__( 'Restrict user from multiple OTP attempts', 'miniorange-otp-verification' ),
+					),
+					'svg'          => '<svg width="50" height="50" viewBox="0 0 100 100" fill="none">
+										<g id="otp-spam-preventer">
+										<rect width="100" height="100" rx="10" fill="url(#spam-preventer-gradient)"></rect>
+										<g id="shield-icon">
+											<path d="M50 25L35 30V45C35 55 42.5 65 50 70C57.5 65 65 55 65 45V30L50 25Z" fill="white" opacity="0.9"></path>
+											<path d="M50 35L42.5 37.5V45C42.5 50 47.5 55 50 57.5C52.5 55 57.5 50 57.5 45V37.5L50 35Z" fill="white"></path>
+										</g>
+										</g>
+										<defs>
+										<linearGradient id="spam-preventer-gradient" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+											<stop stop-color="#FF6B6B"></stop>
+											<stop offset="1" stop-color="#C92A2A"></stop>
+										</linearGradient>
+										</defs>
+									</svg>',
+					'price'        => '$49',
+					'guide_link'   => MoFormDocs::LIMIT_OTP_REQUEST_ADDON_LINK['guideLink'],
+					'support_msg'  => __( 'Hi I am interested in the Limit OTP Request addon, could you please tell me more about this addon?', 'miniorange-otp-verification' ),
+					'plan_name'    => __( 'Enterprise and WooCommerce Plan', 'miniorange-otp-verification' ),
+					'upgrade_slug' => 'wp_otp_limit_otp_addon_plan',
 				),
 			);
 
@@ -513,32 +516,42 @@ if ( ! class_exists( 'PremiumFeatureList' ) ) {
 					'name' => 'Gravity Form',
 				),
 			);
-
 		}
-
 
 		/**
 		 * Function called to get the addon names
+		 *
+		 * @return array
 		 */
 		public function get_add_on_name() {
-			return $this->addon_name; }
+			return $this->addon_name;
+		}
+
 		/**
 		 * Function called to get the premium addon list
+		 *
+		 * @return array
 		 */
 		public function get_premium_add_on_list() {
-			return $this->premium_addon; }
+			return $this->premium_addon;
+		}
 
 		/**
 		 * Function called to get the premium form list
+		 *
+		 * @return array
 		 */
 		public function get_premium_forms() {
-			return $this->premium_forms; }
+			return $this->premium_forms;
+		}
 
 		/**
 		 * Function called to get the form list supported in both email and phone addon
+		 *
+		 * @return array
 		 */
 		public function get_both_email_phone_addon_forms() {
-			return $this->both_email_phone_addon_forms; }
-
+			return $this->both_email_phone_addon_forms;
+		}
 	}
 }

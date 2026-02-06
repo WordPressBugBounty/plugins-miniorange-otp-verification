@@ -14,16 +14,59 @@ use OTP\Helper\MoMessages;
 use OTP\Objects\Tabs;
 use OTP\Helper\MoUtility;
 
-$request_uri    = remove_query_arg( array( 'addon', 'form', 'subpage' ), isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ); // phpcs:ignore -- false positive.
+// Validate admin handler exists before accessing.
+if ( ! isset( $admin_handler ) || ! is_object( $admin_handler ) || ! method_exists( $admin_handler, 'get_nonce_value' ) ) {
+	return;
+}
+
+// Validate $tab_details object exists and has required properties.
+if ( ! isset( $tab_details ) || ! is_object( $tab_details ) || ! isset( $tab_details->tab_details ) ) {
+	return;
+}
+
+// Validate ACCOUNT tab exists.
+if ( ! isset( $tab_details->tab_details[ Tabs::ACCOUNT ] ) || ! isset( $tab_details->tab_details[ Tabs::ACCOUNT ]->menu_slug ) ) {
+	return;
+}
+
+// Validate PRICING tab exists.
+if ( ! isset( $tab_details->tab_details[ Tabs::PRICING ] ) || ! isset( $tab_details->tab_details[ Tabs::PRICING ]->menu_slug ) ) {
+	return;
+}
+
+// Sanitize and validate REQUEST_URI from $_SERVER.
+$server_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+
+// Ensure $server_uri is not empty before using remove_query_arg.
+if ( empty( $server_uri ) ) {
+	$server_uri = admin_url();
+}
+
+$request_uri    = remove_query_arg( array( 'addon', 'form', 'subpage' ), $server_uri );
 $profile_url    = add_query_arg( array( 'page' => $tab_details->tab_details[ Tabs::ACCOUNT ]->menu_slug ), $request_uri );
 $help_url       = MoConstants::FAQ_URL;
-$register_msg   = MoMessages::showMessage( MoMessages::REGISTER_WITH_US, array( 'url' => $profile_url ) ); //TODO: Check if this is being used
+$register_msg   = MoMessages::showMessage( MoMessages::REGISTER_WITH_US, array( 'url' => $profile_url ) ); // TODO: Check if this is being used.
 $activation_msg = MoMessages::showMessage( MoMessages::ACTIVATE_PLUGIN, array( 'url' => $profile_url ) );
-$gateway_msg    = MoMessages::showMessage( MoMessages::CONFIG_GATEWAY, array( 'url' => $gateway_url ) );
-$active_tab     = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- Reading GET parameter from the URL for checking the tab name, doesn't require nonce verification.
-$license_url    = add_query_arg( array( 'page' => $tab_details->tab_details[ Tabs::PRICING ]->menu_slug ), $request_uri );
-$nonce          = $admin_handler->get_nonce_value();
+
+// Validate $gateway_url variable from parent controller.
+$gateway_url = isset( $gateway_url ) && is_string( $gateway_url ) ? esc_url_raw( $gateway_url ) : '';
+$gateway_msg = MoMessages::showMessage( MoMessages::CONFIG_GATEWAY, array( 'url' => $gateway_url ) );
+
+$active_tab  = MoUtility::get_current_page_parameter_value( 'page', '' );
+$license_url = add_query_arg( array( 'page' => $tab_details->tab_details[ Tabs::PRICING ]->menu_slug ), $request_uri );
+
+$nonce = $admin_handler->get_nonce_value();
+// Validate nonce is not empty.
+if ( empty( $nonce ) || ! is_string( $nonce ) ) {
+	return;
+}
+
 $is_logged_in   = MoUtility::micr();
 $is_free_plugin = strcmp( MOV_TYPE, 'MiniOrangeGateway' ) === 0;
 
-require MOV_DIR . 'views/subtabs.php';
+// Validate file path using MoUtility::mo_require_file() before including.
+$view_file = MOV_DIR . 'views/subtabs.php';
+if ( ! MoUtility::mo_require_file( $view_file, MOV_DIR ) ) {
+	return;
+}
+require $view_file;

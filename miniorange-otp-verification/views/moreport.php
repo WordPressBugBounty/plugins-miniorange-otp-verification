@@ -1,3 +1,15 @@
+<?php
+/**
+ * Load admin view for Transaction Report.
+ *
+ * @package miniorange-otp-verification/views
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
+
+?>
 <div class="mo-transaction-report-container mo_report_layout">
 			<form class="w-full flex flex-col items-center" method="post">
 				<?php
@@ -9,7 +21,7 @@
 				?>
 				<div class="w-full bg-white mt-mo-6 rounded-md">
 					<div class="mo-section-header rounded-tr-md rounded-tl-md">
-						<p class="grow"><strong>Detailed Transaction Report</strong></p>
+						<p class="grow"><strong><?php echo esc_html__( 'Detailed Transaction Report', 'miniorange-otp-verification' ); ?></strong></p>
 						<button id="mo_download_transaction_report" name="action" value="mo_download_report" class="mo-button medium secondary"
 						<?php
 						/**Disables Button for free plan.
@@ -18,7 +30,7 @@
 
 						echo esc_attr( $disabled );
 						?>
-						>Download Report</button>
+						><?php echo esc_html__( 'Download Report', 'miniorange-otp-verification' ); ?></button>
 						<button id="mo_delete_transaction_report" name="action" value="mo_delete_report" class="mo-button medium secondary"
 							<?php
 							/**Disables Button for free plan.
@@ -27,7 +39,7 @@
 
 							echo esc_attr( $disabled );
 							?>
-						>Clear Database</button>
+						><?php echo esc_html__( 'Clear Database', 'miniorange-otp-verification' ); ?></button>
 						<input type="button" id="mo_transaction_report" class="mo-button medium inverted" 
 						<?php
 						/**Disables Button for free plan.
@@ -36,7 +48,7 @@
 
 						echo esc_attr( $disabled );
 						?>
-						value="Generate Report"/>
+						value="<?php echo esc_attr__( 'Generate Report', 'miniorange-otp-verification' ); ?>"/>
 						<?php
 							wp_nonce_field( 'generatereportnonce', 'mo_generate_report_nonce' );
 						?>
@@ -51,8 +63,27 @@
 							</g>
 						</svg>
 						<div class="grow">
-							<p class="font-bold text-amber-600 m-mo-0">Premium Feature</p>
-							<p class="text-amber-600 m-mo-0">This feature is supported in the <i><u><b><a href=<?php echo esc_attr( $license_url ); ?> target ="_blank">Enterprise and WooCommerce Plan.</a></b></u></i></p>
+							<p class="font-bold text-amber-600 m-mo-0"><?php echo esc_html__( 'Premium Feature', 'miniorange-otp-verification' ); ?></p>
+							<p class="text-amber-600 m-mo-0">
+								<?php
+								echo wp_kses(
+									sprintf(
+										/* translators: 1: <a> open tag, 2: link text, 3: </a> close tag */
+										__( 'This feature is supported in the %1$s%2$s%3$s', 'miniorange-otp-verification' ),
+										'<a href="' . esc_url( $license_url ) . '" target="_blank" rel="noopener noreferrer">',
+										esc_html__( 'Enterprise and WooCommerce Plan.', 'miniorange-otp-verification' ),
+										'</a>'
+									),
+									array(
+										'a' => array(
+											'href'   => array(),
+											'target' => array(),
+											'rel'    => array(),
+										),
+									)
+								);
+								?>
+							</p>
 
 						</div>
 					</div>
@@ -68,7 +99,7 @@
 						<?php
 							wp_nonce_field( 'motogglereportnonce', 'mo_toggle_report_nonce' );
 						?>
-						<strong><?php echo esc_html( mo_( 'Enable Detailed Transaction Report' ) ); ?></strong>
+						<strong><?php echo esc_html__( 'Enable Detailed Transaction Report', 'miniorange-otp-verification' ); ?></strong>
 					</div>
 						<?php
 					}
@@ -76,11 +107,11 @@
 					<div class="mo-report-model">
 						<div class="mo-reporting-cotainer">
 							<div class="mo-input-wrapper">
-							<label class="mo-input-label">Phone/Email</label>
-							<input class="w-full mo-input" placeholder="+1xxxxxxx or user@gmail.com" type="text" name="mo_user_key" <?php echo esc_attr( $disabled ); ?>>
+							<label class="mo-input-label"><?php echo esc_html__( 'Phone/Email', 'miniorange-otp-verification' ); ?></label>
+							<input class="w-full mo-input" placeholder="<?php echo esc_attr__( '+1xxxxxxx or user@gmail.com', 'miniorange-otp-verification' ); ?>" type="text" name="mo_user_key" <?php echo esc_attr( $disabled ); ?>>
 							</div>
 							<div class="mo-input-wrapper">
-							<label class="mo-input-label">From</label>
+							<label class="mo-input-label"><?php echo esc_html__( 'From', 'miniorange-otp-verification' ); ?></label>
 							<input class="w-full mo-input" type="datetime-local" name="mo_from_date" value="<?php echo esc_attr( $from_date ); ?>" <?php echo esc_attr( $disabled ); ?>>
 							</div>
 						</div>
@@ -88,17 +119,17 @@
 						<div class="mo-reporting-cotainer">
 							<div class="flex items-center mo-select-container px-mo-4 h-[56px] pr-mo-1">
 								<div class="grow">
-									<h6 class="m-mo-0">Authetication Type</h6>
+									<h6 class="m-mo-0"><?php echo esc_html__( 'Authentication Type', 'miniorange-otp-verification' ); ?></h6>
 								</div>
 								<select name="mo_request_type" class="!bg-slate-100 focus:!shadow-none !pl-mo-4 !pr-mo-8 !py-mo-2 !border-1 !border-slate-300 !rounded-md focus:!border-1 focus:!border-indigo-500" <?php echo esc_attr( $disabled ); ?>>
-									<option value="req_all">All Transactions</option>
-									<option value="phone">SMS Verification</option>
-									<option value="email">Email Verification</option>
-									<option value="notification">Notification</option>
+									<option value="req_all"><?php echo esc_html__( 'All Transactions', 'miniorange-otp-verification' ); ?></option>
+									<option value="phone"><?php echo esc_html__( 'SMS Verification', 'miniorange-otp-verification' ); ?></option>
+									<option value="email"><?php echo esc_html__( 'Email Verification', 'miniorange-otp-verification' ); ?></option>
+									<option value="notification"><?php echo esc_html__( 'Notification', 'miniorange-otp-verification' ); ?></option>
 								</select>
 						</div>
 							<div class="mo-input-wrapper">
-							<label class="mo-input-label">To</label>
+							<label class="mo-input-label"><?php echo esc_html__( 'To', 'miniorange-otp-verification' ); ?></label>
 							<input class="w-full mo-input" type="datetime-local" name="mo_to_date" value="<?php echo esc_attr( $current_date ); ?>" <?php echo esc_attr( $disabled ); ?>>
 							</div>
 						</div>
@@ -106,17 +137,17 @@
 				</div>
 			</form>
 			<div class="mo_transaction_report flex justify-center">
-				<div class=" bg-white mt-mo-6 rounded-md items-center">
-					<table id="mo_report_table" class="mo-table mo-reporting-table">
+				<div class="bg-white mt-mo-6 rounded-md items-center w-full overflow-x-auto">
+					<table id="mo_report_table" class="mo-table mo-reporting-table w-full min-w-[800px]">
 						<tr class="mo_report_table_heading">
-							<th style="padding-right: 8rem">Email/Phone</th>
-							<th>Authentication Type</th>
-							<th style="padding-left: 9rem">Message</th>
-							<th style="padding-left: 18rem">Status</th>
-							<th style="padding-left: 7rem">Time</th>
+							<th class="px-4 py-2 text-center" style="width: 12%;"><?php echo esc_html__( 'Email/Phone', 'miniorange-otp-verification' ); ?></th>
+							<th class="px-4 py-2 text-center" style="width: 20%;"><?php echo esc_html__( 'Form Name', 'miniorange-otp-verification' ); ?></th>
+							<th class="px-4 py-2 text-center" style="width: 15%;"><?php echo esc_html__( 'Message Type', 'miniorange-otp-verification' ); ?></th>
+							<th class="px-4 py-2 text-center" style="width: 10%;"><?php echo esc_html__( 'Status', 'miniorange-otp-verification' ); ?></th>
+							<th class="px-4 py-2 text-center" style="width: 10%;"><?php echo esc_html__( 'IP Address', 'miniorange-otp-verification' ); ?></th>
+							<th class="px-4 py-2 text-center" style="width: 13%;"><?php echo esc_html__( 'Time', 'miniorange-otp-verification' ); ?></th>
 						</tr>
 					</table>
 				</div>
 			</div>      
 		</div>
-

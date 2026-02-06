@@ -2,13 +2,15 @@
 /**
  * Loads admin view for BuddyPressRegistrationForm.
  *
- * @package miniorange-otp-verification/controller/
+ * @package miniorange-otp-verification/controllers/forms
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
+
 use OTP\Handler\Forms\BuddyPressRegistrationForm;
+use OTP\Helper\MoUtility;
 
 
 $handler              = BuddyPressRegistrationForm::instance();
@@ -24,7 +26,8 @@ $bbp_type_both        = $handler->get_both_html_tag();
 $form_name            = $handler->get_form_name();
 $restrict_duplicates  = $handler->restrict_duplicates() ? 'checked' : '';
 
-require_once MOV_DIR . 'views/forms/mobuddypressregistrationform.php';
+$view_file_path = MOV_DIR . 'views/forms/mobuddypressregistrationform.php';
+if ( MoUtility::mo_require_file( $view_file_path, MOV_DIR ) ) {
+	require $view_file_path;
+}
 get_plugin_form_link( $handler->get_form_documents() );
-
-

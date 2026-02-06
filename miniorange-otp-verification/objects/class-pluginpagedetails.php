@@ -12,26 +12,97 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 if ( ! class_exists( 'PluginPageDetails' ) ) {
 	/**
-	 *  This class is used to generate notification settings
-	 *  specific to email or sms settings. These settings are then passed
-	 *  to the cURL function to send notifications.
+	 * This class is used to manage plugin page details and navigation.
+	 * It handles page titles, menu slugs, navigation settings, and view configurations
+	 * for the WordPress admin interface.
 	 */
 	class PluginPageDetails {
 
+		/**
+		 * The page title
+		 *
+		 * @var string
+		 */
+		public $page_title;
+
+		/**
+		 * The menu slug
+		 *
+		 * @var string
+		 */
+		public $menu_slug;
+
+		/**
+		 * The menu title
+		 *
+		 * @var string
+		 */
+		public $menu_title;
+
+		/**
+		 * Tab name
+		 *
+		 * @var string
+		 */
+		public $tab_name;
+
+		/**
+		 * URL of the navbar
+		 *
+		 * @var string
+		 */
+		public $url;
+
+		/**
+		 * The PHP page having the view
+		 *
+		 * @var string
+		 */
+		public $view;
+
+		/**
+		 * The PHP page having the icon
+		 *
+		 * @var string
+		 */
+		public $icon;
+
+		/**
+		 * The ID attribute of the tab
+		 *
+		 * @var string
+		 */
+		public $id;
+
+		/**
+		 * The attribute which decides if this page should be shown
+		 * in the navbar
+		 *
+		 * @var bool
+		 */
+		public $show_in_nav;
+
+		/**
+		 * The inline CSS to be applied to the navbar
+		 *
+		 * @var string
+		 */
+		public $css;
 
 		/**
 		 * Constructor.
 		 *
 		 * @param string $page_title page title param.
 		 * @param string $menu_slug menu slug param.
-		 * @param string $menu_title meny title param.
+		 * @param string $menu_title menu title param.
 		 * @param string $tab_name tab name param.
 		 * @param string $icon tab icon.
 		 * @param string $request_uri request url.
 		 * @param string $view view page details.
 		 * @param string $id id of page.
-		 * @param string $css css of page .
-		 * @param string $show_in_nav check if need to shown in navbar.
+		 * @param string $css css of page.
+		 * @param bool   $show_in_nav check if need to shown in navbar.
+		 * @return void
 		 */
 		public function __construct( $page_title, $menu_slug, $menu_title, $tab_name, $icon, $request_uri, $view, $id, $css = '', $show_in_nav = true ) {
 			$this->page_title  = $page_title;
@@ -46,77 +117,5 @@ if ( ! class_exists( 'PluginPageDetails' ) ) {
 			$this->show_in_nav = $show_in_nav;
 			$this->css         = $css;
 		}
-
-		/**
-		 * The page title
-		 *
-		 * @var string $page_title
-		 */
-		public $page_title;
-
-		/**
-		 * The menuSlug
-		 *
-		 * @var string $menu_slug
-		 */
-		public $menu_slug;
-
-
-		/**
-		 * The menu title
-		 *
-		 * @var string $menu_title
-		 */
-		public $menu_title;
-
-		/**
-		 * Tab Name
-		 *
-		 * @var String $tab_name
-		 */
-		public $tab_name;
-
-		/**
-		 * URL of the NavBar
-		 *
-		 * @var String $url
-		 */
-		public $url;
-
-		/**
-		 * The php page having the view
-		 *
-		 * @var String $view
-		 */
-		public $view;
-
-		/**
-		 * The php page having the icon
-		 *
-		 * @var String $icon
-		 */
-		public $icon;
-
-		/**
-		 * The ID attribute of the Tab
-		 *
-		 * @var String $id
-		 */
-		public $id;
-
-		/**
-		 * The Attribute which decides if this page should be shown
-		 * in the Navbar
-		 *
-		 * @var bool $show_in_nav
-		 */
-		public $show_in_nav;
-
-		/**
-		 * The inline css to be applied to the navbar
-		 *
-		 * @var String
-		 */
-		public $css;
 	}
 }

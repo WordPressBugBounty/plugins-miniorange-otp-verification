@@ -10,7 +10,9 @@ namespace OTP\Notifications\UmSMSNotification\Helper;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
 use OTP\Helper\MoUtility;
+use OTP\Helper\MoMessages;
 use OTP\Objects\BaseMessages;
 use OTP\Traits\Instance;
 
@@ -25,35 +27,24 @@ if ( ! class_exists( 'UltimateMemberSMSNotificationMessages' ) ) {
 	final class UltimateMemberSMSNotificationMessages extends BaseMessages {
 
 		use Instance;
+
 		/**
-		 * Initializes values
+		 * This function is used to get the UM addon messages.
+		 *
+		 * @return string
 		 */
-		public function __construct() {
-			/** Created an array instead of messages instead of constant variables for Translation reasons. */
-			define(
-				'MO_UM_ADDON_MESSAGES',
-				maybe_serialize(
-					array(
-						self::NEW_UM_CUSTOMER_NOTIF_HEADER => mo_( 'NEW ACCOUNT NOTIFICATION' ),
-						self::NEW_UM_CUSTOMER_NOTIF_BODY   => mo_(
-							'Customers are sent a new account SMS notification' .
-																	' when they sign up on the site.'
-						),
-						self::NEW_UM_CUSTOMER_SMS          => mo_(
-							'Thanks for creating an account on {site-name}. Your username is {username} -miniorange'
-						),
-						self::NEW_UM_CUSTOMER_ADMIN_NOTIF_BODY => mo_(
-							'Admins are sent a new account SMS notification when' .
-																			' a user signs up on the site.'
-						),
-						self::NEW_UM_CUSTOMER_ADMIN_SMS    => mo_(
-							'New User Created on {site-name}. Username: {username} -miniorange'
-						),
-					)
+		public static function get_um_addon_messages() {
+			$um_addon_messages = maybe_serialize(
+				array(
+					self::NEW_UM_CUSTOMER_NOTIF_HEADER     => __( 'NEW ACCOUNT NOTIFICATION', 'miniorange-otp-verification' ),
+					self::NEW_UM_CUSTOMER_NOTIF_BODY       => __( 'Customers are sent a new account SMS notification when they sign up on the site.', 'miniorange-otp-verification' ),
+					self::NEW_UM_CUSTOMER_SMS              => __( 'Thanks for creating an account on {site-name}. Your username is {username} -miniorange', 'miniorange-otp-verification' ),
+					self::NEW_UM_CUSTOMER_ADMIN_NOTIF_BODY => __( 'Admins are sent a new account SMS notification when a user signs up on the site.', 'miniorange-otp-verification' ),
+					self::NEW_UM_CUSTOMER_ADMIN_SMS        => __( 'New User Created on {site-name}. Username: {username} -miniorange', 'miniorange-otp-verification' ),
 				)
 			);
+			return $um_addon_messages;
 		}
-
 
 
 		/**
@@ -68,14 +59,27 @@ if ( ! class_exists( 'UltimateMemberSMSNotificationMessages' ) ) {
 		public static function showMessage( $message_keys, $data = array() ) {
 			$display_message = '';
 			$message_keys    = explode( ' ', $message_keys );
-			$messages        = maybe_unserialize( MO_UM_ADDON_MESSAGES );
-			$common_messages = maybe_unserialize( MO_MESSAGES );
-			$messages        = array_merge( $messages, $common_messages );
+
+			$messages     = array();
+			$unserialized = maybe_unserialize( self::get_um_addon_messages() );
+			if ( is_array( $unserialized ) ) {
+				$messages = $unserialized;
+			}
+
+			$common_messages = array();
+			if ( defined( 'MO_MESSAGES' ) && is_string( MO_MESSAGES ) ) {
+				$unserialized = maybe_unserialize( MO_MESSAGES );
+				if ( is_array( $unserialized ) ) {
+					$common_messages = $unserialized;
+				}
+			}
+
+			$messages = array_merge( $messages, $common_messages );
 			foreach ( $message_keys as $message_key ) {
 				if ( MoUtility::is_blank( $message_key ) ) {
 					return $display_message;
 				}
-				$format_message = $messages[ $message_key ];
+				$format_message = isset( $messages[ $message_key ] ) ? $messages[ $message_key ] : '';
 				foreach ( $data as $key => $value ) {
 					$format_message = str_replace( '{{' . $key . '}}', $value, $format_message );
 				}

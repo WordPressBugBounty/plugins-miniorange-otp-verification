@@ -1,29 +1,34 @@
 <?php
-/**Load adminstrator changes for MoPHPSessions
+/**
+ * Load administrator changes for MoPHPSessions
  *
  * @package miniorange-otp-verification/helper
  */
 
 namespace OTP\Helper;
 
-use OTP\Objects\IMoSessions;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use OTP\Objects\IMoSessions;
+
 /** TODO: Need to move each session type to different files */
 if ( ! class_exists( 'MoPHPSessions' ) ) {
 	/**
-	 * MoPHPSessions class
+	 * Class for managing different types of session storage mechanisms.
+	 *
+	 * Implements the IMoSessions interface to provide consistent session handling
+	 * across different storage types: PHP sessions, cookies, cache and transients.
 	 */
 	class MoPHPSessions implements IMoSessions {
 
 		/**
-		 * Sets session values.
+		 * Sets session values based on the configured session type.
 		 *
-		 * @param string $key key value.
-		 * @param mixed  $val value of key pair.
+		 * @param string $key Key to store data under.
+		 * @param mixed  $val Value to store.
+		 * @return void
 		 */
 		public static function add_session_var( $key, $val ) {
 			if ( empty( $key ) ) {
@@ -31,7 +36,8 @@ if ( ! class_exists( 'MoPHPSessions' ) ) {
 			}
 			switch ( MOV_SESSION_TYPE ) {
 				case 'COOKIE':
-					setcookie( $key, maybe_serialize( $val ) );
+					$cookie_val = wp_json_encode( $val, JSON_UNESCAPED_SLASHES );
+					setcookie( $key, $cookie_val, time() + 12 * HOUR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
 					break;
 				case 'SESSION':
 					self::check_session();
@@ -43,31 +49,26 @@ if ( ! class_exists( 'MoPHPSessions' ) ) {
 					}
 					break;
 				case 'TRANSIENT':
-					if ( ! isset( $_COOKIE['transient_key'] ) ) { //phpcs:ignore -- false positive.
-						if ( ! wp_cache_get( 'transient_key' ) ) {
-							$transient_key = MoUtility::rand();
-							if ( ob_get_contents() ) {
-								ob_clean();
-							}
-							setcookie( 'transient_key', $transient_key, time() + 12 * HOUR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN );
-							wp_cache_add( 'transient_key', $transient_key );
-						} else {
-							$transient_key = wp_cache_get( 'transient_key' );
+					if ( empty( $_COOKIE['transient_key'] ) ) {
+						$transient_key = wp_generate_password( 32, false );
+						if ( headers_sent() ) {
+							return;
 						}
+						setcookie( 'transient_key', $transient_key, time() + 12 * HOUR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
 					} else {
-						$transient_key = sanitize_text_field( wp_unslash( $_COOKIE['transient_key'] ) ); //phpcs:ignore -- false positive.
+						$transient_key = sanitize_text_field( wp_unslash( $_COOKIE['transient_key'] ) );
 					}
-					set_site_transient( $transient_key . $key, $val, 12 * HOUR_IN_SECONDS );
+					set_site_transient( 'mo_otp_' . $transient_key . $key, $val, 12 * HOUR_IN_SECONDS );
 					break;
 
 			}
 		}
 
 		/**
-		 * Return the value stored in session.
+		 * Retrieves a value stored in session by key.
 		 *
-		 * @param string $key    - key against the value is stored.
-		 * @return mixed
+		 * @param string $key Key used to store the value.
+		 * @return mixed Value stored under the key, or null if not found.
 		 */
 		public static function get_session_var( $key ) {
 			if ( empty( $key ) ) {
@@ -75,29 +76,49 @@ if ( ! class_exists( 'MoPHPSessions' ) ) {
 			}
 			switch ( MOV_SESSION_TYPE ) {
 				case 'COOKIE':
-					return maybe_unserialize( isset( $_COOKIE[ $key ] ) ? sanitize_text_field( wp_unslash( $_COOKIE[ $key ] ) ) : null ); //phpcs:ignore -- false positive.
+					$raw = isset( $_COOKIE[ $key ] ) ? sanitize_text_field( wp_unslash( $_COOKIE[ $key ] ) ) : null;
+					if ( null === $raw ) {
+						return null;
+					}
+					$decoded = json_decode( $raw, true );
+					if ( null === $decoded && json_last_error() !== JSON_ERROR_NONE ) {
+						return null;
+					}
+					return $decoded;
 				case 'SESSION':
 					self::check_session();
-					return maybe_unserialize( MoUtility::sanitize_check( $key, $_SESSION ) );
+					// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Session value is intentionally not sanitized as it's internal data stored by this plugin.
+					$raw = isset( $_SESSION[ $key ] ) ? $_SESSION[ $key ] : null;
+					if ( null === $raw ) {
+						return null;
+					}
+					return maybe_unserialize( $raw );
 				case 'CACHE':
-					return maybe_unserialize( wp_cache_get( $key ) );
+					$raw = wp_cache_get( $key );
+					if ( null === $raw ) {
+						return null;
+					}
+					return maybe_unserialize( $raw );
 				case 'TRANSIENT':
-					$transient_key = isset( $_COOKIE['transient_key'] ) //phpcs:ignore -- false positive.
-					? sanitize_text_field( wp_unslash( $_COOKIE['transient_key'] ) ) : wp_cache_get( 'transient_key' ); //phpcs:ignore -- false positive.
-					return get_site_transient( $transient_key . $key );
+					if ( empty( $_COOKIE['transient_key'] ) ) {
+						return null;
+					}
+					$transient_key = sanitize_text_field( wp_unslash( $_COOKIE['transient_key'] ) );
+					return get_site_transient( 'mo_otp_' . $transient_key . $key );
 			}
 		}
 
 		/**
-		 * Unsets the session values as per the type set for.
+		 * Unsets session values for the specified key.
 		 *
-		 * @param string $key       -   key to unset.
+		 * @param string $key Key to unset from the session.
+		 * @return void
 		 */
 		public static function unset_session( $key ) {
 			switch ( MOV_SESSION_TYPE ) {
 				case 'COOKIE':
-					unset( $_COOKIE[ $key ] ); //phpcs:ignore -- false positive.
-					setcookie( $key, '', time() - ( 15 * 60 ) );
+					unset( $_COOKIE[ $key ] );
+					setcookie( $key, '', time() - ( 15 * 60 ), COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
 					break;
 				case 'SESSION':
 					self::check_session();
@@ -107,21 +128,22 @@ if ( ! class_exists( 'MoPHPSessions' ) ) {
 					wp_cache_delete( $key );
 					break;
 				case 'TRANSIENT':
-					$transient_key = isset( $_COOKIE['transient_key'] ) //phpcs:ignore -- false positive.
-					? sanitize_text_field( wp_unslash( $_COOKIE['transient_key'] ) ) : wp_cache_get( 'transient_key' ); //phpcs:ignore -- false positive.
-					if ( ! MoUtility::is_blank( $transient_key ) ) {
-						delete_site_transient( $transient_key . $key );
+					if ( ! empty( $_COOKIE['transient_key'] ) ) {
+						$transient_key = sanitize_text_field( wp_unslash( $_COOKIE['transient_key'] ) );
+						delete_site_transient( 'mo_otp_' . $transient_key . $key );
 					}
 					break;
 			}
 		}
 
 		/**
-		 * Checks if session started or not. Initiates session of not already initialized.
+		 * Checks if PHP session is started and initiates it if not.
+		 *
+		 * @return void
 		 */
 		public static function check_session() {
 			if ( 'SESSION' === MOV_SESSION_TYPE ) {
-				if ( session_id() === '' || ! isset( $_SESSION ) ) {
+				if ( '' === session_id() || ! isset( $_SESSION ) ) {
 					session_start();
 				}
 			}

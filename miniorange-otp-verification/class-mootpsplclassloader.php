@@ -56,23 +56,28 @@ if ( ! class_exists( 'MoOTPSplClassLoader' ) ) {
 		}
 
 		/**
-		 * Includes all the class.
+		 * Registers the autoload function to handle classes.
+		 *
+		 * @return void
 		 */
 		public function register() {
 			spl_autoload_register( array( $this, 'load_class' ) );
 		}
 
 		/**
-		 * Unregisters all the class.
+		 * Unregisters the autoload function.
+		 *
+		 * @return void
 		 */
 		public function unregister() {
 			spl_autoload_unregister( array( $this, 'load_class' ) );
 		}
 
 		/**
-		 * Loads all the class.
+		 * Loads all the classes using autoload functionality.
 		 *
-		 * @param string $class_name name of the class to include.
+		 * @param string $class_name Name of the class to include.
+		 * @return void
 		 */
 		public function load_class( $class_name ) {
 
@@ -92,17 +97,18 @@ if ( ! class_exists( 'MoOTPSplClassLoader' ) ) {
 				$file_name1      = str_replace( 'otp', MOV_NAME, $file_name );
 
 				if ( null !== $this->include_path ) {
-					require $this->include_path . DIRECTORY_SEPARATOR . $file_name1;
+					require_once $this->include_path . DIRECTORY_SEPARATOR . $file_name1;
 				} else {
-					require $file_name1;
+					require_once $file_name1;
 				}
 			}
 		}
 
 		/**
-		 * Checks if a class name is a namspace.
+		 * Checks if a class name is in the same namespace.
 		 *
-		 * @param string $class_name name of the class.
+		 * @param string $class_name Name of the class.
+		 * @return boolean True if the class belongs to the same namespace, false otherwise.
 		 */
 		private function is_same_namespace( $class_name ) {
 			return substr( $class_name, 0, strlen( $this->namespace . $this->namespace_separator ) ) === $this->namespace . $this->namespace_separator;

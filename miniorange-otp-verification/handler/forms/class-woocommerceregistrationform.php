@@ -2,7 +2,7 @@
 /**
  * Handles the OTP verification logic for WooCommerceRegistrationForm form.
  *
- * @package miniorange-otp-verification/handler
+ * @package miniorange-otp-verification/handler/forms
  */
 
 namespace OTP\Handler\Forms;
@@ -10,6 +10,7 @@ namespace OTP\Handler\Forms;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
+
 use OTP\Helper\FormSessionVars;
 use OTP\Helper\MoConstants;
 use OTP\Helper\MoException;
@@ -52,6 +53,7 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 		 * @var bool
 		 */
 		private $redirect_after_registration;
+
 		/**
 		 * Initializes values
 		 */
@@ -63,10 +65,10 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			$this->type_both_tag           = 'mo_wc_both_enable';
 			$this->phone_form_id           = '#reg_billing_phone';
 			$this->form_key                = 'WC_REG_FORM';
-			$this->form_name               = mo_( 'WooCommerce Registration Form' );
+			$this->form_name               = 'WooCommerce Registration Form';
 			$this->is_form_enabled         = get_mo_option( 'wc_default_enable' );
 			$this->button_text             = get_mo_option( 'wc_button_text' );
-			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : mo_( 'Click Here to send OTP' );
+			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : '';
 			$this->form_documents          = MoFormDocs::WC_FORM_LINK;
 			parent::__construct();
 		}
@@ -90,7 +92,7 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			add_filter( 'woocommerce_process_registration_errors', array( $this, 'woocommerce_site_registration_errors' ), 99, 4 );
 			add_action( 'woocommerce_created_customer', array( $this, 'register_woocommerce_user' ), 1, 3 );
 			add_filter( 'woocommerce_registration_redirect', array( $this, 'custom_registration_redirect' ), 99, 1 );
-			if ( $this->isPhoneVerificationEnabled() ) {
+			if ( $this->is_phone_verification_enabled() ) {
 
 				add_action( 'woocommerce_register_form', array( $this, 'mo_add_phone_field' ), 1 );
 				add_action( 'wcmp_vendor_register_form', array( $this, 'mo_add_phone_field' ), 1 );
@@ -103,7 +105,6 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			}
 		}
 
-
 		/**
 		 * Checks the option set in the GET and initialzes the OTP verification functionality.
 		 *
@@ -111,23 +112,22 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 		 */
 		private function routeData() {
 
-			if ( ! array_key_exists( 'mo_wcreg_option', $_GET ) ) { //phpcs:ignore -- false positive.
+			$option = MoUtility::get_current_page_parameter_value( 'mo_wcreg_option', '' );
+			if ( ! $option ) {
 				return;
 			}
 
-			if ( ! check_ajax_referer( $this->nonce, 'security', false ) ) {
+			// Security: Use hardcoded nonce action 'form_nonce' instead of variable.
+			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ), MoConstants::ERROR_JSON_TYPE ) );
 			}
-			$data                  = MoUtility::mo_sanitize_array( $_POST );
-			$send_otp_check_option = isset( $_GET['mo_wcreg_option'] ) ? sanitize_text_field( wp_unslash( $_GET['mo_wcreg_option'] ) ) : ''; //phpcs:ignore -- false positive.
-
-			switch ( trim( $send_otp_check_option ) ) {
+			$data = MoUtility::mo_sanitize_array( $_POST );
+			switch ( trim( $option ) ) {
 				case 'miniorange-wc-reg-verify':
-					$this->sendAjaxOTPRequest( $data );
+					$this->send_ajax_otp_request( $data );
 					break;
 			}
 		}
-
 
 		/**
 		 * This function handles the send ajax otp request. Initializes the session,
@@ -137,7 +137,7 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 		 * @param array $data - the post data on send OTP request.
 		 * @throws ReflectionException .
 		 */
-		private function sendAjaxOTPRequest( $data ) {
+		private function send_ajax_otp_request( $data ) {
 
 			MoUtility::initialize_transaction( $this->form_session_var );
 
@@ -149,19 +149,18 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			} else {
 				SessionUtils::add_email_verified( $this->form_session_var, $user_email );
 			}
-			$error = $this->processFormFields( null, $user_email, new WP_Error(), null, $mobile_number, $data );
+			$error = $this->process_form_fields( null, $user_email, new WP_Error(), null, $mobile_number, $data );
 			if ( $error->get_error_code() ) {
 				wp_send_json( MoUtility::create_json( $error->get_error_message(), MoConstants::ERROR_JSON_TYPE ) );
 			}
 		}
-
 
 		/**
 		 * This function registers the js file for enabling OTP Verification
 		 * for WooCommerce using AJAX calls.
 		 */
 		public function miniorange_register_wc_script() {
-			wp_register_script( 'mowcreg', MOV_URL . 'includes/js/wcreg.min.js', array( 'jquery' ), MOV_VERSION, true );
+			wp_register_script( 'mowcreg', MOV_URL . 'includes/js/wcreg.js', array( 'jquery' ), MOV_VERSION, true );
 			wp_localize_script(
 				'mowcreg',
 				'mowcreg',
@@ -169,49 +168,41 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 					'siteURL'    => site_url(),
 					'otpType'    => $this->otp_type,
 					'nonce'      => wp_create_nonce( $this->nonce ),
-					'buttontext' => mo_( $this->button_text ),
+					'buttontext' => $this->button_text,
 					'field'      => $this->otp_type === $this->type_phone_tag ? 'reg_billing_phone' : 'reg_email',
-					'imgURL'     => MOV_LOADER_URL,
 				)
 			);
 			wp_enqueue_script( 'mowcreg' );
 		}
-
 
 		/**
 		 * This function hooks into the woocommerce_registration_redirect hook to alter the page
 		 * where the user should be redirected to after registration. This option is set by the
 		 * admin under the WooCommerce Form Settings.
 		 *
-		 * @param string $var - redirect link.
+		 * @param string $redirect_to - redirect link.
 		 * @return false|string
 		 */
-		public function custom_registration_redirect( $var ) {
+		public function custom_registration_redirect( $redirect_to ) {
 
 			if ( $this->redirect_after_registration && get_mo_option( 'wc_default_enable' ) ) {
-				return get_permalink(
-					get_posts(
-						array(
-							'title'     => $this->redirect_to_page,
-							'post_type' => 'page',
-						)
-					)[0]->ID
-				);
+				$permalink = $this->redirect_to_page
+					? MoUtility::mo_get_permalink_by_page_title( $this->redirect_to_page, $redirect_to, 'all' )
+					: $redirect_to;
+				return $permalink;
 			}
-			return $var;
+			return $redirect_to;
 		}
-
 
 		/**
 		 * This is a utility function specific to this class which checks if
 		 * SMS Verification has been enabled by the admin for WooCommerce Registration
 		 * form.
 		 */
-		private function isPhoneVerificationEnabled() {
+		private function is_phone_verification_enabled() {
 			$otpver_type = $this->get_verification_type();
 			return VerificationType::BOTH === $otpver_type || VerificationType::PHONE === $otpver_type;
 		}
-
 
 		/**
 		 * This is part WooCommerce functionality and has been ported over here for validation.
@@ -226,7 +217,16 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 		 */
 		public function woocommerce_site_registration_errors( WP_Error $errors, $username, $password, $email ) {
 
-			$data = MoUtility::mo_sanitize_array( $_POST );  // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+			$nonce = isset( $_POST['woocommerce-register-nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['woocommerce-register-nonce'] ) ) : '';
+			if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'woocommerce-register' ) ) {
+				$errors = new WP_Error(
+					'registration-error-invalid-nonce',
+					MoMessages::showMessage( MoMessages::INVALID_OP )
+				);
+				return $errors;
+			}
+
+			$data = MoUtility::mo_sanitize_array( $_POST );
 			if ( ! MoUtility::is_blank( array_filter( $errors->errors ) ) ) {
 				return $errors;
 			}
@@ -238,7 +238,6 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 				return $this->processFormAndSendOTP( $username, $password, $email, $errors, $data );
 			}
 		}
-
 
 		/**
 		 * Verify OTP field to ensure that the user has entered
@@ -257,7 +256,6 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			}
 		}
 
-
 		/**
 		 * Check to ensure if user has initiated OTP Verification.
 		 * Makes sure user is not submitting the form w/o
@@ -273,7 +271,6 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 				);
 			}
 		}
-
 
 		/**
 		 * Check to make sure user is submitting the form with the phone number or
@@ -296,7 +293,8 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			}
 
 			$otpver_type = $this->get_verification_type();
-			$this->validate_challenge( $otpver_type, null, sanitize_text_field( $data['moverify'] ) );
+			$otp_code    = isset( $data['moverify'] ) ? wp_unslash( $data['moverify'] ) : '';
+			$this->validate_challenge( $otpver_type, null, $otp_code );
 
 			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otpver_type ) ) {
 				$this->unset_otp_session_variables();
@@ -305,7 +303,6 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			}
 			return $errors;
 		}
-
 
 		/**
 		 * Check the integrity of the phone or email being submitted and ensure that
@@ -327,13 +324,13 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			);
 
 			if ( 0 === strcasecmp( $this->otp_type, $this->type_phone_tag ) ) {
-				$phone = isset( $data['billing_phone'] ) ? $data['billing_phone'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+				$phone = isset( $data['billing_phone'] ) ? $data['billing_phone'] : '';
 				$phone = MoUtility::process_phone_number( $phone );
-				if ( ! Sessionutils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
+				if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
 					return $phone_errors;
 				}
 			} elseif ( 0 === strcasecmp( $this->otp_type, $this->type_email_tag ) ) {
-				if ( ! SessionUtils::is_email_verified_match( $this->form_session_var, sanitize_email( $data['email'] ) ) ) {
+				if ( ! SessionUtils::is_email_verified_match( $this->form_session_var, trim( $data['email'] ) ) ) {
 					return $email_errors;
 				}
 			}
@@ -350,14 +347,19 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 		 * }
 		 */
 		public function get_email_phone_data() {
-			$data  = MoUtility::mo_sanitize_array( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce is checked in the caller function.
-			$phone = isset( $data['billing_phone'] ) ? $data['billing_phone'] : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+			if ( ! isset( $_POST['mopopup_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['mopopup_wpnonce'] ) ), 'mo_popup_options' ) ) {
+				return array(
+					'email' => '',
+					'phone' => '',
+				);
+			}
+			$data  = MoUtility::mo_sanitize_array( $_POST );
+			$phone = isset( $data['billing_phone'] ) ? $data['billing_phone'] : '';
 			return array(
-				'email' => isset( $data['email'] ) ? $data['email'] : '',
+				'email' => isset( $data['email'] ) ? trim( $data['email'] ) : '',
 				'phone' => MoUtility::process_phone_number( $phone ),
 			);
 		}
-
 
 		/**
 		 * Process the registration form and start OTP Verification process if no errors are found.
@@ -367,8 +369,8 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 		 * @param string   $password - password of the user to be registered.
 		 * @param string   $email - email of the user to be registered.
 		 * @param WP_Error $errors - - WP_Error object.
+		 * @param array    $data - the post data on send OTP request.
 		 * @return WP_Error
-		 * @throws ReflectionException.
 		 */
 		private function processFormAndSendOTP( $username, $password, $email, WP_Error $errors, $data ) {
 			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->get_verification_type() ) ) {
@@ -377,9 +379,8 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 				return $errors;
 			}
 
-			$phone_number = isset( $_POST['billing_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_phone'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+			$phone_number = isset( $data['billing_phone'] ) ? $data['billing_phone'] : '';
 			$phone_number = MoUtility::process_phone_number( $phone_number );
-
 			MoUtility::initialize_transaction( $this->form_session_var );
 
 			try {
@@ -390,12 +391,9 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 				return new WP_Error( $e->getmo_code(), $e->getMessage() );
 			}
 			do_action( 'woocommerce_register_post', $username, $email, $errors );
-			$data = MoUtility::mo_sanitize_array( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
 			return $errors->get_error_code() ? $errors
-			: $this->processFormFields( $username, $email, $errors, $password, $phone_number, $data );
+			: $this->process_form_fields( $username, $email, $errors, $password, $phone_number, $data );
 		}
-
-
 
 		/**
 		 * Assert WooCommerce password. Throws an exception if password is invalid.
@@ -408,7 +406,7 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 				if ( MoUtility::is_blank( $password ) ) {
 					throw new MoException(
 						'registration-error-invalid-password',
-						esc_html( mo_( 'Please enter a valid account password.' ) ),
+						esc_html( __( 'Please enter a valid account password.', 'miniorange-otp-verification' ) ),
 						204
 					);
 				}
@@ -425,19 +423,18 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			if ( MoUtility::is_blank( $email ) || ! is_email( $email ) ) {
 				throw new MoException(
 					'registration-error-invalid-email',
-					esc_html( mo_( 'Please enter a valid email address.' ) ),
+					esc_html( __( 'Please enter a valid email address.', 'miniorange-otp-verification' ) ),
 					202
 				);
 			}
 			if ( email_exists( $email ) ) {
 				throw new MoException(
 					'registration-error-email-exists',
-					esc_html( mo_( 'An account is already registered with your email address. Please login.' ) ),
+					esc_html( __( 'An account is already registered with your email address. Please login.', 'miniorange-otp-verification' ) ),
 					203
 				);
 			}
 		}
-
 
 		/**
 		 * Assert WooCommerce UserName. Throw an exception if username is invalid.
@@ -450,20 +447,19 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 				if ( MoUtility::is_blank( $username ) || ! validate_username( $username ) ) {
 					throw new MoException(
 						'registration-error-invalid-username',
-						esc_html( mo_( 'Please enter a valid account username.' ) ),
+						esc_html( __( 'Please enter a valid account username.', 'miniorange-otp-verification' ) ),
 						200
 					);
 				}
 				if ( username_exists( $username ) ) {
 					throw new MoException(
 						'registration-error-username-exists',
-						esc_html( mo_( 'An account is already registered with that username. Please choose another.' ) ),
+						esc_html( __( 'An account is already registered with that username. Please choose another.', 'miniorange-otp-verification' ) ),
 						201
 					);
 				}
 			}
 		}
-
 
 		/**
 		 * This function checks and validates the phone, email fields and
@@ -478,7 +474,7 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 		 * @param array  $data - the post data on send OTP request.
 		 * @return WP_Error
 		 */
-		private function processFormFields( $username, $email, $errors, $password, $phone, $data ) {
+		private function process_form_fields( $username, $email, $errors, $password, $phone, $data ) {
 
 			global $phone_logic;
 			MoPHPSessions::add_session_var( 'form_session_var', $this->form_session_var );
@@ -497,7 +493,7 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
 				if ( ! isset( $phone_number ) || ! MoUtility::validate_phone_number( $phone_number ) ) {
 					return $invalid_phone_errors;
-				} elseif ( $this->restrict_duplicates && $this->isPhoneNumberAlreadyInUse( $phone_number, 'billing_phone' ) ) {
+				} elseif ( $this->restrict_duplicates && $this->is_phone_number_already_in_use( $phone_number, 'billing_phone' ) ) {
 					return $phone_exists_errors;
 				}
 				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::PHONE, $password );
@@ -506,14 +502,13 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			} elseif ( strcasecmp( $this->otp_type, $this->type_both_tag ) === 0 ) {
 				if ( ! isset( $phone_number ) || ! MoUtility::validate_phone_number( $phone_number ) ) {
 					return $invalid_phone_errors;
-				} elseif ( $this->restrict_duplicates && $this->isPhoneNumberAlreadyInUse( $phone_number, 'billing_phone' ) ) {
+				} elseif ( $this->restrict_duplicates && $this->is_phone_number_already_in_use( $phone_number, 'billing_phone' ) ) {
 					return $phone_exists_errors;
 				}
 				$this->send_challenge( $username, $email, $errors, $phone_number, VerificationType::BOTH, $password );
 			}
 			return $errors;
 		}
-
 
 		/**
 		 * Called after successful OTP Verification to complete the user registration process.
@@ -525,13 +520,19 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 		 * @param string $password_generated - the password provided by the user.
 		 */
 		public function register_woocommerce_user( $customer_id, $new_customer_data, $password_generated ) {
-
-			if ( isset( $_POST['billing_phone'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
-				$phone = MoUtility::sanitize_check( 'billing_phone', $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
-				update_user_meta( $customer_id, 'billing_phone', MoUtility::process_phone_number( $phone ) );
+			if ( ( isset( $_POST['woocommerce-register-nonce'] ) && wp_verify_nonce(
+				sanitize_text_field( wp_unslash( $_POST['woocommerce-register-nonce'] ) ),
+				'woocommerce-register'
+			) ) ) {
+				return;
+			}
+			$data = MoUtility::mo_sanitize_array( $_POST );
+			if ( isset( $data['billing_phone'] ) ) {
+				$phone = MoUtility::sanitize_check( 'billing_phone', $data );
+				$phone = MoUtility::process_phone_number( $phone );
+				update_user_meta( $customer_id, 'billing_phone', $phone );
 			}
 		}
-
 
 		/**
 		 * This function hooks into the woocommerce_register_form hook to add
@@ -542,15 +543,14 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			if ( ! did_action( 'woocommerce_register_form' ) || ! did_action( 'wcmp_vendor_register_form' ) ) {
 				echo '<p class="form-row form-row-wide">
                 <label for="reg_billing_phone">
-                    ' . esc_html( mo_( 'Phone' ) ) . '
+                    ' . esc_html( __( 'Phone', 'miniorange-otp-verification' ) ) . '
                     <span class="required">*</span>
                 </label>
                 <input type="text" class="input-text" 
                         name="billing_phone" id="reg_billing_phone" 
-                        value="' . ( isset( $_POST['billing_phone'] ) ? esc_attr( sanitize_text_field( wp_unslash( $_POST['billing_phone'] ) ) ) : '' ) . '" /></p>'; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+                        value="" /></p>';
 			}
 		}
-
 
 		/**
 		 * This function hooks into the woocommerce_register_form hook to add
@@ -560,8 +560,8 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 		public function mo_add_verification_field() {
 			if ( ! did_action( 'woocommerce_register_form' ) || ! did_action( 'wcmp_vendor_register_form' ) ) {
 				echo '<p class="form-row form-row-wide">
-                <label for="reg_verification_phone">
-                    ' . esc_html( mo_( 'Enter Code' ) ) . '
+				<label for="reg_verification_field">
+                    ' . esc_html( __( 'Enter Code', 'miniorange-otp-verification' ) ) . '
                     <span class="required">*</span>
                 </label>
                 <input type="text" class="input-text" name="moverify" 
@@ -598,7 +598,6 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			}
 		}
 
-
 		/**
 		 * This function hooks into the otp_verification_successful hook. This function is
 		 * details what needs to be done if OTP Verification is successful.
@@ -616,7 +615,6 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			SessionUtils::add_status( $this->form_session_var, self::VALIDATED, $otp_type );
 		}
 
-
 		/**
 		 * Unset all the session variables so that a new form submission starts
 		 * a fresh process of OTP verification.
@@ -624,7 +622,6 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 		public function unset_otp_session_variables() {
 			SessionUtils::unset_session( array( $this->tx_session_id, $this->form_session_var ) );
 		}
-
 
 		/**
 		 * This function is called by the filter mo_phone_dropdown_selector
@@ -636,12 +633,11 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 		 * @return array $selector - the Jquery selector to be modified.
 		 */
 		public function get_phone_number_selector( $selector ) {
-			if ( $this->is_form_enabled() && $this->isPhoneVerificationEnabled() ) {
+			if ( $this->is_form_enabled() && $this->is_phone_verification_enabled() ) {
 				array_push( $selector, $this->phone_form_id );
 			}
 			return $selector;
 		}
-
 
 		/**
 		 * This functions makes a database call to check if the phone number already exists for another user.
@@ -650,22 +646,48 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 		 * @param string $key - meta_key to search for.
 		 * @return bool
 		 */
-		private function isPhoneNumberAlreadyInUse( $phone, $key ) {
-			global $wpdb;
-			$phone   = MoUtility::process_phone_number( $phone );
-			$results = $wpdb->get_row( $wpdb->prepare( "SELECT `user_id` FROM `{$wpdb->prefix}usermeta` WHERE `meta_key` = %s AND `meta_value` =  %s", array( $key, $phone ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, Direct database call without caching detected -- DB Direct Query is necessary here.
-			return ! MoUtility::is_blank( $results );
-		}
+		private function is_phone_number_already_in_use( $phone, $key ) {
+			$phone = MoUtility::process_phone_number( $phone );
 
+			// Create cache key based on phone number and meta key.
+			$cache_key   = 'mo_wc_phone_in_use_' . md5( $phone . '_' . $key );
+			$cache_group = 'mo_wc_checkout';
+
+			// Try to get from cache first.
+			$cached_result = wp_cache_get( $cache_key, $cache_group );
+			if ( false !== $cached_result ) {
+				return (bool) $cached_result;
+			}
+
+			// Query database if not in cache.
+			$args = array(
+				'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Necessary to check for duplicate phone numbers. Caching implemented above.
+					array(
+						'key'     => $key,
+						'value'   => $phone,
+						'compare' => '=',
+					),
+				),
+				'number'     => 1,
+				'fields'     => 'ID',
+			);
+
+			$users = get_users( $args );
+
+			// Check if any users were found.
+			$is_in_use = ! empty( $users );
+
+			// Store in cache for 15 minutes (900 seconds).
+			wp_cache_set( $cache_key, $is_in_use, $cache_group, 900 );
+
+			return $is_in_use;
+		}
 
 		/**
 		 * Handles saving all the woocommerce Registration form related options by the admin.
 		 */
 		public function handle_form_options() {
-			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option() ) ) {
-				return;
-			}
-			if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->admin_nonce ) ) {
+			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option(), 'wc_default_enable' ) ) {
 				return;
 			}
 
@@ -677,11 +699,11 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 				);
 				return;
 			}
-
 			$this->is_form_enabled             = $this->sanitize_form_post( 'wc_default_enable' );
 			$this->otp_type                    = $this->sanitize_form_post( 'wc_enable_type' );
 			$this->restrict_duplicates         = $this->sanitize_form_post( 'wc_restrict_duplicates' );
-			$this->redirect_to_page            = isset( $_POST['mo_wc_reg_page_id'] ) ? get_the_title( sanitize_text_field( wp_unslash( $_POST['mo_wc_reg_page_id'] ) ) ) : 'My Account'; //phpcs:ignore -- false positive.
+			$page_id                           = $this->sanitize_form_post( 'mo_wc_reg_page_id', '' );
+			$this->redirect_to_page            = $page_id ? get_the_title( $page_id ) : 'My Account';
 			$this->is_ajax_form                = $this->sanitize_form_post( 'wc_is_ajax_form' );
 			$this->button_text                 = $this->sanitize_form_post( 'wc_button_text' );
 			$this->redirect_after_registration = $this->sanitize_form_post( 'wcreg_redirect_after_registration' );
@@ -701,7 +723,8 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 		 * @return string
 		 */
 		public function redirectToPage() {
-			return $this->redirect_to_page; }
+			return $this->redirect_to_page;
+		}
 
 		/**
 		 * Returns whether admin enabled redirection after registration.
@@ -709,6 +732,7 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 		 * @return string
 		 */
 		public function isredirectToPageEnabled() {
-			return $this->redirect_after_registration;}
+			return $this->redirect_after_registration;
+		}
 	}
 }

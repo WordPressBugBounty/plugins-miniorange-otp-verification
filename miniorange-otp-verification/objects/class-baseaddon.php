@@ -9,6 +9,7 @@ namespace OTP\Objects;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
 /**
  * This abstract class is used to define the base class of the add-ons
  * created for the miniorange-otp-verification plugin. Defines the
@@ -21,8 +22,9 @@ if ( ! class_exists( 'BaseAddOn' ) ) {
 	 */
 	abstract class BaseAddOn implements AddOnInterface {
 
-		/**Constructor
-		 **/
+		/**
+		 * Constructor
+		 */
 		public function __construct() {
 			$this->initialize_helpers();
 			$this->initialize_handlers();

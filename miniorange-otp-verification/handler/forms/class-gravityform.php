@@ -1,8 +1,8 @@
 <?php
 /**
- * Load admin view for Form Craft Premium Form.
+ * Gravity Form handler.
  *
- * @package miniorange-otp-verification/handler
+ * @package miniorange-otp-verification/handler/forms
  */
 
 namespace OTP\Handler\Forms;
@@ -45,7 +45,7 @@ if ( ! class_exists( 'GravityForm' ) ) {
 		public $button_css;
 
 		/**
-		 * Initializes values
+		 * Initializes values.
 		 */
 		protected function __construct() {
 			$this->is_login_or_social_form = false;
@@ -54,11 +54,11 @@ if ( ! class_exists( 'GravityForm' ) ) {
 			$this->type_phone_tag          = 'mo_gf_contact_phone_enable';
 			$this->type_email_tag          = 'mo_gf_contact_email_enable';
 			$this->form_key                = 'GRAVITY_FORM';
-			$this->form_name               = mo_( 'Gravity Form' );
+			$this->form_name               = 'Gravity Form';
 			$this->is_form_enabled         = get_mo_option( 'gf_contact_enable' );
 			$this->phone_form_id           = '.ginput_container_phone';
 			$this->button_text             = get_mo_option( 'gf_button_text' );
-			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : mo_( 'Click Here to send OTP' );
+			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : '';
 			$this->generate_otp_action     = 'mo_gravity_send_otp';
 			$this->button_css              = get_mo_option( 'gf_button_css' );
 			$this->form_documents          = MoFormDocs::GF_FORM_LINK;
@@ -79,29 +79,31 @@ if ( ! class_exists( 'GravityForm' ) ) {
 			add_action( 'wp_enqueue_scripts', array( $this, 'miniorange_gravity_script' ) );
 			add_filter( 'gform_field_validation', array( $this, 'validate_form_submit' ), 1, 5 );
 			add_action( 'gform_pre_submission', array( $this, 'mo_gravity_unset_session' ) );
-			add_action( 'wp_ajax_nopriv_' . $this->generate_otp_action, array( $this, 'handleGfForm' ) );
-			add_action( 'wp_ajax_' . $this->generate_otp_action, array( $this, 'handleGfForm' ) );
+			add_action( 'wp_ajax_nopriv_' . $this->generate_otp_action, array( $this, 'mo_handle_gf_form' ) );
+			add_action( 'wp_ajax_' . $this->generate_otp_action, array( $this, 'mo_handle_gf_form' ) );
 		}
 
 		/**
-		 * This function is used to start the OTP Verification process. Initializes the
-		 * required session variables and starts the OTP Verification process.
+		 * Start the OTP Verification process via AJAX.
 		 *
-		 * * @throws ReflectionException.
+		 * Initializes the required session variables and starts the OTP Verification process.
+		 *
+		 * @return void
 		 */
-		public function handleGfForm() {
+		public function mo_handle_gf_form() {
 
-			if ( ! check_ajax_referer( $this->nonce, $this->nonce_key ) ) {
+			// Verify AJAX nonce without dying to allow JSON error response.
+			// Security: Use hardcoded nonce action 'form_nonce' and key 'security' instead of variables.
+			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json(
 					MoUtility::create_json(
 						MoMessages::showMessage( MoMessages::INVALID_OP ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
-				exit;
 			}
 
-			$get_data = MoUtility::mo_sanitize_array( $_POST );
+			$get_data = MoUtility::mo_sanitize_array( wp_unslash( $_POST ) );
 
 			MoUtility::initialize_transaction( $this->form_session_var );
 
@@ -118,12 +120,12 @@ if ( ! class_exists( 'GravityForm' ) ) {
 		 * for Gravity using AJAX calls.
 		 */
 		public function miniorange_gravity_script() {
-			wp_register_script( 'mogravity', MOV_URL . 'includes/js/mogravity.min.js', array( 'jquery' ), MOV_VERSION, true );
+			wp_register_script( 'mogravity', MOV_URL . 'includes/js/mogravity.js', array( 'jquery' ), MOV_VERSION, true );
 			wp_localize_script(
 				'mogravity',
 				'mogravity',
 				array(
-					'siteURL'           => wp_ajax_url(),
+					'siteURL'           => admin_url( 'admin-ajax.php' ),
 					'nonce'             => wp_create_nonce( $this->nonce ),
 					'otpType'           => $this->otp_type,
 					'buttonText'        => $this->button_text,
@@ -143,12 +145,15 @@ if ( ! class_exists( 'GravityForm' ) ) {
 		 * and start the OTP Verification process. Keeps the email otp was sent to in session so
 		 * that it can verified later.
 		 *
-		 * @param string $get_data array the data sent in ajax call for otp verification.
+		 * @param array $get_data Data sent in AJAX call for OTP verification.
+		 *
+		 * @return void
 		 */
 		private function processEmailAndStartOTPVerificationProcess( $get_data ) {
 			if ( MoUtility::sanitize_check( 'user_email', $get_data ) ) {
-				SessionUtils::add_email_verified( $this->form_session_var, $get_data['user_email'] );
-				$this->send_challenge( '', $get_data['user_email'], null, $get_data['user_email'], VerificationType::EMAIL );
+				$user_email = $get_data['user_email'];
+				SessionUtils::add_email_verified( $this->form_session_var, $user_email );
+				$this->send_challenge( '', $user_email, null, $user_email, VerificationType::EMAIL );
 			} else {
 				wp_send_json(
 					MoUtility::create_json(
@@ -157,19 +162,19 @@ if ( ! class_exists( 'GravityForm' ) ) {
 					)
 				);
 			}
-
 		}
 		/**
-		 * This function is called to check if phone verification has been enabled in the settings
-		 * and start the OTP Verification process. Keeps the phone otp was sent to in session so
-		 * that it can verified later.
+		 * Start phone OTP verification if enabled. Stores the phone in session for validation.
 		 *
-		 * @param string $get_data - the data sent in ajax call for otp verification.
+		 * @param array $get_data Data sent in AJAX call for OTP verification.
+		 *
+		 * @return void
 		 */
 		private function processPhoneAndStartOTPVerificationProcess( $get_data ) {
 			if ( MoUtility::sanitize_check( 'user_phone', $get_data ) ) {
-				SessionUtils::add_phone_verified( $this->form_session_var, trim( $get_data['user_phone'] ) );
-				$this->send_challenge( '', '', null, trim( $get_data['user_phone'] ), VerificationType::PHONE );
+				$phone = MoUtility::process_phone_number( $get_data['user_phone'] );
+				SessionUtils::add_phone_verified( $this->form_session_var, $phone );
+				$this->send_challenge( '', '', null, $phone, VerificationType::PHONE );
 			} else {
 				wp_send_json(
 					MoUtility::create_json(
@@ -201,20 +206,55 @@ if ( ! class_exists( 'GravityForm' ) ) {
 		 * @return array
 		 */
 		public function validate_form_submit( $error, $value, $form, $field ) {
-			$form_id           = 'formId';
-			$form_datails      = MoUtility::sanitize_check( $field->$form_id, $this->form_details );
-			$submitted_form_id = isset( $_POST['gform_submit'] ) ? sanitize_text_field( wp_unslash( ( $_POST['gform_submit'] ) ) ) : '';// phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
+			$form_id      = 'formId';
+			$form_datails = MoUtility::sanitize_check( $field->$form_id, $this->form_details );
 
-			if ( $form_datails && true === $error['is_valid'] && array_key_exists( $submitted_form_id, $this->form_details ) ) {
-				if ( strpos( $field->label, $form_datails['verifyKey'] ) !== false
-				&& SessionUtils::is_otp_initialized( $this->form_session_var ) && ! SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->get_verification_type() ) ) {
-					$error = $this->validate_otp( $error, $value );
-				} elseif ( $this->isEmailOrPhoneField( $field, $form_datails ) ) {
-					if ( SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
+			if ( ! $form_datails || ! array_key_exists( $field->{$form_id}, $this->form_details ) ) {
+				return $error;
+			}
+
+			if ( isset( $form_datails['verifyKey'] ) && strpos( $field->label, $form_datails['verifyKey'] ) !== false ) {
+				if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
+					return array(
+						'is_valid' => false,
+						'message'  => MoMessages::showMessage( MoMessages::PLEASE_VALIDATE ),
+					);
+				} elseif ( ! SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->get_verification_type() ) ) {
+					return $this->validate_otp( $error, $value );
+				} else {
+					$error['is_valid'] = true;
+					return $error;
+				}
+			}
+
+			if ( $form_datails && array_key_exists( $field->{$form_id}, $this->form_details ) ) {
+				$is_email_or_phone_field = $this->isEmailOrPhoneField( $field, $form_datails );
+
+				if ( ! $is_email_or_phone_field ) {
+					if ( $this->otp_type === $this->type_email_tag ) {
+						if ( ( isset( $field->type ) && 'email' === $field->type )
+							|| ( isset( $form_datails['email_show'] ) && ! empty( $form_datails['email_show'] ) && $field->label === $form_datails['email_show'] ) ) {
+							$is_email_or_phone_field = true;
+						}
+					} elseif ( $this->otp_type === $this->type_phone_tag ) {
+						if ( ( isset( $field->type ) && 'phone' === $field->type )
+							|| ( isset( $form_datails['phone_show'] ) && ! empty( $form_datails['phone_show'] ) && $field->label === $form_datails['phone_show'] ) ) {
+							$is_email_or_phone_field = true;
+						}
+					}
+				}
+
+				if ( $is_email_or_phone_field ) {
+					if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->get_verification_type() ) ) {
 						$error = $this->validate_submitted_email_or_phone( $error['is_valid'], $value, $error );
-					} else {
+						if ( isset( $error['is_valid'] ) && ( false === $error['is_valid'] || null === $error['is_valid'] ) ) {
+							SessionUtils::add_status( $this->form_session_var, self::VERIFICATION_FAILED, $this->get_verification_type() );
+						}
+					} elseif ( SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
+						$error = $this->validate_submitted_email_or_phone( $error['is_valid'], $value, $error );
+					} elseif ( true === $error['is_valid'] ) {
 						$error = array(
-							'is_valid' => null,
+							'is_valid' => false,
 							'message'  => MoMessages::showMessage( MoMessages::PLEASE_VALIDATE ),
 						);
 					}
@@ -264,14 +304,17 @@ if ( ! class_exists( 'GravityForm' ) ) {
 			if ( $is_valid ) {
 				if ( VerificationType::EMAIL === $otp_type && ! SessionUtils::is_email_verified_match( $this->form_session_var, $value ) ) {
 					return array(
-						'is_valid' => null,
+						'is_valid' => false,
 						'message'  => MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ),
 					);
-				} elseif ( VerificationType::PHONE === $otp_type && ! SessionUtils::is_phone_verified_match( $this->form_session_var, $value ) ) {
-					return array(
-						'is_valid' => null,
-						'message'  => MoMessages::showMessage( MoMessages::PHONE_MISMATCH ),
-					);
+				} elseif ( VerificationType::PHONE === $otp_type ) {
+					$phone = MoUtility::process_phone_number( $value );
+					if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
+						return array(
+							'is_valid' => false,
+							'message'  => MoMessages::showMessage( MoMessages::PHONE_MISMATCH ),
+						);
+					}
 				}
 			}
 			return $error;
@@ -335,12 +378,16 @@ if ( ! class_exists( 'GravityForm' ) ) {
 		 * Handles saving all the Gravity form related options by the admin.
 		 */
 		public function handle_form_options() {
-			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option() ) || ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->admin_nonce ) ) {
+			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option(), 'gf_contact_enable' ) ) {
 				return;
 			}
-			$data = MoUtility::mo_sanitize_array( $_POST );
-			if ( isset( $data['mo_customer_validation_gf_contact_enable'] ) && ! MoUtility::get_active_plugin_version( 'Gravity Forms' ) ) {
-				$message  = MoMessages::showMessage( MoMessages::PLUGIN_INSTALL, array( 'formname' => $this->form_name ) );
+			$form_raw = $this->sanitize_form_post( 'gravity_form', '' );
+			if ( empty( $form_raw ) ) {
+				return;
+			}
+
+			if ( $this->sanitize_form_post( 'gf_contact_enable' ) && ! MoUtility::get_active_plugin_version( 'Gravity Forms' ) ) {
+				$message = MoMessages::showMessage( MoMessages::PLUGIN_INSTALL, array( 'formname' => $this->form_name ) );
 				do_action( 'mo_registration_show_message', $message, MoConstants::ERROR );
 				return;
 			}
@@ -348,9 +395,9 @@ if ( ! class_exists( 'GravityForm' ) ) {
 			$this->otp_type        = $this->sanitize_form_post( 'gf_contact_type' );
 			$this->button_text     = $this->sanitize_form_post( 'gf_button_text' );
 			$this->button_css      = $this->sanitize_form_post( 'gf_button_css' );
-			$forms                 = $this->parseform_datails( $data );
+			$form_details          = $this->mo_parse_form_details( $form_raw );
 
-			$this->form_details = is_array( $forms ) ? $forms : '';
+			$this->form_details = is_array( $form_details ) ? $form_details : '';
 
 			update_mo_option( 'gf_otp_enabled', maybe_serialize( $this->form_details ) );
 			update_mo_option( 'gf_contact_enable', $this->is_form_enabled );
@@ -366,8 +413,11 @@ if ( ! class_exists( 'GravityForm' ) ) {
 		 *
 		 * @return array
 		 */
-		private function parseform_datails( $data ) {
-			$forms         = array();
+		private function mo_parse_form_details( $data ) {
+			if ( empty( $data['form'] ) ) {
+				return array();
+			}
+			$form          = array();
 			$get_field_key = function ( $field_details, $field_label, $type ) {
 				foreach ( $field_details as $field ) {
 					if ( get_class( $field ) === $type
@@ -378,25 +428,20 @@ if ( ! class_exists( 'GravityForm' ) ) {
 				return null;
 			};
 
-			$form = null;
-			if ( ! array_key_exists( 'gravity_form', $data ) || ! $this->is_form_enabled ) {
-				return array();
-			}
-			$data = MoUtility::mo_sanitize_array( $data );
-			foreach ( array_filter( $data['gravity_form']['form'] ) as $key => $value ) {
-				$form_data                              = GFAPI::get_form( $value );
-				$email_key                              = isset( $data['gravity_form']['emailkey'][ $key ] ) ? sanitize_text_field( wp_unslash( $data['gravity_form']['emailkey'][ $key ] ) ) : '';
-				$phone_key                              = isset( $data['gravity_form']['phonekey'][ $key ] ) ? sanitize_text_field( wp_unslash( $data['gravity_form']['phonekey'][ $key ] ) ) : '';
-				$forms[ sanitize_text_field( $value ) ] = array(
+			foreach ( array_filter( $data['form'] ) as $key => $value ) {
+				$form_data      = GFAPI::get_form( $value );
+				$email_key      = isset( $data['emailkey'][ $key ] ) ? ( $data['emailkey'][ $key ] ) : '';
+				$phone_key      = isset( $data['phonekey'][ $key ] ) ? ( $data['phonekey'][ $key ] ) : '';
+				$form[ $value ] = array(
 					'emailkey'    => $get_field_key( $form_data['fields'], $email_key, 'GF_Field_Email' ),
 					'phonekey'    => $get_field_key( $form_data['fields'], $phone_key, 'GF_Field_Phone' ),
-					'verifyKey'   => isset( $data['gravity_form']['verifyKey'][ $key ] ) ? sanitize_text_field( wp_unslash( $data['gravity_form']['verifyKey'][ $key ] ) ) : '',
-					'phone_show'  => isset( $data['gravity_form']['phonekey'][ $key ] ) ? sanitize_text_field( wp_unslash( $data['gravity_form']['phonekey'][ $key ] ) ) : '',
-					'email_show'  => isset( $data['gravity_form']['emailkey'][ $key ] ) ? sanitize_text_field( wp_unslash( $data['gravity_form']['emailkey'][ $key ] ) ) : '',
-					'verify_show' => isset( $data['gravity_form']['verifyKey'][ $key ] ) ? sanitize_text_field( wp_unslash( $data['gravity_form']['verifyKey'][ $key ] ) ) : '',
+					'verifyKey'   => isset( $data['verifyKey'][ $key ] ) ? ( $data['verifyKey'][ $key ] ) : '',
+					'phone_show'  => isset( $data['phonekey'][ $key ] ) ? ( $data['phonekey'][ $key ] ) : '',
+					'email_show'  => isset( $data['emailkey'][ $key ] ) ? ( $data['emailkey'][ $key ] ) : '',
+					'verify_show' => isset( $data['verifyKey'][ $key ] ) ? ( $data['verifyKey'][ $key ] ) : '',
 				);
 			}
-			return $forms;
+			return $form;
 		}
 		/**
 		 * Checks if the field passed is an email or phone field

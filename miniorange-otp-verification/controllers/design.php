@@ -2,7 +2,7 @@
 /**
  * Loads Design popup admin view.
  *
- * @package miniorange-otp-verification
+ * @package miniorange-otp-verification/controllers
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -14,6 +14,7 @@ use OTP\Helper\Templates\ErrorPopup;
 use OTP\Helper\Templates\ExternalPopup;
 use OTP\Helper\Templates\UserChoicePopup;
 use OTP\Objects\Template;
+use OTP\Helper\MoUtility;
 
 
 $default_popup = DefaultPopup::instance();
@@ -35,11 +36,16 @@ $external_template_type   = $external_popup->get_template_key();
 $error_template_type      = $error_popup_instance->get_template_key();
 
 
-$email_templates         = maybe_unserialize( get_mo_option( 'custom_popups' ) );
-$custom_default_popup    = $email_templates[ $default_popup->get_template_key() ];
-$custom_external_popup   = $email_templates[ $external_popup->get_template_key() ];
-$custom_userchoice_popup = $email_templates[ $user_choice_popup->get_template_key() ];
-$error_popup             = $email_templates[ $error_popup_instance->get_template_key() ];
+$email_templates = maybe_unserialize( get_mo_option( 'custom_popups' ) );
+if ( ! is_array( $email_templates ) ) {
+	$email_templates = array();
+}
+
+// Safely fetch custom popup templates; default to empty string if not set.
+$custom_default_popup    = isset( $email_templates[ $default_popup->get_template_key() ] ) ? $email_templates[ $default_popup->get_template_key() ] : '';
+$custom_external_popup   = isset( $email_templates[ $external_popup->get_template_key() ] ) ? $email_templates[ $external_popup->get_template_key() ] : '';
+$custom_userchoice_popup = isset( $email_templates[ $user_choice_popup->get_template_key() ] ) ? $email_templates[ $user_choice_popup->get_template_key() ] : '';
+$error_popup             = isset( $email_templates[ $error_popup_instance->get_template_key() ] ) ? $email_templates[ $error_popup_instance->get_template_key() ] : '';
 
 
 $common_template_settings = Template::$template_editor;
@@ -91,10 +97,10 @@ $loaderimgdiv = str_replace( '{{CONTENT}}', "<img src='" . MOV_LOADER_URL . "'>"
 
 
 $previewpane       = "<span style='font-size: 1.3em;'>" .
-					'PREVIEW PANE<br/><br/>' .
+					esc_html__( 'PREVIEW PANE', 'miniorange-otp-verification' ) . '<br/><br/>' .
 			'</span>' .
 			'<span>' .
-			'Click on the Preview button above to check how your popup would look like.' .
+			esc_html__( 'Click on the Preview button above to check how your popup would look like.', 'miniorange-otp-verification' ) .
 				'</span>';
 $previewpane       = str_replace( '{{MESSAGE}}', $previewpane, $default_popup->message_div );
 $message           = str_replace( '{{CONTENT}}', $previewpane, $default_popup->pane_content );
@@ -120,4 +126,8 @@ $mo_template_types = array(
 $mo_template_types[ $selected_popup ]['hidden']   = '';
 $mo_template_types[ $selected_popup ]['selected'] = 'selected';
 
-require_once MOV_DIR . 'views/design.php';
+$view_file = MOV_DIR . 'views/design.php';
+if ( ! MoUtility::mo_require_file( $view_file, MOV_DIR ) ) {
+	return;
+}
+require $view_file;

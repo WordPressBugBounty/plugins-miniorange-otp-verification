@@ -2,12 +2,13 @@
 /**
  * Load admin view for Ultimate Member SMS Notification.
  *
- * @package miniorange-otp-verification/umsmsnotification/views
+ * @package miniorange-otp-verification/notifications/umsmsnotification/views
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
+
 use OTP\Notifications\UmSMSNotification\Helper\UltimateMemberSMSNotificationUtility;
 
 echo '				<div id="MoumNotifSubTabContainer" class="mo-subpage-container ' . esc_attr( $um_hidden ) . '">		
@@ -15,7 +16,7 @@ echo '				<div id="MoumNotifSubTabContainer" class="mo-subpage-container ' . esc
 							<input type="hidden" name="option" value="mo_um_sms_notif_settings" />';
 							wp_nonce_field( $nonce );
 echo '						<div class="mo-header">
-								<p class="mo-heading flex-1">' . esc_html( mo_( 'Ultimate Member Notification Settings' ) ) . '</p>
+								<p class="mo-heading flex-1">' . esc_html( __( 'Ultimate Member Notification Settings', 'miniorange-otp-verification' ) ) . '</p>
 								<u><i><a href="https://plugins.miniorange.com/ultimate-member-notification-otp-verification-plugin" 
 									target="_blank"
 									class="font-bold flex items-center gap-mo-1 pr-mo-4">
@@ -28,7 +29,7 @@ echo '						<div class="mo-header">
 									<span>Setup Guide</span>
 								</a></i></u>
 								<input type="submit" name="save" id="save" ' . esc_attr( $disabled ) . '
-											class="mo-button inverted" value="' . esc_attr( mo_( 'Save Settings' ) ) . '">
+											class="mo-button inverted" value="' . esc_attr( __( 'Save Settings', 'miniorange-otp-verification' ) ) . '">
 							</div>
 							<table class="mo-wcnotif-table bg-white">
 								<thead>
@@ -40,7 +41,9 @@ echo '						<div class="mo-header">
 									</tr>
 								</thead>
 								<tbody>';
-									show_um_notifications_table( $notification_settings );
+if ( is_object( $notification_settings ) ) {
+	\OTP\Notifications\UmSMSNotification\Controllers\mo_show_um_notifications_table( $notification_settings );
+}
 echo '							</tbody>
 							</table>
 						</form>

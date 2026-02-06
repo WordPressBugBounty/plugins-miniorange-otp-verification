@@ -7,25 +7,34 @@
  * Author: miniOrange
  * Author URI: http://miniorange.com
  * Text Domain: miniorange-otp-verification
- * License: GPL2
+ * License: MIT Expat
  *
  * @package miniorange-otp-verification/Notifications/umsmsnotification
  */
 
 namespace OTP\Notifications\UmSMSNotification;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use OTP\Notifications\UmSMSNotification\Handler\UltimateMemberSMSNotificationsHandler;
-use OTP\Notifications\UmSMSNotification\Helper\UltimateMemberNotificationsList;
 use OTP\Notifications\UmSMSNotification\Helper\UltimateMemberSMSNotificationMessages;
 use OTP\Helper\AddOnList;
+use OTP\Helper\MoMessages;
+use OTP\Helper\MoUtility;
 use OTP\Objects\AddOnInterface;
 use OTP\Objects\BaseAddOn;
 use OTP\Traits\Instance;
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+$base_dir      = plugin_dir_path( __FILE__ );
+$autoload_file = $base_dir . 'umautoload.php';
+
+if ( ! MoUtility::mo_require_file( $autoload_file, $base_dir ) ) {
+	return;
 }
-require 'umautoload.php';
+require_once $autoload_file;
+$base_dir = realpath( UMSN_DIR );
 
 /**
  * This is the constant class which consists of the necessary function used in the addon.
@@ -37,6 +46,7 @@ if ( ! class_exists( 'UltimateMemberSmsNotification' ) ) {
 	final class UltimateMemberSmsNotification extends BaseAddon implements AddOnInterface {
 
 		use Instance;
+
 		/**
 		 * Initializes values
 		 */
@@ -52,7 +62,6 @@ if ( ! class_exists( 'UltimateMemberSmsNotification' ) ) {
 			$list = AddOnList::instance();
 
 			$handler = UltimateMemberSMSNotificationsHandler::instance();
-
 		}
 
 		/**
@@ -60,7 +69,6 @@ if ( ! class_exists( 'UltimateMemberSmsNotification' ) ) {
 		 */
 		public function initialize_helpers() {
 			UltimateMemberSMSNotificationMessages::instance();
-			UltimateMemberNotificationsList::instance();
 		}
 
 
@@ -80,6 +88,9 @@ if ( ! class_exists( 'UltimateMemberSmsNotification' ) ) {
 		 * hook of the OTP verification plugin.
 		 */
 		public function um_sms_notif_delete_options() {
+			if ( ! function_exists( 'current_user_can' ) || ! current_user_can( 'manage_options' ) ) {
+				return;
+			}
 			delete_site_option( 'mo_um_sms_notification_settings' );
 		}
 	}

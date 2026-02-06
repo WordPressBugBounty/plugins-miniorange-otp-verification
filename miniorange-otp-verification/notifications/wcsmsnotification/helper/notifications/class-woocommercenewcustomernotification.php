@@ -2,7 +2,7 @@
 /**
  * Helper functions for Woocommerce New Customer Notifications
  *
- * @package miniorange-otp-verification/Notifications
+ * @package miniorange-otp-verification/Notifications/wcsmsnotification/helper/notifications
  */
 
 namespace OTP\Notifications\WcSMSNotification\Helper\Notifications;
@@ -10,6 +10,8 @@ namespace OTP\Notifications\WcSMSNotification\Helper\Notifications;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+use OTP\Helper\MoMessages;
 use OTP\Notifications\WcSMSNotification\Helper\MoWcAddOnMessages;
 use OTP\Helper\MoUtility;
 use OTP\Objects\SMSNotification;
@@ -39,40 +41,63 @@ if ( ! class_exists( 'WooCommerceNewCustomerNotification' ) ) {
 		 */
 		public $premium_tags;
 
-		/** Declare Default variables */
-		protected function __construct() {
-			parent::__construct();
-			$this->title             = 'New Account';
-			$this->page              = 'wc_new_customer_notif';
-			$this->is_enabled        = false;
-			$this->tool_tip_header   = 'NEW_CUSTOMER_NOTIF_HEADER';
-			$this->tool_tip_body     = 'NEW_CUSTOMER_NOTIF_BODY';
-			$this->recipient         = 'customer';
-			$this->sms_body          = get_wc_option( 'woocommerce_registration_generate_password', '' ) === 'yes'
-									? MoWcAddOnMessages::showMessage( MoWcAddOnMessages::NEW_CUSTOMER_SMS_WITH_PASS )
-									: MoWcAddOnMessages::showMessage( MoWcAddOnMessages::NEW_CUSTOMER_SMS );
-			$this->default_sms_body  = get_wc_option( 'woocommerce_registration_generate_password', '' ) === 'yes'
-									? MoWcAddOnMessages::showMessage( MoWcAddOnMessages::NEW_CUSTOMER_SMS_WITH_PASS )
-									: MoWcAddOnMessages::showMessage( MoWcAddOnMessages::NEW_CUSTOMER_SMS );
-			$this->premium_tags      = '{user-email},{registration-date},{accountpage-url}';
-			$this->available_tags    = '{site-name},{username}';
-			$this->page_header       = mo_( 'NEW ACCOUNT NOTIFICATION SETTINGS' );
-			$this->page_description  = mo_( 'SMS notifications settings for New Account creation SMS sent to the users' );
-			$this->notification_type = mo_( 'Customer' );
-			$this->sms_tags          = '{username};{site-name};{accountpage-url}';
-			$this->template_name     = null;
-			self::$instance          = $this;
-		}
-
-
 		/**
-		 * Checks if there exists an existing instance of the class.
-		 * If not then creates an instance and returns it.
+		 * This function is used to get the instance of the WooCommerceNewCustomerNotification class.
+		 *
+		 * @param array $config Configuration array.
+		 * @return WooCommerceNewCustomerNotification Object containing the instance of the class.
 		 */
-		public static function getInstance() {
-			return null === self::$instance ? new self() : self::$instance;
-		}
+		public static function mo_otp_get_instance( $config = null ) {
 
+			if ( null === self::$instance ) {
+
+				self::$instance = new self();
+
+				// Determine default SMS message based on WooCommerce password settings.
+				$wc_pass_gen_enabled = ( get_wc_option( 'woocommerce_registration_generate_password', '' ) === 'yes' );
+
+				$default_sms_message = $wc_pass_gen_enabled
+					? MoWcAddOnMessages::showMessage( MoWcAddOnMessages::NEW_CUSTOMER_SMS_WITH_PASS )
+					: MoWcAddOnMessages::showMessage( MoWcAddOnMessages::NEW_CUSTOMER_SMS );
+
+				// Default configuration.
+				$default_config = array(
+					'title'             => 'New Account',
+					'page'              => 'wc_new_customer_notif',
+					'is_enabled'        => false,
+					'tool_tip_header'   => 'NEW_CUSTOMER_NOTIF_HEADER',
+					'tool_tip_body'     => 'NEW_CUSTOMER_NOTIF_BODY',
+					'recipient'         => 'customer',
+
+					// SMS body defaults.
+					'sms_body'          => $default_sms_message,
+					'default_sms_body'  => $default_sms_message,
+
+					'premium_tags'      => '{user-email},{registration-date},{accountpage-url}',
+					'available_tags'    => '{site-name},{username}',
+
+					'page_header'       => __( 'NEW ACCOUNT NOTIFICATION SETTINGS', 'miniorange-otp-verification' ),
+					'page_description'  => __( 'SMS notifications settings for New Account creation SMS sent to the users', 'miniorange-otp-verification' ),
+					'notification_type' => __( 'Customer', 'miniorange-otp-verification' ),
+
+					'sms_tags'          => '{username};{site-name};{accountpage-url}',
+					'template_name'     => null,
+				);
+
+				// Merge provided config with defaults.
+				$final_config = $config ? (array) $config : array();
+				$final_config = array_merge( $default_config, $final_config );
+
+				// Assign config values to instance dynamically.
+				foreach ( $final_config as $property => $value ) {
+					if ( property_exists( self::$instance, $property ) ) {
+						self::$instance->$property = $value;
+					}
+				}
+			}
+
+			return self::$instance;
+		}
 
 		/**
 		 * Initialize all the variables required to modify the sms template
@@ -83,23 +108,54 @@ if ( ! class_exists( 'WooCommerceNewCustomerNotification' ) ) {
 		 * @param  array $args all the arguments required to send SMS.
 		 */
 		public function send_sms( array $args ) {
+
 			if ( ! $this->is_enabled ) {
 				return;
 			}
+
+			// Input validation for required arguments.
+			if ( ! isset( $args['customer_id'] ) ) {
+				return;
+			}
+
 			$this->set_notif_in_session( $this->page );
-			$customer_id         = $args['customer_id'];
-			$customer_data       = $args['new_customer_data'];
-			$site_name           = get_bloginfo();
-			$username            = get_userdata( $customer_id )->user_login;
-			$phone_number        = get_user_meta( $customer_id, 'billing_phone', true );
-			$posted_phone_number = MoUtility::sanitize_check( 'billing_phone', $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
-			$phone_number        = MoUtility::is_blank( $phone_number ) && $posted_phone_number ? $posted_phone_number : $phone_number;
-			$accountpage         = wc_get_page_permalink( 'myaccount' );// phpcs:ignore -- Default function of Woocommerce.
+
+			$customer_id   = absint( $args['customer_id'] );
+			$customer_data = isset( $args['new_customer_data'] ) && is_array( $args['new_customer_data'] ) ? $args['new_customer_data'] : array();
+
+			// Validate customer ID.
+			if ( empty( $customer_id ) ) {
+				return;
+			}
+
+			$userdata = get_userdata( $customer_id );
+			if ( ! $userdata || is_wp_error( $userdata ) ) {
+				return;
+			}
+
+			$site_name    = get_bloginfo();
+			$username     = $userdata->user_login;
+			$phone_number = get_user_meta( $customer_id, 'billing_phone', true );
+
+			// Enhanced input validation for phone number from POST data.
+			$posted_phone_number = '';
+			if ( ! empty( $_POST ) && isset( $_POST['billing_phone'] ) ) {
+				if ( isset( $_POST['woocommerce-register-nonce'] ) && ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['woocommerce-register-nonce'] ) ), 'woocommerce-register' ) ) {
+					$posted_phone_number = '';
+				} else {
+					$posted_phone_number = sanitize_text_field( wp_unslash( $_POST['billing_phone'] ) );
+				}
+			}
+
+			$phone_number = empty( $phone_number ) && ! empty( $posted_phone_number ) ? $posted_phone_number : $phone_number;
+			$phone_number = MoUtility::process_phone_number( $phone_number );
+
+			$accountpage = wc_get_page_permalink( 'myaccount' );
 
 			$replaced_string = array(
-				'site-name'       => get_bloginfo(),
-				'username'        => $username,
-				'accountpage-url' => $accountpage,
+				'site-name'       => sanitize_text_field( wp_unslash( $site_name ) ),
+				'username'        => sanitize_text_field( wp_unslash( $username ) ),
+				'accountpage-url' => esc_url_raw( $accountpage ),
 			);
 
 			/* WooCommerce Premium Tags */
@@ -109,13 +165,14 @@ if ( ! class_exists( 'WooCommerceNewCustomerNotification' ) ) {
 			$sms_body        = MoUtility::replace_string( $replaced_string, $this->sms_body );
 			$sms_tags        = MoUtility::replace_string( $replaced_string, $this->sms_tags );
 
-			if ( MoUtility::is_blank( $phone_number ) ) {
+			if ( empty( $phone_number ) ) {
 				return;
 			}
+
 			if ( MoUtility::mo_is_whatsapp_notif_enabled() ) {
-				MoUtility::mo_send_whatsapp_notif( $phone_number, $this->template_name, $sms_tags );
+				MoUtility::mo_send_whatsapp_notif( $phone_number, $this->template_name, $sms_tags, 'NEW_ACCOUNT' );
 			} else {
-				MoUtility::send_phone_notif( $phone_number, $sms_body );
+				MoUtility::send_phone_notif( $phone_number, $sms_body, 'NEW_ACCOUNT' );
 			}
 		}
 	}

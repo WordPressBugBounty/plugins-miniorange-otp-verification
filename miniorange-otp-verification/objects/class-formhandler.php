@@ -9,12 +9,14 @@ namespace OTP\Objects;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
 use OTP\Helper\FormList;
 use OTP\Helper\FormSessionVars;
 use OTP\Helper\MoConstants;
 use OTP\Helper\MoMessages;
 use OTP\Helper\MoUtility;
 use OTP\Helper\SessionUtils;
+use OTP\Helper\MoPHPSessions;
 
 if ( ! class_exists( 'FormHandler' ) ) {
 	/**
@@ -29,21 +31,20 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		 *
 		 * @var string
 		 */
-
 		protected $type_phone_tag;
+
 		/**
 		 * The email HTML tag
 		 *
 		 * @var string
 		 */
-
 		protected $type_email_tag;
+
 		/**
 		 * The both HTML tag
 		 *
 		 * @var string
 		 */
-
 		protected $type_both_tag;
 
 		/**
@@ -74,7 +75,6 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		 */
 		protected $otp_type;
 
-
 		/**
 		 * The form javascript selector used by the script
 		 * file to append country code dropdown
@@ -82,12 +82,12 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		 * @var string|array
 		 */
 		protected $phone_form_id;
+
 		/**
 		 * Is form enabled or not
 		 *
 		 * @var string
 		 */
-
 		protected $is_form_enabled;
 
 		/**
@@ -102,7 +102,6 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		 *
 		 * @var string
 		 */
-
 		protected $by_pass_login;
 
 		/**
@@ -110,14 +109,13 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		 *
 		 * @var string
 		 */
-
 		protected $is_login_or_social_form;
+
 		/**
 		 * Is the form an ajax form or not
 		 *
 		 * @var string
 		 */
-
 		protected $is_ajax_form;
 
 		/**
@@ -133,7 +131,6 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		 * @var string
 		 */
 		protected $email_key;
-
 
 		/**
 		 * Text of the Send OTP button
@@ -168,7 +165,6 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		 *
 		 * @var array
 		 */
-
 		protected $form_details;
 
 		/**
@@ -176,14 +172,13 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		 *
 		 * @var string
 		 */
-
 		protected $disable_auto_activate;
+
 		/**
 		 * The session variable associated with Form
 		 *
 		 * @var string
 		 */
-
 		protected $form_session_var;
 
 		/**
@@ -214,14 +209,12 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		 */
 		protected $tx_session_id = FormSessionVars::TX_SESSION_ID;
 
-
 		/**
 		 * The form options for all forms
 		 *
 		 * @var string
 		 */
 		protected $form_option = 'mo_customer_validation_settings';
-
 
 		/**
 		 * The generateOTPAction Key
@@ -230,9 +223,8 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		 */
 		protected $generate_otp_action;
 
-
 		/**
-		 * The generateOTPAction Key
+		 * The validateOTPAction Key
 		 *
 		 * @var string
 		 */
@@ -263,9 +255,10 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		const VERIFICATION_FAILED = 'verification_failed';
 		const VALIDATION_CHECKED  = 'validationChecked';
 
-		/** Constructor */
+		/**
+		 * Constructor
+		 */
 		protected function __construct() {
-
 			add_action( 'admin_init', array( $this, 'handle_form_options' ), 2 );
 
 			if ( ! $this->is_form_enabled() ) {
@@ -275,11 +268,17 @@ if ( ! class_exists( 'FormHandler' ) ) {
 			add_action( 'init', array( $this, 'handle_form' ), 1 );
 
 			add_filter( 'mo_phone_dropdown_selector', array( $this, 'get_phone_number_selector' ), 1, 1 );
-			add_filter( 'is_ajax_form', array( $this, 'is_ajax_form_in_play' ), 1, 1 );
+			// Only register the filter if form_session_var is set to avoid issues with classes like PremiumForms.
+			if ( ! MoUtility::is_blank( $this->form_session_var ) || ! MoUtility::is_blank( $this->form_session_var2 ) ) {
+				add_filter( 'is_ajax_form', array( $this, 'is_ajax_form_in_play' ), 1, 1 );
+			}
+
 			$is_ajax_form = apply_filters( 'is_ajax_form', false );
 
-			if ( SessionUtils::is_otp_initialized( $this->form_session_var )
-			|| SessionUtils::is_otp_initialized( $this->form_session_var2 ) ) {
+			if (
+				( ! MoUtility::is_blank( $this->form_session_var ) && SessionUtils::is_otp_initialized( $this->form_session_var ) ) ||
+				( ! MoUtility::is_blank( $this->form_session_var2 ) && SessionUtils::is_otp_initialized( $this->form_session_var2 ) )
+			) {
 
 				add_action( 'otp_verification_successful', array( $this, 'handle_post_verification' ), 1, 7 );
 
@@ -290,7 +289,6 @@ if ( ! class_exists( 'FormHandler' ) ) {
 
 				add_action( 'unset_session_variable', array( $this, 'unset_otp_session_variables' ), 1, 0 );
 			}
-
 
 			add_filter( 'is_login_or_social_form', array( $this, 'is_login_or_social_form' ), 1, 1 );
 			if ( get_mo_option( 'autofill_otp_enabled' ) && wp_is_mobile() ) {
@@ -311,14 +309,17 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		 * @return bool
 		 */
 		public function is_login_or_social_form( $is_login_or_social_form ) {
-			return SessionUtils::is_otp_initialized( $this->form_session_var ) || SessionUtils::is_otp_initialized( $this->form_session_var2 ) ? $this->get_is_login_or_social_form() : $is_login_or_social_form;
+			$initialized =
+				( ! MoUtility::is_blank( $this->form_session_var ) && SessionUtils::is_otp_initialized( $this->form_session_var ) ) ||
+				( ! MoUtility::is_blank( $this->form_session_var2 ) && SessionUtils::is_otp_initialized( $this->form_session_var2 ) );
+			return $initialized ? $this->get_is_login_or_social_form() : $is_login_or_social_form;
 		}
 
 		/**
 		 * This function registers the js file for the OTP field to accepts the alphanumeric values only.
 		 */
 		public function mo_otp_alphanumeric_script() {
-			wp_register_script( 'mootpalphanumeric', MOV_URL . 'includes/js/mootpalphanumeric.min.js', array( 'jquery' ), MOV_VERSION, true );
+			wp_register_script( 'mootpalphanumeric', MOV_URL . 'includes/js/mootpalphanumeric.js', array( 'jquery' ), MOV_VERSION, true );
 			wp_localize_script(
 				'mootpalphanumeric',
 				'mootpalphanumeric',
@@ -330,10 +331,10 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		}
 
 		/**
-		 * This function registers the js file for changins selected countory textarea.
+		 * This function registers the js file for changing selected country textarea.
 		 */
 		public function mo_autofill_script_load() {
-			wp_register_script( 'moautofill', MOV_URL . 'includes/js/moautofill.min.js', array( 'jquery' ), MOV_VERSION, true );
+			wp_register_script( 'moautofill', MOV_URL . 'includes/js/moautofill.js', array( 'jquery' ), MOV_VERSION, true );
 			wp_localize_script( 'moautofill', 'moautofill', array() );
 			wp_enqueue_script( 'moautofill' );
 		}
@@ -344,12 +345,17 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		 * Ajax form. Should return True or False.
 		 *
 		 * @param bool $is_ajax is ajax form or not.
-		 * @return string
+		 * @return bool
 		 */
 		public function is_ajax_form_in_play( $is_ajax ) {
-			return SessionUtils::is_otp_initialized( $this->form_session_var ) ? $this->is_ajax_form : $is_ajax;
-		}
+			// Early return if form_session_var is not set (e.g., PremiumForms class).
+			if ( MoUtility::is_blank( $this->form_session_var ) ) {
+				return $is_ajax;
+			}
 
+			$initialized = SessionUtils::is_otp_initialized( $this->form_session_var );
+			return $initialized ? $this->is_ajax_form : $is_ajax;
+		}
 
 		/**
 		 * Check the POST output buffer and return the value if a value exists
@@ -361,13 +367,25 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		 * @return bool|String|array
 		 */
 		public function sanitize_form_post( $param, $prefix = null ) {
-			$param = ( null === $prefix ? 'mo_customer_validation_' : '' ) . $param;
-			if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->admin_nonce ) ) {
+			// If prefix is explicitly empty string, use raw param.
+			if ( '' === $prefix ) {
+				$key = $param;
+			} else {
+				$key = ( null !== $prefix ? $prefix : 'mo_customer_validation_' ) . $param;
+			}
+
+			// Security checks.
+			if (
+				! isset( $_POST['_wpnonce'] ) ||
+				! wp_verify_nonce(
+					sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ),
+					$this->admin_nonce
+				)
+			) {
 				return;
 			}
-			return MoUtility::sanitize_check( $param, $_POST );
+			return MoUtility::sanitize_check( $key, $_POST );
 		}
-
 
 		/**
 		 * This function is called from every form handler class to start the OTP
@@ -375,16 +393,21 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		 * OTP Verification process. Calls the mo_generate_otp hook to start
 		 * the OTP Verification process.
 		 *
-		 * @param string $user_login    username submitted by the user.
-		 * @param string $user_email    email submitted by the user.
-		 * @param string $errors        error variable ( currently not being used ).
-		 * @param string $phone_number  phone number submitted by the user.
-		 * @param string $otp_type      email or sms verification.
-		 * @param string $password      password submitted by the user.
-		 * @param string $extra_data    an array containing all the extra data submitted by the user.
-		 * @param bool   $from_both     denotes if user has a choice between email and phone verification.
+		 * @param string $user_login        username submitted by the user.
+		 * @param string $user_email        email submitted by the user.
+		 * @param string $errors            error variable ( currently not being used ).
+		 * @param string $phone_number      phone number submitted by the user.
+		 * @param string $otp_type          email or sms verification.
+		 * @param string $password          password submitted by the user.
+		 * @param string $extra_data        an array containing all the extra data submitted by the user.
+		 * @param bool   $from_both         denotes if user has a choice between email and phone verification.
+		 * @param string $form_session_var  the form session variable.
 		 */
 		public function send_challenge( $user_login, $user_email, $errors, $phone_number = null, $otp_type = 'email', $password = '', $extra_data = null, $from_both = false, $form_session_var = null ) {
+			if ( ! empty( $this->form_name ) ) {
+				MoPHPSessions::add_session_var( 'current_form_name', $this->form_name );
+			}
+
 			do_action(
 				'mo_generate_otp',
 				$user_login,
@@ -399,7 +422,6 @@ if ( ! class_exists( 'FormHandler' ) ) {
 			);
 		}
 
-
 		/**
 		 * This function is called from each form class to validate the otp entered by the
 		 * user.
@@ -411,7 +433,6 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		public function validate_challenge( $otp_type, $req_var = 'mo_otp_token', $otp_token = null ) {
 			do_action( 'mo_validate_otp', $otp_type, $req_var, $otp_token );
 		}
-
 
 		/**
 		 * This function check if the admin setting up the form has passed
@@ -447,22 +468,7 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		}
 
 		/**
-		 * Checks if the request made is a valid ajax request or not.
-		 * Only checks the none value for now.
-		 */
-		protected function validate_ajax_request() {
-			if ( ! check_ajax_referer( $this->nonce, $this->nonce_key ) ) {
-				wp_send_json(
-					MoUtility::create_json(
-						MoMessages::showMessage( BaseMessages::INVALID_OP ),
-						MoConstants::ERROR_JSON_TYPE
-					)
-				);
-				exit;
-			}
-		}
-
-		/**Function to process fields
+		 * Function to process fields
 		 *
 		 * @return array
 		 */
@@ -475,39 +481,82 @@ if ( ! class_exists( 'FormHandler' ) ) {
 			return $map[ $this->otp_type ];
 		}
 
-		/**Function for Getter
+		/**
+		 * Function for Getter
+		 *
+		 * @return string
 		 */
 		public function get_phone_html_tag() {
-			return $this->type_phone_tag; }
-		/**Function for Getter
+			return $this->type_phone_tag;
+		}
+
+		/**
+		 * Function for Getter
+		 *
+		 * @return string
 		 */
 		public function get_email_html_tag() {
-			return $this->type_email_tag; }
-		/**Function for Getter
+			return $this->type_email_tag;
+		}
+
+		/**
+		 * Function for Getter
+		 *
+		 * @return string
 		 */
 		public function get_both_html_tag() {
-			return $this->type_both_tag; }
-		/**Function for Getter
+			return $this->type_both_tag;
+		}
+
+		/**
+		 * Function for Getter
+		 *
+		 * @return string
 		 */
 		public function get_form_key() {
-			return $this->form_key; }
-		/**Function for Getter
+			return $this->form_key;
+		}
+
+		/**
+		 * Function for Getter
+		 *
+		 * @return string
 		 */
 		public function get_verify_field_key() {
-			return $this->verify_field_meta_key; }
-		/**Function for Getter
+			return $this->verify_field_meta_key;
+		}
+
+		/**
+		 * Function for Getter
+		 *
+		 * @return string
 		 */
 		public function get_form_name() {
-			return $this->form_name; }
-		/**Function for Getter
+			return $this->form_name;
+		}
+
+		/**
+		 * Function for Getter
+		 *
+		 * @return string
 		 */
 		public function get_otp_type_enabled() {
-			return $this->otp_type; }
-		/**Function for Getter
+			return $this->otp_type;
+		}
+
+		/**
+		 * Function for Getter
+		 *
+		 * @return string
 		 */
 		public function disable_auto_activation() {
-			return $this->disable_auto_activate; }
-		/**Function for Getter
+			return $this->disable_auto_activate;
+		}
+
+		/**
+		 * Function for Getter
+		 *
+		 * @return string
 		 */
 		public function get_phone_key_details() {
 			$phone_key_option = $this->get_phone_key_option_name();
@@ -526,63 +575,131 @@ if ( ! class_exists( 'FormHandler' ) ) {
 		protected function get_phone_key_option_name() {
 			return null;
 		}
-		/**Function for Getter
+
+		/**
+		 * Function for Getter
+		 *
+		 * @return string
 		 */
 		public function get_email_key_details() {
-			return $this->email_key; }
-		/**Function for Getter
+			return $this->email_key;
+		}
+
+		/**
+		 * Function for Getter
+		 *
+		 * @return string
 		 */
 		public function is_form_enabled() {
-			return $this->is_form_enabled; }
-		/**Function for Getter
+			return $this->is_form_enabled;
+		}
+
+		/**
+		 * Function for Getter
+		 *
+		 * @return string
 		 */
 		public function get_button_text() {
-			return mo_( $this->button_text ); }
-		/**Function for Getter
+			return $this->button_text;
+		}
+
+		/**
+		 * Function for Getter
+		 *
+		 * @return string
 		 */
 		public function get_button_css() {
-			return mo_( $this->button_css ); }
-		/**Function for Getter
+			return $this->button_css;
+		}
+
+		/**
+		 * Function for Getter
+		 *
+		 * @return string
 		 */
 		public function get_verify_button_text() {
-			return mo_( $this->verify_button_text ); }
-		/**Function for Getter
+			return $this->verify_button_text;
+		}
+
+		/**
+		 * Function for Getter
+		 *
+		 * @return string
 		 */
 		public function get_enter_otp_field_text() {
-			return mo_( $this->enter_otp_text ); }
-		/**Function for Getter
+			return $this->enter_otp_text;
+		}
+
+		/**
+		 * Function for Getter
+		 *
+		 * @return array
 		 */
 		public function get_form_details() {
-			return $this->form_details; }
-		/**Function for Getter
+			return $this->form_details;
+		}
+
+		/**
+		 * Function for Getter
+		 *
+		 * @return string
 		 */
 		public function restrict_duplicates() {
-			return $this->restrict_duplicates; }
-		/**Function for Getter
+			return $this->restrict_duplicates;
+		}
+
+		/**
+		 * Function for Getter
+		 *
+		 * @return string
 		 */
 		public function bypass_for_logged_in_users() {
-			return $this->by_pass_login; }
-		/**Function for Getter
+			return $this->by_pass_login;
+		}
+
+		/**
+		 * Function for Getter
+		 *
+		 * @return bool
 		 */
 		public function get_is_login_or_social_form() {
-			return (bool) $this->is_login_or_social_form; }
-		/**Function for Getter
+			return (bool) $this->is_login_or_social_form;
+		}
+
+		/**
+		 * Function for Getter
+		 *
+		 * @return string
 		 */
 		public function get_form_option() {
-			return $this->form_option; }
+			return $this->form_option;
+		}
 
-		/**Function for Getter
+		/**
+		 * Function for Getter
+		 *
+		 * @return string
 		 */
 		public function is_ajax_form() {
-			return $this->is_ajax_form; }
+			return $this->is_ajax_form;
+		}
 
-		/**Function for Getter
+		/**
+		 * Function for Getter
+		 *
+		 * @return bool
 		 */
 		public function is_add_on_form() {
-			return $this->is_add_on_form; }
-		/**Function for Getter
+			return $this->is_add_on_form;
+		}
+
+		/**
+		 * Function for Getter
+		 *
+		 * @return array
 		 */
 		public function get_form_documents() {
-			return $this->form_documents; }
+			return $this->form_documents;
+		}
 	}
 }

@@ -1,6 +1,10 @@
 <?php
 /**
- * This is index file.
+ * Prevent direct access to the directory.
  *
- * @package miniorange-otp-verification
+ * @package miniorange-otp-verification/handler
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}

@@ -1,5 +1,6 @@
 <?php
-/**Load adminstrator changes for UserChoicePopup
+/**
+ * Load administrator changes for UserChoicePopup
  *
  * @package miniorange-otp-verification/helper/templates
  */
@@ -13,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use OTP\Objects\MoITemplate;
 use OTP\Objects\Template;
 use OTP\Traits\Instance;
+use OTP\Helper\MoUtility;
 
 /**
  * This is the UserChoice Popup class. This class handles all the
@@ -26,6 +28,7 @@ if ( ! class_exists( 'UserChoicePopup' ) ) {
 	class UserChoicePopup extends Template implements MoITemplate {
 
 		use Instance;
+
 		/**
 		 * Constructor to declare variables of the class on initialization
 		 **/
@@ -41,9 +44,22 @@ if ( ! class_exists( 'UserChoicePopup' ) ) {
 		 * @return string
 		 */
 		private function get_user_choice_pop_up_html() {
-			$pop_up_template =
-			'<head><title></title><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" type="text/css" href="{{MO_CSS_URL}}">{{JQUERY}}</head><body><div class="mo-modal-backdrop"><div class="mo_customer_validation-modal mo-new-ui-modal" tabindex="-1" role="dialog" id="mo_site_otp_form"><div class="mo_customer_validation-modal-backdrop"></div><div class="mo_customer_validation-modal-dialog mo_customer_validation-modal-md"><div class="login mo_customer_validation-modal-content mo-new-ui-content"><div class="mo_customer_validation-modal-header mo-new-ui-header"><div class="mo-popup-header">{{HEADER}}</div><a href="#" onclick={{GO_BACK_ACTION_CALL}}><span class="mo-icon-button close mo-close-button-x">{{GO_BACK}}</span></a></div><div class="mo_customer_validation-modal-body center"><div>{{MESSAGE}}</div><br><div class="mo_customer_validation-login-container"><form id="{{FORM_ID}}" name="f" method="post" action=""><div class="mo-flex-space-around"><button class="mo-svg-button" id="mo_user_email_verification"><svg width="50" height="50" viewBox="0 0 24 24" fill="none"><path d="M22 7V17C22 19.2091 20.2091 21 18 21H6C3.79086 21 2 19.2091 2 17V7M22 7C22 4.79086 20.2091 3 18 3H6C3.79086 3 2 4.79086 2 7M22 7L14.5166 10.386C14.3184 10.4757 14.1299 10.5854 13.9397 10.6909C12.7341 11.3598 11.2659 11.3598 10.0603 10.6909C9.87009 10.5854 9.68159 10.4757 9.48336 10.386L2 7" stroke="#6D6D6D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><div style="padding-top: 6%">Email Verification</div></button><button class="mo-svg-button"><svg width="50" height="50" viewBox="0 0 24 24" fill="none"><rect x="5" y="2" width="14" height="20" rx="3" stroke="#6D6D6D" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 19.5H12.5M6 17H12H18" stroke="#6D6D6D" stroke-width="1.5" stroke-linecap="round"/></svg><div style="padding-top: 6%">Phone Verification</div></button></div><input type="hidden" name="mo_customer_validation_otp_choice" id="otpChoice" value="">{{REQUIRED_FIELDS}}</form></div></div></div></div></div></div>{{REQUIRED_FORMS_SCRIPTS}}</body></html>'; // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet --already enqued file.
-			return $pop_up_template;
+			$template_path = trailingslashit( MOV_DIR ) . 'includes/templates/userchoicepopup.html';
+
+			// Use WordPress Filesystem API for better compatibility.
+			global $wp_filesystem;
+			if ( empty( $wp_filesystem ) ) {
+				require_once ABSPATH . 'wp-admin/includes/file.php';
+				WP_Filesystem();
+			}
+
+			// Use WordPress Filesystem API to read the file.
+			if ( $wp_filesystem && $wp_filesystem->exists( $template_path ) ) {
+				return $wp_filesystem->get_contents( $template_path );
+			}
+
+			// Return empty string if file cannot be read via Filesystem API.
+			return '';
 		}
 
 		/**
@@ -86,19 +102,20 @@ if ( ! class_exists( 'UserChoicePopup' ) ) {
 			$extra_post_data    = $this->preview ? '' : extra_post_data();
 			$extra_form_fields  = '{{EXTRA_POST_DATA}}<input type="hidden" name="option" value="miniorange-validate-otp-choice-form" />';
 			$extra_form_fields .= '<input type="hidden" id="mopopup_wpnonce" name="mopopup_wpnonce" value="' . wp_create_nonce( $this->nonce ) . '"/>';
+			$this->getRequiredScripts();
 
-			$template = str_replace( '{{JQUERY}}', $this->jquery_url, $template );
+			$template = str_replace( '{{JQUERY}}', esc_url( $this->jquery_url ), $template );
 			$template = str_replace( '{{FORM_ID}}', 'mo_validate_form', $template );
 			$template = str_replace( '{{GO_BACK_ACTION_CALL}}', 'mo_validation_goback();', $template );
-			$template = str_replace( '{{MO_CSS_URL}}', MOV_CSS_URL, $template );
+			$template = str_replace( '{{MO_CSS_URL}}', esc_url( MOV_CSS_URL ), $template );
 			$template = str_replace( '{{REQUIRED_FORMS_SCRIPTS}}', $required_scripts, $template );
-			$template = str_replace( '{{HEADER}}', mo_( 'Validate OTP (One Time Passcode)' ), $template );
-			$template = str_replace( '{{GO_BACK}}', mo_( 'X' ), $template );
-			$template = str_replace( '{{MESSAGE}}', mo_( $message ), $template );
-			$template = str_replace( '{{BUTTON_TEXT}}', mo_( 'Send OTP' ), $template );
+			$template = str_replace( '{{HEADER}}', __( 'Validate OTP (One Time Passcode)', 'miniorange-otp-verification' ), $template );
+			$template = str_replace( '{{GO_BACK}}', 'X', $template );
+			$template = str_replace( '{{MESSAGE}}', esc_html( $message ), $template );
+			$template = str_replace( '{{BUTTON_TEXT}}', __( 'Send OTP', 'miniorange-otp-verification' ), $template );
 			$template = str_replace( '{{REQUIRED_FIELDS}}', $extra_form_fields, $template );
 			$template = str_replace( '{{EXTRA_POST_DATA}}', $extra_post_data, $template );
-			return $template;
+			return wp_kses( $template, MoUtility::mo_allow_popup_tags() );
 		}
 
 		/**
@@ -113,8 +130,8 @@ if ( ! class_exists( 'UserChoicePopup' ) ) {
 		private function getRequiredFormsSkeleton( $otp_type, $from_both ) {
 			$required_fields = '<form name="f" method="post" action="" id="validation_goBack_form">
 				<input id="validation_goBack" name="option" value="validation_goBack" type="hidden"/>
-			</form>{{SCRIPTS}}';
-			$required_fields = str_replace( '{{SCRIPTS}}', $this->getRequiredScripts(), $required_fields );
+				<input type="hidden" id="mopopup_wpnonce" name="mopopup_wpnonce" value="' . wp_create_nonce( $this->nonce ) . '"/>
+			</form>';
 			return $required_fields;
 		}
 
@@ -127,16 +144,37 @@ if ( ! class_exists( 'UserChoicePopup' ) ) {
 		private function getRequiredScripts() {
 			$scripts = '<style>.mo_customer_validation-modal{display:block!important}</style>';
 			if ( ! $this->preview ) {
-				$scripts .= '<script>
-								function mo_validation_goback(){
-									document.getElementById("validation_goBack_form").submit();
-								}
-								document.getElementById("mo_user_email_verification").addEventListener("click", function() {
-									document.getElementById("otpChoice").value = "user_email_verification";
-								});
-							</script>';
+				wp_register_script( 'moUserChoicePopUp', MOV_URL . 'includes/js/moUserChoicePopUp.js', array( 'jquery' ), MOV_VERSION, false );
+				wp_localize_script(
+					'moUserChoicePopUp',
+					'moUserChoicePopUp',
+					array()
+				);
+				wp_print_scripts( 'moUserChoicePopUp' );
 			} else {
-				$scripts .= '<script>$mo=jQuery;$mo("#mo_validate_form").submit(function(e){e.preventDefault();});</script>';
+				// Register and enqueue preview script for preview mode.
+				$script_handle = 'mo-popup-preview';
+				if ( ! wp_script_is( $script_handle, 'registered' ) ) {
+					wp_register_script(
+						$script_handle,
+						MOV_URL . 'includes/js/mo-popup-preview.js',
+						array( 'jquery' ),
+						MOV_VERSION,
+						false
+					);
+				}
+
+				// Localize script with preview mode flag.
+				wp_localize_script(
+					$script_handle,
+					'moUserChoicePreview',
+					array(
+						'isPreview' => true,
+					)
+				);
+
+				// Print script immediately since this is called during HTML output.
+				wp_print_scripts( $script_handle );
 			}
 			return $scripts;
 		}

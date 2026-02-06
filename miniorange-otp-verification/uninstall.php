@@ -121,7 +121,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	delete_site_option( 'mo_customer_validation_wpforms_button_text' );
 	delete_site_option( 'mo_customer_validation_custom_popups' );
 	delete_site_option( 'mo_customer_validation_wc_checkout_button_link_text' );
-	delete_site_option( 'mo_customer_validation_pb_phone_meta_key' );
+	delete_site_option( 'mo_customer_validation_pb_phone_field_key' );
 	delete_site_option( 'mo_customer_validation_pb_enable_type' );
 	delete_site_option( 'mo_customer_validation_crf_otp_enabled' );
 	delete_site_option( 'mo_customer_validation_caldera_enable' );
@@ -202,7 +202,6 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	delete_site_option( 'mo_customer_validation_custom_popups' );
 	delete_site_option( 'mo_customer_validation_selected_popup' );
 
-	delete_site_option( 'mo_sc_code_countrycode_enable' );
 	delete_site_option( 'mo_sc_code_selected_country_list' );
 	delete_site_option( 'mo_sc_code_countrycode_enable' );
 	delete_site_option( 'mo_sc_code_selected_country_list' );
@@ -221,3 +220,8 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	delete_site_option( 'mo_rc_sms_otp_timer_enable' );
 	delete_site_option( 'mo_rc_sms_otp_timer' );
 
+	delete_site_option( 'mo_sc_code_select_country_type' );
+	delete_site_option( 'mo_selected_country_modal_dismissed_ts' );
+	delete_site_option( 'mo_transaction_logs_modal_dismissed_ts' );
+	delete_site_option( 'mo_report_logs_modal_dismissed_ts' );
+	delete_site_option( 'mo_customer_validation_reporting_table_migration_completed' );

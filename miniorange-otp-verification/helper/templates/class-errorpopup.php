@@ -1,5 +1,6 @@
 <?php
-/**Load adminstrator changes for ErrorPopup
+/**
+ * Load administrator changes for ErrorPopup
  *
  * @package miniorange-otp-verification/helper/templates
  */
@@ -13,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use OTP\Objects\MoITemplate;
 use OTP\Objects\Template;
 use OTP\Traits\Instance;
+use OTP\Helper\MoUtility;
 
 /**
  * This is the Error Popup class. This class handles all the
@@ -26,6 +28,7 @@ if ( ! class_exists( 'ErrorPopup' ) ) {
 	class ErrorPopup extends Template implements MoITemplate {
 
 		use Instance;
+
 		/**
 		 * Constructor to declare variables of the class on initialization
 		 **/
@@ -42,9 +45,22 @@ if ( ! class_exists( 'ErrorPopup' ) ) {
 		 * @return string
 		 */
 		private function get_error_pop_up_html() {
-			$pop_up_template =
-			'<html><head><title></title><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" type="text/css" href="{{MO_CSS_URL}}">{{JQUERY}}</head><body><div class="mo-modal-backdrop"><div class="mo_customer_validation-modal mo-new-ui-modal" tabindex="-1" role="dialog" id="mo_site_otp_form"><div class="mo_customer_validation-modal-backdrop"></div><div class="mo_customer_validation-modal-dialog mo_customer_validation-modal-md"><div class="login mo_customer_validation-modal-content mo-new-ui-content"><div class="mo_customer_validation-modal-header mo-new-ui-header"><div class="mo-popup-header">{{HEADER}}</div><a href="#" onclick={{GO_BACK_ACTION_CALL}}><span class="mo-icon-button close mo-close-button-x">{{GO_BACK}}</span></a></div><div class="mo_customer_validation-modal-body center"><div>{{MESSAGE}}</div><br></div></div></div></div></div>{{REQUIRED_FORMS_SCRIPTS}}</body></html>'; // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet --already enqued file.
-			return $pop_up_template;
+			$template_path = trailingslashit( MOV_DIR ) . 'includes/templates/errorpopup.html';
+
+			// Use WordPress Filesystem API for better compatibility.
+			global $wp_filesystem;
+			if ( empty( $wp_filesystem ) ) {
+				require_once ABSPATH . 'wp-admin/includes/file.php';
+				WP_Filesystem();
+			}
+
+			// Use WordPress Filesystem API to read the file.
+			if ( $wp_filesystem && $wp_filesystem->exists( $template_path ) ) {
+				return $wp_filesystem->get_contents( $template_path );
+			}
+
+			// Return empty string if file cannot be read via Filesystem API.
+			return '';
 		}
 
 		/**
@@ -86,15 +102,17 @@ if ( ! class_exists( 'ErrorPopup' ) ) {
 		public function parse( $template, $message, $otp_type, $from_both ) {
 			$from_both        = $from_both ? 'true' : 'false';
 			$required_scripts = $this->getRequiredFormsSkeleton( $otp_type, $from_both );
+			$this->getRequiredScripts();
 
-			$template = str_replace( '{{JQUERY}}', $this->jquery_url, $template );
+			$template = str_replace( '{{JQUERY}}', esc_url( $this->jquery_url ), $template );
 			$template = str_replace( '{{GO_BACK_ACTION_CALL}}', 'mo_validation_goback();', $template );
-			$template = str_replace( '{{MO_CSS_URL}}', MOV_CSS_URL, $template );
+			$template = str_replace( '{{MO_CSS_URL}}', esc_url( MOV_CSS_URL ), $template );
 			$template = str_replace( '{{REQUIRED_FORMS_SCRIPTS}}', $required_scripts, $template );
-			$template = str_replace( '{{HEADER}}', mo_( 'Validate OTP (One Time Passcode)' ), $template );
-			$template = str_replace( '{{GO_BACK}}', mo_( 'X' ), $template );
-			$template = str_replace( '{{MESSAGE}}', mo_( $message ), $template );
-			return $template;
+			$template = str_replace( '{{HEADER}}', __( 'Validate OTP (One Time Passcode)', 'miniorange-otp-verification' ), $template );
+			$template = str_replace( '{{GO_BACK}}', 'X', $template );
+			$template = str_replace( '{{MESSAGE}}', esc_html( $message ), $template );
+			$template = str_replace( '{{SCRIPT}}', '', $template );
+			return wp_kses( $template, MoUtility::mo_allow_popup_tags() );
 		}
 
 		/**
@@ -108,9 +126,9 @@ if ( ! class_exists( 'ErrorPopup' ) ) {
 		 */
 		private function getRequiredFormsSkeleton( $otp_type, $from_both ) {
 			$required_fields = '<form name="f" method="post" action="" id="validation_goBack_form">
-			<input id="validation_goBack" name="option" value="validation_goBack" type="hidden"/>
-		</form>{{SCRIPTS}}';
-			$required_fields = str_replace( '{{SCRIPTS}}', $this->getRequiredScripts(), $required_fields );
+									<input id="validation_goBack" name="option" value="validation_goBack" type="hidden"/>
+									<input type="hidden" id="mopopup_wpnonce" name="mopopup_wpnonce" value="' . wp_create_nonce( $this->nonce ) . '"/>
+								</form>';
 			return $required_fields;
 		}
 
@@ -120,12 +138,28 @@ if ( ! class_exists( 'ErrorPopup' ) ) {
 		 * for the popup to work. Scripts are not added if the form is in
 		 * preview mode.
 		 *
-		 * @return string
+		 * @return void
 		 */
 		private function getRequiredScripts() {
-			$scripts  = '<style>.mo_customer_validation-modal{display:block!important}</style>';
-			$scripts .= '<script>function mo_validation_goback(){document.getElementById("validation_goBack_form").submit()}</script>';
-			return $scripts;
+			/*
+			 * Load a small, dedicated script for the Error popup.
+			 * This script only defines the global `mo_validation_goback()`
+			 * function used by the template, without touching the default
+			 * OTP popup behaviour.
+			 */
+			$script_handle = 'mo-error-popup';
+
+			if ( ! wp_script_is( $script_handle, 'registered' ) ) {
+				wp_register_script(
+					$script_handle,
+					MOV_URL . 'includes/js/mo-error-popup.js',
+					array(),
+					MOV_VERSION,
+					false
+				);
+			}
+
+			wp_print_scripts( $script_handle );
 		}
 	}
 }

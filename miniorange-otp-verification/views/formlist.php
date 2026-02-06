@@ -12,32 +12,21 @@ use OTP\Helper\MoConstants;
 use OTP\Helper\MoMessages;
 use OTP\Helper\MoUtility;
 
-$class_name  = 'YourOwnForm';
-$class_name  = $class_name . '#' . $class_name;
-$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
-$url         = add_query_arg(
-	array(
-		'page' => 'mosettings',
-		'form' => $class_name,
-	),
-	$request_uri
-);
-
-echo '			<div class="mo-form-list-container"	id="form_search" style = "' . ( $form_name ? 'display:none;' : '' ) . '">
+echo '			<div class="mo-form-list-container"	id="form_search" style = "' . esc_attr( $form_name ? 'display:none;' : '' ) . '">
 					<div class="w-full flex gap-mo-8 px-mo-8 pt-mo-4">
 								<p class="text-lg flex-1 font-medium pr-mo-44 py-mo-1">
-								    ' . esc_html( mo_( 'Select Your Form From The List Below' ) ) . ':</p>';
+								    ' . esc_html( __( 'Select Your Form From The List Below', 'miniorange-otp-verification' ) ) . ':</p>';
 echo '							<div class="flex flex-2 gap-mo-8">
 									<span>
 							            <a  class="mo-button medium secondary" 
                                             href="' . esc_url( $moaction ) . '">
-                                            ' . esc_html( mo_( 'Active Forms' ) ) . '
+                                            ' . esc_html( __( 'Active Forms', 'miniorange-otp-verification' ) ) . '
                                         </a>
                                     </span>
 									<span>
-							            <a  class="mo-button medium inverted"  target = "_blank"
+							            <a  class="mo-button medium inverted"  target = "_blank" rel="noopener noreferrer"
                                             href="' . esc_url( 'https://plugins.miniorange.com/step-by-step-guide-for-wordpress-otp-verification' ) . '">
-                                            ' . esc_html( mo_( 'Plugin Set up guide' ) ) . '
+                                            ' . esc_html( __( 'Plugin Set up guide', 'miniorange-otp-verification' ) ) . '
                                         </a>
                                     </span>
 								</div>    

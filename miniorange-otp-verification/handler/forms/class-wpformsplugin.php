@@ -2,7 +2,7 @@
 /**
  * Load admin view for WPForms.
  *
- * @package miniorange-otp-verification/handler
+ * @package miniorange-otp-verification/handler/forms
  */
 
 namespace OTP\Handler\Forms;
@@ -33,6 +33,7 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 	class WPFormsPlugin extends FormHandler implements IFormHandler {
 
 		use Instance;
+
 		/**
 		 * Initializes values
 		 */
@@ -45,14 +46,14 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 			$this->type_phone_tag          = 'mo_wpform_phone_enable';
 			$this->type_email_tag          = 'mo_wpform_email_enable';
 			$this->type_both_tag           = 'mo_wpform_both_enable';
-			$this->form_name               = mo_( 'WPForms' );
+			$this->form_name               = 'WPForms';
 			$this->is_form_enabled         = get_mo_option( 'wpform_enable' );
 			$this->button_text             = get_mo_option( 'wpforms_sendotp_button_text' );
-			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : mo_( 'Send OTP' );
+			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : '';
 			$this->verify_button_text      = get_mo_option( 'wpforms_verify_button_text' );
-			$this->verify_button_text      = ! MoUtility::is_blank( $this->verify_button_text ) ? $this->verify_button_text : mo_( 'Verify OTP' );
+			$this->verify_button_text      = ! MoUtility::is_blank( $this->verify_button_text ) ? $this->verify_button_text : '';
 			$this->enter_otp_text          = get_mo_option( 'wpforms_enterotp_field_text' );
-			$this->enter_otp_text          = ! MoUtility::is_blank( $this->enter_otp_text ) ? $this->enter_otp_text : mo_( 'Enter OTP Here' );
+			$this->enter_otp_text          = ! MoUtility::is_blank( $this->enter_otp_text ) ? $this->enter_otp_text : '';
 			$this->generate_otp_action     = 'miniorange-wpform-send-otp';
 			$this->validate_otp_action     = 'miniorange-wpform-verify-code';
 			$this->form_documents          = MoFormDocs::WP_FORMS_LINK;
@@ -76,20 +77,20 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 				}
 			}
 
-			add_filter( 'wpforms_process_initial_errors', array( $this, 'validateForm' ), 1, 2 );
+			add_filter( 'wpforms_process_initial_errors', array( $this, 'validate_form' ), 1, 2 );
 			add_action( 'wp_enqueue_scripts', array( $this, 'mo_enqueue_wpforms' ) );
 
 			add_action( "wp_ajax_{$this->generate_otp_action}", array( $this, 'send_otp' ) );
 			add_action( "wp_ajax_nopriv_{$this->generate_otp_action}", array( $this, 'send_otp' ) );
-			add_action( "wp_ajax_{$this->validate_otp_action}", array( $this, 'processFormAndValidateOTP' ) );
-			add_action( "wp_ajax_nopriv_{$this->validate_otp_action}", array( $this, 'processFormAndValidateOTP' ) );
+			add_action( "wp_ajax_{$this->validate_otp_action}", array( $this, 'process_form_and_validate_otp' ) );
+			add_action( "wp_ajax_nopriv_{$this->validate_otp_action}", array( $this, 'process_form_and_validate_otp' ) );
 		}
 
 		/**
 		 * Function to register script and localize variables and add the script to the frontend
 		 */
 		public function mo_enqueue_wpforms() {
-			wp_register_script( 'mowpforms', MOV_URL . 'includes/js/mowpforms.min.js', array( 'jquery' ), MOV_VERSION, true );
+			wp_register_script( 'mowpforms', MOV_URL . 'includes/js/mowpforms.js', array( 'jquery' ), MOV_VERSION, true );
 			wp_localize_script(
 				'mowpforms',
 				'mowpforms',
@@ -98,13 +99,14 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 					'otpType'          => $this->ajax_processing_fields(),
 					'formDetails'      => $this->form_details,
 					'buttontext'       => $this->button_text,
-					'validated'        => $this->getSessionDetails(),
+					'validated'        => $this->get_session_details(),
 					'imgURL'           => MOV_LOADER_URL,
-					'fieldText'        => mo_( $this->enter_otp_text ),
-					'verifyButtonText' => mo_( $this->verify_button_text ),
+					'fieldText'        => $this->enter_otp_text,
+					'verifyButtonText' => $this->verify_button_text,
 					'gnonce'           => wp_create_nonce( $this->nonce ),
 					'nonceKey'         => wp_create_nonce( $this->nonce_key ),
 					'vnonce'           => wp_create_nonce( $this->nonce ),
+					'formNonce'        => wp_create_nonce( 'mo_wpforms_form_submition_nonce' ),
 					'gaction'          => $this->generate_otp_action,
 					'vaction'          => $this->validate_otp_action,
 				)
@@ -115,7 +117,7 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 		/**
 		 * Get session details.
 		 */
-		private function getSessionDetails() {
+		private function get_session_details() {
 			return array(
 				VerificationType::EMAIL => SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, VerificationType::EMAIL ),
 				VerificationType::PHONE => SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, VerificationType::PHONE ),
@@ -128,20 +130,25 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 		 * using AJAX calls.
 		 */
 		public function send_otp() {
-			if ( isset( $_POST[ $this->nonce_key ] ) ) { // phpcs:ignore -- false positive.
-				if ( ! check_ajax_referer( $this->nonce, $this->nonce_key ) ) {
-					return;
-				}
+
+			// Security: Use hardcoded nonce key 'security' instead of variable to prevent manipulation.
+			if ( ! isset( $_POST['security'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'form_nonce' ) ) {
+				wp_send_json(
+					MoUtility::create_json(
+						MoMessages::showMessage( MoMessages::INVALID_OP ),
+						MoConstants::ERROR_JSON_TYPE
+					)
+				);
 			}
 			$post_data = MoUtility::mo_sanitize_array( $_POST );
 			MoUtility::initialize_transaction( $this->form_session_var );
-			if ( 'mo_wpform_' . sanitize_text_field( $post_data['otpType'] ) . '_enable' === $this->type_phone_tag ) {
-				$this->processPhoneAndSendOTP( $post_data );
+
+			if ( isset( $post_data['otpType'] ) && 'mo_wpform_' . $post_data['otpType'] . '_enable' === $this->type_phone_tag ) {
+				$this->process_phone_and_send_otp( $post_data );
 			} else {
-				$this->processEmailAndSendOTP( $post_data );
+				$this->process_email_and_send_otp( $post_data );
 			}
 		}
-
 
 		/**
 		 * The function is used to check if user has provided an email
@@ -149,7 +156,7 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 		 *
 		 * @param array $data - this is the get / post data from the ajax call containing email or phone.
 		 */
-		private function processEmailAndSendOTP( $data ) {
+		private function process_email_and_send_otp( $data ) {
 			if ( ! MoUtility::sanitize_check( 'user_email', $data ) ) {
 				wp_send_json(
 					MoUtility::create_json(
@@ -171,7 +178,7 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 		 *
 		 * @param array $data - this is the get / post data from the ajax call containing email or phone.
 		 */
-		private function processPhoneAndSendOTP( $data ) {
+		private function process_phone_and_send_otp( $data ) {
 			if ( ! MoUtility::sanitize_check( 'user_phone', $data ) ) {
 				wp_send_json(
 					MoUtility::create_json(
@@ -180,7 +187,7 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 					)
 				);
 			} else {
-				$user_phone = sanitize_text_field( $data['user_phone'] );
+				$user_phone = MoUtility::process_phone_number( sanitize_text_field( $data['user_phone'] ) );
 				SessionUtils::add_phone_verified( $this->form_session_var, $user_phone );
 				$this->send_challenge( '', null, null, $user_phone, VerificationType::PHONE );
 			}
@@ -189,21 +196,24 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 		/**
 		 * Process form and Validate OTP.
 		 */
-		public function processFormAndValidateOTP() {
-			if ( isset( $_POST[ $this->nonce_key ] ) ) { // phpcs:ignore -- false positive.
-				if ( ! check_ajax_referer( $this->nonce, $this->nonce_key ) ) {
-					return;
-				}
+		public function process_form_and_validate_otp() {
+			// Security: Use hardcoded nonce key 'security' and action 'form_nonce' instead of variables.
+			if ( ! isset( $_POST['security'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'form_nonce' ) ) {
+				wp_send_json(
+					MoUtility::create_json(
+						MoMessages::showMessage( MoMessages::INVALID_OP ),
+						MoConstants::ERROR_JSON_TYPE
+					)
+				);
 			}
 			$post_data = MoUtility::mo_sanitize_array( $_POST );
-			$this->validate_ajax_request();
-			$this->checkIfOTPSent();
-			$this->checkIntegrityAndValidateOTP( $post_data );
+			$this->check_if_otp_sent();
+			$this->check_integrity_and_validate_otp( $post_data );
 		}
 		/**
 		 * Checks whether OTP sent or not.
 		 */
-		private function checkIfOTPSent() {
+		private function check_if_otp_sent() {
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
 				wp_send_json(
 					MoUtility::create_json(
@@ -219,12 +229,12 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 		 *
 		 * @param array $data - this is the get / post data from the ajax call containing email or phone.
 		 */
-		private function checkIntegrityAndValidateOTP( $data ) {
+		private function check_integrity_and_validate_otp( $data ) {
 
-			$this->checkIntegrity( $data );
-			$this->validate_challenge( sanitize_text_field( $data['otpType'] ), null, sanitize_text_field( $data['otp_token'] ) );
+			$this->check_integrity( $data );
+			$this->validate_challenge( $data['otpType'], null, $data['otp_token'] );
 
-			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, sanitize_text_field( $data['otpType'] ) ) ) {
+			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $data['otpType'] ) ) {
 				wp_send_json(
 					MoUtility::create_json(
 						MoConstants::SUCCESS_JSON_TYPE,
@@ -246,9 +256,10 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 		 *
 		 * @param array $data - this is the get / post data from the ajax call containing email or phone.
 		 */
-		private function checkIntegrity( $data ) {
+		private function check_integrity( $data ) {
 			if ( 'phone' === $data['otpType'] ) {
-				if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, sanitize_text_field( $data['user_phone'] ) ) ) {
+				$phone = MoUtility::process_phone_number( $data['user_phone'] );
+				if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
 					wp_send_json(
 						MoUtility::create_json(
 							MoMessages::showMessage( MoMessages::PHONE_MISMATCH ),
@@ -256,7 +267,7 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 						)
 					);
 				}
-			} elseif ( ! SessionUtils::is_email_verified_match( $this->form_session_var, sanitize_email( $data['user_email'] ) ) ) {
+			} elseif ( ! SessionUtils::is_email_verified_match( $this->form_session_var, $data['user_email'] ) ) {
 				wp_send_json(
 					MoUtility::create_json(
 						MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ),
@@ -276,9 +287,11 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 		 * @param array  $form_data - form data passed by wpform.
 		 * @return array $errors
 		 */
-		public function validateForm( $errors, $form_data ) {
-
-			$post_data = MoUtility::mo_sanitize_array( $_POST ); //phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
+		public function validate_form( $errors, $form_data ) {
+			if ( ! isset( $_POST['mo_wpforms_nonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['mo_wpforms_nonce'] ) ), 'mo_wpforms_form_submition_nonce' ) ) {
+				return $errors;
+			}
+			$post_data = MoUtility::mo_sanitize_array( $_POST );
 
 			$id = $form_data['id'];
 			if ( ! array_key_exists( $id, $this->form_details ) ) {
@@ -294,10 +307,10 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 				return $errors;
 			}
 			if ( $this->otp_type === $this->type_email_tag || $this->otp_type === $this->type_both_tag ) {
-				$errors = $this->processEmail( $form_data, $errors, $id, $post_data );
+				$errors = $this->process_email( $form_data, $errors, $id, $post_data );
 			}
 			if ( $this->otp_type === $this->type_phone_tag || $this->otp_type === $this->type_both_tag ) {
-				$errors = $this->processPhone( $form_data, $errors, $id, $post_data );
+				$errors = $this->process_phone( $form_data, $errors, $id, $post_data );
 			}
 			if ( empty( $errors ) ) {
 				$this->unset_otp_session_variables();
@@ -315,12 +328,12 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 		 * @param array  $post_data - $_POST.
 		 * @return array
 		 */
-		private function processEmail( $form_data, $errors, $id, $post_data ) {
+		private function process_email( $form_data, $errors, $id, $post_data ) {
 			$field_id = $form_data['emailkey'];
 			if ( ! SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, VerificationType::EMAIL ) ) {
 				$errors[ $id ][ $field_id ] = MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE );
 			}
-			if ( ! SessionUtils::is_email_verified_match( $this->form_session_var, sanitize_text_field( $post_data['wpforms']['fields'][ $field_id ] ) ) ) {
+			if ( ! SessionUtils::is_email_verified_match( $this->form_session_var, $post_data['wpforms']['fields'][ $field_id ] ) ) {
 				$errors[ $id ][ $field_id ] = MoMessages::showMessage( MoMessages::EMAIL_MISMATCH );
 			}
 			return $errors;
@@ -337,12 +350,13 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 		 * @param array  $post_data - $_POST.
 		 * @return array
 		 */
-		private function processPhone( $form_data, $errors, $id, $post_data ) {
+		private function process_phone( $form_data, $errors, $id, $post_data ) {
 			$field_id = $form_data['phonekey'];
 			if ( ! SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, VerificationType::PHONE ) ) {
 				$errors[ $id ][ $field_id ] = MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE );
 			}
-			if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, sanitize_text_field( $post_data['wpforms']['fields'][ $field_id ] ) ) ) {
+			$phone_input = MoUtility::process_phone_number( $post_data['wpforms']['fields'][ $field_id ] );
+			if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone_input ) ) {
 				$errors[ $id ][ $field_id ] = MoMessages::showMessage( MoMessages::PHONE_MISMATCH );
 			}
 			return $errors;
@@ -414,14 +428,15 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 		 * Handles saving all the WPForm related options by the admin.
 		 */
 		public function handle_form_options() {
-			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option() ) ) {
+			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option(), 'wpform_enable' ) ) {
 				return;
 			}
-			if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->admin_nonce ) ) {
+			$form_raw = $this->sanitize_form_post( 'wpform_form', '' );
+			if ( empty( $form_raw ) ) {
 				return;
 			}
-			$data = MoUtility::mo_sanitize_array( $_POST );
-			$form = $this->parseFormDetails( $data );
+			$data = array( 'wpform_form' => $form_raw );
+			$form = $this->parse_form_details( $data );
 
 			$valid_forms      = array();
 			$invalid_form_ids = array();
@@ -464,25 +479,25 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 		 *
 		 * @param array $data - contains the data from the $_POST.
 		 */
-		private function parseFormDetails( $data ) {
+		private function parse_form_details( $data ) {
 			$form = array();
 			if ( ! array_key_exists( 'wpform_form', $data ) ) {
 				return $form;
 			}
 			foreach ( array_filter( ( $data['wpform_form']['form'] ) ) as $key => $value ) {
-				$form_data = $this->getFormDataFromID( $value );
+				$form_data = $this->get_form_data_from_id( $value );
 				if ( MoUtility::is_blank( $form_data ) ) {
 					$form[ $value ] = array(
-						'error' => 'Invalid or missing form data.',
+						'error' => __( 'Invalid or missing form data.', 'miniorange-otp-verification' ),
 					);
 					continue;
 				}
-				$field_ids                             = $this->getFieldIDs( $data, $key, $form_data );
-				$form[ sanitize_text_field( $value ) ] = array(
+				$field_ids      = $this->get_field_ids( $data, $key, $form_data );
+				$form[ $value ] = array(
 					'emailkey'   => $field_ids['emailKey'],
 					'phonekey'   => $field_ids['phoneKey'],
-					'phone_show' => sanitize_text_field( $data['wpform_form']['phonekey'][ $key ] ),
-					'email_show' => sanitize_text_field( $data['wpform_form']['emailkey'][ $key ] ),
+					'phone_show' => $data['wpform_form']['phonekey'][ $key ],
+					'email_show' => $data['wpform_form']['emailkey'][ $key ],
 				);
 			}
 			return $form;
@@ -496,7 +511,7 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 		 * @param string $id FormID.
 		 * @return string | array
 		 */
-		private function getFormDataFromID( $id ) {
+		private function get_form_data_from_id( $id ) {
 			$form = MoUtility::is_blank( $id ) ? null : get_post( absint( $id ) );
 			if ( ! is_null( $form ) && isset( $form->post_content ) ) {
 				return wp_unslash( json_decode( $form->post_content ) );
@@ -514,7 +529,7 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 		 * @param object $form_data - form data passed by wpform.
 		 * @return array
 		 */
-		private function getFieldIDs( $data, $key, $form_data ) {
+		private function get_field_ids( $data, $key, $form_data ) {
 			$field_ids = array(
 				'emailKey' => '',
 				'phoneKey' => '',

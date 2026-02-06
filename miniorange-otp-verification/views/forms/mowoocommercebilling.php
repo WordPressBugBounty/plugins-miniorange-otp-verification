@@ -17,10 +17,10 @@ echo '	<div class="mo_otp_form" id="' . esc_attr( get_mo_class( $handler ) ) . '
 					name="mo_customer_validation_wc_billing_enable" 
 					value="1"
 					' . esc_attr( $wc_billing_enable ) . ' />
-			<strong>' . esc_html( mo_( 'WooCommerce Billing Form' ) ) . '</strong>';
+			<strong>' . esc_html__( 'WooCommerce Billing Form', 'miniorange-otp-verification' ) . '</strong>';
 
 echo '		<div class="mo_registration_help_desc" id="wc_billing_options">
-				<b>' . esc_html( mo_( 'Choose between Phone or Email Verification' ) ) . '</b>
+				<b>' . esc_html__( 'Choose between Phone or Email Verification', 'miniorange-otp-verification' ) . '</b>
 				<div>
 				    <input  type="radio" ' . esc_attr( $disabled ) . ' 
 				            id="wc_billing_phone" 
@@ -29,7 +29,7 @@ echo '		<div class="mo_registration_help_desc" id="wc_billing_options">
 				            name="mo_customer_validation_wc_billing_type_enabled" 
 				            value="' . esc_attr( $wc_billing_type_phone ) . '"
 						    ' . ( esc_attr( $wc_billing_type_enabled ) === esc_attr( $wc_billing_type_phone ) ? 'checked' : '' ) . ' />
-                    <strong>' . esc_html( mo_( 'Enable Phone Verification' ) ) . '</strong>
+                    <strong>' . esc_html__( 'Enable Phone Verification', 'miniorange-otp-verification' ) . '</strong>
 				</div>
 				<div ' . ( esc_attr( $wc_billing_type_enabled ) !== esc_attr( $wc_billing_type_phone ) ? 'hidden' : '' ) . ' 
 					class="mo_registration_help_desc_internal" 
@@ -39,7 +39,7 @@ echo '		<div class="mo_registration_help_desc" id="wc_billing_options">
 				            value="1"
 				            ' . esc_attr( $wc_restrict_duplicates ) . ' />
                     <strong>' .
-					esc_html( mo_( 'Do not allow users to use the same Phone number or Email for multiple accounts.' ) ) .
+					esc_html__( 'Do not allow users to use the same Phone number or Email for multiple accounts.', 'miniorange-otp-verification' ) .
 					'</strong>
 				</div>
 				<div>
@@ -49,6 +49,6 @@ echo '		<div class="mo_registration_help_desc" id="wc_billing_options">
 				            name="mo_customer_validation_wc_billing_type_enabled" 
 				            value="' . esc_attr( $wc_billing_type_email ) . '"
 						    ' . ( esc_attr( $wc_billing_type_enabled ) === esc_attr( $wc_billing_type_email ) ? 'checked' : '' ) . ' />
-                    <strong>' . esc_html( mo_( 'Enable Email Verification' ) ) . '</strong>
+                    <strong>' . esc_html__( 'Enable Email Verification', 'miniorange-otp-verification' ) . '</strong>
 				</div>
 		</div></div>';

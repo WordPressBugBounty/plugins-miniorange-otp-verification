@@ -1,10 +1,15 @@
 <?php
-/**Load Main File MoInit
+/**
+ * Main File MoInit
  *
  * @package miniorange-otp-verification
  */
 
 namespace OTP;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 use OTP\Handler\EmailVerificationLogic;
 use OTP\Handler\FormActionHandler;
@@ -19,7 +24,6 @@ use OTP\Helper\MoDisplayMessages;
 use OTP\Helper\MoMessages;
 use OTP\Helper\MoUtility;
 use OTP\Helper\MOVisualTour;
-use OTP\Helper\PolyLangStrings;
 use OTP\Helper\Templates\DefaultPopup;
 use OTP\Helper\Templates\ErrorPopup;
 use OTP\Helper\Templates\ExternalPopup;
@@ -28,7 +32,6 @@ use OTP\Objects\PluginPageDetails;
 use OTP\Objects\TabDetails;
 use OTP\Objects\Tabs;
 use OTP\Traits\Instance;
-use OTP\Helper\MoAddonListContent;
 use OTP\Helper\MocURLCall;
 use OTP\Objects\BaseMessages;
 use OTP\Helper\MoVersionUpdate;
@@ -42,10 +45,6 @@ use OTP\Helper\MoReporting;
 use OTP\Helper\TransactionCost;
 use OTP\Helper\MoAutofill;
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
 if ( ! class_exists( 'MoInit' ) ) {
 	/**
 	 * Final class that runs base functionalities of the plugin.
@@ -56,13 +55,15 @@ if ( ! class_exists( 'MoInit' ) ) {
 
 		use Instance;
 
-		/** Constructor */
+		/**
+		 * Constructor
+		 */
 		private function __construct() {
+			mo_initialize_forms();
 			$this->initialize_hooks();
 			$this->initialize_globals();
 			$this->initialize_helpers();
 			$this->initialize_handlers();
-			$this->register_polylang_strings();
 			$this->register_addons();
 		}
 
@@ -82,9 +83,7 @@ if ( ! class_exists( 'MoInit' ) ) {
 			add_filter( 'wp_mail_from_name', array( $this, 'custom_wp_mail_from_name' ) );
 			add_filter( 'plugin_row_meta', array( $this, 'mo_meta_links' ), 10, 2 );
 			add_action( 'wp_enqueue_scripts', array( $this, 'load_jquery_on_forms' ) );
-
 			add_action( 'plugin_action_links_' . MOV_PLUGIN_NAME, array( $this, 'plugin_action_links' ), 10, 1 );
-
 		}
 
 		/**
@@ -99,42 +98,53 @@ if ( ! class_exists( 'MoInit' ) ) {
 		}
 
 		/**
-		 * Initialize all the helper classes
+		 * Initialize all the helper classes with proper file validation
 		 */
 		private function initialize_helpers() {
 			MoMessages::instance();
-			MoAddonListContent::instance();
-			PolyLangStrings::instance();
 			MOVisualTour::instance();
 			TransactionCost::instance();
-			if ( file_exists( MOV_DIR . 'helper/class-moversionupdate.php' ) ) {
-				MoVersionUpdate::instance();
-			}
-			if ( file_exists( MOV_DIR . 'helper/class-moalphanumeric.php' ) ) {
-				MoAlphaNumeric::instance();
-			}
-			if ( file_exists( MOV_DIR . 'helper/class-mosmsbackupgateway.php' ) ) {
-				MoSMSBackupGateway::instance();
-			}
-			if ( file_exists( MOV_DIR . 'helper/class-mogloballybannedphone.php' ) ) {
-				MoGloballyBannedPhone::instance();
-			}
-			if ( file_exists( MOV_DIR . 'helper/class-mowhatsapp.php' ) ) {
-				MoWhatsApp::instance();
-			}
-			if ( file_exists( MOV_DIR . 'helper/class-momastercode.php' ) ) {
-				MoMasterCode::instance();
-			}
-			if ( file_exists( MOV_DIR . 'helper/class-moreporting.php' ) ) {
-				MoReporting::instance();
-			}
-			if ( file_exists( MOV_DIR . 'helper/class-popuptemplatechange.php' ) ) {
-				PopupTemplateChange::instance();
-			}
-			if ( file_exists( MOV_DIR . 'helper/class-moautofill.php' ) ) {
-				MoAutofill::instance();
+
+			// Initialize helper singletons using fully-qualified class names.
+			$helper_classes = array(
+				MoVersionUpdate::class,
+				MoAlphaNumeric::class,
+				MoSMSBackupGateway::class,
+				MoGloballyBannedPhone::class,
+				MoWhatsApp::class,
+				MoMasterCode::class,
+				MoReporting::class,
+				PopupTemplateChange::class,
+				MoAutofill::class,
+			);
+
+			foreach ( $helper_classes as $helper_class ) {
+				try {
+					// Derive the expected helper file path (e.g. helper/class-moreporting.php).
+					$short_name       = substr( $helper_class, strrpos( $helper_class, '\\' ) + 1 );
+					$file_name        = 'class-' . strtolower( $short_name ) . '.php';
+					$helper_dir       = MOV_DIR . 'helper' . DIRECTORY_SEPARATOR;
+					$helper_file_path = $helper_dir . $file_name;
+
+					$real_helper_file = realpath( $helper_file_path );
+					$real_helper_dir  = realpath( $helper_dir );
+
+					// Only load the file if it exists inside the expected helper directory.
+					if ( $real_helper_file && $real_helper_dir && 0 === strpos( $real_helper_file, $real_helper_dir ) && file_exists( $real_helper_file ) ) {
+						require_once $real_helper_file;
+					}
+
+					if ( class_exists( $helper_class, false ) && method_exists( $helper_class, 'instance' ) ) {
+						$helper_class::instance();
+					}
+				} catch ( \Exception $e ) {
+					continue;
+				} catch ( \Error $e ) {
+					continue;
+				}
 			}
 		}
+
 		/**
 		 * Initialize all the Template Handlers
 		 */
@@ -172,13 +182,22 @@ if ( ! class_exists( 'MoInit' ) ) {
 		 * is called when user visits any one of the menu URLs.
 		 */
 		public function mo_customer_validation_options() {
-			include MOV_DIR . 'controllers/main-controller.php';
+			if ( ! current_user_can( 'manage_options' ) ) {
+				return;
+			}
+			$controller_file = realpath( MOV_DIR . 'controllers/main-controller.php' );
+			$base_dir        = realpath( MOV_DIR . 'controllers/' );
+			if ( MoUtility::mo_require_file( $controller_file, $base_dir ) ) {
+				require $controller_file;
+			} else {
+				return;
+			}
 		}
 
 		/**
 		 * This function checks the current page to load the main scripts and styles on admin dashboard only
 		 */
-		public function checkCurrentPage() {
+		public function check_current_page() {
 
 			// Only load scripts on OTP plugin pages.
 			$current_screen = get_current_screen();
@@ -198,7 +217,7 @@ if ( ! class_exists( 'MoInit' ) ) {
 			);
 
 			// Also check by page parameter for additional safety.
-			$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
+			$page           = MoUtility::get_current_page_parameter_value( 'page', '' );
 			$otp_page_slugs = array(
 				'mosettings',
 				'monotifications',
@@ -215,7 +234,6 @@ if ( ! class_exists( 'MoInit' ) ) {
 			if ( ! in_array( $current_screen->id, $otp_plugin_pages, true ) && ! in_array( $page, $otp_page_slugs, true ) ) {
 				return true;
 			}
-
 		}
 
 		/**
@@ -224,10 +242,10 @@ if ( ! class_exists( 'MoInit' ) ) {
 		 * and enqueue_scripts WordPress hook.
 		 */
 		public function mo_registration_plugin_settings_style() {
-			// Load feedback styles on all admin pages since feedback form appears on all pages
+			// Load feedback styles on all admin pages since feedback form appears on all pages.
 			wp_enqueue_style( 'mo_customer_validation_feedback_style', MOV_CSS, array(), MOV_VERSION );
-			
-			if( $this->checkCurrentPage() ) {
+
+			if ( $this->check_current_page() ) {
 				return;
 			}
 			wp_enqueue_style( 'mo_customer_validation_admin_settings_style', MOV_CSS_URL, array(), MOV_VERSION );
@@ -243,15 +261,15 @@ if ( ! class_exists( 'MoInit' ) ) {
 		 * and enqueue_scripts WordPress hook.
 		 */
 		public function mo_registration_plugin_settings_script() {
-			// Load feedback script on all admin pages since feedback form appears on all pages
+			// Load feedback script on all admin pages since feedback form appears on all pages.
 			wp_enqueue_script( 'mo_customer_validation_feedback_script', MOV_FEEDBACK_JS, array( 'jquery' ), MOV_VERSION, false );
-			
-			if( $this->checkCurrentPage() ) {
+
+			if ( $this->check_current_page() ) {
 				return;
 			}
 			$country_val      = array();
 			$whatsapp_enabled = get_mo_option( 'mo_whatsapp_enable' );
-			$request_uri      = remove_query_arg( array( 'mosettings', 'form', 'subpage' ), isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ); // phpcs:ignore -- false positive.
+			$request_uri      = remove_query_arg( array( 'mosettings', 'form', 'subpage' ), isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' );
 			$whatsapp_tab_url = add_query_arg( array( 'page' => 'mowhatsapp' ), $request_uri );
 			$whatsapp_file    = file_exists( MOV_DIR . 'helper' . DIRECTORY_SEPARATOR . 'class-mowhatsapp.php' );
 
@@ -263,9 +281,13 @@ if ( ! class_exists( 'MoInit' ) ) {
 					'iswhatsappenable'       => $whatsapp_enabled,
 					'whatsapp_tab'           => $whatsapp_tab_url,
 					'whatsapp_file'          => $whatsapp_file,
-					'whatsapp_enabled_text'  => mo_( 'OTP Over WhatsApp Enabled' ),
-					'whatsapp_disabled_text' => mo_( 'Enable OTP Over WhatsApp?' ),
-					'form_is_not_found'      => MoMessages::showMessage(MoMessages::FORM_IS_NOT_FOUND)
+					'whatsapp_enabled_text'  => esc_html__( 'OTP Over WhatsApp Enabled', 'miniorange-otp-verification' ),
+					'whatsapp_disabled_text' => esc_html__( 'Enable OTP Over WhatsApp?', 'miniorange-otp-verification' ),
+					'form_is_not_found'      => MoMessages::showMessage( MoMessages::FORM_IS_NOT_FOUND ),
+					'ajaxUrl'                => admin_url( 'admin-ajax.php' ),
+					'security'               => wp_create_nonce( 'mo_admin_actions' ),
+					'mo_twilio_setupguide'   => MoConstants::MO_TWILIO_SETUP_GUIDE,
+					'mo_gateway_setupguide'  => MoConstants::MO_GATEWAY_SETUP_GUIDE,
 
 				)
 			);
@@ -357,26 +379,8 @@ if ( ! class_exists( 'MoInit' ) ) {
 		 * tools can read it and use it for automatic translation.
 		 */
 		public function otp_load_textdomain() {
-			initialize_forms();
 			load_plugin_textdomain( 'miniorange-otp-verification', false, dirname( plugin_basename( __FILE__ ) ) . '/lang/' );
-			do_action( 'mo_otp_verification_add_on_lang_files' );
 		}
-
-
-		/**
-		 * Function loads the polylang string. This is used to declare all the strings that will show
-		 * up in the PolyLang plugin list. A user can use the strings defined in the function to
-		 * declare his own translation and support multiligual texts.
-		 */
-		private function register_polylang_strings() {
-			if ( ! MoUtility::is_polylang_installed() ) {
-				return;
-			}
-			foreach ( maybe_unserialize( MO_POLY_STRINGS ) as $key => $value ) {
-				pll_register_string( $key, $value, 'miniorange-otp-verification' );
-			}
-		}
-
 
 		/**
 		 * Function initializes all the AddOns associated with the plugin.
@@ -396,7 +400,16 @@ if ( ! class_exists( 'MoInit' ) ) {
 		 * footer section of the page.
 		 */
 		public function feedback_request() {
-			include MOV_DIR . 'controllers/feedback.php';
+			if ( ! current_user_can( 'manage_options' ) ) {
+				return;
+			}
+			$feedback_file = realpath( MOV_DIR . 'controllers/feedback.php' );
+			$base_dir      = realpath( MOV_DIR . 'controllers/' );
+			if ( MoUtility::mo_require_file( $feedback_file, $base_dir ) ) {
+				require $feedback_file;
+			} else {
+				return;
+			}
 		}
 
 
@@ -411,7 +424,7 @@ if ( ! class_exists( 'MoInit' ) ) {
 		public function mo_meta_links( $meta_fields, $file ) {
 			if ( MOV_PLUGIN_NAME === $file ) {
 				$meta_fields[] = "<span class='dashicons dashicons-sticky'></span>
-            <a href='" . MoConstants::FAQ_URL . "' target='_blank'>" . mo_( 'FAQs' ) . '</a>';
+            <a href='" . MoConstants::FAQ_URL . "' target='_blank'>" . esc_html__( 'FAQs', 'miniorange-otp-verification' ) . '</a>';
 			}
 			return $meta_fields;
 		}
@@ -436,7 +449,7 @@ if ( ! class_exists( 'MoInit' ) ) {
 				$links = array_merge(
 					array(
 						'<a href="' . esc_url( admin_url( 'admin.php?page=' . $form_settings_tab->menu_slug ) ) . '">' .
-							mo_( 'Settings' )
+							esc_html__( 'Settings', 'miniorange-otp-verification' )
 						. '</a>',
 					),
 					$links
@@ -460,11 +473,13 @@ if ( ! class_exists( 'MoInit' ) ) {
 		 * Change the from name going out in the email
 		 * via WP_MAIL of WordPress.
 		 *
-		 * @param  String $original_email_from    The Original From Email Address passed by the hook.
+		 * @param  String $original_email_from The Original From Email Address passed by the hook.
 		 * @return String From Email Address for the email going out
 		 */
 		public function custom_wp_mail_from_name( $original_email_from ) {
-
+			if ( is_admin() && ! current_user_can( 'manage_options' ) ) {
+				return $original_email_from;
+			}
 			$gateway = GatewayFunctions::instance();
 			return $gateway->custom_wp_mail_from_name( $original_email_from );
 		}

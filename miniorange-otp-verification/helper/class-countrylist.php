@@ -3,7 +3,7 @@
  * Contains List of countries to be shown in dropdown.
  * Contains functions for getting default country, country code set.
  *
- * @package miniorange-validaition-settings
+ * @package miniorange-otp-verification/helper
  */
 
 namespace OTP\Helper;
@@ -38,6 +38,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+93',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Albania (Shqipëri)',
@@ -45,6 +46,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+355',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Algeria (‫الجزائر‬‎)',
@@ -52,6 +54,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+213',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'American Samoa',
@@ -59,6 +62,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1684',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Andorra',
@@ -66,6 +70,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+376',
 				'minLength'   => 6,
 				'maxLength'   => 6,
+				'prefixes'    => array( '1', '3', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Angola',
@@ -73,6 +78,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+244',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '9' ),
 			),
 			array(
 				'name'        => 'Anguilla',
@@ -80,6 +86,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1264',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Antigua and Barbuda',
@@ -87,6 +94,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1268',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Argentina',
@@ -94,6 +102,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+54',
 				'minLength'   => 10,
 				'maxLength'   => 11,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Armenia (Հայաստան)',
@@ -101,6 +110,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+374',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Aruba',
@@ -108,6 +118,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+297',
 				'minLength'   => 7,
 				'maxLength'   => 7,
+				'prefixes'    => array( '2', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Australia',
@@ -115,6 +126,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+61',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '4', '7', '8' ),
 			),
 			array(
 				'name'        => 'Austria (Österreich)',
@@ -122,6 +134,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+43',
 				'minLength'   => 10,
 				'maxLength'   => 13,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Azerbaijan (Azərbaycan)',
@@ -129,6 +142,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+994',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Bahamas',
@@ -136,6 +150,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1242',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Bahrain (‫البحرين‬‎)',
@@ -143,6 +158,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+973',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '1', '3', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Bangladesh (বাংলাদেশ)',
@@ -150,6 +166,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+880',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Barbados',
@@ -157,6 +174,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1246',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Belarus (Беларусь)',
@@ -164,6 +182,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+375',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '4', '8', '9' ),
 			),
 			array(
 				'name'        => 'Belgium (België)',
@@ -171,6 +190,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+32',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Belize',
@@ -178,6 +198,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+501',
 				'minLength'   => 7,
 				'maxLength'   => 7,
+				'prefixes'    => array( '0', '2', '3', '4', '5', '6', '7', '8' ),
 			),
 			array(
 				'name'        => 'Benin (Bénin)',
@@ -185,6 +206,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+229',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '0', '2', '4', '5', '6', '8', '9' ),
 			),
 			array(
 				'name'        => 'Bermuda',
@@ -192,6 +214,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1441',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Bhutan (འབྲུག)',
@@ -199,6 +222,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+975',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8' ),
 			),
 			array(
 				'name'        => 'Bolivia',
@@ -206,6 +230,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+591',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8' ),
 			),
 			array(
 				'name'        => 'Bosnia and Herzegovina (Босна и Херцеговина)',
@@ -213,6 +238,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+387',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Botswana',
@@ -220,6 +246,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+267',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '0', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Brazil (Brasil)',
@@ -227,6 +254,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+55',
 				'minLength'   => 10,
 				'maxLength'   => 11,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'British Indian Ocean Territory',
@@ -234,6 +262,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+246',
 				'minLength'   => 7,
 				'maxLength'   => 7,
+				'prefixes'    => array( '3' ),
 			),
 			array(
 				'name'        => 'British Virgin Islands',
@@ -241,6 +270,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1284',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Brunei',
@@ -248,6 +278,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+673',
 				'minLength'   => 7,
 				'maxLength'   => 7,
+				'prefixes'    => array( '2', '3', '4', '5', '7', '8' ),
 			),
 			array(
 				'name'        => 'Bulgaria (България)',
@@ -255,6 +286,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+359',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Burkina Faso',
@@ -262,6 +294,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+226',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '0', '2', '4', '5', '6', '7' ),
 			),
 			array(
 				'name'        => 'Burundi (Uburundi)',
@@ -269,6 +302,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+257',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '3', '6', '7' ),
 			),
 			array(
 				'name'        => 'Cambodia (កម្ពុជា)',
@@ -276,6 +310,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+855',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Cameroon (Cameroun)',
@@ -283,6 +318,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+237',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '6', '8' ),
 			),
 			array(
 				'name'        => 'Canada',
@@ -290,6 +326,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Cape Verde (Kabu Verdi)',
@@ -297,6 +334,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+238',
 				'minLength'   => 7,
 				'maxLength'   => 7,
+				'prefixes'    => array( '2', '3', '4', '5', '8', '9' ),
 			),
 			array(
 				'name'        => 'Caribbean Netherlands',
@@ -304,6 +342,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+599',
 				'minLength'   => 7,
 				'maxLength'   => 7,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Cayman Islands',
@@ -311,6 +350,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1345',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Central African Republic (République centrafricaine)',
@@ -318,6 +358,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+236',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '7', '8' ),
 			),
 			array(
 				'name'        => 'Chad (Tchad)',
@@ -325,6 +366,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+235',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '3', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Chile',
@@ -332,6 +374,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+56',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'China (中国)',
@@ -339,6 +382,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+86',
 				'minLength'   => 11,
 				'maxLength'   => 11,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Christmas Island',
@@ -346,6 +390,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+61',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '4', '8' ),
 			),
 			array(
 				'name'        => 'Cocos (Keeling) Islands',
@@ -353,6 +398,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+61',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '4', '8' ),
 			),
 			array(
 				'name'        => 'Colombia',
@@ -360,6 +406,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+57',
 				'minLength'   => 8,
 				'maxLength'   => 10,
+				'prefixes'    => array( '1', '3', '4', '6', '9' ),
 			),
 			array(
 				'name'        => 'Comoros (‫جزر القمر‬‎)',
@@ -367,6 +414,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+269',
 				'minLength'   => 7,
 				'maxLength'   => 7,
+				'prefixes'    => array( '3', '4', '7', '8' ),
 			),
 			array(
 				'name'        => 'Congo (DRC) (Jamhuri ya Kidemokrasia ya Kongo)',
@@ -374,6 +422,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+243',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '8', '9' ),
 			),
 			array(
 				'name'        => 'Congo (Republic) (Congo-Brazzaville)',
@@ -381,6 +430,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+242',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '0', '2', '8' ),
 			),
 			array(
 				'name'        => 'Cook Islands',
@@ -388,6 +438,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+682',
 				'minLength'   => 5,
 				'maxLength'   => 5,
+				'prefixes'    => array( '2', '3', '4', '5', '7', '8' ),
 			),
 			array(
 				'name'        => 'Costa Rica',
@@ -395,6 +446,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+506',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Côte d\'Ivoire',
@@ -402,6 +454,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+225',
 				'minLength'   => 8,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '2' ),
 			),
 			array(
 				'name'        => 'Croatia (Hrvatska)',
@@ -409,6 +462,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+385',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Cuba',
@@ -416,6 +470,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+53',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8' ),
 			),
 			array(
 				'name'        => 'Curaçao',
@@ -423,6 +478,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+599',
 				'minLength'   => 7,
 				'maxLength'   => 8,
+				'prefixes'    => array( '3', '4', '6', '7', '9' ),
 			),
 			array(
 				'name'        => 'Cyprus (Κύπρος)',
@@ -430,6 +486,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+357',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '5', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Czech Republic (Česká republika)',
@@ -437,6 +494,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+420',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Denmark (Danmark)',
@@ -444,6 +502,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+45',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Djibouti',
@@ -451,6 +510,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+253',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '7' ),
 			),
 			array(
 				'name'        => 'Dominica',
@@ -458,6 +518,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1767',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Dominican Republic (República Dominicana)',
@@ -465,6 +526,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Ecuador',
@@ -472,6 +534,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+593',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '9' ),
 			),
 			array(
 				'name'        => 'Egypt (‫مصر‬‎)',
@@ -479,6 +542,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+20',
 				'minLength'   => 8,
 				'maxLength'   => 10,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '8', '9' ),
 			),
 			array(
 				'name'        => 'El Salvador',
@@ -486,6 +550,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+503',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Equatorial Guinea (Guinea Ecuatorial)',
@@ -493,6 +558,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+240',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '3', '5', '8', '9' ),
 			),
 			array(
 				'name'        => 'Eritrea',
@@ -500,6 +566,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+291',
 				'minLength'   => 7,
 				'maxLength'   => 7,
+				'prefixes'    => array( '1', '7', '8' ),
 			),
 			array(
 				'name'        => 'Estonia (Eesti)',
@@ -507,6 +574,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+372',
 				'minLength'   => 7,
 				'maxLength'   => 8,
+				'prefixes'    => array( '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Ethiopia',
@@ -514,6 +582,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+251',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '7', '9' ),
 			),
 			array(
 				'name'        => 'Falkland Islands (Islas Malvinas)',
@@ -521,6 +590,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+500',
 				'minLength'   => 5,
 				'maxLength'   => 5,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7' ),
 			),
 			array(
 				'name'        => 'Faroe Islands (Føroyar)',
@@ -528,6 +598,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+298',
 				'minLength'   => 6,
 				'maxLength'   => 6,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Fiji',
@@ -535,6 +606,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+679',
 				'minLength'   => 7,
 				'maxLength'   => 7,
+				'prefixes'    => array( '0', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Finland (Suomi)',
@@ -542,6 +614,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+358',
 				'minLength'   => 5,
 				'maxLength'   => 12,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'France',
@@ -549,6 +622,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+33',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'French Guiana (Guyane française)',
@@ -556,6 +630,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+594',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'French Polynesia (Polynésie française)',
@@ -563,6 +638,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+689',
 				'minLength'   => 6,
 				'maxLength'   => 6,
+				'prefixes'    => array( '4', '8' ),
 			),
 			array(
 				'name'        => 'Gabon',
@@ -570,6 +646,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+241',
 				'minLength'   => 7,
 				'maxLength'   => 8,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7' ),
 			),
 			array(
 				'name'        => 'Gambia',
@@ -577,6 +654,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+220',
 				'minLength'   => 7,
 				'maxLength'   => 7,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Georgia (საქართველო)',
@@ -584,6 +662,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+995',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '3', '4', '5', '7', '8' ),
 			),
 			array(
 				'name'        => 'Germany (Deutschland)',
@@ -591,6 +670,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+49',
 				'minLength'   => 11,
 				'maxLength'   => 12,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Ghana (Gaana)',
@@ -598,6 +678,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+233',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '3', '5', '7', '8' ),
 			),
 			array(
 				'name'        => 'Gibraltar',
@@ -605,6 +686,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+350',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2' ),
 			),
 			array(
 				'name'        => 'Greece (Ελλάδα)',
@@ -612,6 +694,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+30',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '2', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Greenland (Kalaallit Nunaat)',
@@ -619,6 +702,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+299',
 				'minLength'   => 6,
 				'maxLength'   => 6,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Grenada',
@@ -626,6 +710,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1473',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Guadeloupe',
@@ -633,6 +718,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+590',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Guam',
@@ -640,6 +726,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1671',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Guatemala',
@@ -647,6 +734,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+502',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8' ),
 			),
 			array(
 				'name'        => 'Guernsey',
@@ -654,6 +742,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+44',
 				'minLength'   => 10,
 				'maxLength'   => 11,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Guinea (Guinée)',
@@ -661,6 +750,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+224',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '3', '6', '7' ),
 			),
 			array(
 				'name'        => 'Guinea-Bissau (Guiné Bissau)',
@@ -668,6 +758,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+245',
 				'minLength'   => 7,
 				'maxLength'   => 7,
+				'prefixes'    => array( '4', '9' ),
 			),
 			array(
 				'name'        => 'Guyana',
@@ -675,6 +766,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+592',
 				'minLength'   => 7,
 				'maxLength'   => 7,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Haiti',
@@ -682,6 +774,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+509',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '3', '4', '5', '8', '9' ),
 			),
 			array(
 				'name'        => 'Honduras',
@@ -689,6 +782,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+504',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '3', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Hong Kong (香港)',
@@ -696,6 +790,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+852',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Hungary (Magyarország)',
@@ -703,6 +798,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+36',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Iceland (Ísland)',
@@ -710,6 +806,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+354',
 				'minLength'   => 7,
 				'maxLength'   => 7,
+				'prefixes'    => array( '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'India (भारत)',
@@ -717,6 +814,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+91',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Indonesia',
@@ -724,6 +822,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+62',
 				'minLength'   => 8,
 				'maxLength'   => 12,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Iran (‫ایران‬‎)',
@@ -731,6 +830,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+98',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Iraq (‫العراق‬‎)',
@@ -738,6 +838,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+964',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7' ),
 			),
 			array(
 				'name'        => 'Ireland',
@@ -745,6 +846,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+353',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Isle of Man',
@@ -752,6 +854,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+44',
 				'minLength'   => 10,
 				'maxLength'   => 11,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Israel (‫ישראל‬‎)',
@@ -759,6 +862,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+972',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Italy (Italia)',
@@ -766,6 +870,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+39',
 				'minLength'   => 9,
 				'maxLength'   => 11,
+				'prefixes'    => array( '0', '1', '3', '4', '5', '7', '8' ),
 			),
 			array(
 				'name'        => 'Jamaica',
@@ -773,6 +878,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1876',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Japan (日本)',
@@ -780,6 +886,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+81',
 				'minLength'   => 10,
 				'maxLength'   => 11,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Jersey',
@@ -787,6 +894,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+44',
 				'minLength'   => 10,
 				'maxLength'   => 11,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Jordan (‫الأردن‬‎)',
@@ -794,6 +902,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+962',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '3', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Kazakhstan (Казахстан)',
@@ -801,6 +910,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+7',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Kenya',
@@ -808,6 +918,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+254',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Kiribati',
@@ -815,6 +926,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+686',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Kosovo',
@@ -822,6 +934,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+383',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '3', '4', '8', '9' ),
 			),
 			array(
 				'name'        => 'Kuwait (‫الكويت‬‎)',
@@ -829,6 +942,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+965',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '1', '2', '4', '5', '6', '9' ),
 			),
 			array(
 				'name'        => 'Kyrgyzstan (Кыргызстан)',
@@ -836,6 +950,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+996',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '3', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Laos (ລາວ)',
@@ -843,6 +958,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+856',
 				'minLength'   => 8,
 				'maxLength'   => 10,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8' ),
 			),
 			array(
 				'name'        => 'Latvia (Latvija)',
@@ -850,6 +966,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+371',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Lebanon (‫لبنان‬‎)',
@@ -857,6 +974,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+961',
 				'minLength'   => 7,
 				'maxLength'   => 8,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Lesotho',
@@ -864,6 +982,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+266',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '5', '6', '8' ),
 			),
 			array(
 				'name'        => 'Liberia',
@@ -871,6 +990,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+231',
 				'minLength'   => 7,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8' ),
 			),
 			array(
 				'name'        => 'Libya (‫ليبيا‬‎)',
@@ -878,6 +998,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+218',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Liechtenstein',
@@ -885,6 +1006,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+423',
 				'minLength'   => 7,
 				'maxLength'   => 7,
+				'prefixes'    => array( '2', '3', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Lithuania (Lietuva)',
@@ -892,6 +1014,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+370',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Luxembourg',
@@ -899,6 +1022,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+352',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Macau (澳門)',
@@ -906,6 +1030,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+853',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '0', '2', '6', '8' ),
 			),
 			array(
 				'name'        => 'Macedonia (FYROM) (Македонија)',
@@ -913,6 +1038,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+389',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '3', '4', '5', '7', '8' ),
 			),
 			array(
 				'name'        => 'Madagascar (Madagasikara)',
@@ -920,6 +1046,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+261',
 				'minLength'   => 9,
 				'maxLength'   => 10,
+				'prefixes'    => array( '2', '3' ),
 			),
 			array(
 				'name'        => 'Malawi',
@@ -927,6 +1054,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+265',
 				'minLength'   => 7,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Malaysia',
@@ -934,6 +1062,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+60',
 				'minLength'   => 9,
 				'maxLength'   => 10,
+				'prefixes'    => array( '1', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Maldives',
@@ -941,6 +1070,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+960',
 				'minLength'   => 7,
 				'maxLength'   => 7,
+				'prefixes'    => array( '3', '4', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Mali',
@@ -948,6 +1078,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+223',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Malta',
@@ -955,6 +1086,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+356',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '3', '5', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Marshall Islands',
@@ -962,6 +1094,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+692',
 				'minLength'   => 7,
 				'maxLength'   => 7,
+				'prefixes'    => array( '2', '3', '4', '5', '6' ),
 			),
 			array(
 				'name'        => 'Martinique',
@@ -969,6 +1102,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+596',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Mauritania (‫موريتانيا‬‎)',
@@ -976,6 +1110,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+222',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '3', '4', '8' ),
 			),
 			array(
 				'name'        => 'Mauritius (Moris)',
@@ -983,6 +1118,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+230',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8' ),
 			),
 			array(
 				'name'        => 'Mayotte',
@@ -990,6 +1126,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+262',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Mexico (México)',
@@ -997,6 +1134,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+52',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Micronesia',
@@ -1004,6 +1142,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+691',
 				'minLength'   => 7,
 				'maxLength'   => 7,
+				'prefixes'    => array( '3', '8', '9' ),
 			),
 			array(
 				'name'        => 'Moldova (Republica Moldova)',
@@ -1011,6 +1150,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+373',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '3', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Monaco',
@@ -1018,6 +1158,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+377',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '3', '4', '6', '8', '9' ),
 			),
 			array(
 				'name'        => 'Mongolia (Монгол)',
@@ -1025,6 +1166,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+976',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '1', '2', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Montenegro (Crna Gora)',
@@ -1032,6 +1174,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+382',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Montserrat',
@@ -1039,6 +1182,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1664',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Morocco (‫المغرب‬‎)',
@@ -1046,6 +1190,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+212',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '5', '6', '7', '8' ),
 			),
 			array(
 				'name'        => 'Mozambique (Moçambique)',
@@ -1053,6 +1198,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+258',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '8' ),
 			),
 			array(
 				'name'        => 'Myanmar (Burma) (မြန်မာ)',
@@ -1060,6 +1206,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+95',
 				'minLength'   => 8,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Namibia (Namibië)',
@@ -1067,6 +1214,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+264',
 				'minLength'   => 7,
 				'maxLength'   => 9,
+				'prefixes'    => array( '6', '8' ),
 			),
 			array(
 				'name'        => 'Nauru',
@@ -1074,6 +1222,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+674',
 				'minLength'   => 7,
 				'maxLength'   => 7,
+				'prefixes'    => array( '2', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Nepal (नेपाल)',
@@ -1081,6 +1230,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+977',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Netherlands (Nederland)',
@@ -1088,6 +1238,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+31',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'New Caledonia (Nouvelle-Calédonie)',
@@ -1095,6 +1246,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+687',
 				'minLength'   => 6,
 				'maxLength'   => 6,
+				'prefixes'    => array( '0', '2', '3', '4', '5', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'New Zealand',
@@ -1102,6 +1254,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+64',
 				'minLength'   => 8,
 				'maxLength'   => 10,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Nicaragua',
@@ -1109,6 +1262,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+505',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '1', '2', '5', '6', '7', '8' ),
 			),
 			array(
 				'name'        => 'Niger (Nijar)',
@@ -1116,6 +1270,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+227',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '0', '2', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Nigeria',
@@ -1123,6 +1278,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+234',
 				'minLength'   => 7,
 				'maxLength'   => 10,
+				'prefixes'    => array( '2', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Niue',
@@ -1130,6 +1286,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+683',
 				'minLength'   => 4,
 				'maxLength'   => 4,
+				'prefixes'    => array( '8' ),
 			),
 			array(
 				'name'        => 'Norfolk Island',
@@ -1137,6 +1294,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+672',
 				'minLength'   => 5,
 				'maxLength'   => 6,
+				'prefixes'    => array( '1', '3' ),
 			),
 			array(
 				'name'        => 'North Korea (조선 민주주의 인민 공화국)',
@@ -1144,6 +1302,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+850',
 				'minLength'   => 8,
 				'maxLength'   => 12,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8' ),
 			),
 			array(
 				'name'        => 'Northern Mariana Islands',
@@ -1151,6 +1310,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1670',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Norway (Norge)',
@@ -1158,6 +1318,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+47',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Oman (‫عُمان‬‎)',
@@ -1165,6 +1326,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+968',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '1', '2', '5', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Pakistan (‫پاکستان‬‎)',
@@ -1172,6 +1334,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+92',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Palau',
@@ -1179,6 +1342,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+680',
 				'minLength'   => 7,
 				'maxLength'   => 7,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Palestine (‫فلسطين‬‎)',
@@ -1186,6 +1350,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+970',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '4', '5', '8', '9' ),
 			),
 			array(
 				'name'        => 'Panama (Panamá)',
@@ -1193,6 +1358,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+507',
 				'minLength'   => 7,
 				'maxLength'   => 8,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Papua New Guinea',
@@ -1200,6 +1366,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+675',
 				'minLength'   => 7,
 				'maxLength'   => 8,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Paraguay',
@@ -1207,6 +1374,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+595',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Peru (Perú)',
@@ -1214,6 +1382,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+51',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Philippines',
@@ -1221,6 +1390,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+63',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Poland (Polska)',
@@ -1228,6 +1398,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+48',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Portugal',
@@ -1235,6 +1406,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+351',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Puerto Rico',
@@ -1242,6 +1414,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Qatar (‫قطر‬‎)',
@@ -1249,6 +1422,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+974',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8' ),
 			),
 			array(
 				'name'        => 'Réunion (La Réunion)',
@@ -1256,6 +1430,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+262',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Romania (România)',
@@ -1263,6 +1438,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+40',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '3', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Russia (Россия)',
@@ -1270,6 +1446,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+7',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Rwanda',
@@ -1277,6 +1454,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+250',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '0', '2', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Saint Barthélemy',
@@ -1284,6 +1462,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+590',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Saint Helena',
@@ -1291,6 +1470,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+290',
 				'minLength'   => 4,
 				'maxLength'   => 4,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Saint Kitts and Nevis',
@@ -1298,6 +1478,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1869',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Saint Lucia',
@@ -1305,6 +1486,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1758',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Saint Martin (Saint-Martin (partie française))',
@@ -1312,6 +1494,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+590',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Saint Pierre and Miquelon (Saint-Pierre-et-Miquelon)',
@@ -1319,6 +1502,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+508',
 				'minLength'   => 6,
 				'maxLength'   => 6,
+				'prefixes'    => array( '4', '5', '7', '8' ),
 			),
 			array(
 				'name'        => 'Saint Vincent and the Grenadines',
@@ -1326,6 +1510,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1784',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Samoa',
@@ -1333,6 +1518,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+685',
 				'minLength'   => 5,
 				'maxLength'   => 7,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8' ),
 			),
 			array(
 				'name'        => 'San Marino',
@@ -1340,6 +1526,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+378',
 				'minLength'   => 6,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'São Tomé and Príncipe (São Tomé e Príncipe)',
@@ -1347,6 +1534,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+239',
 				'minLength'   => 7,
 				'maxLength'   => 7,
+				'prefixes'    => array( '2', '9' ),
 			),
 			array(
 				'name'        => 'Saudi Arabia (‫المملكة العربية السعودية‬‎)',
@@ -1354,6 +1542,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+966',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '5', '8', '9' ),
 			),
 			array(
 				'name'        => 'Senegal (Sénégal)',
@@ -1361,6 +1550,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+221',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '3', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Serbia (Србија)',
@@ -1368,6 +1558,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+381',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Seychelles',
@@ -1375,6 +1566,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+248',
 				'minLength'   => 7,
 				'maxLength'   => 7,
+				'prefixes'    => array( '2', '4', '6', '9' ),
 			),
 			array(
 				'name'        => 'Sierra Leone',
@@ -1382,6 +1574,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+232',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '3', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Singapore',
@@ -1389,6 +1582,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+65',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '1', '3', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Sint Maarten',
@@ -1396,6 +1590,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1721',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Slovakia (Slovensko)',
@@ -1403,6 +1598,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+421',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '8', '9' ),
 			),
 			array(
 				'name'        => 'Slovenia (Slovenija)',
@@ -1410,6 +1606,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+386',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Solomon Islands',
@@ -1417,6 +1614,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+677',
 				'minLength'   => 5,
 				'maxLength'   => 7,
+				'prefixes'    => array( '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Somalia (Soomaaliya)',
@@ -1424,6 +1622,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+252',
 				'minLength'   => 7,
 				'maxLength'   => 9,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'South Africa',
@@ -1431,6 +1630,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+27',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'South Korea (대한민국)',
@@ -1438,6 +1638,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+82',
 				'minLength'   => 9,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'South Sudan (‫جنوب السودان‬‎)',
@@ -1445,6 +1646,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+211',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '9' ),
 			),
 			array(
 				'name'        => 'Spain (España)',
@@ -1452,6 +1654,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+34',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Sri Lanka (ශ්‍රී ලංකාව)',
@@ -1459,6 +1662,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+94',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Sudan (‫السودان‬‎)',
@@ -1466,6 +1670,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+249',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '9' ),
 			),
 			array(
 				'name'        => 'Suriname',
@@ -1473,6 +1678,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+597',
 				'minLength'   => 6,
 				'maxLength'   => 7,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Svalbard and Jan Mayen',
@@ -1480,6 +1686,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+47',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Swaziland',
@@ -1487,6 +1694,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+268',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '0', '2', '3', '7', '9' ),
 			),
 			array(
 				'name'        => 'Sweden (Sverige)',
@@ -1494,6 +1702,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+46',
 				'minLength'   => 7,
 				'maxLength'   => 10,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Switzerland (Schweiz)',
@@ -1501,6 +1710,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+41',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Syria (‫سوريا‬‎)',
@@ -1508,6 +1718,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+963',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '9' ),
 			),
 			array(
 				'name'        => 'Taiwan (台灣)',
@@ -1515,6 +1726,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+886',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Tajikistan',
@@ -1522,6 +1734,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+992',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Tanzania',
@@ -1529,6 +1742,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+255',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Thailand (ไทย)',
@@ -1536,6 +1750,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+66',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Timor-Leste',
@@ -1543,6 +1758,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+670',
 				'minLength'   => 7,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '3', '4', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Togo',
@@ -1550,6 +1766,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+228',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '7', '9' ),
 			),
 			array(
 				'name'        => 'Tokelau',
@@ -1557,6 +1774,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+690',
 				'minLength'   => 4,
 				'maxLength'   => 4,
+				'prefixes'    => array( '2', '3', '4', '7' ),
 			),
 			array(
 				'name'        => 'Tonga',
@@ -1564,6 +1782,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+676',
 				'minLength'   => 5,
 				'maxLength'   => 5,
+				'prefixes'    => array( '0', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Trinidad and Tobago',
@@ -1571,6 +1790,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1868',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Tunisia (‫تونس‬‎)',
@@ -1578,6 +1798,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+216',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '2', '3', '4', '5', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Turkey (Türkiye)',
@@ -1585,6 +1806,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+90',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '2', '3', '4', '5', '8', '9' ),
 			),
 			array(
 				'name'        => 'Turkmenistan',
@@ -1592,6 +1814,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+993',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7' ),
 			),
 			array(
 				'name'        => 'Turks and Caicos Islands',
@@ -1599,6 +1822,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1649',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Tuvalu',
@@ -1606,6 +1830,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+688',
 				'minLength'   => 5,
 				'maxLength'   => 5,
+				'prefixes'    => array( '2', '7', '9' ),
 			),
 			array(
 				'name'        => 'U.S. Virgin Islands',
@@ -1613,6 +1838,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1340',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Uganda',
@@ -1620,6 +1846,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+256',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '3', '4', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Ukraine (Україна)',
@@ -1627,6 +1854,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+380',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'United Arab Emirates (‫الإمارات العربية المتحدة‬‎)',
@@ -1634,6 +1862,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+971',
 				'minLength'   => 8,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'United Kingdom',
@@ -1641,6 +1870,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+44',
 				'minLength'   => 10,
 				'maxLength'   => 11,
+				'prefixes'    => array( '1', '2', '3', '5', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'United States',
@@ -1648,6 +1878,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+1',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Uruguay',
@@ -1655,6 +1886,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+598',
 				'minLength'   => 8,
 				'maxLength'   => 8,
+				'prefixes'    => array( '0', '1', '2', '4', '8', '9' ),
 			),
 			array(
 				'name'        => 'Uzbekistan (Oʻzbekiston)',
@@ -1662,6 +1894,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+998',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '2', '3', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Vanuatu',
@@ -1669,6 +1902,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+678',
 				'minLength'   => 5,
 				'maxLength'   => 7,
+				'prefixes'    => array( '5', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Vatican City (Città del Vaticano)',
@@ -1676,6 +1910,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+39',
 				'minLength'   => 9,
 				'maxLength'   => 11,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Venezuela',
@@ -1683,6 +1918,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+58',
 				'minLength'   => 10,
 				'maxLength'   => 10,
+				'prefixes'    => array( '2', '4', '5', '6', '8', '9' ),
 			),
 			array(
 				'name'        => 'Vietnam (Việt Nam)',
@@ -1690,6 +1926,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+84',
 				'minLength'   => 9,
 				'maxLength'   => 10,
+				'prefixes'    => array( '1', '2', '3', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Wallis and Futuna (Wallis-et-Futuna)',
@@ -1697,6 +1934,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+681',
 				'minLength'   => 6,
 				'maxLength'   => 6,
+				'prefixes'    => array( '4', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Western Sahara (‫الصحراء الغربية‬‎)',
@@ -1704,6 +1942,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+212',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '5', '6', '7', '8' ),
 			),
 			array(
 				'name'        => 'Yemen (‫اليمن‬‎)',
@@ -1711,6 +1950,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+967',
 				'minLength'   => 7,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7' ),
 			),
 			array(
 				'name'        => 'Zambia',
@@ -1718,6 +1958,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+260',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Zimbabwe',
@@ -1725,6 +1966,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+263',
 				'minLength'   => 9,
 				'maxLength'   => 9,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 			array(
 				'name'        => 'Åland Islands',
@@ -1732,13 +1974,17 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'countryCode' => '+358',
 				'minLength'   => 5,
 				'maxLength'   => 12,
+				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),
 		);
 
 		/**
-		 * Returns list of countries.
+		 * Returns list of countries with their details.
 		 *
-		 * @return array
+		 * @since 1.0.0
+		 * @access public
+		 *
+		 * @return array Array of country details.
 		 */
 		public static function get_countrycode_list() {
 			return self::$countries;
@@ -1746,20 +1992,32 @@ if ( ! class_exists( 'CountryList' ) ) {
 
 
 		/**
-		 * Deprecated function: returns default country code.
+		 * Returns default country code (Deprecated).
+		 *
+		 * @since 1.0.0
+		 * @access public
+		 * @deprecated 2.0.0 Use get_default_countrycode() instead.
+		 *
+		 * @return string|null Default country code if set, null otherwise.
 		 */
 		public static function get_default_countrycode_deprecated() {
 			return ! MoUtility::is_blank( get_mo_option( 'default_country_code' ) )
-					? get_mo_option( 'default_country_code' ) : null;
+					? sanitize_text_field( get_mo_option( 'default_country_code' ) ) : null;
 		}
 
 
 		/**
-		 * Deprecated function: Checks if country is selcted.
+		 * Checks if country is selected (Deprecated).
 		 *
-		 * @param string $value - the value of the default country code.
+		 * @since 1.0.0
+		 * @access public
+		 * @deprecated 2.0.0 Use is_country_selected() instead.
+		 *
+		 * @param string $value The value of the default country code.
+		 * @return bool True if country is selected, false otherwise.
 		 */
 		public static function is_country_selected_deprecated( $value ) {
+			$value = sanitize_text_field( $value );
 			return ! MoUtility::is_blank( get_mo_option( 'default_country_code' ) )
 					&& get_mo_option( 'default_country_code' ) === $value;
 		}
@@ -1767,6 +2025,11 @@ if ( ! class_exists( 'CountryList' ) ) {
 
 		/**
 		 * Returns default country data.
+		 *
+		 * @since 2.0.0
+		 * @access public
+		 *
+		 * @return array|null Default country data if set, null otherwise.
 		 */
 		public static function get_default_country_data() {
 			return ! MoUtility::is_blank( get_mo_option( 'default_country' ) )
@@ -1775,40 +2038,73 @@ if ( ! class_exists( 'CountryList' ) ) {
 
 		/**
 		 * Returns default country code data.
+		 *
+		 * @since 2.0.0
+		 * @access public
+		 *
+		 * @return string|null Default country code if set, null otherwise.
 		 */
 		public static function get_default_countrycode() {
 			$old_value = self::get_default_countrycode_deprecated();
 			$new_value = self::get_default_country_data();
-			return ! MoUtility::is_blank( $old_value ) ? $old_value : ( ! MoUtility::is_blank( $new_value ) ? $new_value['countryCode'] : null );
+
+			if ( ! MoUtility::is_blank( $old_value ) ) {
+				return $old_value;
+			} elseif ( is_array( $new_value ) && ! MoUtility::is_blank( $new_value ) && isset( $new_value['countryCode'] ) ) {
+				return sanitize_text_field( wp_unslash( $new_value['countryCode'] ) );
+			}
+			return null;
 		}
 
 
 		/**
-		 * Checks if country is selcted.
+		 * Checks if country is selected.
 		 *
-		 * @param string $value - the value of the default country code.
-		 * @param string $alphacode - the alphacode value of the country code selected.
+		 * @since 2.0.0
+		 * @access public
+		 *
+		 * @param string $value     The value of the default country code.
+		 * @param string $alphacode The alphacode value of the country code selected.
+		 * @return bool True if country is selected, false otherwise.
 		 */
 		public static function is_country_selected( $value, $alphacode ) {
+			$value     = sanitize_text_field( wp_unslash( $value ) );
+			$alphacode = sanitize_text_field( wp_unslash( $alphacode ) );
+
 			$old_value = self::is_country_selected_deprecated( $value );
 			$new_value = self::get_default_country_data();
-			return $old_value ? $old_value : ( ! MoUtility::is_blank( $new_value ) && $new_value['alphacode'] === $alphacode );
+
+			if ( $old_value ) {
+				return true;
+			}
+
+			if ( is_array( $new_value ) && isset( $new_value['alphacode'] ) && ! MoUtility::is_blank( $new_value['alphacode'] ) ) {
+				return sanitize_text_field( wp_unslash( $new_value['alphacode'] ) ) === $alphacode;
+			}
+			return false;
 		}
 
 
 		/**
 		 * Returns default country ISO code.
+		 *
+		 * @since 2.0.0
+		 * @access public
+		 *
+		 * @return string Default country ISO code if found, empty string otherwise.
 		 */
 		public static function get_default_country_iso_code() {
 			$old_value = self::get_default_countrycode_deprecated();
 			$new_value = self::get_default_country_data();
-			if ( ! MoUtility::is_blank( $new_value ) ) {
-				return $new_value['alphacode'];
+
+			if ( ! MoUtility::is_blank( $new_value ) && isset( $new_value['alphacode'] ) ) {
+				return sanitize_text_field( wp_unslash( $new_value['alphacode'] ) );
 			}
+
 			if ( ! MoUtility::is_blank( $old_value ) ) {
 				foreach ( self::$countries as $country ) {
-					if ( $old_value === $country['countryCode'] ) {
-						return $country['alphacode'];
+					if ( isset( $country['countryCode'] ) && $old_value === $country['countryCode'] ) {
+						return sanitize_text_field( $country['alphacode'] );
 					}
 				}
 			}
@@ -1818,10 +2114,22 @@ if ( ! class_exists( 'CountryList' ) ) {
 
 		/**
 		 * Function for selected countries.
-		 * Used in premium addon. Need to check if this function is needed.
+		 * Used in premium addon.
+		 *
+		 * @since 2.0.0
+		 * @access public
+		 * @deprecated 3.0.0 This function may be removed in a future version.
+		 *
+		 * @return null This function currently returns null.
 		 */
 		public static function get_only_country_list() {
-			return null;
+			$country_val    = array();
+			$countriesavail = self::get_countrycode_list();
+			$countriesavail = apply_filters( 'selected_countries', $countriesavail );
+			foreach ( $countriesavail as $key => $value ) {
+				array_push( $country_val, $value );
+			}
+			return $country_val;
 		}
 	}
 }

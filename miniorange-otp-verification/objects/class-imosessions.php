@@ -1,5 +1,5 @@
 <?php
-/**Load Interface IGatewayFunctions
+/**Load Interface IMoSessions
  *
  * @package miniorange-otp-verification/objects
  */
@@ -12,30 +12,35 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 interface IMoSessions {
 
-
 	/**
 	 * Sets session values.
 	 *
 	 * @param string $key key value.
 	 * @param mixed  $val value of key pair.
+	 * @return void
 	 */
-	public static function add_session_var( $key, $val);
+	public static function add_session_var( $key, $val );
+
 	/**
 	 * Return the value stored in session.
 	 *
-	 * @param string $key    - key against the value is stored.
+	 * @param string $key - key against the value is stored.
 	 * @return mixed
 	 */
-	public static function get_session_var( $key);
+	public static function get_session_var( $key );
+
 	/**
 	 * Unsets the session values as per the type set for.
 	 *
-	 * @param string $key       -   key to unset.
+	 * @param string $key - key to unset.
+	 * @return void
 	 */
-	public static function unset_session( $key);
+	public static function unset_session( $key );
 
 	/**
 	 * Checks if session started or not. Initiates session of not already initialized.
+	 *
+	 * @return void
 	 */
 	public static function check_session();
 }

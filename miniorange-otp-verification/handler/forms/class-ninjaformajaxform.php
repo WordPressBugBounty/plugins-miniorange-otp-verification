@@ -2,7 +2,7 @@
 /**
  * Load admin view for Ninja Forms.
  *
- * @package miniorange-otp-verification/handler
+ * @package miniorange-otp-verification/handler/forms
  */
 
 namespace OTP\Handler\Forms;
@@ -32,6 +32,7 @@ if ( ! class_exists( 'NinjaFormAjaxForm' ) ) {
 	class NinjaFormAjaxForm extends FormHandler implements IFormHandler {
 
 		use Instance;
+
 		/**
 		 * Initializes values
 		 */
@@ -43,12 +44,13 @@ if ( ! class_exists( 'NinjaFormAjaxForm' ) ) {
 			$this->type_email_tag          = 'mo_ninja_form_email_enable';
 			$this->type_both_tag           = 'mo_ninja_form_both_enable';
 			$this->form_key                = 'NINJA_FORM_AJAX';
-			$this->form_name               = mo_( 'Ninja Forms ( Above version 3.0 )' );
+			$this->form_name               = 'Ninja Forms ( Above version 3.0 )';
 			$this->is_form_enabled         = get_mo_option( 'nja_enable' );
 			$this->button_text             = get_mo_option( 'nja_button_text' );
-			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : mo_( 'Click Here to send OTP' );
+			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : '';
 			$this->phone_form_id           = array();
 			$this->form_documents          = MoFormDocs::NINJA_FORMS_AJAX_LINK;
+			$this->generate_otp_action     = 'miniorange-nj-ajax-verify';
 			parent::__construct();
 		}
 
@@ -69,37 +71,34 @@ if ( ! class_exists( 'NinjaFormAjaxForm' ) ) {
 
 			add_action( 'ninja_forms_after_form_display', array( $this, 'enqueue_nj_form_script' ), 99, 1 );
 			add_filter( 'ninja_forms_submit_data', array( $this, 'mo_handle_nj_ajax_form_submit' ), 99, 1 );
-			$otp_type = $this->get_verification_type();
-			$this->routeData();
+			// Register AJAX handler for OTP verification.
+			add_action( "wp_ajax_{$this->generate_otp_action}", array( $this, 'mo_route_data' ) );
+			add_action( "wp_ajax_nopriv_{$this->generate_otp_action}", array( $this, 'mo_route_data' ) );
 		}
 
 		/**
 		 * This function checks what kind of OTP Verification needs to be done.
 		 * and starts the otp verification process with appropriate parameters.
+		 * This is registered as an AJAX handler.
 		 *
 		 * @throws ReflectionException .
 		 */
-		private function routeData() {
-			if ( ! array_key_exists( 'ninja_form_option', $_GET ) ) { // phpcs:ignore -- false positive.
-				return;
+		public function mo_route_data() {
+			// Verify AJAX nonce.
+			// Security: Use hardcoded nonce action 'form_nonce' and key 'security' instead of variables.
+			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
+					wp_send_json(
+						MoUtility::create_json(
+							MoMessages::showMessage( MoMessages::INVALID_OP ),
+							MoConstants::ERROR_JSON_TYPE
+						)
+					);
 			}
 
-			if ( ! check_ajax_referer( $this->nonce, 'security', false ) ) {
-				wp_send_json(
-					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ),
-						MoConstants::ERROR_JSON_TYPE
-					)
-				);
-			}
-
-			$data = MoUtility::mo_sanitize_array( $_POST );
-			switch ( trim( sanitize_text_field( wp_unslash( $_GET['ninja_form_option'] ) ) ) ) { // phpcs:ignore -- false positive.
-
-				case 'miniorange-nj-ajax-verify':
-					$this->mo_send_otp_nj_ajax_verify( $data );
-					break;
-			}
+			// Sanitize POST data.
+			$post_data = wp_unslash( $_POST );
+			$data      = MoUtility::mo_sanitize_array( $post_data );
+			$this->mo_send_otp_nj_ajax_verify( $data );
 		}
 
 		/**
@@ -113,18 +112,18 @@ if ( ! class_exists( 'NinjaFormAjaxForm' ) ) {
 			if ( array_key_exists( $form_id, $this->form_details ) ) {
 				$form_data     = $this->form_details[ $form_id ];
 				$form_key_vals = array_keys( $this->form_details );
-				wp_register_script( 'njscript', MOV_URL . 'includes/js/ninjaformajax.min.js', array( 'jquery' ), MOV_VERSION, true );
+				wp_register_script( 'njscript', MOV_URL . 'includes/js/ninjaformajax.js', array( 'jquery' ), MOV_VERSION, true );
 				wp_localize_script(
 					'njscript',
 					'moninjavars',
 					array(
-						'imgURL'      => MOV_URL . 'includes/images/loader.gif',
-						'siteURL'     => site_url(),
+						'siteURL'     => admin_url( 'admin-ajax.php' ),
 						'otpType'     => $this->otp_type === $this->type_phone_tag ? VerificationType::PHONE : VerificationType::EMAIL,
 						'forms'       => $this->form_details,
 						'nonce'       => wp_create_nonce( $this->nonce ),
+						'action'      => $this->generate_otp_action,
 						'formKeyVals' => $form_key_vals,
-						'buttontext'  => mo_( $this->button_text ),
+						'buttontext'  => $this->button_text,
 						'formId'      => $form_id,
 					)
 				);
@@ -147,20 +146,20 @@ if ( ! class_exists( 'NinjaFormAjaxForm' ) ) {
 			}
 
 			$form_data = $this->form_details[ $data['id'] ];
-			$data      = $this->checkIfOtpVerificationStarted( $form_data, $data );
+			$data      = $this->mo_check_if_verification_started( $form_data, $data );
 
 			if ( isset( $data['errors']['fields'] ) ) {
 				return $data;
 			}
 
 			if ( strcasecmp( $this->otp_type, $this->type_email_tag ) === 0 ) {
-				$data = $this->processEmail( $form_data, $data );
+				$data = $this->mo_process_email( $form_data, $data );
 			}
 			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
-				$data = $this->processPhone( $form_data, $data );
+				$data = $this->mo_process_phone( $form_data, $data );
 			}
 			if ( ! isset( $data['errors']['fields'] ) ) {
-				$data = $this->processOTPEntered( $data, $form_data );
+				$data = $this->mo_process_entered_otp( $data, $form_data );
 			}
 
 			return $data;
@@ -174,7 +173,7 @@ if ( ! class_exists( 'NinjaFormAjaxForm' ) ) {
 		 * @param array $form_data - to get the fomrdata.
 		 * @return array
 		 */
-		private function processOTPEntered( $data, $form_data ) {
+		private function mo_process_entered_otp( $data, $form_data ) {
 			$verify_field = $form_data['verifyKey'];
 			$otp_type     = $this->get_verification_type();
 			$this->validate_challenge( $otp_type, null, $data['fields'][ $verify_field ]['value'] );
@@ -196,7 +195,7 @@ if ( ! class_exists( 'NinjaFormAjaxForm' ) ) {
 		 * @param array $data - this is the ninja form variable containing the form data.
 		 * @return array
 		 */
-		private function checkIfOtpVerificationStarted( $form_data, $data ) {
+		private function mo_check_if_verification_started( $form_data, $data ) {
 			if ( SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
 				return $data;
 			}
@@ -219,7 +218,7 @@ if ( ! class_exists( 'NinjaFormAjaxForm' ) ) {
 		 * @param array $data - this is the ninja form variable containing the form data.
 		 * @return array
 		 */
-		private function processEmail( $form_data, $data ) {
+		private function mo_process_email( $form_data, $data ) {
 			$field_id = $form_data['emailkey'];
 			if ( ! SessionUtils::is_email_verified_match( $this->form_session_var, $data['fields'][ $field_id ]['value'] ) ) {
 				$data['errors']['fields'][ $field_id ] = MoMessages::showMessage( MoMessages::EMAIL_MISMATCH );
@@ -236,9 +235,10 @@ if ( ! class_exists( 'NinjaFormAjaxForm' ) ) {
 		 * @param array $data - this is the ninja form variable.
 		 * @return array
 		 */
-		private function processPhone( $form_data, $data ) {
+		private function mo_process_phone( $form_data, $data ) {
 			$field_id = $form_data['phonekey'];
-			if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $data['fields'][ $field_id ]['value'] ) ) {
+			$phone = MoUtility::process_phone_number( $data['fields'][ $field_id ]['value'] );
+			if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
 				$data['errors']['fields'][ $field_id ] = MoMessages::showMessage( MoMessages::PHONE_MISMATCH );
 			}
 			return $data;
@@ -278,7 +278,8 @@ if ( ! class_exists( 'NinjaFormAjaxForm' ) ) {
 					)
 				);
 			} else {
-				$this->setSessionAndStartOTPVerification( trim( $data['user_phone'] ), null, trim( $data['user_phone'] ), VerificationType::PHONE );
+				$phone = MoUtility::process_phone_number( trim( $data['user_phone'] ) );
+				$this->mo_start_verification( $phone, null, $phone, VerificationType::PHONE );
 			}
 		}
 
@@ -298,7 +299,7 @@ if ( ! class_exists( 'NinjaFormAjaxForm' ) ) {
 					)
 				);
 			} else {
-				$this->setSessionAndStartOTPVerification( $data['user_email'], $data['user_email'], null, VerificationType::EMAIL );
+				$this->mo_start_verification( $data['user_email'], $data['user_email'], null, VerificationType::EMAIL );
 
 			}
 		}
@@ -313,7 +314,7 @@ if ( ! class_exists( 'NinjaFormAjaxForm' ) ) {
 		 * @param array $phone_number  - the phone number provided by the user.
 		 * @param array $otp_type      - the otp type denoting the type of otp verification. Can be phone or email.
 		 */
-		private function setSessionAndStartOTPVerification( $session_value, $user_email, $phone_number, $otp_type ) {
+		private function mo_start_verification( $session_value, $user_email, $phone_number, $otp_type ) {
 			if ( VerificationType::PHONE === $otp_type ) {
 				SessionUtils::add_phone_verified( $this->form_session_var, $session_value );
 			} else {
@@ -386,16 +387,60 @@ if ( ! class_exists( 'NinjaFormAjaxForm' ) ) {
 		 * This function is used to get the field id based on the field.
 		 * label provided by the admin.
 		 *
-		 * @param array $id - id of the field.
-		 * @param array $data - the label of the field.
+		 * @param array $form_id - id of the form.
+		 * @param array $key - the key of the field.
 		 * @return null|string
 		 */
-		private function getFieldId( $id, $data ) {
-			global $wpdb;
-			if ( 'email' === $data ) {
-				return $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}nf3_fields where `parent_id`= %d and  `key` = %s", array( $id, $data ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, Direct database call without caching detected -- DB Direct Query is necessary here.
+		private function mo_get_field_id( $form_id, $key ) {
+
+			$cache_key   = 'mo_ninja_field_id_' . md5( $form_id . '_' . $key );
+			$cache_group = 'mo_ninja_forms';
+
+			$cached = wp_cache_get( $cache_key, $cache_group );
+			if ( false !== $cached ) {
+				return $cached;
 			}
-			return $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}nf3_fields where `key` = %s", array( $data ) ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, Direct database call without caching detected -- DB Direct Query is necessary here.
+
+			if ( ! function_exists( 'Ninja_Forms' ) ) {
+				return false;
+			}
+
+			$form = Ninja_Forms()->form( $form_id );
+			if ( ! $form ) {
+				return false;
+			}
+
+			$fields = $form->get_fields();
+			if ( empty( $fields ) ) {
+				return false;
+			}
+
+			$field_id = false;
+
+			foreach ( $fields as $field ) {
+
+				if ( $field->get_setting( 'key' ) === $key ) {
+					$field_id = $field->get_id();
+					break;
+				}
+
+				if ( $field->get_setting( 'type' ) === $key ) {
+					$field_id = $field->get_id();
+					break;
+				}
+
+				if (
+					$field->get_setting( 'label' ) === $key ||
+					$field->get_setting( 'admin_label' ) === $key
+				) {
+					$field_id = $field->get_id();
+					break;
+				}
+			}
+
+			wp_cache_set( $cache_key, $field_id, $cache_group, 3600 );
+
+			return $field_id;
 		}
 
 
@@ -403,16 +448,30 @@ if ( ! class_exists( 'NinjaFormAjaxForm' ) ) {
 		 * Handles saving all the Ninja form V3 related options by the admin.
 		 */
 		public function handle_form_options() {
-			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option() ) ) {
+			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option(), 'nja_enable' ) ) {
 				return;
 			}
-			if ( isset( $_POST['mo_customer_validation_ninja_form_enable'] ) || ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->admin_nonce ) ) { // phpcs:ignore -- false positive.
-				return;
-			}
-			$data = MoUtility::mo_sanitize_array( $_POST );
-			$form = $this->parseFormDetails( $data );
 
-			$this->form_details    = ! empty( $form ) ? $form : '';
+			// Ensure Ninja Forms is installed/active before trying to read its form configuration.
+			if ( ! function_exists( 'is_plugin_active' ) ) {
+				include_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
+
+			if ( $this->sanitize_form_post( 'nja_enable' ) && ! is_plugin_active( 'ninja-forms/ninja-forms.php' ) ) {
+				$message = MoMessages::showMessage( MoMessages::PLUGIN_INSTALL, array( 'formname' => $this->form_name ) );
+				do_action( 'mo_registration_show_message', $message, MoConstants::ERROR );
+				return;
+			}
+
+			$form_raw = $this->sanitize_form_post( 'ninja_ajax_form', '' );
+
+			if ( empty( $form_raw ) ) {
+				return;
+			}
+
+			$form_details = $this->mo_parse_form_details( $form_raw );
+
+			$this->form_details    = ! empty( $form_details ) ? $form_details : '';
 			$this->otp_type        = $this->sanitize_form_post( 'nja_enable_type' );
 			$this->is_form_enabled = $this->sanitize_form_post( 'nja_enable' );
 			$this->button_text     = $this->sanitize_form_post( 'nja_button_text' );
@@ -431,23 +490,26 @@ if ( ! class_exists( 'NinjaFormAjaxForm' ) ) {
 		 * @param array $data this is the caldera form variable containing the form data.
 		 * @return array
 		 */
-		private function parseFormDetails( $data ) {
-			$form = array();
-			if ( ! array_key_exists( 'ninja_ajax_form', $data ) ) {
+		private function mo_parse_form_details( $data ) {
+
+			if ( empty( $data['form'] ) ) {
 				return array();
 			}
-			foreach ( array_filter( $data['ninja_ajax_form']['form'] ) as $key => $value ) {
-				$form[ sanitize_text_field( $value ) ] = array(
-					'emailkey'    => $this->getFieldId( sanitize_text_field( $value ), sanitize_text_field( $data['ninja_ajax_form']['emailkey'][ $key ] ) ),
-					'phonekey'    => $this->getFieldId( $value, $data['ninja_ajax_form']['phonekey'][ $key ] ),
-					'verifyKey'   => $this->getFieldId( sanitize_text_field( $value ), sanitize_text_field( $data['ninja_ajax_form']['verifyKey'][ $key ] ) ),
-					'phone_show'  => sanitize_text_field( $data['ninja_ajax_form']['phonekey'][ $key ] ),
-					'email_show'  => sanitize_text_field( $data['ninja_ajax_form']['emailkey'][ $key ] ),
-					'verify_show' => sanitize_text_field( $data['ninja_ajax_form']['verifyKey'][ $key ] ),
+
+			$form = array();
+
+			foreach ( array_filter( $data['form'] ) as $key => $value ) {
+				$form[ $value ] = array(
+					'emailkey'    => $this->mo_get_field_id( $value, (string) $data['emailkey'][ $key ] ),
+					'phonekey'    => $this->mo_get_field_id( $value, (string) $data['phonekey'][ $key ] ),
+					'verifyKey'   => $this->mo_get_field_id( $value, (string) $data['verifyKey'][ $key ] ),
+					'phone_show'  => (string) $data['phonekey'][ $key ],
+					'email_show'  => (string) $data['emailkey'][ $key ],
+					'verify_show' => (string) $data['verifyKey'][ $key ],
 				);
 			}
+
 			return $form;
 		}
-
 	}
 }

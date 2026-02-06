@@ -20,53 +20,73 @@ if ( ! class_exists( 'FormSessionData' ) ) {
 		/**
 		 * Variable declaration
 		 *
-		 * @var string
+		 * @var bool
 		 */
 		private $is_initialized = false;
-		/** Variable declaration
+
+		/**
+		 * Variable declaration
 		 *
-		 * @var string
+		 * @var mixed
 		 */
 		private $email_submitted;
-		/** Variable declaration
+
+		/**
+		 * Variable declaration
 		 *
-		 * @var string
+		 * @var mixed
 		 */
 		private $phone_submitted;
-		/** Variable declaration
+
+		/**
+		 * Variable declaration
 		 *
-		 * @var string
+		 * @var mixed
 		 */
 		private $email_verified;
-		/** Variable declaration
+
+		/**
+		 * Variable declaration
 		 *
-		 * @var string
+		 * @var mixed
 		 */
 		private $phone_verified;
-		/** Variable declaration
+
+		/**
+		 * Variable declaration
 		 *
-		 * @var string
+		 * @var mixed
 		 */
 		private $email_verification_status;
-		/** Variable declaration
+
+		/**
+		 * Variable declaration
 		 *
-		 * @var string
+		 * @var mixed
 		 */
 		private $phone_verification_status;
-		/** Variable declaration
+
+		/**
+		 * Variable declaration
 		 *
-		 * @var string
+		 * @var mixed
 		 */
 		private $field_or_form_id;
-		/** Variable declaration
+
+		/**
+		 * Variable declaration
 		 *
-		 * @var string
+		 * @var mixed
 		 */
 		private $user_submitted;
-		/** Constructor */
+
+		/**
+		 * Constructor
+		 */
 		public function __construct() {}
 
-		/**MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
 		 * @return $this
 		 */
@@ -75,7 +95,8 @@ if ( ! class_exists( 'FormSessionData' ) ) {
 			return $this;
 		}
 
-		/**MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
 		 * @return mixed
 		 */
@@ -83,7 +104,8 @@ if ( ! class_exists( 'FormSessionData' ) ) {
 			return $this->is_initialized;
 		}
 
-		/**MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
 		 * @return mixed
 		 */
@@ -91,15 +113,17 @@ if ( ! class_exists( 'FormSessionData' ) ) {
 			return $this->email_submitted;
 		}
 
-		/**MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
-		 * @param mixed $email_submitted email submittion status.
+		 * @param mixed $email_submitted email submission status.
 		 */
 		public function set_email_submitted( $email_submitted ) {
 			$this->email_submitted = $email_submitted;
 		}
 
-		/**MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
 		 * @return mixed
 		 */
@@ -107,15 +131,17 @@ if ( ! class_exists( 'FormSessionData' ) ) {
 			return $this->phone_submitted;
 		}
 
-		/**MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
-		 * @param mixed $phone_submitted phone submittion status.
+		 * @param mixed $phone_submitted phone submission status.
 		 */
 		public function set_phone_submitted( $phone_submitted ) {
 			$this->phone_submitted = $phone_submitted;
 		}
 
-		/**MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
 		 * @return mixed
 		 */
@@ -123,7 +149,8 @@ if ( ! class_exists( 'FormSessionData' ) ) {
 			return $this->email_verified;
 		}
 
-		/**MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
 		 * @param mixed $email_verified email status.
 		 */
@@ -131,7 +158,8 @@ if ( ! class_exists( 'FormSessionData' ) ) {
 			$this->email_verified = $email_verified;
 		}
 
-		/**MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
 		 * @return mixed
 		 */
@@ -139,15 +167,17 @@ if ( ! class_exists( 'FormSessionData' ) ) {
 			return $this->phone_verified;
 		}
 
-		/**MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
-		 * @param mixed $phone_verified phone staus.
+		 * @param mixed $phone_verified phone status.
 		 */
 		public function set_phone_verified( $phone_verified ) {
 			$this->phone_verified = $phone_verified;
 		}
 
-		/**MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
 		 * @return mixed
 		 */
@@ -155,7 +185,8 @@ if ( ! class_exists( 'FormSessionData' ) ) {
 			return $this->email_verification_status;
 		}
 
-		/**MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
 		 * @param mixed $email_verification_status email status.
 		 */
@@ -163,7 +194,8 @@ if ( ! class_exists( 'FormSessionData' ) ) {
 			$this->email_verification_status = $email_verification_status;
 		}
 
-		/**MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
 		 * @return mixed
 		 */
@@ -171,7 +203,8 @@ if ( ! class_exists( 'FormSessionData' ) ) {
 			return $this->phone_verification_status;
 		}
 
-		/**MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
 		 * @param mixed $phone_verification_status status.
 		 */
@@ -179,7 +212,8 @@ if ( ! class_exists( 'FormSessionData' ) ) {
 			$this->phone_verification_status = $phone_verification_status;
 		}
 
-		/**MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
 		 * @return mixed
 		 */
@@ -187,7 +221,8 @@ if ( ! class_exists( 'FormSessionData' ) ) {
 			return $this->field_or_form_id;
 		}
 
-		/**MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
 		 * @param mixed $field_or_form_id id.
 		 */
@@ -195,7 +230,8 @@ if ( ! class_exists( 'FormSessionData' ) ) {
 			$this->field_or_form_id = $field_or_form_id;
 		}
 
-		/**MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
 		 * @return mixed
 		 */
@@ -203,7 +239,8 @@ if ( ! class_exists( 'FormSessionData' ) ) {
 			return $this->user_submitted;
 		}
 
-		/**MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
 		 * @param mixed $user_submitted user details.
 		 */

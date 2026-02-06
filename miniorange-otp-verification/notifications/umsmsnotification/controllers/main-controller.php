@@ -2,18 +2,21 @@
 /**
  * Main Controller of Ultimate member SMS notifications.
  *
- * @package miniorange-otp-verification/addons/umsmsnotification/controllers
+ * @package miniorange-otp-verification/notifications/umsmsnotification/controllers
  */
 
-use OTP\Notifications\UmSMSNotification\Handler\UltimateMemberSMSNotificationsHandler;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+use OTP\Helper\MoUtility;
+use OTP\Notifications\UmSMSNotification\Handler\UltimateMemberSMSNotificationsHandler;
 
 $handler         = UltimateMemberSMSNotificationsHandler::instance();
 $registered      = $handler->moAddOnV();
 $mo_current_user = wp_get_current_user();
 $um_controller   = UMSN_DIR . 'controllers/';
-$addon           = add_query_arg( array( 'page' => 'addon' ), remove_query_arg( 'addon', ( isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) );
-
-require $um_controller . 'um-sms-notification.php';
+$controller_file = $um_controller . 'um-sms-notification.php';
+if ( ! MoUtility::mo_require_file( $controller_file, UMSN_DIR ) ) {
+	return;
+}
+require_once $controller_file;

@@ -1,17 +1,18 @@
 <?php
-/**Load adminstrator changes for FormList.
+/**
+ * Load adminstrator changes for FormList.
  *
  * @package miniorange-otp-verification/helper
  */
 
 namespace OTP\Helper;
 
-use OTP\Objects\FormHandler;
-use OTP\Traits\Instance;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+use OTP\Objects\FormHandler;
+use OTP\Traits\Instance;
 
 /**
  * This class lists down all the forms supported by the plugin.
@@ -48,10 +49,14 @@ if ( ! class_exists( 'FormList' ) ) {
 		 */
 		private $enabled_forms;
 
-
-		/** Constructor */
+		/**
+		 * Constructor
+		 */
 		private function __construct() {
-			$this->forms = array(); }
+			$this->forms           = array();
+			$this->important_forms = array();
+			$this->enabled_forms   = array();
+		}
 
 		/**
 		 * Add Form to the FormList
@@ -72,14 +77,17 @@ if ( ! class_exists( 'FormList' ) ) {
 		|---------------------------------------------------------------------------
 		 */
 
-		/** Function to return list
+		/**
+		 * Function to return list
 		 *
 		 * @return array
 		 */
 		public function get_list() {
-			return $this->forms; }
+			return $this->forms;
+		}
 
-		/** Function to return list
+		/**
+		 * Function to return list
 		 *
 		 * @return array
 		 */
@@ -97,15 +105,17 @@ if ( ! class_exists( 'FormList' ) ) {
 				'ULTIMATE_FORM',
 				'MO_LOGIN_REG_USING_PHONE_FORM',
 			);
-			return $this->important_forms; }
+			return $this->important_forms;
+		}
 
 
-		/**Function to return list
+		/**
+		 * Function to return list
 		 *
 		 * @return array
 		 */
 		public function get_enabled_forms() {
-			return $this->enabled_forms; }
-
+			return $this->enabled_forms;
+		}
 	}
 }

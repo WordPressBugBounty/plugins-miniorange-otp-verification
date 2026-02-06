@@ -2,7 +2,7 @@
 /**
  * Loads general settings tab.
  *
- * @package miniorange-otp-verification
+ * @package miniorange-otp-verification/controllers
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -19,4 +19,8 @@ $show_dropdown_on_form     = get_mo_option( 'show_dropdown_on_form' ) ? 'checked
 $show_transaction_options  = MoUtility::is_mg();
 $globallybanned_disabled   = apply_filters( 'set_class_exists_globallybanned', false ) && 'disabled' !== $disabled ? '' : 'disabled';
 
-require MOV_DIR . 'views/general-settings.php';
+$view_file = MOV_DIR . 'views/general-settings.php';
+if ( ! MoUtility::mo_require_file( $view_file, MOV_DIR ) ) {
+	return;
+}
+require $view_file;

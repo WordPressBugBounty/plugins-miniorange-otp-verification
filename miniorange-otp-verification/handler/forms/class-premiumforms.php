@@ -2,7 +2,7 @@
 /**
  * Load admin view for Elementor Pro Form.
  *
- * @package miniorange-otp-verification/handler
+ * @package miniorange-otp-verification/handler/forms
  */
 
 namespace OTP\Handler\Forms;
@@ -27,14 +27,23 @@ if ( ! class_exists( 'PremiumForms' ) ) {
 	 */
 	class PremiumForms extends FormHandler implements IFormHandler {
 		use Instance;
+
 		/**
 		 * Constructor to declare variables of the class on initialization
 		 **/
 		protected function __construct() {
-			$this->form_name      = isset( $_GET['form_name']['name'] ) ? sanitize_text_field( wp_unslash( $_GET['form_name']['name'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- Reading GET parameter from the URL for checking the form name, doesn't require nonce verification.
+			$this->form_name = '';
+			$path            = ! empty( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+			$query_str       = wp_parse_url( $path, PHP_URL_QUERY );
+			if ( $query_str ) {
+				parse_str( $query_str, $query_params );
+				if ( ! empty( $query_params['form_name']['name'] ) ) {
+					$this->form_name = sanitize_text_field( $query_params['form_name']['name'] );
+				}
+				unset( $query_params );
+			}
 			$this->form_documents = MoFormDocs::PREMIUM_FORM_LINK;
 			parent::__construct();
-
 		}
 		/**
 		 * Function checks if form has been enabled by the admin and initializes

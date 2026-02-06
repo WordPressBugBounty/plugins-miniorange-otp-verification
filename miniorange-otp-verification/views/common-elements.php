@@ -32,8 +32,14 @@ use OTP\Objects\Tabs;
  *                              guide Link['guideLink] and Video Tutotial['videoLink].
  */
 function get_plugin_form_link( $formalink ) {
-	$req_url         = get_site_url() . '/wp-admin/admin.php?page=addon';
-	$limit_otp_addon = add_query_arg( array( 'addon' => 'otp_control' ), $req_url );
+	$req_url         = admin_url( 'admin.php' );
+	$limit_otp_addon = add_query_arg(
+		array(
+			'page'  => 'addon',
+			'addon' => 'otp_control',
+		),
+		$req_url
+	);
 	echo '<div class="my-mo-10 border-l border-lightgrey-500">';
 	if ( MoUtility::sanitize_check( 'formLink', $formalink ) ) {
 		echo '<div class="flex gap-mo-1 pl-mo-2 py-mo-4" >
@@ -45,8 +51,8 @@ function get_plugin_form_link( $formalink ) {
 					href="' . esc_url( $formalink['formLink'] ) . '"
 					title="' . esc_attr( $formalink['formLink'] ) . '"
 					id="formLink"  
-					target="_blank">
-					' . esc_html( mo_( 'FormLink' ) ) . '
+					target="_blank" rel="noopener noreferrer">
+					' . esc_html__( 'FormLink', 'miniorange-otp-verification' ) . '
 				</a>
 			</div>';
 	}
@@ -60,8 +66,8 @@ function get_plugin_form_link( $formalink ) {
 					href="' . esc_url( $formalink['guideLink'] ) . '"
 					title="Instruction Guide"
 					id="guideLink"  
-					target="_blank">
-					' . esc_html( mo_( 'Setup Guide' ) ) . '
+					target="_blank" rel="noopener noreferrer">
+					' . esc_html__( 'Setup Guide', 'miniorange-otp-verification' ) . '
 				</a>
 			</div>';
 	}
@@ -75,24 +81,11 @@ function get_plugin_form_link( $formalink ) {
 					href="' . esc_url( $formalink['videoLink'] ) . '"
 					title="Tutorial Video"
 					id="videoLink"  
-					target="_blank">
-					' . esc_html( mo_( 'Video Tutorial' ) ) . '
+					target="_blank" rel="noopener noreferrer">
+					' . esc_html__( 'Video Tutorial', 'miniorange-otp-verification' ) . '
 				</a>
 			</div>';
 	}
-	echo '<div class="flex gap-mo-1 pl-mo-2 py-mo-4">
-				<svg width="24" height="23" viewBox="0 0 24 23" fill="none">
-					<path fill-rule="evenodd" clip-rule="evenodd" d="M4.53033 0.46967C4.82322 0.762563 4.82322 1.23744 4.53033 1.53033L1.53033 4.53033C1.23744 4.82322 0.762563 4.82322 0.46967 4.53033C0.176777 4.23744 0.176777 3.76256 0.46967 3.46967L3.46967 0.46967C3.76256 0.176777 4.23744 0.176777 4.53033 0.46967ZM2.75 12C2.75 6.89137 6.89137 2.75 12 2.75C17.1086 2.75 21.25 6.89137 21.25 12C21.25 17.1086 17.1086 21.25 12 21.25C6.89137 21.25 2.75 17.1086 2.75 12ZM12 1.25C6.06294 1.25 1.25 6.06294 1.25 12C1.25 17.9371 6.06294 22.75 12 22.75C17.9371 22.75 22.75 17.9371 22.75 12C22.75 6.06294 17.9371 1.25 12 1.25ZM12.75 8C12.75 7.58579 12.4142 7.25 12 7.25C11.5858 7.25 11.25 7.58579 11.25 8V12C11.25 12.2508 11.3753 12.4849 11.584 12.624L14.584 14.624C14.9286 14.8538 15.3943 14.7607 15.624 14.416C15.8538 14.0714 15.7607 13.6057 15.416 13.376L12.75 11.5986V8ZM19.4697 1.53033C19.1768 1.23744 19.1768 0.762563 19.4697 0.46967C19.7626 0.176777 20.2374 0.176777 20.5303 0.46967L23.5303 3.46967C23.8232 3.76256 23.8232 4.23744 23.5303 4.53033C23.2374 4.82322 22.7626 4.82322 22.4697 4.53033L19.4697 1.53033Z" fill="#2563EE"/>
-				</svg>
-
-				<a class="mo-form-links text-blue-600"
-					href="' . esc_url( $limit_otp_addon ) . '"
-					title="Enable Resend OTP Timer"
-					id="mo_limit_otp"  
-					target="_blank">
-					' . esc_html( mo_( 'Enable Resend OTP Timer' ) ) . '
-				</a>
-			</div>';
 	echo '</div>';
 }
 
@@ -104,11 +97,12 @@ function get_plugin_form_link( $formalink ) {
  * @param  string $message - the body of the tooltip message.
  */
 function mo_draw_tooltip( $header, $message ) {
+	// Escape header and message before output.
 	echo '  <span class="tooltip">
 				<span class="dashicons dashicons-editor-help"></span>
 				<span class="tooltiptext">
-					<span class="header"><b><i>' . esc_html( mo_( $header ) ) . '</i></b></span><br/><br/>
-					<span class="body">' . wp_kses( mo_( $message ), MoUtility::mo_allow_html_array() ) . '</span>
+					<span class="header"><b><i>' . esc_html( $header ) . '</i></b></span><br/><br/>
+					<span class="body">' . wp_kses( $message, MoUtility::mo_allow_html_array() ) . '</span>
 				</span>
 			</span>';
 }
@@ -119,11 +113,14 @@ function mo_draw_tooltip( $header, $message ) {
  * page so that it can used later on for processing form data after verification
  * is complete and successful.
  *
- * @param array $data - the data posted by the user using the form.
  * @return string
  */
-function extra_post_data( $data = null ) {
-	$form_id       = isset( $_POST['form_id'] ) ? MoUtility::sanitize_check( 'form_id', $_POST ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
+function extra_post_data() {
+	$form_id = '';
+	if ( isset( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'um_login_form' ) ) {
+		$form_id = isset( $_POST['form_id'] ) ? MoUtility::sanitize_check( 'form_id', $_POST ) : '';
+	}
+
 	$ignore_fields = array(
 		'moFields'          => array(
 			'option',
@@ -156,8 +153,11 @@ function extra_post_data( $data = null ) {
 	$login_or_social_form = false;
 	$login_or_social_form = apply_filters( 'is_login_or_social_form', $login_or_social_form );
 	$fields               = ! $login_or_social_form ? 'moFields' : 'loginOrSocialForm';
-	foreach ( $_POST as $key => $value ) {// phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
-		$extra_post_data .= ! in_array( $key, $ignore_fields[ $fields ], true ) ? get_hidden_fields( $key, $value ) : '';
+	// Sanitize $_POST before iteration to prevent security issues.
+	$sanitized_post = MoUtility::mo_sanitize_array( $_POST );
+	foreach ( $sanitized_post as $key => $value ) {
+		$sanitized_key    = sanitize_key( $key );
+		$extra_post_data .= ! in_array( $sanitized_key, $ignore_fields[ $fields ], true ) ? get_hidden_fields( $sanitized_key, $value ) : '';
 	}
 	return $extra_post_data;
 }
@@ -179,7 +179,7 @@ function get_hidden_fields( $key, $value ) {
 			$hidden_val .= get_hidden_fields( $key . '[' . $t . ']', $val );
 		}
 	} else {
-		$hidden_val .= '<input type="hidden" name="' . $key . '" value="' . $value . '" />';
+		$hidden_val .= '<input type="hidden" name="' . esc_attr( $key ) . '" value="' . esc_attr( (string) $value ) . '" />';
 	}
 	return $hidden_val;
 }
@@ -207,7 +207,7 @@ function miniorange_site_otp_validation_form( $user_login, $user_email, $phone_n
 					: apply_filters( 'mo_template_build', '', $default_popup_handler->get_template_key(), $message, $otp_type, $from_both );
 	$html_content          = mo_allow_otp_scripts_only( $html_content );
 
-	echo wp_kses( htmlspecialchars_decode( mo_( $html_content ) ), MoUtility::mo_allow_html_array() );
+	echo wp_kses( htmlspecialchars_decode( $html_content ), MoUtility::mo_allow_popup_tags() );
 	$default_popup_handler->getCatchyRequiredScripts();
 	exit();
 }
@@ -215,8 +215,8 @@ function miniorange_site_otp_validation_form( $user_login, $user_email, $phone_n
 /**
  * Function filters and allows only specific safe <script> blocks from a given HTML string.
  *
- * @param string $html popup html
- * 
+ * @param string $html popup html.
+ *
  * @return string The sanitized HTML with only allowed <script> blocks.
  */
 function mo_allow_otp_scripts_only( $html ) {
@@ -266,7 +266,7 @@ function miniorange_verification_user_choice( $user_login, $user_email, $phone_n
 	}
 	$user_choice_popup = UserChoicePopup::instance();
 	$htmlcontent       = apply_filters( 'mo_template_build', '', $user_choice_popup->get_template_key(), $message, $otp_type, true );
-	echo htmlspecialchars_decode(mo_( $htmlcontent )); // phpcs:ignore -- No need to escape the variable as varibale contains html of poppup which is coming from Database.
+	echo wp_kses( htmlspecialchars_decode( $htmlcontent ), MoUtility::mo_allow_popup_tags() );
 	exit();
 }
 
@@ -278,11 +278,9 @@ function miniorange_verification_user_choice( $user_login, $user_email, $phone_n
  * @param string $go_back_url the redirection url on click of go back button.
  * @param string $user_email the email posted by the user.
  * @param string $message message posted by the user.
- * @param string $form the form details posted by the user.
- * @param string $usermeta the user meta.
  * database.
  */
-function mo_external_phone_validation_form( $go_back_url, $user_email, $message, $form, $usermeta ) {
+function mo_external_phone_validation_form( $go_back_url, $user_email, $message ) {
 	if ( ! headers_sent() ) {
 		header( 'Content-Type: text/html; charset=utf-8' );
 	}
@@ -290,7 +288,7 @@ function mo_external_phone_validation_form( $go_back_url, $user_email, $message,
 	$htmlcontent     = apply_filters( 'mo_template_build', '', $external_pop_up->get_template_key(), $message, null, false );
 
 	wp_print_scripts( 'jquery' );
-	echo htmlspecialchars_decode(mo_( $htmlcontent ));// phpcs:ignore -- No need to escape the variable as varibale contains html of poppup which is coming from Database.
+	echo wp_kses( htmlspecialchars_decode( $htmlcontent ), MoUtility::mo_allow_popup_tags() );
 	exit();
 }
 
@@ -370,9 +368,13 @@ function show_all_form_list( $current_form, $premium_forms, $count ) {
 		</g>
 	</svg> ';
 	$tab_details        = TabDetails::instance();
-	$request_uri        = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : ''; // phpcs:ignore -- false positive.
+	$current_page       = MoUtility::get_current_page_parameter_value( 'page', '' );
+	$request_uri        = admin_url( 'admin.php' );
+	if ( ! empty( $current_page ) ) {
+		$request_uri = add_query_arg( array( 'page' => $current_page ), $request_uri );
+	}
 	if ( in_array( $current_form, $premium_forms, true ) ) {
-		$count++;
+		++$count;
 		$url = add_query_arg(
 			array(
 				'page'      => $tab_details->tab_details[ Tabs::FORMS ]->menu_slug,
@@ -388,8 +390,8 @@ function show_all_form_list( $current_form, $premium_forms, $count ) {
 		echo esc_attr( $count ) . '.&nbsp';
 		echo ' ' . esc_attr( $current_form['name'] ) . '&nbsp&nbsp<span class="tooltip">' . wp_kses( $premium_form_image, MoUtility::mo_allow_svg_array() ) . '
 	<span class="tooltiptext prem_form_tooltip" >
-	<span  class="header prem_form_header" ><b>' . esc_attr( $current_form['plan_name'] ) . esc_html( mo_( ' Feature ' ) ) . '</b></span>
-	<span class="body">' . esc_html( mo_( 'Check the Licencing plans to upgrade to Premium plan to unlock this feature.' ) ) . '</span>
+	<span  class="header prem_form_header" ><b>' . esc_html( $current_form['plan_name'] ) . ' ' . esc_html__( 'Feature', 'miniorange-otp-verification' ) . '</b></span>
+	<span class="body">' . esc_html__( 'Check the Licencing plans to upgrade to Premium plan to unlock this feature.', 'miniorange-otp-verification' ) . '</span>
 	</span></span>';
 		echo '</span></a></div>';
 	} elseif ( $current_form->get_form_key() !== null ) {
@@ -402,7 +404,7 @@ function show_all_form_list( $current_form, $premium_forms, $count ) {
 				),
 				$request_uri
 			);
-			$count++;
+			++$count;
 			echo '<div class="search_box">';
 			echo '<a class="mo_search"';
 			echo ' href="' . esc_url( $url ) . '" ';
@@ -430,7 +432,7 @@ function show_all_form_list( $current_form, $premium_forms, $count ) {
 function get_country_code_dropdown() {
 	echo '<select name="default_country_code" id="mo_country_code" class="w-full">';
 	echo '<option value="" disabled selected="selected">
-            ----- ' . esc_html( mo_( 'Select your Country' ) ) . ' -----
+            ----- ' . esc_html__( 'Select your Country', 'miniorange-otp-verification' ) . ' -----
           </option>';
 	foreach ( CountryList::get_countrycode_list() as $key => $country ) {
 		echo '<option data-countrycode="' . esc_attr( $country['countryCode'] ) . ' " value="' . esc_attr( $key ) . ' "';
@@ -450,7 +452,7 @@ function get_country_code_dropdown() {
 function get_country_code_multiple_dropdown() {
 	echo '<select multiple size="5" name="allow_countries[]" id="mo_country_code">';
 	echo '<option value="" disabled selected="selected">
-            --------- ' . esc_html( mo_( 'Select your Countries' ) ) . ' -------
+            --------- ' . esc_html__( 'Select your Countries', 'miniorange-otp-verification' ) . ' -------
           </option>';
 
 	echo '</select>';
@@ -458,13 +460,12 @@ function get_country_code_multiple_dropdown() {
 
 
 /**
- * Loop through and show only configured form list
+ * Loop through and show only configured form list.
  *
- * @param string $controller -controller attributes.
- * @param string $disabled  -disabled attributes.
- * @param string $page_list  -List of pages.
+ * @param string $controller Controller base path.
+ * @param string $disabled   Disabled attribute to be passed down to form views.
  */
-function show_configured_form_details( $controller, $disabled, $page_list ) {
+function show_configured_form_details( $controller, $disabled ) {
 
 	$form_handler      = FormList::instance();
 	$mo_is_active_form = false;
@@ -477,7 +478,11 @@ function show_configured_form_details( $controller, $disabled, $page_list ) {
 			}
 			echo '<div class="flex flex-col gap-mo-2">
 					<div class="flex">';
-			include $controller . 'forms/class-' . strtolower( $class_name ) . '.php';
+			// Validate file path before including to prevent directory traversal.
+			$file_path = $controller . 'forms/class-' . strtolower( $class_name ) . '.php';
+			if ( MoUtility::mo_require_file( $file_path, $controller . 'forms/' ) ) {
+				include $file_path;
+			}
 			echo '	</div>
 				</div>';
 			$mo_is_active_form = true;
@@ -494,9 +499,9 @@ function show_configured_form_details( $controller, $disabled, $page_list ) {
 				<div class="w-full flex gap-mo-32 p-mo-4">
 					<div class="mo_otp_note">
 					<p class="flex-1 pr-mo-44 my-mo-1">
-							' . esc_html( mo_( 'You have not configured any form yet! Setup OTP Verification on your form by clicking here' ) ) . '
+							' . esc_html__( 'You have not configured any form yet! Setup OTP Verification on your form by clicking here', 'miniorange-otp-verification' ) . '
 						:<b><a href="' . esc_url( $forms_list_page ) . '">
-						' . esc_html( mo_( 'Show Form List' ) ) . '
+						' . esc_html__( 'Show Form List', 'miniorange-otp-verification' ) . '
 						</b></a>
 						</p>
 					</div>
@@ -518,12 +523,12 @@ function get_wc_payment_dropdown( $disabled, $checkout_payment_plans ) {
 		include_once ABSPATH . 'wp-admin/includes/plugin.php';
 	}
 	if ( ! is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
-		echo esc_html( mo_( '[ Please activate the WooCommerce Plugin ]' ) );
+		echo esc_html__( '[ Please activate the WooCommerce Plugin ]', 'miniorange-otp-verification' );
 		return;
 	}
-	$payment_plans = WC()->payment_gateways->payment_gateways();  // phpcs:ignore intelephense.diagnostics.undefinedFunctions -- Default function of Woocommerce
+	$payment_plans = WC()->payment_gateways->payment_gateways();
 	echo '<select multiple size="5" name="wc_payment[]" id="wc_payment">';
-	echo '<option value="" disabled>' . esc_html( mo_( 'Select your Payment Methods' ) ) . '</option>';
+	echo '<option value="" disabled>' . esc_html__( 'Select your Payment Methods', 'miniorange-otp-verification' ) . '</option>';
 	foreach ( $payment_plans as $payment_plan ) {
 		echo '<option ';
 		if ( $checkout_payment_plans && array_key_exists( $payment_plan->id, $checkout_payment_plans ) ) {
@@ -561,7 +566,7 @@ function show_low_transaction_alert( $remaining_sms, $remaining_email, $transact
                         </div>
 
                         <div class="mo-popup-text-wrapper">
-                            ' . esc_html( mo_( 'LOW ON TRANSACTIONS' ) ) . '
+                            ' . esc_html__( 'LOW ON TRANSACTIONS', 'miniorange-otp-verification' ) . '
                         </div>
 
                         <button type="button" id="mo_close_notice_button" class="mo-popup-close-button" data-modal-hide="staticModal">
@@ -596,7 +601,7 @@ function show_low_transaction_alert( $remaining_sms, $remaining_email, $transact
 
         			   <div class=" mo-popup-info-wrapper" style="border: 1px groove">
         			       <div class=" mo-popup-sms-wrapper">
-						   ' . esc_html( mo_( ' SMS REMAINING ' ) ) . '
+						   ' . esc_html__( 'SMS REMAINING', 'miniorange-otp-verification' ) . '
         			       </div>
                                <div class="mo-popup-sms-count">
 					   		' . esc_attr( $remaining_sms ) . '
@@ -605,7 +610,7 @@ function show_low_transaction_alert( $remaining_sms, $remaining_email, $transact
 
                         <div class=" mo-popup-email-info-wrapper" style="border: 1px groove">
                             <div class="mo-popup-email-wrapper">
-							' . esc_html( mo_( ' EMAIL REMAINING ' ) ) . '
+							' . esc_html__( 'EMAIL REMAINING', 'miniorange-otp-verification' ) . '
                             </div>
                             <div class="mo-popup-email-count">
 							' . esc_attr( $remaining_email ) . ' </div>
@@ -613,11 +618,67 @@ function show_low_transaction_alert( $remaining_sms, $remaining_email, $transact
                         </div>
 
                     <div class="mo-popup-footer-wrapper"  style="border-top: 1px groove ;">
-                        <a target="_blank" href="' . esc_url( MOV_PORTAL ) . '/initializePayment?requestOrigin=wp_otp_verification_basic_plan" class="w-full mo-button primary mx-mo-1">' . esc_html( mo_( ' Check Pricing & Recharge ' ) ) . '</a>
+                        ';
+						$recharge_url = add_query_arg(
+							'requestOrigin',
+							'wp_otp_verification_basic_plan',
+							trailingslashit( MOV_PORTAL ) . 'initializePayment'
+						);
+						echo '<a target="_blank" rel="noopener noreferrer" href="' . esc_url( $recharge_url ) . '" class="w-full mo-button primary mx-mo-1">' . esc_html__( 'Check Pricing & Recharge', 'miniorange-otp-verification' ) . '</a>';
+			echo '
                     </div>
                 </div>
             </div>
         </div>';
+}
+
+/**
+ * Shows the modal box to promote Country restriction addon
+ *
+ * @param string $addon_url URL to the Country restriction addon settings page.
+ * @return void
+ */
+function show_selected_country_addon_alert( $addon_url ) {
+
+	echo ' <div id="mo_selected_country_modal">
+			 <div class="mo_customer_validation-modal-backdrop "></div>';
+			wp_nonce_field( 'mo_admin_actions' );
+
+			echo '  <div id="popup-modal" class="mo-popup-modal">
+				 <div class="mo-popup-modal-wrapper">
+					<div class="mo-popup-header-wrapper" style="border-bottom: 1px groove ;">
+						<div class="mo-popup-icon-wrapper">
+							<svg class="h-mo-7 w-mo-7 text-blue-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.007v.008H12v-.008zM12 3.75a8.25 8.25 0 100 16.5 8.25 8.25 0 000-16.5z" />
+							</svg>
+						</div>
+
+						<div class="mo-popup-text-wrapper">
+							' . esc_html__( 'Enable Country Restriction Addon', 'miniorange-otp-verification' ) . '
+						</div>
+
+						<button type="button" id="mo_close_selected_country_cross" class="mo-popup-close-button" data-modal-hide="staticModal">
+							<svg class="w-mo-6 h-mo-6" fill="currentColor" viewBox="0 0 20 20">
+								<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+							</svg>
+						</button>
+					</div>
+
+					<div class="px-mo-5 ">
+						<div class="py-mo-2 rounded-lg">
+							<div class="p-mo-4 text-sm font-semibold rounded-lg bg-blue-50" role="alert">
+							' . wp_kses( __( 'Enable <b>Country Restriction Addon</b> to allow OTPs only from selected countries. All other countries will be blocked for better security.', 'miniorange-otp-verification' ), MoUtility::mo_allow_html_array() ) . '
+							</div>
+						</div>
+					</div>
+
+					<div class="mo-popup-footer-wrapper" style="border-top: 1px groove ; display:flex; gap: 8px; justify-content: space-between; align-items: center;">
+						<a href="' . esc_url( $addon_url ) . '" class="w-full mo-button primary mx-mo-1" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Enable Addon', 'miniorange-otp-verification' ) . '</a>
+						<button type="button" id="mo_remind_later_selected_country_button" class="w-full mo-button secondary mx-mo-1">' . esc_html__( 'Remind me later', 'miniorange-otp-verification' ) . '</button>
+					</div>
+				 </div>
+			  </div>
+		 </div>';
 }
 
 /**
@@ -636,7 +697,7 @@ function get_multiple_form_select( $form_details, $show_verify_field, $show_emai
 
 	$row_template = "	<div id='row{FORM}{KEY}_{INDEX}' class='flex gap-mo-2'>
 							<div class='mo-forms-input-wrapper'>
-								<label class='mo-input-label'>" . esc_html( mo_( 'Form ID' ) ) . "</label>
+								<label class='mo-input-label'>" . esc_html__( 'Form ID', 'miniorange-otp-verification' ) . "</label>
 								<input class=' mo-form-input' id='{FORM}_form_{KEY}_{INDEX}' value='{FORM_ID_VAL}' type='text' name='{FORM}_form[form][]' >
 							</div>
 									{EMAIL_AND_PHONE_FIELD}
@@ -646,20 +707,32 @@ function get_multiple_form_select( $form_details, $show_verify_field, $show_emai
 
 	$email_and_phone_field = " <span {HIDDEN1}>
 									<div class='mo-forms-input-wrapper'>
-										<label class='mo-input-label'>" . esc_html( mo_( 'Email Field ' . $key_type ) ) . "</label>
+										<label class='mo-input-label'>" . sprintf(
+											/* translators: %s: email field type */
+		esc_html__( 'Email Field %s', 'miniorange-otp-verification' ),
+		esc_html( $key_type )
+	) . "</label>
 										<input class=' mo-form-input' id='{FORM}_form_email_{KEY}_{INDEX}' value='{EMAIL_KEY_VAL}' type='text' name='{FORM}_form[emailkey][]' >
 									</div>
                                 </span>
                                 <span {HIDDEN2}>
 									<div class='mo-forms-input-wrapper'>
-										<label class='mo-input-label'>" . esc_html( mo_( 'Phone Field ' . $key_type ) ) . "</label>
+										<label class='mo-input-label'>" . sprintf(
+											/* translators: %s: phone field type */
+		esc_html__( 'Phone Field %s', 'miniorange-otp-verification' ),
+		esc_html( $key_type )
+	) . "</label>
 										<input class=' mo-form-input' id='{FORM}_form_phone_{KEY}_{INDEX}' value='{PHONE_KEY_VAL}' type='text' name='{FORM}_form[phonekey][]' >
 									</div>
                                 </span>";
 
 	$verify_field = "	<span>
 							<div class='mo-forms-input-wrapper'>
-								<label class='mo-input-label'>" . esc_html( mo_( 'Verification Field ' . $key_type ) ) . "</label>
+								<label class='mo-input-label'>" . sprintf(
+									/* translators: %s: verification field type (e.g., Email, Phone) */
+		esc_html__( 'Verification Field %s', 'miniorange-otp-verification' ),
+		esc_html( $key_type )
+	) . "</label>
 								<input class=' mo-form-input' id='{FORM}_form_verify_{KEY}_{INDEX}' value='{VERIFY_KEY_VAL}' type='text' name='{FORM}_form[verifyKey][]' >
 							</div>
                         </span>";
@@ -695,19 +768,19 @@ function get_multiple_form_select( $form_details, $show_verify_field, $show_emai
 		echo wp_kses(
 			MoUtility::replace_string( $details, $row_template ),
 			array(
-				'div'   => array(
+				'div'    => array(
 					'id'    => array(),
 					'class' => array(),
 				),
-				'label' => array( 'class' => array() ),
-				'input' => array(
+				'label'  => array( 'class' => array() ),
+				'input'  => array(
 					'id'    => array(),
 					'class' => array(),
 					'name'  => array(),
 					'type'  => array(),
 					'value' => array(),
 				),
-				'span'  => array(
+				'span'   => array(
 					'hidden' => array(),
 				),
 				'button' => array(
@@ -727,7 +800,7 @@ function get_multiple_form_select( $form_details, $show_verify_field, $show_emai
 				$remove_btn_template
 			)
 			: '';
-			$details = array(
+			$details       = array(
 				'KEY'            => $key,
 				'INDEX'          => $counter,
 				'FORM'           => $form_name,
@@ -742,19 +815,19 @@ function get_multiple_form_select( $form_details, $show_verify_field, $show_emai
 			echo wp_kses(
 				MoUtility::replace_string( $details, $row_template ),
 				array(
-					'div'   => array(
+					'div'    => array(
 						'id'    => array(),
 						'class' => array(),
 					),
-					'label' => array( 'class' => array() ),
-					'input' => array(
+					'label'  => array( 'class' => array() ),
+					'input'  => array(
 						'id'    => array(),
 						'class' => array(),
 						'name'  => array(),
 						'type'  => array(),
 						'value' => array(),
 					),
-					'span'  => array(
+					'span'   => array(
 						'hidden' => array(),
 					),
 					'button' => array(
@@ -764,7 +837,7 @@ function get_multiple_form_select( $form_details, $show_verify_field, $show_emai
 					),
 				)
 			);
-			$counter++;
+			++$counter;
 		}
 	}
 	$result['counter'] = $counter;
@@ -784,7 +857,7 @@ function get_multiple_form_select( $form_details, $show_verify_field, $show_emai
 function multiple_from_select_script_generator( $show_verify_field, $show_email_and_phone_field, $form_name, $key_type, $counters ) {
 	$row_template = "	<div id='row{FORM}{KEY}_{INDEX}' class='flex gap-mo-2'>
 							<div class='mo-forms-input-wrapper'>
-								<label class='mo-input-label'>" . esc_html( mo_( 'Form ID' ) ) . "</label>
+								<label class='mo-input-label'>" . esc_html__( 'Form ID', 'miniorange-otp-verification' ) . "</label>
 								<input class=' mo-form-input' id='{FORM}_form_{KEY}_{INDEX}' value='' type='text' name='{FORM}_form[form][]' >
 							</div>
 									{EMAIL_AND_PHONE_FIELD}
@@ -793,20 +866,32 @@ function multiple_from_select_script_generator( $show_verify_field, $show_email_
 
 	$email_and_phone_field = " <span class='{HIDDEN1}'>
 									<div class='mo-forms-input-wrapper'>
-										<label class='mo-input-label'>" . esc_html( mo_( 'Email Field ' . $key_type ) ) . "</label>
+										<label class='mo-input-label'>" . sprintf(
+											/* translators: %s: email field type */
+		esc_html__( 'Email Field %s', 'miniorange-otp-verification' ),
+		esc_html( $key_type )
+	) . "</label>
 										<input class=' mo-form-input' id='{FORM}_form_email_{KEY}_{INDEX}' value='' type='text' name='{FORM}_form[emailkey][]' >
 									</div>
                                 </span>
                                 <span class='{HIDDEN2}'>
 									<div class='mo-forms-input-wrapper'>
-										<label class='mo-input-label'>" . esc_html( mo_( 'Phone Field ' . $key_type ) ) . "</label>
+										<label class='mo-input-label'>" . sprintf(
+											/* translators: %s: phone field type */
+		esc_html__( 'Phone Field %s', 'miniorange-otp-verification' ),
+		esc_html( $key_type )
+	) . "</label>
 										<input class=' mo-form-input' id='{FORM}_form_phone_{KEY}_{INDEX}' value='' type='text' name='{FORM}_form[phonekey][]' >
 									</div>
                                 </span>";
 
 	$verify_field = "	<span>
 							<div class='mo-forms-input-wrapper'>
-								<label class='mo-input-label'>" . esc_html( mo_( 'Verification Field ' . $key_type ) ) . "</label>
+								<label class='mo-input-label'>" . sprintf(
+									/* translators: %s: verification field type (e.g., Email, Phone) */
+		esc_html__( 'Verification Field %s', 'miniorange-otp-verification' ),
+		esc_html( $key_type )
+	) . "</label>
 								<input class=' mo-form-input' id='{FORM}_form_verify_{KEY}_{INDEX}' value='' type='text' name='{FORM}_form[verifyKey][]' >
 							</div>
                         </span>";
@@ -822,131 +907,116 @@ function multiple_from_select_script_generator( $show_verify_field, $show_email_
 		$row_template
 	);
 
-	$row_template = sprintf(
-		$row_template,
-		mo_( 'Form ID' ),
-		mo_( 'Email Field' . $key_type ),
-		mo_( 'Phone Field' . $key_type ),
-		mo_( 'Verification Field' . $key_type )
+	$row_template = trim( preg_replace( '/\s\s+/', ' ', $row_template ) );
+	$row_template = MoUtility::replace_string( array( 'FORM' => $form_name ), $row_template );
+
+	$remove_row = "<button type='button' class='mo-form-button secondary mo-remove-btn' onclick='removeSpecific_{FORM}(this);'>-</button></div>";
+	$remove_row = MoUtility::replace_string( array( 'FORM' => $form_name ), $remove_row );
+
+	// Register and enqueue the script if not already done.
+	$script_handle = 'mo-multiple-form-select';
+	if ( ! wp_script_is( $script_handle, 'registered' ) ) {
+		wp_register_script(
+			$script_handle,
+			MOV_URL . 'includes/js/mo-multiple-form-select.js',
+			array( 'jquery' ),
+			MOV_VERSION,
+			true
+		);
+	}
+
+	// Use a global variable to accumulate form configurations across all calls.
+	global $mo_multiple_form_select_data;
+	if ( ! isset( $mo_multiple_form_select_data ) ) {
+		$mo_multiple_form_select_data = array();
+	}
+
+	// Store form configuration.
+	$mo_multiple_form_select_data[ $form_name ] = array(
+		'counters'          => array(
+			(int) $counters[0],
+			(int) $counters[1],
+			(int) $counters[2],
+		),
+		'rowTemplate'       => $row_template,
+		'removeRowTemplate' => $remove_row,
 	);
 
-	$row_template    = trim( preg_replace( '/\s\s+/', ' ', $row_template ) );
-	$remove_row      = "<button type='button' class='mo-form-button secondary mo-remove-btn' onclick='removeSpecific_{FORM}(this);'>-</button></div>";
-	$script_template = '<script>
-                                var {FORM}_counter1, {FORM}_counter2, {FORM}_counter3;
-                                jQuery(document).ready(function(){  
-                                    {FORM}_counter1 = ' . $counters[0] . '; {FORM}_counter2 = ' . $counters[1] . '; {FORM}_counter3 = ' . $counters[2] . "; 
-                                });
-                            </script>
-                            <script>
-                                function add_{FORM}(t, n) {
-									const existingRows = \$mo('[id^=\'row{FORM}' + n + '_\']');
-									let maxIndex = -1;
+	// Enqueue script.
+	wp_enqueue_script( $script_handle );
 
-									existingRows.each(function () {
-										const id = \$mo(this).attr('id');
-										const match = id.match(/row{FORM}\d+_(\d+)/);
-											if( match[1] ) {
-												const index = parseInt(match[1]);
-												maxIndex = Math.max(index, maxIndex);
-											}
-									});
-
-									const newIndex = maxIndex + 1;
-									let hidden1 = '', hidden2 = '', both = '';
-									if (n === 1) hidden2 = 'hidden';
-									if (n === 2) hidden1 = 'hidden';
-									if (n === 3) both = 'both_';
-
-									let html = \"" . $row_template . "\";
-									html = html.replace('{KEY}', n).replace('{INDEX}', newIndex)
-										.replace('{HIDDEN1}', hidden1).replace('{HIDDEN2}', hidden2);
-
-									const lastDivIndex = html.lastIndexOf('</div>');
-									if (lastDivIndex !== -1) {
-										html = html.slice(0, lastDivIndex) + \"" . $remove_row . "\" + html.slice(lastDivIndex + 6);
-									}
-
-									const targetElement = existingRows.last();
-										if (targetElement.length) {
-										\$mo(html).insertAfter(targetElement);;
-									}
-
-									this['{FORM}_counter' + n] = existingRows.length + 1;
-									if (existingRows.length + 1 === 2) {
-										const firstRow = \$mo('[id^=\'row{FORM}' + n + '_\']').first();
-										firstRow.find('.mo-form-button.secondary').remove();
-										firstRow.append(\"" . $remove_row . "\");
-									}
-								}
-
-								function removeSpecific_{FORM}(button) {
-									var row = \$mo(button).closest('.flex');
-									var id = row.attr('id');
-									var match = id.match(/row{FORM}(\d+)_(\d+)/);
-									
-									const existingRows = \$mo('[id^=\'row{FORM}' + 1 + '_\']');
-									var count =   Math.max(this['{FORM}_counter1'],this['{FORM}_counter2'],this['{FORM}_counter3'], existingRows.length);
-
-									if (match) {
-										const index = parseInt(match[2]);
-										row.remove();
-										\$mo('#row{FORM}1_' + index).remove();
-										\$mo('#row{FORM}2_' + index).remove();
-										\$mo('#row{FORM}3_' + index).remove();
-									}
-										count--;
-										this['{FORM}_counter3']=this['{FORM}_counter1']=this['{FORM}_counter2']=count;
-
-										if (count === 1) {
-											\$mo('.mo-remove-btn').remove();
-										}						
-								}
-
-                            </script>";
-	$script_template = MoUtility::replace_string( array( 'FORM' => $form_name ), $script_template );
-	echo wp_kses(
-		$script_template,
-		array(
-			'div'    => array(
-				'name'   => array(),
-				'id'     => array(),
-				'class'  => array(),
-				'title'  => array(),
-				'style'  => array(),
-				'hidden' => array(),
-			),
-			'script' => array(),
-			'label'  => array( 'class' => array() ),
-			'span'   => array(
-				'class'  => array(),
-				'title'  => array(),
-				'style'  => array(),
-				'hidden' => array(),
-			),
-			'input'  => array(
-				'type'        => array(),
-				'id'          => array(),
-				'name'        => array(),
-				'value'       => array(),
-				'class'       => array(),
-				'size '       => array(),
-				'tabindex'    => array(),
-				'hidden'      => array(),
-				'style'       => array(),
-				'placeholder' => array(),
-				'disabled'    => array(),
-			),
-			'button' => array(
-				'type'     => array(),
-				'class'    => array(),
-				'onclick'  => array(),
-				'disabled' => array(),
-			),
-		)
-	);
+	if ( ! has_action( 'admin_footer', 'mo_localize_multiple_form_select_script' ) ) {
+		add_action( 'admin_footer', 'mo_localize_multiple_form_select_script', 999 );
+	}
 }
 
+/**
+ * Localize script with all accumulated form data.
+ * This function is called once in admin_footer to ensure all form data is included.
+ */
+function mo_localize_multiple_form_select_script() {
+	global $mo_multiple_form_select_data;
+	$script_handle = 'mo-multiple-form-select';
+
+	if ( ! empty( $mo_multiple_form_select_data ) && wp_script_is( $script_handle, 'enqueued' ) ) {
+		wp_localize_script(
+			$script_handle,
+			'moMultipleFormSelect',
+			array(
+				'forms' => $mo_multiple_form_select_data,
+			)
+		);
+	}
+}
+
+/**
+ * Shows the modal box to promote Transaction Logs feature
+ *
+ * @param string $reporting_url URL to the Transaction Report settings page.
+ * @return void
+ */
+function show_transaction_logs_alert( $reporting_url ) {
+
+	echo ' <div id="mo_transaction_logs_modal">
+			 <div class="mo_customer_validation-modal-backdrop "></div>';
+			wp_nonce_field( 'mo_admin_actions' );
+
+			echo '  <div id="popup-modal" class="mo-popup-modal">
+				 <div class="mo-popup-modal-wrapper">
+					<div class="mo-popup-header-wrapper" style="border-bottom: 1px groove ; background-color: #f0fdf4;">
+						<div class="mo-popup-icon-wrapper">
+							<svg class="h-mo-7 w-mo-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+							</svg>
+						</div>
+
+						<div class="mo-popup-text-wrapper" style="color: #16a34a;">
+							' . esc_html__( 'Enable Transaction Logs', 'miniorange-otp-verification' ) . '
+						</div>
+
+						<button type="button" id="mo_close_transaction_logs_cross" class="mo-popup-close-button" data-modal-hide="staticModal">
+							<svg class="w-mo-6 h-mo-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+								<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+							</svg>
+						</button>
+					</div>
+
+					<div class="px-mo-5 ">
+						<div class="py-mo-2 rounded-lg">
+							<div class="p-mo-4 text-sm font-semibold rounded-lg bg-green-50" role="alert">
+							' . wp_kses( __( 'Enable <b>Transaction Logs</b> to track and monitor all OTP verification as well as notifications activities.', 'miniorange-otp-verification' ), MoUtility::mo_allow_html_array() ) . '
+							</div>
+						</div>
+					</div>
+
+					<div class="mo-popup-footer-wrapper" style="border-top: 1px groove ; display:flex; gap: 8px; justify-content: space-between; align-items: center;">
+						<a href="' . esc_url( $reporting_url ) . '" target="_blank" rel="noopener noreferrer" class="w-full mo-button primary mx-mo-1">' . esc_html__( 'Enable Transaction Logs', 'miniorange-otp-verification' ) . '</a>
+						<button type="button" id="mo_remind_later_transaction_logs_button" class="w-full mo-button secondary mx-mo-1">' . esc_html__( 'Remind me later', 'miniorange-otp-verification' ) . '</button>
+					</div>
+				 </div>
+			  </div>
+		 </div>';
+}
 
 /**
  * Shows AddonList

@@ -1,5 +1,6 @@
 <?php
-/**Load adminstrator changes for GatewayFunctions
+/**
+ * Load administrator changes for GatewayFunctions
  *
  * @package miniorange-otp-verification/helper
  */

@@ -1,5 +1,6 @@
 <?php
-/**Load adminstrator changes for FormSessionVars
+/**
+ * Load administrator changes for FormSessionVars
  *
  * @package miniorange-otp-verification/helper
  */
@@ -19,7 +20,6 @@ if ( ! class_exists( 'FormSessionVars' ) ) {
 	 * FormSessionVars class
 	 */
 	class FormSessionVars {
-
 		const FLUENTFORM                    = 'fluent_form';
 		const FLUENT_CONV_FORM              = 'fluent_conv_form';
 		const WC_PROFILE_UPDATE             = 'wc_account_form';
@@ -96,5 +96,6 @@ if ( ! class_exists( 'FormSessionVars' ) ) {
 		const JET_BUILDER_FORM              = 'jet_builder_form';
 		const MO_WS_FORMS                   = 'mo_ws_form';
 		const LOGIN_REGISTER_WITH_PHONE     = 'login_register_with_phone';
+		const MO_LOGIN_REG_USING_PHONE_FORM = 'miniOrange - Login and register using phone only';
 	}
 }

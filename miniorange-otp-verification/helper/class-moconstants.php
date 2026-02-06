@@ -1,5 +1,6 @@
 <?php
-/**Load administrator changes for MoConstants
+/**
+ * Load administrator changes for MoConstants
  *
  * @package miniorange-otp-verification/helper
  */
@@ -68,5 +69,10 @@ if ( ! class_exists( 'MoConstants' ) ) {
 		const LICENCE_LIBRARY              = 'OTP\LicenseLibrary\Mo_License_Service';
 		const LICENCE_SERVICE_FILE         = 'lib/license/src/class-mo-license-service.php';
 		const MO_CROWN_SVG                 = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><g id="d4a43e0162b45f718f49244b403ea8f4"><g id="4ea4c3dca364b4cff4fba75ac98abb38"><g id="2413972edc07f152c2356073861cb269"><path id="2deabe5f8681ff270d3f37797985a977" d="M20.8007 20.5644H3.19925C2.94954 20.5644 2.73449 20.3887 2.68487 20.144L0.194867 7.94109C0.153118 7.73681 0.236091 7.52728 0.406503 7.40702C0.576651 7.28649 0.801941 7.27862 0.980492 7.38627L7.69847 11.4354L11.5297 3.72677C11.6177 3.54979 11.7978 3.43688 11.9955 3.43531C12.1817 3.43452 12.3749 3.54323 12.466 3.71889L16.4244 11.3598L23.0197 7.38654C23.1985 7.27888 23.4233 7.28702 23.5937 7.40728C23.7641 7.52754 23.8471 7.73707 23.8056 7.94136L21.3156 20.1443C21.2652 20.3887 21.0501 20.5644 20.8007 20.5644Z" fill="#ffcc00"></path></g></g></g></svg>';
+		const MO_TWILIO_SETUP_GUIDE        = 'https://plugins.miniorange.com/twilio-gateway-setup-for-otp-verification/';
+		const MO_GATEWAY_SETUP_GUIDE       = 'https://faq.miniorange.com/knowledgebase/use-own-gateway-plugin/';
+		const MO_SUPPORTED_GATEWAYS_URL    = 'https://plugins.miniorange.com/supported-sms-email-gateways';
+		const WCFMNOTIFICATION_SETUP_GUIDE = 'https://plugins.miniorange.com/wcfm-notification-vendor-notification-otp-verification-plugin';
+		const DOKANNOTIFICATION_SETUPGUIDE = 'https://plugins.miniorange.com/dokan-notification-vendor-notification-otp-verification-plugin';
 	}
 }

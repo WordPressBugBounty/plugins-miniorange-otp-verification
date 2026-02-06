@@ -2,8 +2,12 @@
 /**
  * Load admin view for miniorange Login Form.
  *
- * @package miniorange-otp-verification/views
+ * @package miniorange-otp-verification/views/account
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 echo '	<form name="f" method="post" action="" class="mo-content-wrapper p-mo-32 justify-center items-center">';
 			wp_nonce_field( $nonce );
@@ -22,9 +26,9 @@ echo '		<input type="hidden" name="option" value="mo_registration_connect_verify
 						 name="password" placeholder="" />
 		 </div>			
 
-		 <div><a href="https://portal.miniorange.com/forgotpassword" target="_blank" class="text-right font-bold hover:underline float-right">' . esc_attr( mo_( "Forgot Password" ) ) . '</a></div>
+		 <div><a href="https://portal.miniorange.com/forgotpassword" target="_blank" class="text-right font-bold hover:underline float-right">' . esc_html__( 'Forgot Password', 'miniorange-otp-verification' ) . '</a></div>
 		 <input type="submit" class="mo-button inverted" value="Login"/>
-		 <a href="#goBackButton" class="mo-button secondary">Register</a>
+		 <button type="submit" form="goBacktoRegistrationPage" class="mo-button secondary">Register</button>
 
 	</div>
 </form>
@@ -35,15 +39,4 @@ echo '		<input type="hidden" name="option" value="mo_registration_mo_forgot_pass
 <form id="goBacktoRegistrationPage" method="post" action="">';
 	wp_nonce_field( $nonce );
 echo '		<input type="hidden" name="option" value="mo_registration_go_back" />
-</form>
-<script>
-	jQuery(document).ready(function(){
-		 $mo(\'a[href="#mo_forgot_password"]\').click(function(){
-			 $mo("#forgotpasswordform").submit();
-		 });
-
-		 $mo(\'a[href="#goBackButton"]\').click(function(){
-			 $mo("#goBacktoRegistrationPage").submit();
-		 });
-	 });
-</script>';
+</form>';

@@ -1,10 +1,15 @@
 <?php
-/**Load adminstrator changes for MoUtility
+/**
+ * Load administrator changes for MoUtility
  *
  * @package miniorange-otp-verification/helper
  */
 
 namespace OTP\Helper;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 use OTP\Objects\NotificationSettings;
 use OTP\Objects\TabDetails;
@@ -16,12 +21,6 @@ use stdClass;
 use OTP\LicenseLibrary\Mo_License_Service;
 use OTP\Helper\MoConstants;
 use OTP\Helper\CountryList;
-
-
-
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
 
 /**
  * This is the main Utility class of the plugin.
@@ -35,16 +34,18 @@ if ( ! class_exists( 'MoUtility' ) ) {
 	class MoUtility {
 
 
-		/**Checking Script tags
+		/**
+		 * Checking Script tags
 		 *
 		 * @param string $template checking script tag.
 		 * @return string
 		 */
 		public static function check_for_script_tags( $template ) {
-			return preg_match( '<script>', $template, $match );
+			return preg_match( '/<script>/', $template, $match );
 		}
 
-		/**Sanitizing array
+		/**
+		 * Sanitizing array
 		 *
 		 * @param array $data data array to be sanitized.
 		 * @return array
@@ -55,25 +56,27 @@ if ( ! class_exists( 'MoUtility' ) ) {
 				if ( is_array( $value ) ) {
 					$sanitized_data[ $key ] = self::mo_sanitize_array( $value );
 				} else {
-					$sanitized_data[ $key ] = sanitize_text_field( $value );
+					$sanitized_data[ $key ] = sanitize_text_field( wp_unslash( $value ) );
 				}
 			}
 			return $sanitized_data;
 		}
 
-		/**MoInternal Function
+		/**
+		 * MoInternal Function
+		 *
+		 * @return array
 		 */
 		public static function mo_allow_html_array() {
 			$allowed_tags = array(
 				'a'          => array(
-					'style'   => array(),
-					'onclick' => array(),
-					'class'   => array(),
-					'href'    => array(),
-					'rel'     => array(),
-					'title'   => array(),
-					'hidden'  => array(),
-					'target'  => array(),
+					'style'  => array(),
+					'class'  => array(),
+					'href'   => array(),
+					'rel'    => array(),
+					'title'  => array(),
+					'hidden' => array(),
+					'target' => array(),
 				),
 				'b'          => array(
 					'style' => array(),
@@ -97,8 +100,6 @@ if ( ! class_exists( 'MoUtility' ) ) {
 					'style'  => array(),
 					'hidden' => array(),
 				),
-				'script'     => array(),
-				'style'      => array(),
 				'dl'         => array(),
 				'dt'         => array(),
 				'em'         => array(),
@@ -158,7 +159,6 @@ if ( ! class_exists( 'MoUtility' ) ) {
 					'title'  => array(),
 					'style'  => array(),
 					'hidden' => array(),
-					'class'  => array(),
 				),
 				'strike'     => array(),
 				'strong'     => array(),
@@ -213,7 +213,141 @@ if ( ! class_exists( 'MoUtility' ) ) {
 			return $allowed_tags;
 		}
 
-		/**MoInternal Function
+		/**
+		 * Allowing tags for popup templates
+		 *
+		 * @return array
+		 */
+		public static function mo_allow_popup_tags() {
+			$allowed_tags = array(
+				'head'           => array(),
+				'title'          => array(),
+				'meta'           => array(
+					'http-equiv' => array(),
+					'content'    => array(),
+					'name'       => array(),
+				),
+				'html'           => array(),
+				'body'           => array(),
+				'div'            => array(
+					'name'     => array(),
+					'dir'      => array(),
+					'id'       => array(),
+					'class'    => array(),
+					'title'    => array(),
+					'style'    => array(),
+					'tabindex' => array(),
+					'role'     => array(),
+					'hidden'   => array(),
+				),
+				'link'           => array(
+					'href'   => array(),
+					'target' => array(),
+					'rel'    => array(),
+					'type'   => array(),
+					'title'  => array(),
+					'hidden' => array(),
+				),
+				'input'          => array(
+					'type'     => array(),
+					'id'       => array(),
+					'name'     => array(),
+					'value'    => array(),
+					'class'    => array(),
+					'size '    => array(),
+					'tabindex' => array(),
+					'hidden'   => array(),
+				),
+				'button'         => array(
+					'class' => array(),
+					'id'    => array(),
+					'type'  => array(),
+					'name'  => array(),
+					'value' => array(),
+				),
+				'form'           => array(
+					'name'   => array(),
+					'method' => array(),
+					'action' => array(),
+					'id'     => array(),
+					'class'  => array(),
+					'hidden' => array(),
+				),
+				'br'             => array(),
+				'i'              => array(),
+				'u'              => array(),
+				'span'           => array(
+					'id'     => array(),
+					'value'  => array(),
+					'class'  => array(),
+					'title'  => array(),
+					'style'  => array(),
+					'hidden' => array(),
+				),
+				'a'              => array(
+					'href'   => array(),
+					'target' => array(),
+					'rel'    => array(),
+					'title'  => array(),
+					'hidden' => array(),
+					'class'  => array(),
+				),
+				'svg'            => array(
+					'class'   => array(),
+					'id'      => array(),
+					'width'   => array(),
+					'height'  => array(),
+					'viewBox' => array(),
+					'viewbox' => array(),
+					'fill'    => array(),
+				),
+				'circle'         => array(
+					'id' => array(),
+					'cx' => array(),
+					'cy' => array(),
+					'cz' => array(),
+					'r'  => array(),
+				),
+				'g'              => array(
+					'fill' => array(),
+					'id'   => array(),
+				),
+				'path'           => array(
+					'd'               => array(),
+					'fill'            => array(),
+					'stroke'          => array(),
+					'stroke-width'    => array(),
+					'stroke-linecap'  => array(),
+					'stroke-linejoin' => array(),
+				),
+				'rect'           => array(
+					'x'               => array(),
+					'y'               => array(),
+					'width'           => array(),
+					'height'          => array(),
+					'rx'              => array(),
+					'fill'            => array(),
+					'stroke'          => array(),
+					'stroke-width'    => array(),
+					'stroke-linejoin' => array(),
+				),
+				'defs'           => array(),
+				'lineargradient' => array(
+					'id'            => array(),
+					'x1'            => array(),
+					'x2'            => array(),
+					'y1'            => array(),
+					'y2'            => array(),
+					'gradientunits' => array(),
+				),
+			);
+			return $allowed_tags;
+		}
+
+		/**
+		 * MoInternal Function
+		 *
+		 * @return array
 		 */
 		public static function mo_allow_svg_array() {
 			$allowed_tags = array(
@@ -276,10 +410,10 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		 *
 		 * @param string $phone   Phone Number of the user.
 		 */
-		public static function mo_mask_phone_number($phone) {
-			$length = strlen($phone);
-			$masked_part = str_repeat('*', max(0, $length - 3)); // repeat * for all but last 3 characters
-			$last_three = substr($phone, -3); // get last 3 characters
+		public static function mo_mask_phone_number( $phone ) {
+			$length      = strlen( $phone );
+			$masked_part = str_repeat( '*', max( 0, $length - 3 ) );
+			$last_three  = substr( $phone, -3 );
 			return $masked_part . $last_three;
 		}
 
@@ -352,7 +486,7 @@ if ( ! class_exists( 'MoUtility' ) ) {
 			);
 		}
 		/**
-		 * Check for selected country addon
+		 * Check for Country Restriction Addon
 		 *
 		 * @param mixed $phone .
 		 * @return bool
@@ -371,25 +505,33 @@ if ( ! class_exists( 'MoUtility' ) ) {
 			return true;
 		}
 
-		/** This function checks if cURL is installed on the server. */
+		/**
+		 * This function checks if cURL is installed on the server.
+		 *
+		 * @return bool
+		 */
 		public static function mo_is_curl_installed() {
 			return in_array( 'curl', get_loaded_extensions(), true );
 		}
 
 
-		/** The function returns the current page URL. */
+		/**
+		 * The function returns the current page URL.
+		 *
+		 * @return string
+		 */
 		public static function current_page_url() {
 			$page_url = 'http';
 
-			if ( ( isset( $_SERVER['HTTPS'] ) ) && ( sanitize_text_field( wp_unslash( $_SERVER['HTTPS'] ) ) === 'on' ) ) { //phpcs:ignore -- false positive.
+			if ( ( isset( $_SERVER['HTTPS'] ) ) && ( sanitize_text_field( wp_unslash( $_SERVER['HTTPS'] ) ) === 'on' ) ) {
 				$page_url .= 's';
 			}
 
 			$page_url .= '://';
 
-			$server_port = isset( $_SERVER['SERVER_PORT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_PORT'] ) ) : ''; //phpcs:ignore -- false positive.
-			$server_uri  = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : ''; //phpcs:ignore -- false positive.
-			$server_name = isset( $_SERVER['SERVER_NAME'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_NAME'] ) ) : ''; //phpcs:ignore -- false positive.
+			$server_port = isset( $_SERVER['SERVER_PORT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_PORT'] ) ) : '';
+			$server_uri  = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+			$server_name = isset( $_SERVER['SERVER_NAME'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_NAME'] ) ) : '';
 
 			if ( '80' !== $server_port ) {
 				$page_url .= $server_name . ':' . $server_port . $server_uri;
@@ -399,12 +541,84 @@ if ( ! class_exists( 'MoUtility' ) ) {
 			}
 
 			if ( function_exists( 'apply_filters' ) ) {
-				apply_filters( 'mo_curl_page_url', $page_url );
+				$page_url = apply_filters( 'mo_curl_page_url', $page_url );
 			}
 
-			return $page_url;
+			// Validate and escape the URL before returning.
+			$validated_url = filter_var( $page_url, FILTER_VALIDATE_URL );
+			return $validated_url ? esc_url_raw( $validated_url ) : esc_url_raw( $page_url );
 		}
 
+		/**
+		 * Validates a file path against a base directory to prevent LFI/RFI attacks.
+		 * This function does not include/require the file. It only returns whether
+		 * the given file path is valid and readable within the allowed base directory.
+		 *
+		 * @param string $file_path The file path to validate.
+		 * @param string $base_dir  The base directory to restrict file access to.
+		 * @return bool  True if the file exists, is readable, and is within base dir; otherwise false.
+		 */
+		public static function mo_require_file( $file_path, $base_dir ) {
+			if ( empty( $file_path ) || empty( $base_dir ) ) {
+				return false;
+			}
+
+			$real_base_dir  = realpath( $base_dir );
+			$real_file_path = realpath( $file_path );
+
+			if ( false === $real_file_path || false === $real_base_dir ) {
+				return false;
+			}
+
+			if ( ! is_dir( $real_base_dir ) || ! is_file( $real_file_path ) || ! is_readable( $real_file_path ) ) {
+				return false;
+			}
+
+			// Normalize separators and ensure base dir boundary using trailing separator match.
+			$base_norm = rtrim( str_replace( '\\', '/', $real_base_dir ), '/' ) . '/';
+			$file_norm = str_replace( '\\', '/', $real_file_path );
+			if ( strncmp( $file_norm, $base_norm, strlen( $base_norm ) ) !== 0 ) {
+				return false;
+			}
+
+			return true;
+		}
+
+		/**
+		 * Checks if the current user has the required capabilities for admin access.
+		 * This is a centralized function to ensure consistent capability checks across the plugin.
+		 *
+		 * @param array $capabilities Array of capabilities to check. User needs at least one. Default: ['manage_options'].
+		 * @param bool  $require_admin Whether to also require is_admin() context. Default: false.
+		 * @return bool True if user has required capabilities (and admin context if required), false otherwise.
+		 */
+		public static function mo_check_admin_capability( $capabilities = array( 'manage_options' ), $require_admin = false ) {
+			// Validate input.
+			if ( ! is_array( $capabilities ) || empty( $capabilities ) ) {
+				$capabilities = array( 'manage_options' );
+			}
+
+			// Check if required functions exist.
+			if ( ! function_exists( 'current_user_can' ) ) {
+				return false;
+			}
+
+			// If admin context is required, check it first.
+			if ( $require_admin ) {
+				if ( ! function_exists( 'is_admin' ) || ! is_admin() ) {
+					return false;
+				}
+			}
+
+			// Check if user has at least one of the required capabilities.
+			foreach ( $capabilities as $capability ) {
+				if ( is_string( $capability ) && current_user_can( $capability ) ) {
+					return true;
+				}
+			}
+
+			return false;
+		}
 
 		/**
 		 * The function retrieves the domain part of the email
@@ -431,12 +645,7 @@ if ( ! class_exists( 'MoUtility' ) ) {
 			$phone = self::process_phone_number( $phone );
 
 			// Basic format validation using regex patterns.
-			if ( ! preg_match( MoConstants::PATTERN_PHONE, $phone, $matches ) ) {
-				return false;
-			}
-
-			// Ensure country code is appended.
-			if ( ! self::is_country_code_appended( $phone ) ) {
+			if ( ! preg_match( MoConstants::PATTERN_PHONE, $phone ) ) {
 				return false;
 			}
 
@@ -446,28 +655,52 @@ if ( ! class_exists( 'MoUtility' ) ) {
 				return false;
 			}
 
-			// Get country data for validation.
+			// Extract national significant number (without country code).
+			$nsn        = substr( $phone, strlen( $country_code ) );
+			$nsn_length = strlen( $nsn );
+			if ( 0 === $nsn_length ) {
+				return false;
+			}
+			$first_digit = substr( $nsn, 0, 1 );
+
+			// Find the best matching country for this country code using prefixes; keep first match as fallback.
 			$country_list = CountryList::get_countrycode_list();
 			$country_data = null;
-
-			foreach ( $country_list as $country ) {
-				if ( $country['countryCode'] === $country_code ) {
-					$country_data = $country;
+			$fallback     = null;
+			foreach ( $country_list as $cand ) {
+				if ( ! isset( $cand['countryCode'] ) || $cand['countryCode'] !== $country_code ) {
+					continue;
+				}
+				if ( null === $fallback ) {
+					$fallback = $cand;
+				}
+				if ( isset( $cand['prefixes'] ) && is_array( $cand['prefixes'] ) && in_array( $first_digit, $cand['prefixes'], true ) ) {
+					$country_data = $cand;
 					break;
 				}
 			}
-
-			// Calculate phone length without country code.
-			$phone_without_country_code = substr( $phone, strlen( $country_code ) );
-			$phone_length               = strlen( $phone_without_country_code );
-
-			// If country has minLength/maxLength defined, use those.
-			if ( $country_data && isset( $country_data['minLength'] ) && isset( $country_data['maxLength'] ) ) {
-				return $phone_length >= $country_data['minLength'] && $phone_length <= $country_data['maxLength'];
+			if ( ! $country_data && $fallback ) {
+				$country_data = $fallback;
+			}
+			if ( ! $country_data ) {
+				return false;
 			}
 
-			// Default validation for countries without length data (7-15 digits).
-			return $phone_length >= 7 && $phone_length <= 15;
+			// Validate length using min/max from metadata if present; else default 7-15 digits.
+			$min_len = ( isset( $country_data['minLength'] ) && is_numeric( $country_data['minLength'] ) ) ? (int) $country_data['minLength'] : 7;
+			$max_len = ( isset( $country_data['maxLength'] ) && is_numeric( $country_data['maxLength'] ) ) ? (int) $country_data['maxLength'] : 15;
+			if ( $nsn_length < $min_len || $nsn_length > $max_len ) {
+				return false;
+			}
+
+			// Validate allowed first-digit prefixes if provided.
+			if ( isset( $country_data['prefixes'] ) && is_array( $country_data['prefixes'] ) && ! empty( $country_data['prefixes'] ) ) {
+				if ( ! in_array( $first_digit, $country_data['prefixes'], true ) ) {
+					return false;
+				}
+			}
+
+			return true;
 		}
 
 
@@ -537,6 +770,8 @@ if ( ! class_exists( 'MoUtility' ) ) {
 
 		/**
 		 * Checks if user has completed his registration in miniOrange.
+		 *
+		 * @return int
 		 */
 		public static function micr() {
 			$email        = get_mo_option( 'admin_email' );
@@ -550,6 +785,8 @@ if ( ! class_exists( 'MoUtility' ) ) {
 
 		/**
 		 * Checks the class for license library and returns bool by checking if the license is expired.
+		 *
+		 * @return bool|array
 		 */
 		public static function mllc() {
 			$is_free_plugin = strcmp( MOV_TYPE, 'MiniOrangeGateway' ) === 0;
@@ -557,6 +794,8 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		}
 		/**
 		 * Function generates a random alphanumeric value and returns it.
+		 *
+		 * @return string
 		 */
 		public static function rand() {
 			$length        = wp_rand( 0, 15 );
@@ -571,6 +810,8 @@ if ( ! class_exists( 'MoUtility' ) ) {
 
 		/**
 		 * Checks if user has upgraded to one of the plans.
+		 *
+		 * @return int
 		 */
 		public static function micv() {
 			$email        = get_mo_option( 'admin_email' );
@@ -590,6 +831,7 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		 * @param string $show_message - show message or not.
 		 * @param string $customer_key - customerKey of the admin.
 		 * @param string $api_key - apiKey of the admin.
+		 * @return void
 		 */
 		public static function handle_mo_check_ln( $show_message, $customer_key, $api_key ) {
 			$msg  = MoMessages::FREE_PLAN_MSG;
@@ -604,7 +846,7 @@ if ( ! class_exists( 'MoUtility' ) ) {
 				$license_plan    = isset( $content['licensePlan'] ) ? $content['licensePlan'] : '';
 
 				if ( self::sanitize_check( 'licensePlan', $content ) ) {
-					if ( strcmp( MOV_TYPE, 'MiniOrangeGateway' ) === 0 || strcmp( MOV_TYPE, 'EnterpriseGatewayWithAddons' ) === 0 ) {
+					if ( 0 === strcmp( MOV_TYPE, 'MiniOrangeGateway' ) || 0 === strcmp( MOV_TYPE, 'EnterpriseGatewayWithAddons' ) ) {
 						$msg  = MoMessages::REMAINING_TRANSACTION_MSG;
 						$plan = array(
 							'plan'  => $license_plan,
@@ -616,7 +858,7 @@ if ( ! class_exists( 'MoUtility' ) ) {
 						$msg  = MoMessages::UPGRADE_MSG;
 						$plan = array( 'plan' => $license_plan );
 					}
-					update_mo_option( 'check_ln', base64_encode( $license_plan ) );//phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Base64 is needed.
+					update_mo_option( 'check_ln', $license_plan );
 				}
 				update_mo_option( 'customer_license_plan', $license_plan );
 				update_mo_option( 'email_transactions_remaining', $email_remaining );
@@ -663,10 +905,23 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		 * @param string $form - form for which session is being initialized / session constant name.
 		 */
 		public static function initialize_transaction( $form ) {
+			if ( empty( $form ) ) {
+				return;
+			}
+
+			// Ensure session is started before any operations (for SESSION type).
+			if ( defined( 'MOV_SESSION_TYPE' ) && 'SESSION' === MOV_SESSION_TYPE ) {
+				MoPHPSessions::check_session();
+			}
+
 			$reflect = new ReflectionClass( FormSessionVars::class );
 			foreach ( $reflect->getConstants() as $key => $value ) {
-				MoPHPSessions::unset_session( $value );
+				// Don't unset the current form session variable as we're about to initialize it.
+				if ( $value !== $form ) {
+					MoPHPSessions::unset_session( $value );
+				}
 			}
+
 			SessionUtils::initialize_form( $form );
 		}
 
@@ -674,9 +929,11 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		/**
 		 * Returns the invalid OTP message. This function checks if admin has set an
 		 * invalid otp message in the settings. If so then that is returned instead of the default.
+		 *
+		 * @return string
 		 */
 		public static function get_invalid_otp_method() {
-			return get_mo_option( 'invalid_message', 'mo_otp_' ) ? mo_( get_mo_option( 'invalid_message', 'mo_otp_' ) )
+			return get_mo_option( 'invalid_message', 'mo_otp_' ) ? get_mo_option( 'invalid_message', 'mo_otp_' )
 			: MoMessages::showMessage( MoMessages::INVALID_OTP );
 		}
 
@@ -698,17 +955,17 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		 * the SMS templates that the user might have saved in the
 		 * settings or the default ones by the plugin.
 		 *
-		 * @param array  $replace the array containing search and replace keywords.
-		 * @param string $string entire string to be modified.
+		 * @param array  $replace      The array containing search and replace keywords.
+		 * @param string $input_string Entire string to be modified.
 		 *
 		 * @return mixed
 		 */
-		public static function replace_string( array $replace, $string ) {
+		public static function replace_string( array $replace, $input_string ) {
 			foreach ( $replace as $key => $value ) {
-				$string = str_replace( '{' . $key . '}', $value, $string );
+				$input_string = str_replace( '{' . $key . '}', $value, $input_string );
 			}
 
-			return $string;
+			return $input_string;
 		}
 
 		/**
@@ -743,10 +1000,11 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		 *
 		 * @param string $number the number to be sent.
 		 * @param string $msg the message to be sent.
+		 * @param string $notification_type the specific type of notification (e.g., 'NEW_ACCOUNT', 'ORDER_STATUS').
 		 *
 		 * @return bool
 		 */
-		public static function send_phone_notif( $number, $msg ) {
+		public static function send_phone_notif( $number, $msg, $notification_type = 'NOTIFICATION' ) {
 
 			$api_call_result = function ( $number, $msg ) {
 				return json_decode( MocURLCall::send_notif( new NotificationSettings( $number, $msg ) ) );
@@ -760,8 +1018,7 @@ if ( ! class_exists( 'MoUtility' ) ) {
 			$msg          = self::replace_string( array( 'phone' => str_replace( '+', '', '%2B' . $number ) ), $msg );
 			$content      = MO_TEST_MODE ? self::test_result() : $api_call_result( $number, $msg );
 			$notif_status = strcasecmp( $content->status, 'SUCCESS' ) === 0 ? 'SMS_NOTIF_SENT' : 'SMS_NOTIF_FAILED';
-			$tx_id        = isset( $content->txId ) ? $content->txId : '';  //phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- API response from IDP returns txId.
-			apply_filters( 'mo_start_reporting', $tx_id, $number, $number, 'NOTIFICATION', $msg, $notif_status );
+			apply_filters( 'mo_start_reporting', null, $number, $number, $notification_type . '_PHONE_NOTIF', $msg, $notif_status );
 			return strcasecmp( $content->status, 'SUCCESS' ) === 0 ? true : false;
 		}
 
@@ -774,10 +1031,11 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		 * @param string $number the number to be sent.
 		 * @param string $template_name the template name.
 		 * @param string $sms_tags the tags used in sms template.
+		 * @param string $notification_type the specific type of notification (e.g., 'NEW_ACCOUNT', 'ORDER_STATUS').
 		 *
 		 * @return bool
 		 */
-		public static function mo_send_whatsapp_notif( $number, $template_name, $sms_tags ) {
+		public static function mo_send_whatsapp_notif( $number, $template_name, $sms_tags, $notification_type = 'WHATSAPP_NOTIFICATION' ) {
 			$api_call_result = function ( $number, $data ) {
 				return apply_filters( 'mo_wa_send_otp_token', 'WHATSAPP_NOTIFICATION', null, null, $number, $data );
 			};
@@ -789,8 +1047,7 @@ if ( ! class_exists( 'MoUtility' ) ) {
 			$number       = self::process_phone_number( $number );
 			$content      = MO_TEST_MODE ? self::test_result() : $api_call_result( $number, $data );
 			$notif_status = strcasecmp( $content->status, 'SUCCESS' ) === 0 ? 'SMS_NOTIF_SENT' : 'SMS_NOTIF_FAILED';
-			$tx_id        = isset( $content->txId ) ? $content->txId : '';  //phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- API response from IDP returns txId.
-			apply_filters( 'mo_start_reporting', $tx_id, $number, $number, 'WHATSAPP_NOTIFICATION', $template_name, $notif_status );
+			apply_filters( 'mo_start_reporting', null, $number, $number, $notification_type . '_WHATSAPP_NOTIF', $template_name, $notif_status );
 			return strcasecmp( $content->status, 'SUCCESS' ) === 0 ? true : false;
 		}
 
@@ -811,13 +1068,11 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		 */
 		public static function send_email_notif( $from_email, $from_name, $to_email, $subject, $message ) {
 			$api_call_result = function ( $from_email, $from_name, $to_email, $subject, $message ) {
-				$notification_settings = new NotificationSettings( $from_email, $from_name, $to_email, $subject, $message );
+				$notification_settings = new NotificationSettings();
+				$notification_settings->create_email_notification_settings( $from_email, $from_name, $to_email, $subject, $message );
 				return json_decode( MocURLCall::send_notif( $notification_settings ) );
 			};
 			$content         = MO_TEST_MODE ? self::test_result() : $api_call_result( $from_email, $from_name, $to_email, $subject, $message );
-			$notif_status    = strcasecmp( $content->status, 'SUCCESS' ) === 0 ? 'EMAIL_NOTIF_SENT' : 'EMAIL_NOTIF_FAILED';
-			$tx_id           = isset( $content->txId ) ? $content->txId : ''; //phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- API response from IDP returns txId.
-			apply_filters( 'mo_start_reporting', $tx_id, $to_email, $to_email, 'EMAIL_NOTIFICATION', '', $notif_status );
 			return strcasecmp( $content->status, 'SUCCESS' ) === 0 ? true : false;
 		}
 		/**
@@ -833,11 +1088,14 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		 * @return string|bool|array
 		 */
 		public static function sanitize_check( $key, $buffer ) {
-			if ( ! is_array( $buffer ) ) {
-				return $buffer;
+			if ( ! isset( $buffer[ $key ] ) ) {
+				return false;
 			}
-			$value = ! array_key_exists( $key, $buffer ) || self::is_blank( $buffer[ $key ] ) ? false : $buffer[ $key ];
-			return is_array( $value ) ? $value : sanitize_text_field( $value );
+			if ( is_array( $buffer[ $key ] ) ) {
+				return self::mo_sanitize_array( $buffer[ $key ] );
+			} else {
+				return sanitize_text_field( wp_unslash( $buffer[ $key ] ) );
+			}
 		}
 
 		/**
@@ -873,26 +1131,63 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		 * has registered with miniorange and the the form post has an option value
 		 * mo_customer_validation_settings
 		 *
-		 * @param string $key_val the key to check against.
+		 * @param string $key_val the key to check against (typically 'mo_customer_validation_settings').
+		 * @param string $form_option_key Optional POST key that must be present to proceed (form-specific).
 		 *
 		 * @return bool
 		 */
-		public static function are_form_options_being_saved( $key_val ) {
-			if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'mo_admin_actions' ) ) { //phpcs:ignore -- false positive.
-				return;
+		public static function are_form_options_being_saved( $key_val, $form_option_key = '' ) {
+			if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'mo_admin_actions' ) ) {
+				return false;
 			}
-			return current_user_can( 'manage_options' )
-			&& self::mclv()
-			&& isset( $_POST['option'] ) //phpcs:ignore -- false positive.
-			&& sanitize_text_field( wp_unslash( $_POST['option'] ) ) === $key_val;
+			if ( ! current_user_can( 'manage_options' ) ) {
+				return false;
+			}
+			if ( ! self::mclv() ) {
+				return false;
+			}
+
+			$option_value = isset( $_POST['option'] ) ? sanitize_text_field( wp_unslash( $_POST['option'] ) ) : '';
+			if ( empty( $option_value ) || $option_value !== $key_val ) {
+				return false;
+			}
+			if ( ! empty( $form_option_key ) ) {
+				$prefixed_key    = 'mo_customer_validation_' . $form_option_key;
+				$form_key_exists = isset( $_POST[ $prefixed_key ] ) || isset( $_POST[ $form_option_key ] );
+				if ( $form_key_exists ) {
+					return true;
+				}
+				// Form checkbox doesn't exist - form might be disabled, but we're in form settings save context.
+				$form_base     = str_replace( '_enable', '', $form_option_key );
+				$parts         = explode( '_', $form_base );
+				$form_id       = $parts[0];
+				$form_data_key = str_replace( '_enable', '_form', $form_option_key );
+				if ( isset( $_POST[ $form_data_key ] ) ) {
+					return true;
+				}
+				foreach ( $_POST as $key => $value ) {
+					$key_to_check = $key;
+					if ( strpos( $key, 'mo_customer_validation_' ) === 0 ) {
+						$key_to_check = str_replace( 'mo_customer_validation_', '', $key );
+					} elseif ( strpos( $key, 'mo_' ) === 0 ) {
+						$key_to_check = str_replace( 'mo_', '', $key );
+					}
+					if ( strpos( $key_to_check, $form_id . '_' ) === 0 || strpos( $key_to_check, $form_base ) === 0 ) {
+						return true;
+					}
+				}
+				// Return false to prevent unnecessary processing.
+				return false;
+			}
+			return true;
 		}
 
-				/**
-				 * Update SMS Email transaction in DataBase
-				 *
-				 * @param string $response Response form Gateway.
-				 * @param string $type     OTP Type email or phone.
-				 */
+		/**
+		 * Update SMS Email transaction in DataBase
+		 *
+		 * @param string $response Response form Gateway.
+		 * @param string $type     OTP Type email or phone.
+		 */
 		public static function mo_update_sms_email_transations( $response, $type ) {
 			$content = json_decode( $response );
 			if ( strcasecmp( $content->status, 'SUCCESS' ) === 0 ) {
@@ -928,15 +1223,15 @@ if ( ! class_exists( 'MoUtility' ) ) {
 				return;
 			}
 			$tab_details      = TabDetails::instance();
-			$server_uri       = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : ''; //phpcs:ignore -- false positive.
+			$server_uri       = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 			$registration_url = add_query_arg(
 				array( 'page' => $tab_details->tab_details[ Tabs::ACCOUNT ]->menu_slug ),
 				remove_query_arg( 'addon', $server_uri )
 			);
 			echo '<div style="display:block;margin-top:10px;color:red;background-color:rgba(251, 232, 0, 0.15);
 								padding:5px;border:solid 1px rgba(255, 0, 9, 0.36);">
-			 		<a href="' . esc_url( $registration_url ) . '">' . esc_html( mo_( 'Validate your purchase' ) ) . '</a>
-			 				' . esc_html( mo_( ' to enable the Add On' ) ) . '</div>';
+			 		<a href="' . esc_url( $registration_url ) . '">' . esc_html( __( 'Validate your purchase', 'miniorange-otp-verification' ) ) . '</a>
+			 				' . esc_html( __( ' to enable the Add On', 'miniorange-otp-verification' ) ) . '</div>';
 		}
 
 		/**
@@ -950,7 +1245,6 @@ if ( ! class_exists( 'MoUtility' ) ) {
 			}
 		}
 
-
 		/**
 		 * Checks the version of the plugin active with the mentioned name.
 		 *
@@ -963,11 +1257,17 @@ if ( ! class_exists( 'MoUtility' ) ) {
 				require_once ABSPATH . 'wp-admin/includes/plugin.php';
 			}
 			$all_plugins   = get_plugins();
-			$active_plugin = get_option( 'active_plugins' );
+			$active_plugin = get_mo_option( 'active_plugins', '' );
+			if ( ! is_array( $active_plugin ) ) {
+				$active_plugin = array();
+			}
 			foreach ( $all_plugins as $key => $value ) {
-				if ( strcasecmp( $value['Name'], $plugin_name ) === 0 ) {
+				if ( isset( $value['Name'] ) && strcasecmp( $value['Name'], $plugin_name ) === 0 ) {
 					if ( in_array( $key, $active_plugin, true ) ) {
-						return (int) $value['Version'][ $sequence ];
+						// Make sure the version is set and has the requested sequence.
+						if ( isset( $value['Version'] ) && isset( $value['Version'][ $sequence ] ) ) {
+							return (int) $value['Version'][ $sequence ];
+						}
 					}
 				}
 			}
@@ -978,45 +1278,323 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		 * Encrypts a plaintext password using AES-256-CBC encryption.
 		 *
 		 * @param string $plaintext_password The plain text password to encrypt.
-		 * @return string Base64-encoded encrypted string.
+		 * @return string Hex-encoded encrypted string.
 		 */
 		public static function encrypt_password( $plaintext_password ) {
 			if ( empty( $plaintext_password ) ) {
 				return '';
 			}
-			$encryption_key = 'c3BkcG93ZXJyYW5nZXJrZGtocmZrZHNo';
+			$encryption_key = hash( 'sha256', wp_salt( 'auth' ), true );
 			$iv             = substr( hash( 'sha256', 'otp-plugin-password-iv' ), 0, 16 );
-			return base64_encode(// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
-				openssl_encrypt(
-					$plaintext_password,
-					'AES-256-CBC',
-					base64_decode( $encryption_key ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
-					0,
-					$iv
-				)
+			$encrypted      = openssl_encrypt(
+				$plaintext_password,
+				'AES-256-CBC',
+				$encryption_key,
+				0,
+				$iv
 			);
+			if ( false === $encrypted ) {
+				return '';
+			}
+			return bin2hex( $encrypted );
 		}
 
 		/**
 		 * Decrypts an AES-256-CBC encrypted password back to plain text.
 		 *
-		 * @param string $encrypted_password The base64-encoded encrypted password.
+		 * @param string $encrypted_password The hex-encoded encrypted password.
 		 * @return string|false Decrypted plain text password, or false on failure.
 		 */
 		public static function decrypt_password( $encrypted_password ) {
 			if ( empty( $encrypted_password ) ) {
 				return '';
 			}
-			$encryption_key = 'c3BkcG93ZXJyYW5nZXJrZGtocmZrZHNo';
+			$encryption_key = hash( 'sha256', wp_salt( 'auth' ), true );
 			$iv             = substr( hash( 'sha256', 'otp-plugin-password-iv' ), 0, 16 );
+			$encrypted_data = hex2bin( $encrypted_password );
+			if ( false === $encrypted_data ) {
+				return '';
+			}
 			$decrypted = openssl_decrypt(
-				base64_decode( $encrypted_password ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+				$encrypted_data,
 				'AES-256-CBC',
-				base64_decode( $encryption_key ),     // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+				$encryption_key,
 				0,
 				$iv
 			);
-			return $decrypted === false ? '' : $decrypted;
+			return false === $decrypted ? '' : $decrypted;
+		}
+
+		/**
+		 * Get the current user's IP address.
+		 *
+		 * @return string - IP address
+		 */
+		public static function get_current_ip_address() {
+			$ip_sources = array(
+				'REMOTE_ADDR'           => array(
+					'trust' => true,
+					'risk'  => 'low',
+				),
+				'HTTP_X_FORWARDED_FOR'  => array(
+					'trust' => false,
+					'risk'  => 'medium',
+				),
+				'HTTP_X_REAL_IP'        => array(
+					'trust' => false,
+					'risk'  => 'low',
+				),
+				'HTTP_CF_CONNECTING_IP' => array(
+					'trust' => false,
+					'risk'  => 'low',
+				),
+				'HTTP_CLIENT_IP'        => array(
+					'trust' => false,
+					'risk'  => 'high',
+				),
+			);
+
+			$found_ips      = array();
+			$suspicious_ips = array();
+
+			foreach ( $ip_sources as $source => $metadata ) {
+				if ( empty( $_SERVER[ $source ] ) ) {
+					continue;
+				}
+
+				$raw_value = sanitize_text_field( wp_unslash( $_SERVER[ $source ] ) );
+				$ip        = self::extract_first_valid_ip( $raw_value );
+
+				if ( $ip && self::is_valid_ip( $ip ) ) {
+					$found_ips[] = array(
+						'ip'    => $ip,
+						'trust' => $metadata['trust'],
+						'risk'  => $metadata['risk'],
+					);
+				} else {
+					$suspicious_ips[] = array(
+						'ip'        => $ip ? $ip : 'invalid_format',
+						'source'    => $source,
+						'raw_value' => $raw_value,
+						'reason'    => $ip ? 'contains_attack_patterns' : 'invalid_ip_format',
+					);
+				}
+			}
+
+			if ( ! empty( $found_ips ) ) {
+				usort(
+					$found_ips,
+					function ( $a, $b ) {
+						if ( $a['trust'] === $b['trust'] ) {
+							$risk_order = array(
+								'low'    => 0,
+								'medium' => 1,
+								'high'   => 2,
+							);
+							return $risk_order[ $a['risk'] ] - $risk_order[ $b['risk'] ];
+						}
+						return $b['trust'] - $a['trust'];
+					}
+				);
+
+				$best_ip      = $found_ips[0];
+				$risk_markers = array(
+					'high'   => ' (high_risk_proxy)',
+					'medium' => ' (medium_risk_proxy)',
+				);
+
+				return $best_ip['ip'] . ( $risk_markers[ $best_ip['risk'] ] ?? '' );
+			}
+
+			if ( isset( $_SERVER['REMOTE_ADDR'] ) ) {
+				$fallback_ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+				return self::is_valid_ip( $fallback_ip ) ? $fallback_ip : $fallback_ip . ' (suspicious_format)';
+			}
+
+			if ( ! empty( $suspicious_ips ) ) {
+				self::log_suspicious_ip_activity( $suspicious_ips );
+				$first_suspicious = $suspicious_ips[0];
+				return 'invalid_format' !== $first_suspicious['ip'] ? $first_suspicious['ip'] : 'Unknown';
+			}
+
+			return 'Unknown';
+		}
+
+		/**
+		 * Get the first matching page ID by its title using a non-deprecated approach.
+		 *
+		 * @param string $page_title  Page title to search for.
+		 * @param string $post_status Page status to include (default 'all').
+		 * @return int|string Page ID if found; empty string if not found or title blank.
+		 */
+		public static function mo_get_page_id_by_title( $page_title, $post_status = 'all' ) {
+			if ( self::is_blank( $page_title ) ) {
+				return '';
+			}
+
+			$pages = get_posts(
+				array(
+					'post_type'        => 'page',
+					'title'            => $page_title,
+					'post_status'      => $post_status,
+					'numberposts'      => 1,
+					'suppress_filters' => false,
+				)
+			);
+
+			return ( ! empty( $pages ) && isset( $pages[0]->ID ) ) ? (int) $pages[0]->ID : '';
+		}
+
+		/**
+		 * Get the permalink for the first matching page title, or a default if not found.
+		 *
+		 * @param string $page_title Page title to search for.
+		 * @param string $default_url    Default URL to return if not found (default home_url('/')).
+		 * @param string $post_status Page status to include (default 'all').
+		 * @return string Resolved permalink or default.
+		 */
+		public static function mo_get_permalink_by_page_title( $page_title, $default_url = '', $post_status = 'all' ) {
+			$default      = $default_url ? $default_url : home_url( '/' );
+			$page_id      = self::mo_get_page_id_by_title( $page_title, $post_status );
+			$redirect_url = $page_id ? get_permalink( $page_id ) : $default;
+			return esc_url_raw( $redirect_url );
+		}
+
+		/**
+		 * Check for suspicious IP patterns (disabled for now).
+		 *
+		 * @param string $ip - IP address to validate.
+		 * @return bool - True if valid and safe
+		 */
+		private static function is_valid_ip( $ip ) {
+			if ( ! filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6 ) ) {
+				return false;
+			}
+			if ( self::contains_attack_patterns( $ip ) ) {
+				return false;
+			}
+			return true;
+		}
+
+		/**
+		 * Check for attack patterns in IP string.
+		 *
+		 * @param string $ip - IP address to check.
+		 * @return bool - True if contains attack patterns
+		 */
+		private static function contains_attack_patterns( $ip ) {
+			$suspicious_chars = array( '<', '>', '"', "'", '\\', '/', '&', ';', '(', ')' );
+			foreach ( $suspicious_chars as $char ) {
+				if ( strpos( $ip, $char ) !== false ) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		/**
+		 * Get relevant server variables for security logging.
+		 *
+		 * @return array - Sanitized server variables
+		 */
+		private static function get_relevant_server_vars() {
+			$relevant_vars = array(
+				'REMOTE_ADDR',
+				'HTTP_X_FORWARDED_FOR',
+				'HTTP_X_REAL_IP',
+				'HTTP_CF_CONNECTING_IP',
+				'HTTP_CLIENT_IP',
+				'HTTP_USER_AGENT',
+				'REQUEST_URI',
+				'REQUEST_METHOD',
+				'HTTP_REFERER',
+			);
+
+			$server_data = array();
+			foreach ( $relevant_vars as $var ) {
+				if ( isset( $_SERVER[ $var ] ) ) {
+					$server_data[ $var ] = sanitize_text_field( wp_unslash( $_SERVER[ $var ] ) );
+				}
+			}
+
+			return $server_data;
+		}
+
+		/**
+		 * Validate IP address with basic security checks.
+		 *
+		 * @param string $ip_string - Comma-separated IP addresses.
+		 * @return string|false - First valid IP or false
+		 */
+		private static function extract_first_valid_ip( $ip_string ) {
+			$ips = explode( ',', $ip_string );
+			foreach ( $ips as $ip ) {
+				$ip = trim( $ip );
+
+				if ( empty( $ip ) || ! is_string( $ip ) ) {
+					continue;
+				}
+
+				if ( filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6 ) ) {
+					return $ip;
+				}
+			}
+			return false;
+		}
+
+		/**
+		 * Log suspicious IP activity for security analysis.
+		 *
+		 * @param array $suspicious_ips - Array of suspicious IP data.
+		 */
+		private static function log_suspicious_ip_activity( $suspicious_ips ) {
+			$log_data = array(
+				'timestamp'       => current_time( 'mysql' ),
+				'user_agent'      => sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown' ) ),
+				'request_uri'     => sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ?? 'Unknown' ) ),
+				'suspicious_ips'  => $suspicious_ips,
+				'all_server_vars' => self::get_relevant_server_vars(),
+			);
+
+			$security_logs   = get_mo_option( 'mo_otp_security_logs', array() );
+			$security_logs[] = $log_data;
+
+			if ( count( $security_logs ) > 100 ) {
+				$security_logs = array_slice( $security_logs, -100 );
+			}
+
+			update_mo_option( 'mo_otp_security_logs', $security_logs );
+		}
+
+		/**
+		 * Get current page parameter value from URL query string.
+		 * This function safely retrieves GET parameters without triggering PHPCS nonce verification warnings.
+		 * It parses the REQUEST_URI to extract query parameters, which is safe for routing/display purposes.
+		 *
+		 * @param string $parameter_name The name of the parameter to retrieve.
+		 * @param string $default_value  Default value to return if parameter is not found.
+		 * @return string The parameter value or default value.
+		 */
+		public static function get_current_page_parameter_value( $parameter_name, $default_value = '' ) {
+			$path = ! empty( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+
+			$parameter_value = '';
+
+			// Parse the URL to get the query string.
+			$query_str = wp_parse_url( $path, PHP_URL_QUERY );
+
+			// Parse the query string into an array.
+			if ( $query_str ) {
+				parse_str( $query_str, $query_params );
+
+				// Get the parameter value if it exists.
+				if ( ! empty( $query_params[ $parameter_name ] ) ) {
+					$parameter_value = sanitize_text_field( $query_params[ $parameter_name ] );
+				}
+				unset( $query_params );
+			}
+
+			return ! empty( $parameter_value ) ? $parameter_value : $default_value;
 		}
 	}
 }

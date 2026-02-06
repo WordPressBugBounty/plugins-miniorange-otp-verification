@@ -1,6 +1,6 @@
 <?php
 /**
- * Load admin view for Account Tab.
+ * Load admin view for Navbars.
  *
  * @package miniorange-otp-verification/views
  */
@@ -34,7 +34,7 @@ foreach ( $tab_details->tab_details as $motabs ) {
                         </svg>
 
                         <!-- Tab Title -->
-                        ' . esc_attr( $motabs->tab_name ) . '
+                        ' . esc_html( $motabs->tab_name ) . '
                     </a>';
 	}
 }
@@ -42,13 +42,13 @@ echo '
                 <div class="flex flex-col gap-mo-2 justify-center pl-mo-1.5">
                     <hr>
                     <a class="mo-sidenav-item text-center" id="LicensingPlanButton" href="' . esc_url( $license_url ) . '">
-                        ' . esc_html( mo_( 'Licensing Plans' ) ) . '
+                        ' . esc_html( __( 'Licensing Plans', 'miniorange-otp-verification' ) ) . '
                     </a>
-                    <a class="mo-sidenav-item text-center" id="faqButton" href="' . esc_url( $help_url ) . '" target="_blank">
-                        ' . esc_html( mo_( 'FAQs' ) ) . '
+                    <a class="mo-sidenav-item text-center" id="faqButton" href="' . esc_url( $help_url ) . '" target="_blank" rel="noopener noreferrer">
+                        ' . esc_html( __( 'FAQs', 'miniorange-otp-verification' ) ) . '
                     </a>
                     <a class="mo-sidenav-item text-center" style="cursor:pointer;" onClick="otpSupportOnClick(\'Hi! I am interested in using your plugin and would like to get a demo of the features and functionality. Please schedule a demo for the plugin. \');" id="demoButton">
-                        ' . esc_html( mo_( 'Need a Demo?' ) ) . '
+                        ' . esc_html( __( 'Need a Demo?', 'miniorange-otp-verification' ) ) . '
                     </a>
                 </div>
         </div>';

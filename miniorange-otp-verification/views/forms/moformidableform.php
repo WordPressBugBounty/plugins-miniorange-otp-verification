@@ -2,7 +2,7 @@
 /**
  * Load admin view for formidable form.
  *
- * @package miniorange-otp-verification/handler
+ * @package miniorange-otp-verification/views/forms
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -31,31 +31,27 @@ echo '		<div class="mo_registration_help_desc"
                             name="mo_customer_validation_frm_form_enable_type" 
                             value="' . esc_attr( $frm_form_type_email ) . '"
                             ' . ( esc_attr( $frm_form_enabled_type ) === esc_attr( $frm_form_type_email ) ? 'checked' : '' ) . ' />
-                    <strong>' . esc_html( mo_( 'Enable Email Verification' ) ) . '</strong>
+                    <strong>' . esc_html__( 'Enable Email Verification', 'miniorange-otp-verification' ) . '</strong>
                 </div>
                 <div    ' . ( esc_attr( $frm_form_enabled_type ) !== esc_attr( $frm_form_type_email ) ? 'hidden' : '' ) . '
                         class="mo_registration_help_desc_internal" 
                         id="nfe_instructions" >
-                        ' . esc_html( mo_( 'Follow the following steps to enable Email Verification for Formidable Form' ) ) . ':
+                        ' . esc_html__( 'Follow the following steps to enable Email Verification for Formidable Form', 'miniorange-otp-verification' ) . ':
                         <ol>
                             <li>
                                 <a href="' . esc_url( $frm_form_list ) . '" target="_blank" class="mo_links">' .
-									esc_html( mo_( 'Click Here' ) ) .
-								'</a> ' . esc_html( mo_( ' to see your list of forms' ) ) . '
+								esc_html__( 'Click Here', 'miniorange-otp-verification' ) .
+								'</a> ' . esc_html__( ' to see your list of forms', 'miniorange-otp-verification' ) . '
                             </li>
-                            <li>' . wp_kses( mo_( 'Note the ID of the form and Click on the <b>Edit</b> option of your Formidable form.' ), array( 'b' => array() ) ) . '</li>
-                            <li>' . esc_html( mo_( 'Add an Email Field to your form. Note the Field Settings ID of the email field.' ) ) . '</li>
+                            <li>' . wp_kses( __( 'Note the ID of the form and Click on the <b>Edit</b> option of your Formidable form.', 'miniorange-otp-verification' ), array( 'b' => array() ) ) . '</li>
+                            <li>' . esc_html__( 'Add an Email Field to your form. Note the Field Settings ID of the email field.', 'miniorange-otp-verification' ) . '</li>
                             <li>' .
-									esc_html(
-										mo_(
-											'Add another Text Field to your form for Entering OTP. ' .
-											'Note the Field Settings ID of the OTP Verification field.'
-										)
-									) .
+									esc_html__( 'Add another Text Field to your form for Entering OTP. Note the Field Settings ID of the OTP Verification field.', 'miniorange-otp-verification' ) .
+
 							'</li>
-                            <li>' . esc_html( mo_( 'Make both Email Field and Verification Field Required.' ) ) . '</li>
-                            <li>' . esc_html( mo_( 'Enter your Form ID, Email Field ID and Verification Field ID below' ) ) . ':
-                                    <br><br/>' . esc_html( mo_( 'Add Form ' ) ) . ':
+                            <li>' . esc_html__( 'Make both Email Field and Verification Field Required.', 'miniorange-otp-verification' ) . '</li>
+                            <li>' . esc_html__( 'Enter your Form ID, Email Field ID and Verification Field ID below', 'miniorange-otp-verification' ) . ':
+                                    <br><br/>' . esc_html__( 'Add Form ', 'miniorange-otp-verification' ) . ':
                                     <input  type="button"  
                                             value="+" ' . esc_attr( $disabled ) . '
                                             onclick="add_frm(\'email\',1);" 
@@ -75,7 +71,7 @@ echo '		<div class="mo_registration_help_desc"
 												? max( $form_results['counter'] - 1, 0 ) : 0;
 
 									echo '					    </li>
-                            <li>' . esc_html( mo_( 'Click on the Save Button to save your settings' ) ) . '</li>
+                            <li>' . esc_html__( 'Click on the Save Button to save your settings', 'miniorange-otp-verification' ) . '</li>
                         </ol>
                 </div>
                 <div>
@@ -86,31 +82,26 @@ echo '		<div class="mo_registration_help_desc"
                             name="mo_customer_validation_frm_form_enable_type" 
                             value="' . esc_attr( $frm_form_type_phone ) . '"
                             ' . ( esc_attr( $frm_form_enabled_type ) === esc_attr( $frm_form_type_phone ) ? 'checked' : '' ) . ' />
-                    <strong>' . esc_html( mo_( 'Enable Phone Verification' ) ) . '</strong>
+                    <strong>' . esc_html__( 'Enable Phone Verification', 'miniorange-otp-verification' ) . '</strong>
                 </div>
                 <div    ' . ( esc_attr( $frm_form_enabled_type ) !== esc_attr( $frm_form_type_phone ) ? 'hidden' : '' ) . '
                         class="mo_registration_help_desc_internal" id="nfp_instructions" >
-                        ' . esc_html( mo_( 'Follow the following steps to enable Phone Verification for Formidable Form' ) ) . ':
+                        ' . esc_html__( 'Follow the following steps to enable Phone Verification for Formidable Form', 'miniorange-otp-verification' ) . ':
                         <ol>
                             <li>
                                 <a href="' . esc_url( $frm_form_list ) . '" target="_blank" class="mo_links">' .
-									esc_html( mo_( 'Click Here' ) ) .
+									esc_html__( 'Click Here', 'miniorange-otp-verification' ) .
 									'</a> ' .
-									esc_html( mo_( ' to see your list of forms' ) ) .
+									esc_html__( ' to see your list of forms', 'miniorange-otp-verification' ) .
 									'</li>
-                            <li>' . wp_kses( mo_( 'Note the ID of the form and Click on the <b>Edit</b> option of your Formidable form.' ), array( 'b' => array() ) ) . '</li>
-                            <li>' . esc_html( mo_( 'Add a Phone Field to your form. Note the Field Settings ID of the phone field.' ) ) . '</li>
+                            <li>' . wp_kses( __( 'Note the ID of the form and Click on the <b>Edit</b> option of your Formidable form.', 'miniorange-otp-verification' ), array( 'b' => array() ) ) . '</li>
+                            <li>' . esc_html__( 'Add a Phone Field to your form. Note the Field Settings ID of the phone field.', 'miniorange-otp-verification' ) . '</li>
                             <li>' .
-									esc_html(
-										mo_(
-											'Add another Text Field to your form for Entering OTP. ' .
-											'Note the Field Settings ID of the OTP Verification field.'
-										)
-									) . '
+									esc_html__( 'Add another Text Field to your form for Entering OTP. Note the Field Settings ID of the OTP Verification field.', 'miniorange-otp-verification' ) . '
                             </li>
-                            <li>' . esc_html( mo_( 'Make both Phone Field and Verification Field Required.' ) ) . '</li>
-                            <li>' . esc_html( mo_( 'Enter your Form ID, Phone Field ID and Verification Field ID below' ) ) . ':<br>
-                                <br/>' . esc_html( mo_( 'Add Form ' ) ) . ':
+                            <li>' . esc_html__( 'Make both Phone Field and Verification Field Required.', 'miniorange-otp-verification' ) . '</li>
+                            <li>' . esc_html__( 'Enter your Form ID, Phone Field ID and Verification Field ID below', 'miniorange-otp-verification' ) . ':<br>
+                                <br/>' . esc_html__( 'Add Form ', 'miniorange-otp-verification' ) . ':
                                 <input  type="button"  
                                         value="+" ' . esc_attr( $disabled ) . '
                                         onclick="add_frm(\'phone\',2);" 
@@ -128,12 +119,12 @@ echo '		<div class="mo_registration_help_desc"
 									$counter2     = ! MoUtility::is_blank( $form_results['counter'] )
 											? max( $form_results['counter'] - 1, 0 ) : 0;
 									echo '						</li>
-                            <li>' . esc_html( mo_( 'Click on the Save Button to save your settings' ) ) . '</li>
+                            <li>' . esc_html__( 'Click on the Save Button to save your settings', 'miniorange-otp-verification' ) . '</li>
                         </ol>
                 </div>
                 <div class="pt-mo-4">
                         <div class="mo-input-wrapper">
-                            <label class="mo-input-label">' . esc_html( mo_( 'Verification Button text' ) ) . '</label>
+                            <label class="mo-input-label">' . esc_html__( 'Verification Button text', 'miniorange-otp-verification' ) . '</label>
                             <input class="mo-form-input" placeholder="Enter the verification button text" value="' . esc_attr( $button_text ) . '" type="text" name="mo_customer_validation_frm_button_text" >
                         </div>
                 </div>

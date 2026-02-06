@@ -2,7 +2,7 @@
 /**
  * To use global instance varible for all classes.
  *
- * @package miniorange-otp-verification
+ * @package miniorange-otp-verification/traits
  */
 
 namespace OTP\Traits;
@@ -24,5 +24,4 @@ trait Instance {
 		}
 		return self::$instance;
 	}
-
 }

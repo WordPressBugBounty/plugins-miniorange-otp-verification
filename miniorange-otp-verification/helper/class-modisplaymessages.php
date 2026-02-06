@@ -1,5 +1,6 @@
 <?php
-/**Load adminstrator changes for MoDisplayMessages
+/**
+ * Load administrator changes for MoDisplayMessages
  *
  * @package miniorange-otp-verification/helper
  */
@@ -20,18 +21,23 @@ if ( ! class_exists( 'MoDisplayMessages' ) ) {
 	 * MoDisplayMessages class
 	 */
 	class MoDisplayMessages {
-		/**Global Variable
+
+		/**
+		 * Global Variable
 		 *
 		 * @var message to show
 		 */
 		private $message;
-		/**Global Variable
+
+		/**
+		 * Global Variable
 		 *
 		 * @var type of message
 		 */
 		private $type;
 
-		/**Constructor to declare variables of the class on initialization
+		/**
+		 * Constructor to declare variables of the class on initialization
 		 *
 		 * @param string $message message to show.
 		 * @param string $type type of message to show.
@@ -39,51 +45,35 @@ if ( ! class_exists( 'MoDisplayMessages' ) ) {
 		public function __construct( $message, $type ) {
 			$this->message = $message;
 			$this->type    = $type;
-
-			add_action( 'admin_notices', array( $this, 'render' ) );
+			add_action( 'admin_notices', array( $this, 'mo_render' ) );
 		}
-		/**Function to render
+
+		/**
+		 * Function to render messages.
+		 *
+		 * @return void
 		 */
-		public function render() {
+		public function mo_render() {
 			switch ( $this->type ) {
 				case 'CUSTOM_MESSAGE':
-					echo esc_html( mo_( $this->message ) );
+					echo esc_html( $this->message );
 					break;
 				case 'NOTICE':
 					echo '<div style="margin-top:1%;"' .
 					'class="is-dismissible notice notice-warning mo-admin-notif">' .
-					'<p>' . wp_kses( mo_( $this->message ), MoUtility::mo_allow_html_array() ) . '</p>' .
+					'<p>' . wp_kses( $this->message, MoUtility::mo_allow_html_array() ) . '</p>' .
 					'</div>';
 					break;
 				case 'ERROR':
 					echo '<div style="margin-top:1%;"' .
 					'class="notice mo-notice-error notice-error is-dismissible mo-admin-notif">' .
-					'<p>' . wp_kses( mo_( $this->message ), MoUtility::mo_allow_html_array() ) . '</p>' .
+					'<p>' . wp_kses( $this->message, MoUtility::mo_allow_html_array() ) . '</p>' .
 					'</div>';
 					break;
 				case 'SUCCESS':
 					echo '<div  style="margin-top:1%;"' .
 					'class="notice mo-notice-success notice-success is-dismissible mo-admin-notif">' .
-					'<p>' . wp_kses( mo_( $this->message ), MoUtility::mo_allow_html_array() ) . '</p>' .
-					'</div>';
-					break;
-			}
-		}
-
-		/**Function for styling of message divisions
-		 */
-		public function show_message_div_addons() {
-			switch ( $this->type ) {
-				case 'MO_ADDON_MESSAGE_CUSTOM_MESSAGE_SUCCESS':
-					echo '<div  style="margin-top:1%;"' .
-					'class="notice mo-notice-success notice-success is-dismissible mo-admin-notif">' .
-					'<p>' . wp_kses( mo_( $this->message ), array( 'p' => array() ) ) . '</p>' .
-					'</div>';
-					break;
-				case 'MO_ADDON_MESSAGE_CUSTOM_MESSAGE_ERROR':
-					echo '<div style="margin-top:1%;"' .
-					'class="notice mo-notice-error notice-error is-dismissible mo-admin-notif">' .
-					'<p>' . wp_kses( mo_( $this->message ), array( 'p' => array() ) ) . '</p>' .
+					'<p>' . wp_kses( $this->message, MoUtility::mo_allow_html_array() ) . '</p>' .
 					'</div>';
 					break;
 			}

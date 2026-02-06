@@ -1,5 +1,6 @@
 <?php
-/**Load adminstrator changes for MoException
+/**
+ * Load administrator changes for MoException
  *
  * @package miniorange-otp-verification/helper
  */
@@ -20,14 +21,17 @@ if ( ! class_exists( 'MoException' ) ) {
 	 * MoException class
 	 */
 	class MoException extends \Exception {
-		/**Global Variable
+
+		/**
+		 * Global Variable
 		 *
 		 * @var message to show
 		 */
 		private $mo_code;
 
 
-		/**Constructor to declare variables of the class on initialization
+		/**
+		 * Constructor to declare variables of the class on initialization
 		 *
 		 * @param string $mo_code exception code.
 		 * @param string $message message to show.
@@ -38,10 +42,13 @@ if ( ! class_exists( 'MoException' ) ) {
 			parent::__construct( $message, $code, null );
 		}
 
-		/** Function for Exception codes
+		/**
+		 * Function for Exception codes
 		 *
-		 * @return mixed */
+		 * @return mixed
+		 */
 		public function getmo_code() {
-			return $this->mo_code; }
+			return $this->mo_code;
+		}
 	}
 }

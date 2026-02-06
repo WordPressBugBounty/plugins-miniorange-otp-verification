@@ -6,18 +6,23 @@
 
 namespace OTP\Objects;
 
-use OTP\Helper\MoUtility;
-use OTP\Traits\Instance;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+use OTP\Helper\MoUtility;
+use OTP\Traits\Instance;
+
 /**
  * Subtab details class.
  */
 if ( ! class_exists( 'SubTabDetails' ) ) {
 	/**
 	 * SubTabDetails class
+	 *
+	 * This final class manages the configuration and details of subtabs
+	 * for the plugin's admin interface. It handles settings, notifications,
+	 * and general subtab configurations using the Singleton pattern.
 	 */
 	final class SubTabDetails {
 
@@ -27,32 +32,42 @@ if ( ! class_exists( 'SubTabDetails' ) ) {
 		 * Array of SubtabPageDetails Object detailing
 		 * all the page menu options.
 		 *
-		 * @var array[SubtabPageDetails] $sub_tab_details
+		 * @var array
 		 */
 		public $sub_tab_details;
+
 		/**
 		 * Array of SubtabPageDetails Object detailing
 		 * all the page menu options.
 		 *
-		 * @var array[SubtabPageDetails] $settings_sub_tab_details
+		 * @var array
 		 */
 		public $settings_sub_tab_details;
+
 		/**
 		 * Array of SubtabPageDetails Object detailing
 		 * all the page menu options.
 		 *
-		 * @var array[SubtabPageDetails] $notification_sub_tab_details
+		 * @var array
 		 */
 		public $notification_sub_tab_details;
 
 		/**
 		 * The parent menu slug
 		 *
-		 * @var string $parent_slug
+		 * @var string
 		 */
 		public $parent_slug;
 
-		/** Private constructor to avoid direct object creation */
+		/**
+		 * Private constructor to avoid direct object creation.
+		 *
+		 * Initializes the subtab configuration with settings and notification
+		 * subtabs for various integrations like WooCommerce, Ultimate Member,
+		 * Dokan, WCFM, and Forms.
+		 *
+		 * @return void
+		 */
 		private function __construct() {
 			$registered        = MoUtility::micr();
 			$this->parent_slug = 'mosettings';
@@ -60,32 +75,32 @@ if ( ! class_exists( 'SubTabDetails' ) ) {
 			$this->settings_sub_tab_details = array(
 				SubTabs::MO_GENERAL_SETTINGS => new SubtabPageDetails(
 					'General Settings',
-					mo_( 'General Settings' ),
-					mo_( 'General Settings' ),
+					__( 'General Settings', 'miniorange-otp-verification' ),
+					__( 'General Settings', 'miniorange-otp-verification' ),
 					'general-settings.php',
 					'generalSettingsSubTab',
 					'background:#D8D8D8'
 				),
 				SubTabs::MO_OTP_SETTINGS     => new SubtabPageDetails(
 					'OTP Settings',
-					mo_( 'OTP Settings' ),
-					mo_( 'OTP Settings' ),
+					__( 'OTP Settings', 'miniorange-otp-verification' ),
+					__( 'OTP Settings', 'miniorange-otp-verification' ),
 					'otpsettings.php',
 					'otpSettingsSubTab',
 					'background:#D8D8D8'
 				),
 				SubTabs::MO_MESSAGE_BOX      => new SubtabPageDetails(
 					'OTP Verification - Messages',
-					mo_( 'Edit Messages' ),
-					mo_( 'Edit Messages' ),
+					__( 'Edit Messages', 'miniorange-otp-verification' ),
+					__( 'Edit Messages', 'miniorange-otp-verification' ),
 					'messages.php',
 					'messagesSubTab',
 					'background:#D8D8D8'
 				),
 				SubTabs::MO_POPUP_DESIGN     => new SubtabPageDetails(
 					'OTP Verification - Design',
-					mo_( 'Pop-Up Design' ),
-					mo_( 'Pop-Up Design' ),
+					__( 'Pop-Up Design', 'miniorange-otp-verification' ),
+					__( 'Pop-Up Design', 'miniorange-otp-verification' ),
 					'design.php',
 					'popDesignSubTab',
 					'background:#D8D8D8'
@@ -95,40 +110,40 @@ if ( ! class_exists( 'SubTabDetails' ) ) {
 			$this->notification_sub_tab_details = array(
 				SubTabs::MO_WC_NOTIF    => new SubtabPageDetails(
 					'MoNotifications',
-					mo_( 'WooCommerce' ),
-					mo_( 'WooCommerce' ),
+					__( 'WooCommerce', 'miniorange-otp-verification' ),
+					__( 'WooCommerce', 'miniorange-otp-verification' ),
 					'sms-notifications.php',
 					'MowcNotifSubTab',
 					'background:#D8D8D8'
 				),
 				SubTabs::MO_UM_NOTIF    => new SubtabPageDetails(
 					'MoNotifications',
-					mo_( 'Ultimate Member' ),
-					mo_( 'Ultimate Member' ),
+					__( 'Ultimate Member', 'miniorange-otp-verification' ),
+					__( 'Ultimate Member', 'miniorange-otp-verification' ),
 					'sms-notifications.php',
 					'MoumNotifSubTab',
 					'background:#D8D8D8'
 				),
 				SubTabs::MO_DOKAN_NOTIF => new SubtabPageDetails(
 					'Dokan Notifications',
-					mo_( 'Dokan' ),
-					mo_( 'Dokan' ),
+					__( 'Dokan', 'miniorange-otp-verification' ),
+					__( 'Dokan', 'miniorange-otp-verification' ),
 					'sms-notifications.php',
 					'dokanNotifSubTab',
 					'background:#D8D8D8'
 				),
 				SubTabs::MO_WCFM_NOTIF  => new SubtabPageDetails(
 					'WCFM Notifications',
-					mo_( 'WCFM' ),
-					mo_( 'WCFM' ),
+					__( 'WCFM', 'miniorange-otp-verification' ),
+					__( 'WCFM', 'miniorange-otp-verification' ),
 					'sms-notifications.php',
 					'wcfmNotifSubTab',
 					'background:#D8D8D8'
 				),
 				SubTabs::MO_FORM_NOTIF  => new SubtabPageDetails(
 					'MoNotifications',
-					mo_( 'Forms' ),
-					mo_( 'Forms' ),
+					__( 'Forms', 'miniorange-otp-verification' ),
+					__( 'Forms', 'miniorange-otp-verification' ),
 					'sms-notifications.php',
 					'formNotifSubTab',
 					'background:#D8D8D8'

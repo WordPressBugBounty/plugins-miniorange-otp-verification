@@ -1,5 +1,6 @@
 <?php
-/**Load adminstrator changes for AddonList
+/**
+ * Load administrator changes for AddonList
  *
  * @package miniorange-otp-verification/helper
  */
@@ -32,15 +33,18 @@ if ( ! class_exists( 'AddOnList' ) ) {
 		 */
 		private $add_ons;
 
-		/** Constructor */
+		/**
+		 * Constructor
+		 */
 		private function __construct() {
-			$this->add_ons = array(); }
+			$this->add_ons = array();
+		}
 
 		/**
 		 * Add AddOn to the AddOn List
 		 *
 		 * @param string           $key    the form key.
-		 * @param BaseAddOnHandler $form   the formHandler Object of the Form.
+		 * @param BaseAddOnHandler $form   the BaseAddOnHandler object of the AddOn.
 		 */
 		public function add( $key, $form ) {
 			$this->add_ons[ $key ] = $form;
@@ -52,6 +56,7 @@ if ( ! class_exists( 'AddOnList' ) ) {
 		 * @return array
 		 */
 		public function get_list() {
-			return $this->add_ons; }
+			return $this->add_ons;
+		}
 	}
 }

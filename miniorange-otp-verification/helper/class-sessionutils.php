@@ -1,5 +1,6 @@
 <?php
-/**Load administrator changes for SessionUtils
+/**
+ * Load administrator changes for SessionUtils
  *
  * @package miniorange-otp-verification/helper
  */
@@ -24,7 +25,8 @@ if ( ! class_exists( 'SessionUtils' ) ) {
 	final class SessionUtils {
 
 
-		/**Function to check if OTP is initialized
+		/**
+		 * Function to check if OTP is initialized
 		 *
 		 * @param string $key form key.
 		 * @return bool|mixed
@@ -37,11 +39,13 @@ if ( ! class_exists( 'SessionUtils' ) ) {
 			return false;
 		}
 
-		/**Function to add if email or sms is verified
+		/**
+		 * Function to add if email or sms is verified
 		 *
 		 * @param string $key form key.
 		 * @param string $val value of key.
 		 * @param string $otp_type SMS or Email.
+		 * @return void
 		 */
 		public static function add_email_or_phone_verified( $key, $val, $otp_type ) {
 			switch ( $otp_type ) {
@@ -54,10 +58,12 @@ if ( ! class_exists( 'SessionUtils' ) ) {
 			}
 		}
 
-		/**Function to add the email submitted by user
+		/**
+		 * Function to add the email submitted by user
 		 *
 		 * @param string $key form key.
 		 * @param string $val value of key.
+		 * @return void
 		 */
 		public static function add_email_submitted( $key, $val ) {
 			$form_data = MoPHPSessions::get_session_var( $key );
@@ -66,10 +72,12 @@ if ( ! class_exists( 'SessionUtils' ) ) {
 				MoPHPSessions::add_session_var( $key, $form_data );
 			}
 		}
-		/**Function to add the phone submitted by user
+		/**
+		 * Function to add the phone submitted by user
 		 *
 		 * @param string $key form key.
 		 * @param string $val value of key.
+		 * @return void
 		 */
 		public static function add_phone_submitted( $key, $val ) {
 			$form_data = MoPHPSessions::get_session_var( $key );
@@ -78,10 +86,12 @@ if ( ! class_exists( 'SessionUtils' ) ) {
 				MoPHPSessions::add_session_var( $key, $form_data );
 			}
 		}
-		/**Function to add the email verified by user
+		/**
+		 * Function to add the email verified by user
 		 *
 		 * @param string $key form key.
 		 * @param string $val value of key.
+		 * @return void
 		 */
 		public static function add_email_verified( $key, $val ) {
 			$form_data = MoPHPSessions::get_session_var( $key );
@@ -90,10 +100,12 @@ if ( ! class_exists( 'SessionUtils' ) ) {
 				MoPHPSessions::add_session_var( $key, $form_data );
 			}
 		}
-		/**Function to add the phone verified by user
+		/**
+		 * Function to add the phone verified by user
 		 *
 		 * @param string $key form key.
 		 * @param string $val value of key.
+		 * @return void
 		 */
 		public static function add_phone_verified( $key, $val ) {
 			$form_data = MoPHPSessions::get_session_var( $key );
@@ -103,11 +115,13 @@ if ( ! class_exists( 'SessionUtils' ) ) {
 			}
 		}
 
-		/**Function to add the status of form
+		/**
+		 * Function to add the status of form
 		 *
 		 * @param string $key form key.
 		 * @param string $val value of key.
 		 * @param string $type EMAIL or SMS.
+		 * @return void
 		 */
 		public static function add_status( $key, $val, $type ) {
 			$form_data = MoPHPSessions::get_session_var( $key );
@@ -125,7 +139,8 @@ if ( ! class_exists( 'SessionUtils' ) ) {
 			}
 		}
 
-		/**Function to check if the status is matches for form
+		/**
+		 * Function to check if the status is matches for form
 		 *
 		 * @param string $key form key.
 		 * @param string $status of verification type.
@@ -147,33 +162,36 @@ if ( ! class_exists( 'SessionUtils' ) ) {
 			}
 			return false;
 		}
-		/**Function to check if the email matches
+		/**
+		 * Function to check if the email matches
 		 *
 		 * @param string $key form key.
-		 * @param string $string email.
+		 * @param string $string_value email.
 		 * @return bool
 		 */
-		public static function is_email_verified_match( $key, $string ) {
+		public static function is_email_verified_match( $key, $string_value ) {
 			$form_data = MoPHPSessions::get_session_var( $key );
 			if ( $form_data instanceof FormSessionData ) {
-				return $string === $form_data->get_email_verified();
+				return $string_value === $form_data->get_email_verified();
 			}
 			return false;
 		}
-		/**Function to check if the phone matches
+		/**
+		 * Function to check if the phone matches
 		 *
 		 * @param string $key form key.
-		 * @param string $string phone.
+		 * @param string $string_value phone.
 		 * @return bool
 		 */
-		public static function is_phone_verified_match( $key, $string ) {
+		public static function is_phone_verified_match( $key, $string_value ) {
 			$form_data = MoPHPSessions::get_session_var( $key );
 			if ( $form_data instanceof FormSessionData ) {
-				return $string === $form_data->get_phone_verified();
+				return $string_value === $form_data->get_phone_verified();
 			}
 			return false;
 		}
-		/**Function to set transaction id of email
+		/**
+		 * Function to set transaction id of email
 		 *
 		 * @param string $tx_id transaction Id.
 		 */
@@ -185,7 +203,8 @@ if ( ! class_exists( 'SessionUtils' ) ) {
 			$transaction_data->set_email_transaction_id( $tx_id );
 			MoPHPSessions::add_session_var( FormSessionVars::TX_SESSION_ID, $transaction_data );
 		}
-		/**Function to set transaction id of email
+		/**
+		 * Function to set transaction id of email
 		 *
 		 * @param string $tx_id transaction Id.
 		 */
@@ -198,7 +217,8 @@ if ( ! class_exists( 'SessionUtils' ) ) {
 			MoPHPSessions::add_session_var( FormSessionVars::TX_SESSION_ID, $transaction_data );
 		}
 
-		/**Function to get transaction id of otp type
+		/**
+		 * Function to get transaction id of otp type
 		 *
 		 * @param string $otp_type   OTP Type to pick up the transaction ID for.
 		 * @return string
@@ -209,7 +229,9 @@ if ( ! class_exists( 'SessionUtils' ) ) {
 				switch ( $otp_type ) {
 					case VerificationType::EMAIL:
 						return $transaction_data->get_email_transaction_id();
-					case VerificationType::PHONE || VerificationType::WHATSAPP:
+					case VerificationType::PHONE:
+						return $transaction_data->get_phone_transaction_id();
+					case VerificationType::WHATSAPP:
 						return $transaction_data->get_phone_transaction_id();
 					case VerificationType::BOTH:
 						return MoUtility::is_blank( $transaction_data->get_phone_transaction_id() )
@@ -219,18 +241,23 @@ if ( ! class_exists( 'SessionUtils' ) ) {
 			return '';
 		}
 
-		/**Function to unset session
+		/**
+		 * Function to unset session
 		 *
-		 * @param array $keys key value of session.
+		 * @param string $keys Key values of session.
+		 * @return void
 		 */
 		public static function unset_session( $keys ) {
+			$keys = is_array( $keys ) ? $keys : array( $keys );
 			foreach ( $keys as $key ) {
 				MoPHPSessions::unset_session( $key );
 			}
 		}
-		/**Function to check if phone verified by the user and submitted at form submittion is same
+		/**
+		 * Function to check if phone verified by the user and submitted at form submittion is same
 		 *
-		 * @param array $key key value of session.
+		 * @param string $key key value of session.
+		 * @return boolean
 		 */
 		public static function is_phone_submitted_and_verified_match( $key ) {
 			$form_data = MoPHPSessions::get_session_var( $key );
@@ -239,9 +266,11 @@ if ( ! class_exists( 'SessionUtils' ) ) {
 			}
 			return false;
 		}
-		/**Function to check if email verified by the user and submitted at form submittion is same
+		/**
+		 * Function to check if email verified by the user and submitted at form submittion is same
 		 *
-		 * @param array $key key value of session.
+		 * @param string $key key value of session.
+		 * @return boolean
 		 */
 		public static function is_email_submitted_and_verified_match( $key ) {
 			$form_data = MoPHPSessions::get_session_var( $key );
@@ -250,10 +279,12 @@ if ( ! class_exists( 'SessionUtils' ) ) {
 			}
 			return false;
 		}
-		/**Function to set the form or field ID in session
+		/**
+		 * Function to set the form or field ID in session
 		 *
 		 * @param string $key form key.
 		 * @param string $val value of key.
+		 * @return void
 		 */
 		public static function set_form_or_field_id( $key, $val ) {
 			$form_data = MoPHPSessions::get_session_var( $key );
@@ -262,9 +293,12 @@ if ( ! class_exists( 'SessionUtils' ) ) {
 				MoPHPSessions::add_session_var( $key, $form_data );
 			}
 		}
-		/**Function to get the form or field ID in session
+
+		/**
+		 * Function to get the form or field ID in session
 		 *
-		 * @param array $key key value of session.
+		 * @param string $key key value of session.
+		 * @return string
 		 */
 		public static function get_form_or_field_id( $key ) {
 			$form_data = MoPHPSessions::get_session_var( $key );
@@ -273,18 +307,24 @@ if ( ! class_exists( 'SessionUtils' ) ) {
 			}
 			return '';
 		}
-		/**Function to initialize and add the form in session
+
+		/**
+		 * Function to initialize and add the form in session
 		 *
-		 * @param array $form key value of session.
+		 * @param array $form form key value of session.
+		 * @return void
 		 */
 		public static function initialize_form( $form ) {
 			$form_data = new FormSessionData();
 			MoPHPSessions::add_session_var( $form, $form_data->init() );
 		}
-		/**Function to add user in session
+
+		/**
+		 * Function to add user in session
 		 *
 		 * @param string $key form key.
 		 * @param string $val value of key.
+		 * @return void
 		 */
 		public static function add_user_in_session( $key, $val ) {
 			$form_data = MoPHPSessions::get_session_var( $key );
@@ -293,9 +333,11 @@ if ( ! class_exists( 'SessionUtils' ) ) {
 				MoPHPSessions::add_session_var( $key, $form_data );
 			}
 		}
-		/**Function to get the user in session
+		/**
+		 * Function to get the user in session
 		 *
-		 * @param array $key key value of session.
+		 * @param string $key form key.
+		 * @return string
 		 */
 		public static function get_user_submitted( $key ) {
 			$form_data = MoPHPSessions::get_session_var( $key );

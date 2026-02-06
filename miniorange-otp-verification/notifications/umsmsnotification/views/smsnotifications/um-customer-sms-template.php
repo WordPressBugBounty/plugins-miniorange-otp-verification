@@ -2,16 +2,21 @@
 /**
  * Load admin view for Ultimate Member Customer SMS Notification.
  *
- * @package miniorange-otp-verification/umsmsnotification/views/smsnotifications
+ * @package miniorange-otp-verification/notifications/umsmsnotification/views/smsnotifications
  */
-use OTP\Helper\MoMessages;
-use OTP\Helper\MoUtility;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
+use OTP\Helper\MoMessages;
+use OTP\Helper\MoUtility;
 
 $tags = array();
-$tags = explode( ',', $sms_settings->available_tags );
+if ( isset( $sms_settings->available_tags ) && is_string( $sms_settings->available_tags ) ) {
+	$sanitized_tags = sanitize_text_field( $sms_settings->available_tags );
+	$tags           = explode( ',', $sanitized_tags );
+	$tags           = array_filter( array_map( 'trim', $tags ) );
+}
 
 
 $tag_icon = '
@@ -47,7 +52,7 @@ echo '				<div>
 									<p class="mo-caption mt-mo-2">Phone MetaKey is the key against which Phone number is stored in the usermeta table.</p>
 								</div>
 								<div class="flex-1 flex flex-wrap">
-									<input type="text" name="' . esc_attr( $recipient_tag ) . '" id="' . esc_attr( $recipient_tag ) . '" value="' . esc_attr( $recipient_value ) . '" class="w-full mo-input" placeholder="' . esc_html( mo_( 'Enter the meta key of the Phone Number Field.' ) ) . ');"/>
+									<input type="text" name="' . esc_attr( $recipient_tag ) . '" id="' . esc_attr( $recipient_tag ) . '" value="' . esc_attr( $recipient_value ) . '" class="w-full mo-input" placeholder="' . esc_html( __( 'Enter the meta key of the Phone Number Field.', 'miniorange-otp-verification' ) ) . ');"/>
 								   </div>
 							</div>
 							<div class="w-full flex">
@@ -73,9 +78,9 @@ echo '				<div>
 									<p class="mo-caption mt-mo-2">' . esc_html( $sms_settings->page_description ) . '</p>
 								</div>
 								<div class="flex-1">
-									<textarea  id="' . esc_attr( $textarea_tag ) . '" class="mo-textarea mo_remaining_characters w-full h-[128px]"
-									name="' . esc_attr( $textarea_tag ) . '" placeholder="' . esc_attr( $sms_settings->default_sms_body ) . '" />' . esc_attr( $sms_settings->sms_body ) . '</textarea>
-									<span id="characters" class="flex-1">Remaining Characters : <span id="remaining_' . esc_attr( $textarea_tag ) . '"></span> </span>
+									<textarea id="' . esc_attr( $textarea_tag ) . '" class="mo-textarea mo_remaining_characters w-full h-[128px]"
+                                   	name="' . esc_attr( $textarea_tag ) . '" placeholder="' . esc_attr( isset( $sms_settings->default_sms_body ) ? $sms_settings->default_sms_body : '' ) . '">' . esc_textarea( isset( $sms_settings->sms_body ) ? $sms_settings->sms_body : '' ) . '</textarea>
+									<span id="characters" class="flex-1">' . esc_html( __( 'Remaining Characters :', 'miniorange-otp-verification' ) ) . ' <span id="remaining_' . esc_attr( $textarea_tag ) . '"></span> </span>
 								</div>
 							</div>
 

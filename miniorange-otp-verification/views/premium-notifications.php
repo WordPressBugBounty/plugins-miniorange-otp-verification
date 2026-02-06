@@ -5,6 +5,10 @@
  * @package miniorange-otp-verification/views
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
+
 use OTP\Helper\MoUtility;
 
 echo '<div id="' . esc_attr( $premium_notif_id ) . '" class="mo-subpage-container ' . esc_attr( $premium_notif_hidden ) . '">

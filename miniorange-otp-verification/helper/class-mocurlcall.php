@@ -1,17 +1,18 @@
 <?php
-/**Load adminstrator changes for MocURLCall
+/**
+ * Load administrator changes for MocURLCall
  *
  * @package miniorange-otp-verification/helper
  */
 
 namespace OTP\Helper;
 
-use OTP\Objects\NotificationSettings;
-use OTP\Objects\VerificationType;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+use OTP\Objects\NotificationSettings;
+use OTP\Objects\VerificationType;
 
 /**
  * This class denotes all the cURL related functions to make API calls
@@ -28,14 +29,16 @@ if ( ! class_exists( 'MocURLCall' ) ) {
 	class MocURLCall {
 
 
-		/** MoInternal Function
+		/**
+		 * Creates a new customer account
 		 *
-		 * @param string $email email address.
-		 * @param string $company comapany name.
-		 * @param string $password password of user.
-		 * @param string $phone phone number of user.
-		 * @param string $first_name first name of user.
-		 * @param string $last_name last name of user.
+		 * @param string $email Email address.
+		 * @param string $company Company name.
+		 * @param string $password Password of user.
+		 * @param string $phone Phone number of user.
+		 * @param string $first_name First name of user.
+		 * @param string $last_name Last name of user.
+		 * @return string JSON response from the API
 		 */
 		public static function create_customer( $email, $company, $password, $phone = '', $first_name = '', $last_name = '' ) {
 			$url          = MoConstants::HOSTNAME . '/moas/rest/customer/add';
@@ -56,10 +59,12 @@ if ( ! class_exists( 'MocURLCall' ) ) {
 			return $response;
 		}
 
-		/** MoInternal Function
+		/**
+		 * Gets customer key using email and password
 		 *
-		 * @param string $email email address.
-		 * @param string $password password of user.
+		 * @param string $email Email address.
+		 * @param string $password Password of user.
+		 * @return string JSON response from the API
 		 */
 		public static function get_customer_key( $email, $password ) {
 			$url          = MoConstants::HOSTNAME . '/moas/rest/customer/key';
@@ -75,9 +80,11 @@ if ( ! class_exists( 'MocURLCall' ) ) {
 			return $response;
 		}
 
-		/** MoInternal Function
+		/**
+		 * Checks if a customer exists
 		 *
-		 * @param string $email email address.
+		 * @param string $email Email address.
+		 * @return string JSON response from the API
 		 */
 		public static function check_customer( $email ) {
 			$url          = MoConstants::HOSTNAME . '/moas/rest/customer/check-if-exists';
@@ -93,11 +100,13 @@ if ( ! class_exists( 'MocURLCall' ) ) {
 		}
 
 
-		/** MoInternal Function
+		/**
+		 * Sends OTP token via SMS or Email
 		 *
-		 * @param string $auth_type authentication type wither SMS or Email.
-		 * @param string $email email address.
-		 * @param string $phone phone number of user.
+		 * @param string $auth_type Authentication type either SMS or Email.
+		 * @param string $email Email address.
+		 * @param string $phone Phone number of user.
+		 * @return string JSON response from the API
 		 */
 		public static function mo_send_otp_token( $auth_type, $email = '', $phone = '' ) {
 			$email        = 'SMS' === $auth_type ? null : $email;
@@ -119,10 +128,12 @@ if ( ! class_exists( 'MocURLCall' ) ) {
 			return $response;
 		}
 
-		/** Validate_otp_token Function
+		/**
+		 * Validates OTP token
 		 *
-		 * @param string $transaction_id transaction id.
-		 * @param string $otp_token otp token.
+		 * @param string $transaction_id Transaction ID.
+		 * @param string $otp_token OTP token.
+		 * @return string JSON response from the API
 		 */
 		public static function validate_otp_token( $transaction_id, $otp_token ) {
 			$url          = MoConstants::HOSTNAME . '/moas/api/auth/validate';
@@ -138,13 +149,15 @@ if ( ! class_exists( 'MocURLCall' ) ) {
 			return $response;
 		}
 
-		/** MoInternal Function
+		/**
+		 * Submits contact us form
 		 *
-		 * @param string $q_email email address.
-		 * @param string $q_phone phone number of user.
-		 * @param string $query query of user.
-		 * @param string $form_link form link of user.
-		 * @param string $query_type type of query.
+		 * @param string $q_email Email address.
+		 * @param string $q_phone Phone number of user.
+		 * @param string $query Query of user.
+		 * @param string $form_link Form link of user.
+		 * @param string $query_type Type of query.
+		 * @return boolean Always returns true
 		 */
 		public static function submit_contact_us( $q_email, $q_phone, $query, $form_link, $query_type = null ) {
 			$current_user = wp_get_current_user();
@@ -171,12 +184,14 @@ if ( ! class_exists( 'MocURLCall' ) ) {
 		}
 
 
-		/** MoInternal Function
+		/**
+		 * Checks customer license
 		 *
-		 * @param string $customer_key internal use.
-		 * @param string $api_key api key of user.
-		 * @param string $app_name plugin name of user.
-		 * @param string $license_type .
+		 * @param string $customer_key Customer key.
+		 * @param string $api_key API key of user.
+		 * @param string $app_name Plugin name of user.
+		 * @param string $license_type License type.
+		 * @return string JSON response from the API
 		 */
 		public static function check_customer_ln( $customer_key, $api_key, $app_name, $license_type = 'DEMO' ) {
 
@@ -193,10 +208,12 @@ if ( ! class_exists( 'MocURLCall' ) ) {
 			return $response;
 		}
 
-		/** MoInternal Function
+		/**
+		 * Creates authentication header
 		 *
-		 * @param string $customer_key internal use.
-		 * @param string $api_key api key of user.
+		 * @param string $customer_key Customer key.
+		 * @param string $api_key API key of user.
+		 * @return array Authentication header
 		 */
 		public static function create_auth_header( $customer_key, $api_key ) {
 			$current_timestamp_in_millis = self::get_timestamp();
@@ -216,7 +233,10 @@ if ( ! class_exists( 'MocURLCall' ) ) {
 			return $header;
 		}
 
-		/** MoInternal Function
+		/**
+		 * Gets timestamp from server
+		 *
+		 * @return string Timestamp from server
 		 */
 		public static function get_timestamp() {
 			$url = MoConstants::HOSTNAME . '/moas/rest/mobile/get-timestamp';
@@ -225,8 +245,9 @@ if ( ! class_exists( 'MocURLCall' ) ) {
 
 
 		/**
-		 *  Uses WordPress HTTP API to make cURL calls to miniOrange server
-		 *  <br/>Arguments that you can pass
+		 * Uses WordPress HTTP API to make cURL calls to miniOrange server
+		 *
+		 * Arguments that you can pass:
 		 * <ol>
 		 *  <li>'timeout'     => 5,</li>
 		 *  <li>'redirection' => 5,</li>
@@ -243,13 +264,14 @@ if ( ! class_exists( 'MocURLCall' ) ) {
 		 *  <li>'filename'    => null</li>
 		 * </ol>
 		 *
-		 * @param string $url URL to post to.
-		 * @param string $json_string json encoded post data.
-		 * @param array  $headers headers to be passed in the call.
-		 * @param string $method GET or POST or PUT HTTP Method.
-		 * @return string
+		 * @param string $url         URL to post to.
+		 * @param string $json_string JSON encoded post data.
+		 * @param array  $headers     Headers to be passed in the call.
+		 * @param string $method      GET or POST or PUT HTTP Method.
+		 * @return string Response body
 		 */
 		public static function call_api( $url, $json_string, $headers = array( 'Content-Type' => 'application/json' ), $method = 'POST' ) {
+			$url      = esc_url_raw( $url );
 			$args     = array(
 				'method'      => $method,
 				'body'        => $json_string,
@@ -262,7 +284,7 @@ if ( ! class_exists( 'MocURLCall' ) ) {
 			);
 			$response = wp_remote_post( $url, $args );
 			if ( is_wp_error( $response ) ) {
-				wp_die( wp_kses( "Something went wrong: <br/> {$response->get_error_message()}", array( 'br' => array() ) ) );
+				wp_die( wp_kses( MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ) . ": <br/> {$response->get_error_message()}", array( 'br' => array() ) ) );
 			}
 			return wp_remote_retrieve_body( $response );
 		}

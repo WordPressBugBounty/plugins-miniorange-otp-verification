@@ -2,7 +2,7 @@
 /**
  * Load admin view for WC Profile Form.
  *
- * @package miniorange-otp-verification/handler
+ * @package miniorange-otp-verification/handler/forms
  */
 
 namespace OTP\Handler\Forms;
@@ -52,11 +52,11 @@ if ( ! class_exists( 'WcProfileForm' ) ) {
 			$this->type_email_tag          = 'mo_wc_profile_email_enable';
 			$this->form_key                = 'WC_AC_FORM';
 			$this->verify_field_key        = 'verify_field';
-			$this->form_name               = mo_( 'WooCommerce Account Details Form' );
+			$this->form_name               = 'WooCommerce Account Details Form';
 			$this->is_form_enabled         = get_mo_option( 'wc_profile_enable' );
 			$this->restrict_duplicates     = get_mo_option( 'wc_profile_restrict_duplicates' );
 			$this->button_text             = get_mo_option( 'wc_profile_button_text' );
-			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : mo_( 'Click Here to send OTP' );
+			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : '';
 			$this->phone_key               = get_mo_option( 'wc_profile_phone_key' );
 			$this->phone_key               = $this->phone_key ? $this->phone_key : 'billing_phone';
 			$this->form_documents          = MoFormDocs::WC_PROFILE_UPDATE_FORM_LINK;
@@ -75,9 +75,8 @@ if ( ! class_exists( 'WcProfileForm' ) ) {
 		public function handle_form() {
 			$this->otp_type = get_mo_option( 'wc_profile_enable_type' );
 			add_action( 'woocommerce_edit_account_form', array( $this, 'mo_add_phone_field_account_form' ) );
-			add_action( "wp_ajax_{$this->generate_otp_action}", array( $this, 'startOtpVerificationProcess' ) );
-			add_action( "wp_ajax_nopriv_{$this->generate_otp_action}", array( $this, 'startOtpVerificationProcess' ) );
-			add_action( 'woocommerce_save_account_details_errors', array( $this, 'verifyOtpEntered' ), 10, 1 );
+			add_action( "wp_ajax_{$this->generate_otp_action}", array( $this, 'start_otp_verification_process' ) );
+			add_action( 'woocommerce_save_account_details_errors', array( $this, 'verify_otp_entered' ), 10, 1 );
 			add_action( 'wp_enqueue_scripts', array( $this, 'miniorange_wc_ac_script' ) );
 		}
 
@@ -85,16 +84,21 @@ if ( ! class_exists( 'WcProfileForm' ) ) {
 		 *
 		 * @param object $errors  -Errors in form submission.
 		 */
-		public function verifyOtpEntered( $errors ) {
+		public function verify_otp_entered( $errors ) {
 
+			if ( ! isset( $_POST['save-account-details-nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['save-account-details-nonce'] ) ), 'save_account_details' ) ) {
+				$errors->add( 'billing_invalid_nonce_error', MoMessages::showMessage( MoMessages::INVALID_OP ) );
+				return $errors;
+			}
 			$verificationkey = strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ? 'billing_phone' : 'account_email';
 
-			if ( $this->getUserData( $this->phone_key ) !== ( isset( $_POST[ $verificationkey ] ) ? sanitize_text_field( wp_unslash( $_POST[ $verificationkey ] ) ) : '' ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
-				$this->checkIfOTPSent( $errors );
+			$data = MoUtility::mo_sanitize_array( $_POST );
+			if ( $this->get_user_data( $this->phone_key ) !== ( isset( $data[ $verificationkey ] ) ? ( wp_unslash( $data[ $verificationkey ] ) ) : '' ) ) {
+				$this->check_if_otp_sent( $errors );
 				if ( ! empty( $errors->errors ) ) {
 					return $errors;
 				}
-				$this->checkIntegrityAndValidateOTP( $errors );
+				$this->check_integrity_and_validate_otp( $data, $errors );
 			} else {
 				return;
 			}
@@ -104,7 +108,7 @@ if ( ! class_exists( 'WcProfileForm' ) ) {
 		 *
 		 * @param object $errors  -Errors in form submission.
 		 */
-		private function checkIfOTPSent( $errors ) {
+		private function check_if_otp_sent( $errors ) {
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
 				$errors->add( 'billing_user_need_to_verify_error', MoMessages::showMessage( MoMessages::PLEASE_VALIDATE ) );
 				return $errors;
@@ -119,27 +123,30 @@ if ( ! class_exists( 'WcProfileForm' ) ) {
 		 * Once integrity check passes validate the OTP to ensure that the user has entered
 		 * the correct OTP.
 		 *
+		 * @param array  $data Posted profile data.
 		 * @param object $errors -Errors in form submission.
 		 */
-		private function checkIntegrityAndValidateOTP( $errors ) {
-			$this->checkIntegrity( $errors );
-			$this->validate_challenge( $this->get_verification_type(), null, isset( $_POST['enter_otp'] ) ? sanitize_text_field( wp_unslash( $_POST['enter_otp'] ) ) : '' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+		private function check_integrity_and_validate_otp( $data, $errors ) {
+			$this->checkIntegrity( $data, $errors );
+			// Data from mo_sanitize_array is already unslashed and sanitized.
+			$otp_token = isset( $data['enter_otp'] ) ? sanitize_text_field( wp_unslash( $data['enter_otp'] ) ) : '';
+			$this->validate_challenge( $this->get_verification_type(), null, $otp_token );
 			if ( ! empty( $errors->errors ) ) {
 				return $errors;
 			}
 			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->get_verification_type() ) ) {
 				if ( $this->get_verification_type() === VerificationType::PHONE ) {
-					SessionUtils::add_phone_submitted( $this->form_session_var, isset( $_POST['billing_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_phone'] ) ) : '' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+					SessionUtils::add_phone_submitted( $this->form_session_var, isset( $data['billing_phone'] ) ? ( wp_unslash( $data['billing_phone'] ) ) : '' );
 					$user_id = get_current_user_id();
-					update_user_meta( $user_id, 'billing_phone', isset( $_POST['billing_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_phone'] ) ) : '' );  // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+					update_user_meta( $user_id, 'billing_phone', isset( $data['billing_phone'] ) ? ( wp_unslash( $data['billing_phone'] ) ) : '' );
 					$this->unset_otp_session_variables();
 				}
 				if ( $this->get_verification_type() === VerificationType::EMAIL ) {
-					SessionUtils::add_email_submitted( $this->form_session_var, isset( $_POST['account_email'] ) ? sanitize_email( wp_unslash( $_POST['account_email'] ) ) : '' );  // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+					SessionUtils::add_email_submitted( $this->form_session_var, isset( $data['account_email'] ) ? ( wp_unslash( $data['account_email'] ) ) : '' );
 					$user_id      = get_current_user_id();
 					$update_email = array(
 						'ID'         => $user_id,
-						'user_email' => sanitize_email( wp_unslash( $_POST['account_email'] ) ), // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+						'user_email' => sanitize_email( wp_unslash( $data['account_email'] ) ),
 					);
 
 					wp_update_user( $update_email );
@@ -156,17 +163,20 @@ if ( ! class_exists( 'WcProfileForm' ) ) {
 		 * with the form. It needs to match with the email or value that the OTP was
 		 * initially sent to.
 		 *
+		 * @param array  $data Posted checkout data.
 		 * @param object $errors -Errors in form submission.
 		 */
-		private function checkIntegrity( $errors ) {
+		private function checkIntegrity( $data, $errors ) {
 			if ( $this->get_verification_type() === VerificationType::PHONE ) {
-				if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, isset( $_POST['billing_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_phone'] ) ) : '' ) ) {// phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+				$phone = isset( $data['billing_phone'] ) ? ( wp_unslash( $data['billing_phone'] ) ) : '';
+				$phone = MoUtility::process_phone_number( $phone );
+				if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
 					$errors->add( 'billing_phone_mismatch_error', MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) );
 					return $errors;
 				}
 			}
 			if ( $this->get_verification_type() === VerificationType::EMAIL ) {
-				if ( ! SessionUtils::is_email_verified_match( $this->form_session_var, isset( $_POST['account_email'] ) ? sanitize_email( wp_unslash( $_POST['account_email'] ) ) : '' ) ) {// phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+				if ( ! SessionUtils::is_email_verified_match( $this->form_session_var, isset( $data['account_email'] ) ? ( wp_unslash( $data['account_email'] ) ) : '' ) ) {
 					$errors->add( 'billing_email_mismatch_error', MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) );
 					return $errors;
 				}
@@ -177,7 +187,7 @@ if ( ! class_exists( 'WcProfileForm' ) ) {
 		 * Register the Profile/Account Page script which will add the OTP button and field.
 		 */
 		public function miniorange_wc_ac_script() {
-			wp_register_script( 'mowcac', MOV_URL . 'includes/js/mowcac.min.js', array( 'jquery' ), MOV_VERSION, true );
+			wp_register_script( 'mowcac', MOV_URL . 'includes/js/mowcac.js', array( 'jquery' ), MOV_VERSION, true );
 			wp_localize_script(
 				'mowcac',
 				'mowcac',
@@ -185,10 +195,9 @@ if ( ! class_exists( 'WcProfileForm' ) ) {
 					'siteURL'     => wp_ajax_url(),
 					'otpType'     => $this->otp_type === $this->type_phone_tag ? 'phone' : 'email',
 					'nonce'       => wp_create_nonce( $this->nonce ),
-					'buttontext'  => mo_( $this->button_text ),
-					'imgURL'      => MOV_LOADER_URL,
+					'buttontext'  => $this->button_text,
 					'generateURL' => $this->generate_otp_action,
-					'fieldValue'  => $this->getUserData( $this->phone_key ),
+					'fieldValue'  => $this->get_user_data( $this->phone_key ),
 					'phoneKey'    => $this->phone_key,
 				)
 			);
@@ -201,13 +210,12 @@ if ( ! class_exists( 'WcProfileForm' ) ) {
 		 * @param string $key the usermeta key.
 		 * @return string
 		 */
-		private function getUserData( $key ) {
+		private function get_user_data( $key ) {
 			$current_user = wp_get_current_user();
 
 			if ( $this->otp_type === $this->type_phone_tag ) {
-				global $wpdb;
-				$results = $wpdb->get_row( $wpdb->prepare( "SELECT meta_value FROM `{$wpdb->prefix}usermeta` WHERE `meta_key` = %s AND `user_id` = %d", array( $key, $current_user->ID ) ) );//phpcs:ignore
-				return ( isset( $results ) ) ? $results->meta_value : '';
+				$meta_value = get_user_meta( $current_user->ID, $key, true );
+				return $meta_value ? $meta_value : '';
 			} else {
 				return $current_user->user_email;
 			}
@@ -218,8 +226,12 @@ if ( ! class_exists( 'WcProfileForm' ) ) {
 		 *
 		 * @throws ReflectionException In case of failures, an exception is thrown.
 		 */
-		public function startOtpVerificationProcess() {
-			if ( ! check_ajax_referer( $this->nonce, 'security', false ) ) {
+		public function start_otp_verification_process() {
+			// Security: Use hardcoded nonce action 'form_nonce' instead of variable.
+			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
+				wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ), MoConstants::ERROR_JSON_TYPE ) );
+			}
+			if ( ! is_user_logged_in() ) {
 				wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ), MoConstants::ERROR_JSON_TYPE ) );
 			}
 			$data = MoUtility::mo_sanitize_array( $_POST );
@@ -244,9 +256,10 @@ if ( ! class_exists( 'WcProfileForm' ) ) {
 					)
 				);
 			} else {
-				$this->checkDuplicates( sanitize_text_field( $data['user_input'] ), $this->phone_key );
-				SessionUtils::add_phone_verified( $this->form_session_var, sanitize_text_field( $data['user_input'] ) );
-				$this->send_challenge( '', null, null, sanitize_text_field( $data['user_input'] ), VerificationType::PHONE );
+				$user_phone = MoUtility::process_phone_number( sanitize_text_field( $data['user_input'] ) );
+				$this->checkDuplicates( $user_phone, $this->phone_key );
+				SessionUtils::add_phone_verified( $this->form_session_var, $user_phone );
+				$this->send_challenge( '', null, null, $user_phone, VerificationType::PHONE );
 			}
 		}
 
@@ -291,10 +304,34 @@ if ( ! class_exists( 'WcProfileForm' ) ) {
 		 * @return bool
 		 */
 		private function isPhoneNumberAlreadyInUse( $phone, $key ) {
-			global $wpdb;
 			MoUtility::process_phone_number( $phone );
-			$results = $wpdb->get_row( $wpdb->prepare( "SELECT `user_id` FROM `{$wpdb->prefix}usermeta` WHERE `meta_key` = %s AND `meta_value` =  %s", array( $key, $phone ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, Direct database call without caching detected -- DB Direct Query is necessary here.
-			return ! MoUtility::is_blank( $results );
+
+			$cache_key = 'mo_phone_in_use_' . md5( $phone . $key );
+
+			$cached_result = wp_cache_get( $cache_key, 'mo_otp_verification' );
+			if ( false !== $cached_result ) {
+				return $cached_result;
+			}
+
+			$users     = get_users(
+				array(
+					// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Cached result, limited to 1 user, only fetching ID field.
+					'meta_query' => array(
+						array(
+							'key'     => $key,
+							'value'   => $phone,
+							'compare' => '=',
+						),
+					),
+					'number'     => 1,
+					'fields'     => 'ID',
+				)
+			);
+			$is_in_use = ! empty( $users );
+
+			wp_cache_set( $cache_key, $is_in_use, 'mo_otp_verification', 3600 );
+
+			return $is_in_use;
 		}
 
 		/**
@@ -302,25 +339,31 @@ if ( ! class_exists( 'WcProfileForm' ) ) {
 		 */
 		public function mo_add_phone_field_account_form() {
 
-			woocommerce_form_field(  // phpcs:ignore intelephense.diagnostics.undefinedFunctions -- Default WC function.
-				'billing_phone',
-				array(
-					'type'     => 'text',
-					'required' => true,
-					'label'    => 'Phone Number',
-				),
-				get_user_meta( get_current_user_id(), 'billing_phone', true )
-			);
+			if ( function_exists( 'woocommerce_form_field' ) ) {
 
-			woocommerce_form_field(  // phpcs:ignore intelephense.diagnostics.undefinedFunctions -- Default WC function.
-				'enter_otp',
-				array(
-					'type'     => 'text',
-					'required' => false,
-					'label'    => 'Enter OTP',
-				),
-				get_user_meta( get_current_user_id(), 'enter_otp', true )
-			);
+				$billing_phone = get_user_meta( get_current_user_id(), 'billing_phone', true );
+				$enter_otp     = get_user_meta( get_current_user_id(), 'enter_otp', true );
+
+				woocommerce_form_field(
+					'billing_phone',
+					array(
+						'type'     => 'text',
+						'required' => true,
+						'label'    => __( 'Phone Number', 'miniorange-otp-verification' ),
+					),
+					$billing_phone
+				);
+
+				woocommerce_form_field(
+					'enter_otp',
+					array(
+						'type'     => 'text',
+						'required' => true,
+						'label'    => __( 'Enter OTP', 'miniorange-otp-verification' ),
+					),
+					$enter_otp
+				);
+			}
 		}
 
 		/**
@@ -343,8 +386,15 @@ if ( ! class_exists( 'WcProfileForm' ) ) {
 		 * @param string $extra_data any extra data posted by the user.
 		 * @param string $otp_type the verification type.
 		 */
-		public function handle_post_verification( $redirect_to, $user_login, $user_email, $password, $phone_number,
-											$extra_data, $otp_type ) {
+		public function handle_post_verification(
+			$redirect_to,
+			$user_login,
+			$user_email,
+			$password,
+			$phone_number,
+			$extra_data,
+			$otp_type
+		) {
 			SessionUtils::add_status( $this->form_session_var, self::VALIDATED, $otp_type );
 		}
 
@@ -383,7 +433,7 @@ if ( ! class_exists( 'WcProfileForm' ) ) {
 		 * Handles saving all the Default WordPress Registration Form related options by the admin.
 		 */
 		public function handle_form_options() {
-			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option() ) ) {
+			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option(), 'wc_profile_enable' ) ) {
 				return;
 			}
 

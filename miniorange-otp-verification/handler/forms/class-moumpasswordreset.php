@@ -21,7 +21,7 @@ use OTP\Objects\FormHandler;
 use OTP\Objects\IFormHandler;
 use OTP\Objects\VerificationType;
 use OTP\Traits\Instance;
-use \WP_User;
+use WP_User;
 
 /**
  * Password Reset Handler handles sending an OTP to the user instead of
@@ -60,7 +60,7 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 			$this->phone_form_id       = '';
 			$this->field_key           = 'username_b';
 			$this->form_key            = 'UM_PASS_RESET';
-			$this->form_name           = mo_( 'Ultimate Member Password Reset Form' );
+			$this->form_name           = 'Ultimate Member Password Reset Form';
 			$this->is_form_enabled     = get_option( 'mo_um_pr_pass_enable' ) ? true : false;
 			$this->phone_key           = get_option( 'mo_um_pr_passphone_key' );
 			$this->phone_key           = $this->phone_key ? $this->phone_key : 'mobile_number';
@@ -68,7 +68,7 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 			$this->generate_otp_action = 'mo_umpr_send_otp';
 			$this->validate_otp_action = 'mo_umpr_validate_otp';
 			$this->button_text         = get_option( 'mo_um_pr_pass_button_text' );
-			$this->button_text         = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : mo_( 'Send OTP' );
+			$this->button_text         = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : '';
 
 			parent::__construct();
 		}
@@ -104,19 +104,19 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 		 * @throws \ReflectionException On error.
 		 */
 		public function send_ajax_otp_request() {
-			if ( ! check_ajax_referer( $this->nonce, $this->nonce_key ) ) {
+			// Security: Use hardcoded nonce action 'form_nonce' and key 'security' instead of variables.
+			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json(
 					MoUtility::create_json(
 						MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
-				exit;
 			}
 			MoUtility::initialize_transaction( $this->form_session_var );
 			$data     = MoUtility::mo_sanitize_array( $_POST );
 			$username = MoUtility::sanitize_check( 'username', $data );
-			$user     = $this->getUser( $username );
+			$user     = $this->get_user( $username );
 			SessionUtils::add_user_in_session( $this->form_session_var, $username );
 
 			if ( ! $user ) {
@@ -138,7 +138,7 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 			} else {
 				SessionUtils::add_user_in_session( $this->form_session_var, $username );
 				$phone = get_user_meta( $user->ID, $this->phone_key, true );
-				$this->startOtpTransaction( $user->user_email, $phone, $data );
+				$this->start_otp_transaction( $user->user_email, $phone, $data );
 			}
 		}
 
@@ -150,7 +150,8 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 		 * @param string $phone_number - the phone number associted with the user.
 		 * @param array  $data   - the data submitted during ajax call.
 		 */
-		private function startOtpTransaction( $email, $phone_number, $data ) {
+		private function start_otp_transaction( $email, $phone_number, $data ) {
+			$username = isset( $data['username'] ) ? sanitize_text_field( wp_unslash( $data['username'] ) ) : '';
 			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
 				if ( empty( $phone_number ) ) {
 					wp_send_json(
@@ -171,14 +172,14 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 		 * for Ultimate Member using AJAX calls.
 		 */
 		public function miniorange_register_um_script() {
-			wp_register_script( 'moumpr', MOV_URL . 'includes/js/moumpassreset.min.js', array( 'jquery' ), MOV_VERSION, true );
+			wp_register_script( 'moumpr', MOV_URL . 'includes/js/moumpassreset.js', array( 'jquery' ), MOV_VERSION, true );
 			wp_localize_script(
 				'moumpr',
 				'moumprvar',
 				array(
 					'siteURL'        => wp_ajax_url(),
 					'nonce'          => wp_create_nonce( $this->nonce ),
-					'buttontext'     => mo_( $this->button_text ),
+					'buttontext'     => $this->button_text,
 					'action'         => array( 'send' => $this->generate_otp_action ),
 					'vaction'        => $this->validate_otp_action,
 					'fieldKey'       => $this->field_key,
@@ -187,7 +188,7 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 										? MoMessages::RESET_LABEL_OP : MoMessages::RESET_LABEL
 					),
 					'phText'         => $this->is_only_phone_reset
-										? mo_( 'Enter Your Phone Number' ) : mo_( 'Enter Your Email, Username or Phone Number' ),
+										? __( 'Enter Your Phone Number', 'miniorange-otp-verification' ) : __( 'Enter Your Email, Username or Phone Number', 'miniorange-otp-verification' ),
 				)
 			);
 			wp_enqueue_script( 'moumpr' );
@@ -198,26 +199,26 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 		 * OTP submitted.
 		 */
 		public function mo_verify_ajax_otp_request() {
-			if ( ! check_ajax_referer( $this->nonce, $this->nonce_key ) ) {
+			// Security: Use hardcoded nonce action 'form_nonce' and key 'security' instead of variables.
+			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json(
 					MoUtility::create_json(
 						MoMessages::showMessage( MoMessages::INVALID_OP ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
-				exit;
 			}
 
 			$data = MoUtility::mo_sanitize_array( $_POST );
-			$this->checkIfOTPSent();
-			$this->checkIntegrityAndValidateOTP( $data );
+			$this->check_if_otp_sent();
+			$this->check_integrity_and_validate_otp( $data );
 		}
 
 		/**
 		 * The function is used to check if user has provided
 		 * OTP to initiate OTP verification.
 		 */
-		private function checkIfOTPSent() {
+		private function check_if_otp_sent() {
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
 				wp_send_json(
 					MoUtility::create_json(
@@ -237,14 +238,19 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 		 * If all checks pass then validate the OTP as well.
 		 */
 		public function um_reset_password_errors_hook() {
-			$form     = $this->getum_formObj();
-			$data     = MoUtility::mo_sanitize_array( $_POST );  // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
+			// Security: Use hardcoded nonce action 'form_nonce' instead of variable.
+			if ( ! isset( $_POST['security'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'form_nonce' ) ) {
+				return;
+			}
+
+			$form     = $this->get_um_form_obj();
+			$data     = MoUtility::mo_sanitize_array( $_POST );
 			$username = MoUtility::sanitize_check( $this->field_key, $data );
 
 			if ( isset( $form->errors ) ) {
 				if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0
 				&& MoUtility::validate_phone_number( $username ) ) {
-					$user = $this->getUserFromPhoneNumber( $username );
+					$user = $this->get_user_from_phone_number( $username );
 					if ( ! $user ) {
 						$form->add_error(
 							$this->field_key,
@@ -269,10 +275,10 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 		 *
 		 * @param array $data to get the data of the ajax request.
 		 */
-		private function checkIntegrityAndValidateOTP( $data ) {
+		private function check_integrity_and_validate_otp( $data ) {
 
 			$otp_ver_type = $this->get_verification_type();
-			$this->checkIntegrity( $data );
+			$this->check_integrity( $data );
 			$this->validate_challenge( $otp_ver_type, null, $data['otp_token'] );
 
 			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otp_ver_type ) ) {
@@ -300,7 +306,7 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 		 *
 		 * @param array $data - Data passed in the ajax call.
 		 */
-		private function checkIntegrity( $data ) {
+		private function check_integrity( $data ) {
 			$session_var = SessionUtils::get_user_submitted( $this->form_session_var );
 			if ( $session_var !== $data['username'] ) {
 				wp_send_json(
@@ -319,7 +325,7 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 		 */
 		private function get_user_and_reset_password( $data ) {
 			$username = $data['username'];
-			$user     = $this->getUser( $username );
+			$user     = $this->get_user( $username );
 			$user_id  = $user->ID;
 			$key      = get_password_reset_key( $user );
 			if ( ! empty( $key->errors ) ) {
@@ -330,7 +336,20 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 					)
 				);
 			}
-			$current_url = $_SERVER['HTTP_ORIGIN'] . $_SERVER['REQUEST_URI'] . '?key=' . $key . '&id=' . $user_id; //phpcs:ignore
+			$origin      = isset( $_SERVER['HTTP_ORIGIN'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_ORIGIN'] ) ) : '';
+			$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+
+			$parsed_origin = wp_parse_url( $origin );
+			$parsed_home   = wp_parse_url( home_url() );
+
+			if ( $parsed_origin && $parsed_home &&
+				isset( $parsed_origin['host'] ) && isset( $parsed_home['host'] ) &&
+				$parsed_origin['host'] === $parsed_home['host'] ) {
+				$current_url = $origin . $request_uri . '?key=' . $key . '&id=' . $user_id;
+			} else {
+				$current_url = home_url( '/wp-login.php?action=rp&key=' . $key . '&id=' . $user_id );
+			}
+
 			wp_safe_redirect( $current_url );
 			exit();
 		}
@@ -341,11 +360,15 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 		 * password reset URL generated by Ultimate Member.
 		 */
 		public function um_reset_password_process_hook() {
-			$user    = MoUtility::sanitize_check( 'username_b', $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
-			$user    = $this->getUser( trim( $user ) );
-			$pwd_obj = $this->getUmpwd_obj();
-						um_fetch_user( $user->ID );  // phpcs:ignore intelephense.diagnostics.undefinedFunctions -- Default function of Ultimate member plugin.
-			$this->getUmUserObj()->password_reset();
+			// Security: Use hardcoded nonce action 'form_nonce' instead of variable.
+			if ( ! isset( $_POST['security'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'form_nonce' ) ) {
+				return;
+			}
+			$user    = MoUtility::sanitize_check( 'username_b', $_POST );
+			$user    = $this->get_user( trim( $user ) );
+			$pwd_obj = $this->get_um_pwd_obj();
+						um_fetch_user( $user->ID );
+			$this->get_um_user_obj()->password_reset();
 			wp_safe_redirect( $pwd_obj->reset_url() );
 			exit();
 		}
@@ -356,10 +379,14 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 		 * @param string $username for the username.
 		 * @return bool|WP_User
 		 */
-		public function getUser( $username ) {
+		public function get_user( $username ) {
+			if ( MoUtility::is_blank( $username ) ) {
+				return false;
+			}
+
 			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 && MoUtility::validate_phone_number( $username ) ) {
 				$username = MoUtility::process_phone_number( $username );
-				$user     = $this->getUserFromPhoneNumber( $username );
+				$user     = $this->get_user_from_phone_number( $username );
 			} elseif ( $this->is_only_phone_reset && ! MoUtility::validate_phone_number( $username ) ) {
 				wp_send_json(
 					MoUtility::create_json(
@@ -382,9 +409,9 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 		 *
 		 * @return \UM\Core\Form
 		 */
-		private function getum_formObj() {
-			if ( $this->isUltimateMemberV2Installed() ) {
-				return UM()->form();  //phpcs:ignore intelephense.diagnostics.undefinedFunctions -- Default function of Ultimate member plugin.
+		private function get_um_form_obj() {
+			if ( $this->is_ultimate_member_v2_installed() ) {
+				return UM()->form();
 			} else {
 
 				global $ultimatemember;
@@ -398,9 +425,9 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 		 *
 		 * @return Password
 		 */
-		private function getUmpwd_obj() {
-			if ( $this->isUltimateMemberV2Installed() ) {
-				return UM()->password();  //phpcs:ignore intelephense.diagnostics.undefinedFunctions -- Default function of Ultimate member plugin.
+		private function get_um_pwd_obj() {
+			if ( $this->is_ultimate_member_v2_installed() ) {
+				return UM()->password();
 			} else {
 				global $ultimatemember;
 				return $ultimatemember->password;
@@ -413,9 +440,9 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 		 *
 		 * @return User
 		 */
-		private function getUmUserObj() {
-			if ( $this->isUltimateMemberV2Installed() ) {
-				return UM()->user();  //phpcs:ignore intelephense.diagnostics.undefinedFunctions -- Default function of Ultimate member plugin.
+		private function get_um_user_obj() {
+			if ( $this->is_ultimate_member_v2_installed() ) {
+				return UM()->user();
 			} else {
 
 				global $ultimatemember;
@@ -430,9 +457,9 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 		 *
 		 * @return Options
 		 */
-		private function getUmOptions() {
-			if ( $this->isUltimateMemberV2Installed() ) {
-				return UM()->options();  //phpcs:ignore intelephense.diagnostics.undefinedFunctions -- Default function of Ultimate member plugin.
+		private function get_um_options() {
+			if ( $this->is_ultimate_member_v2_installed() ) {
+				return UM()->options();
 			} else {
 				global $ultimatemember;
 				return $ultimatemember->options;
@@ -443,13 +470,44 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 		/**
 		 * This functions fetches the user associated with a phone number
 		 *
-		 * @param string $username - the user's username.
+		 * @param string $phone - the user's username.
 		 * @return bool|WP_User
 		 */
-		private function getUserFromPhoneNumber( $username ) {
-			global $wpdb;
-			$results = $wpdb->get_row( $wpdb->prepare( "SELECT `user_id` FROM `{$wpdb->prefix}usermeta` WHERE `meta_key` = %s AND `meta_value` = %s", array( $this->phone_key, $username ) ) );// phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, Direct database call without caching detected -- DB Direct Query is necessary here.
-			return ! MoUtility::is_blank( $results ) ? get_userdata( $results->user_id ) : false;
+		private function get_user_from_phone_number( $phone ) {
+			$phone = MoUtility::process_phone_number( $phone );
+
+			// Create cache key based on phone number and meta key.
+			$cache_key   = 'mo_um_phone_user_' . md5( $phone . '_' . $this->phone_key );
+			$cache_group = 'mo_um_profile';
+
+			// Try to get from cache first.
+			$cached_user_id = wp_cache_get( $cache_key, $cache_group );
+			if ( false !== $cached_user_id ) {
+				return $cached_user_id ? get_userdata( $cached_user_id ) : false;
+			}
+
+			// Query database if not in cache.
+			$args = array(
+				'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Necessary to check for duplicate phone numbers. Caching implemented above.
+					array(
+						'key'     => $this->phone_key,
+						'value'   => $phone,
+						'compare' => '=',
+					),
+				),
+				'number'     => 1,
+				'fields'     => 'ID',
+			);
+
+			$users = get_users( $args );
+
+			// Get user ID if found, otherwise false.
+			$user_id = ! empty( $users ) ? $users[0] : false;
+
+			// Store in cache for 15 minutes (900 seconds).
+			wp_cache_set( $cache_key, $user_id, $cache_group, 900 );
+
+			return $user_id ? get_userdata( $user_id ) : false;
 		}
 
 		/**
@@ -463,12 +521,12 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 			$attempts = (int) get_user_meta( $user_id, 'password_rst_attempts', true );
 			$is_admin = user_can( intval( $user_id ), 'manage_options' );
 
-			if ( $this->getUmOptions()->get( 'enable_reset_password_limit' ) ) {
-				if ( $this->getUmOptions()->get( 'disable_admin_reset_password_limit' ) && $is_admin ) {
+			if ( $this->get_um_options()->get( 'enable_reset_password_limit' ) ) {
+				if ( $this->get_um_options()->get( 'disable_admin_reset_password_limit' ) && $is_admin ) {
 					return;
 					// Triggers this when a user has admin capabilities and when reset password limit is disabled for admins.
 				} else {
-					$limit = $this->getUmOptions()->get( 'reset_password_limit_number' );
+					$limit = $this->get_um_options()->get( 'reset_password_limit_number' );
 					if ( $attempts >= $limit ) {
 						$form->add_error(
 							$this->field_key,
@@ -491,7 +549,7 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 		 *
 		 * @return boolean
 		 */
-		private function isUltimateMemberV2Installed() {
+		private function is_ultimate_member_v2_installed() {
 			if ( ! function_exists( 'is_plugin_active' ) ) {
 				include_once ABSPATH . 'wp-admin/includes/plugin.php';
 			}
@@ -542,24 +600,25 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 		 * To update form option.
 		 */
 		public function handle_form_options() {
-			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option() ) ) {
+			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option(), 'um_pass_reset_enable' ) ) {
 				return;
 			}
 
-			$this->is_form_enabled     = $this->sanitize_form_post( 'um_pass_reset_enable' );
-			$this->otp_type            = $this->sanitize_form_post( 'um_pass_reset_enable_type' );
-			$this->phone_key           = $this->sanitize_form_post( 'um_pass_reset_field_key' );
-			$this->is_only_phone_reset = $this->sanitize_form_post( 'um_pass_reset_only_phone' );
-			$this->button_text         = $this->sanitize_form_post( 'um_pr_button_text' );
-
+			$this->is_form_enabled = $this->sanitize_form_post( 'um_pass_reset_enable' );
+			$this->otp_type        = $this->sanitize_form_post( 'um_pass_reset_enable_type' );
+			$this->phone_key       = $this->sanitize_form_post( 'um_pass_reset_field_key' );
+			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
+				$this->is_only_phone_reset = $this->sanitize_form_post( 'um_pass_reset_only_phone' );
+			} else {
+				$this->is_only_phone_reset = false;
+			}
+			$this->button_text = $this->sanitize_form_post( 'um_pass_reset_button_text' );
 			update_option( 'mo_um_pr_pass_enable', $this->is_form_enabled );
 			update_option( 'mo_um_pr_enabled_type', $this->otp_type );
 			update_option( 'mo_um_pr_pass_button_text', $this->button_text );
 			update_option( 'mo_um_pr_passphone_key', $this->phone_key );
 			update_option( 'mo_um_pr_only_phone_reset', $this->is_only_phone_reset );
-
 		}
-
 
 		/**
 		 * This function is called by the filter mo_phone_dropdown_selector
@@ -571,7 +630,6 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 		 * @return array
 		 */
 		public function get_phone_number_selector( $selector ) {
-
 			if ( $this->is_form_enabled() && strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
 				array_push( $selector, $this->phone_form_id );
 			}
@@ -579,7 +637,8 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 		}
 
 		/** Getter for $is_only_phone_reset */
-		public function getIsOnlyPhoneReset() {
-			return $this->is_only_phone_reset; }
+		public function get_is_only_phone_reset() {
+			return $this->is_only_phone_reset;
+		}
 	}
 }

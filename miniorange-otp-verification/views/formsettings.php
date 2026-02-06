@@ -8,36 +8,45 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
+
+use OTP\Helper\MoUtility;
+
 echo '  <div class="mo_registration_table_layout px-mo-4" id="selected_form_details">
 			<div class="flex gap-mo-4 m-mo-4" id="mo_forms">
 				<p class="text-lg font-medium pr-mo-44 py-mo-1 flex-1">
-							' . esc_html( mo_( 'Form Settings' ) ) . '			
+							' . esc_html__( 'Form Settings', 'miniorange-otp-verification' ) . '			
 				</p>
 				<div class="flex-1">
 					<div class="flex gap-mo-4">
 						<span>
 							<a  class="mo-button medium secondary" 
 								href="' . esc_url( $moaction ) . '">
-								' . esc_html( mo_( 'Active Forms' ) ) . '
+								' . esc_html__( 'Active Forms', 'miniorange-otp-verification' ) . '
 							</a>
 						</span>
 						<span>
 							<a class="mo-button medium secondary"
 								href="' . esc_url( $forms_list_page ) . '">
-								' . esc_html( mo_( 'Forms List' ) ) . '
+								' . esc_html__( 'Forms List', 'miniorange-otp-verification' ) . '
 							</a>
 						</span>
 						<span>
 								<input  name="save" id="ov_settings_button" ' . esc_attr( $disabled ) . ' 
 										class="mo-button medium inverted" 
-										value="' . esc_attr( mo_( 'Save Settings' ) ) . '" type="submit" />
+										value="' . esc_attr__( 'Save Settings', 'miniorange-otp-verification' ) . '" type="submit" />
 						</span>
 					</div>
 				</div>
 			</div>							
 			<div id="new_form_settings">
 				<div id="form_details">';
-					require $controller . 'forms/class-' . strtolower( $form_name ) . '.php';
+if ( ! empty( $form_name ) && ! empty( $controller ) ) {
+	$sanitized_form_name = sanitize_key( strtolower( $form_name ) );
+	$form_file_path      = $controller . 'forms/class-' . $sanitized_form_name . '.php';
+	if ( MoUtility::mo_require_file( $form_file_path, $controller . 'forms/' ) ) {
+		require $form_file_path;
+	}
+}
 echo '          </div>
 			</div>';
 
@@ -51,10 +60,16 @@ foreach ( $both_email_and_phone_form_list as $key => $value ) {
 						</g>
 					</svg>
 					<div class="grow w-[20%]">
-						<p class="font-bold text-amber-600 m-mo-0">Both Email and Phone Verification Addon</p>
-						<p class="text-amber-600 m-mo-0">This addon provides both email and phone verification on the ' . esc_html( mo_( $form_name ) ) . '</p>
+						<p class="font-bold text-amber-600 m-mo-0">' . esc_html__( 'Both Email and Phone Verification Addon', 'miniorange-otp-verification' ) . '</p>
+						<p class="text-amber-600 m-mo-0">' . esc_html(
+							sprintf(
+								/* translators: %s: Form name */
+								__( 'This addon provides both email and phone verification on the %s', 'miniorange-otp-verification' ),
+								esc_html( $form_name )
+							)
+						) . '</p>
 					</div>
-					<a id="mo_both_email_phone_get_addon" class="mo-button primary inverted" target="_blank" style="cursor:pointer;float:right;" href="' . esc_url( $addon_tab_url ) . '">Get Addon</a>
+					<a id="mo_both_email_phone_get_addon" class="mo-button primary inverted" target="_blank" rel="noopener noreferrer" style="cursor:pointer;float:right;" href="' . esc_url( $addon_tab_url ) . '">' . esc_html__( 'Get Addon', 'miniorange-otp-verification' ) . '</a>
 				</div>
 			</div>';
 	}

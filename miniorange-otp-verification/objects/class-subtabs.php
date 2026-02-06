@@ -1,5 +1,5 @@
 <?php
-/**Load Abstract Class SubTabs
+/**Load Interface SubTabs
  *
  * @package miniorange-otp-verification/objects
  */
@@ -9,30 +9,89 @@ namespace OTP\Objects;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
 /**
  * Subtabs class.
  */
 if ( ! class_exists( 'SubTabs' ) ) {
 	/**
 	 * SubTabs class
+	 *
+	 * This final class defines constants for various subtab identifiers
+	 * used throughout the plugin's admin interface. It provides a centralized
+	 * location for managing subtab names and ensures consistency across
+	 * the plugin's navigation system.
 	 */
 	final class SubTabs {
-		const MO_FREE_FORMS       = 'free_forms';
-		const MO_PREMIUM_FORMS    = 'premium_forms';
-		const MO_OTP_SETTINGS     = 'otp_settings';
-		const MO_GENERAL_SETTINGS = 'general_settings';
-		const MO_GATEWAY_CONFIG   = 'gateway_config';
-		const MO_MESSAGE_BOX      = 'message_box';
-		const MO_POPUP_DESIGN     = 'popup_design';
-		const MO_UM_NOTIF         = 'um_notification';
-		const MO_WC_NOTIF         = 'wc_notification';
-		const MO_FREE_ADDONS      = 'free_addons';
-		const MO_PREMIUM_ADDONS   = 'premium_addons';
-		const MO_REPORTING        = 'reporting';
-		const MO_TEMPLATE_CONFIG  = 'template_configurations';
-		const MO_DOKAN_NOTIF      = 'dokan_vendor_notifications';
-		const MO_WCFM_NOTIF       = 'wcfm_vendor_notifications';
-		const MO_FORM_NOTIF       = 'form_notification';
 
+		/**
+		 * OTP settings subtab identifier
+		 *
+		 * @var string
+		 */
+		const MO_OTP_SETTINGS = 'otp_settings';
+
+		/**
+		 * General settings subtab identifier
+		 *
+		 * @var string
+		 */
+		const MO_GENERAL_SETTINGS = 'general_settings';
+
+		/**
+		 * Message box subtab identifier
+		 *
+		 * @var string
+		 */
+		const MO_MESSAGE_BOX = 'message_box';
+
+		/**
+		 * Popup design subtab identifier
+		 *
+		 * @var string
+		 */
+		const MO_POPUP_DESIGN = 'popup_design';
+
+		/**
+		 * Ultimate Member notification subtab identifier
+		 *
+		 * @var string
+		 */
+		const MO_UM_NOTIF = 'um_notification';
+
+		/**
+		 * WooCommerce notification subtab identifier
+		 *
+		 * @var string
+		 */
+		const MO_WC_NOTIF = 'wc_notification';
+
+		/**
+		 * Reporting subtab identifier
+		 *
+		 * @var string
+		 */
+		const MO_REPORTING = 'reporting';
+
+		/**
+		 * Dokan vendor notifications subtab identifier
+		 *
+		 * @var string
+		 */
+		const MO_DOKAN_NOTIF = 'dokan_vendor_notifications';
+
+		/**
+		 * WCFM vendor notifications subtab identifier
+		 *
+		 * @var string
+		 */
+		const MO_WCFM_NOTIF = 'wcfm_vendor_notifications';
+
+		/**
+		 * Form notification subtab identifier
+		 *
+		 * @var string
+		 */
+		const MO_FORM_NOTIF = 'form_notification';
 	}
 }

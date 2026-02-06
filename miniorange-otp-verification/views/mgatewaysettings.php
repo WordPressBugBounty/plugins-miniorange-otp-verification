@@ -2,47 +2,88 @@
 /**
  * Loads View for List of all the addons.
  *
- * @package miniorange-otp-verification
+ * @package miniorange-otp-verification/views
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
 
 use OTP\Helper\MoConstants;
 use OTP\Helper\MoMessages;
 use OTP\Helper\MoUtility;
 
-$request_uri = remove_query_arg( array( 'addon', 'form', 'subpage' ), isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ); // phpcs:ignore -- false positive.
+$current_page = MoUtility::get_current_page_parameter_value( 'page', '' );
+$request_uri  = admin_url( 'admin.php' );
+if ( ! empty( $current_page ) ) {
+	$request_uri = add_query_arg( array( 'page' => $current_page ), $request_uri );
+}
+$request_uri = remove_query_arg( array( 'addon', 'form', 'subpage' ), $request_uri );
 $license_url = add_query_arg( array( 'page' => 'mootppricing' ), $request_uri );
 
 echo '
 		<div class="mo-header">
-			<p class="mo-heading flex-1">' . esc_html( mo_( 'Gateway Settings' ) ) . '</p>
+			<p class="mo-heading flex-1">' . esc_html__( 'Gateway Settings', 'miniorange-otp-verification' ) . '</p>
 			<input type="submit" name="save" ' . esc_attr( $disabled ) . '
-						class="mo-button inverted" disabled value="' . esc_attr( mo_( 'Save Settings' ) ) . '">
+						class="mo-button inverted" disabled value="' . esc_attr( __( 'Save Settings', 'miniorange-otp-verification' ) ) . '">
 		</div>
 				<div class="border-b flex flex-col gap-mo-6 px-mo-4">
 					<div class="w-full flex m-mo-4">
 						<div class="flex-1">
-							<h5 class="mo-title">' . esc_html( mo_( 'SMS Gateway Configurations' ) ) . '</h5>
-							<div class="mo-caption mt-mo-2 mr-mo-20">' . wp_kses(
-								mo_( 'SMS Gateway is a service provider for sending SMS on your behalf to your users. Your default SMS gateway is <b>miniOrange gateway</b>. You can <a style="cursor:pointer;" target="_blank"  href="' . esc_url( MOV_PORTAL ) . '/initializePayment?requestOrigin=wp_otp_verification_basic_plan" ><u><i>buy SMS transactions from miniOrange gateway</i></u></a> or <u><i><a href="' . esc_attr( $license_url ) . '" target="_blank" >check our gateway-based plans.</a></i></u>' ),
-								array(
-									'u' => array(),
-									'i' => array(),
-									'b' => array(),
-									'a' => array(
-										'href'   => array(),
-										'style'  => array(),
-										'target' => array(),
-									),
-								)
-							);
+							<h5 class="mo-title">' . esc_html__( 'SMS Gateway Configurations', 'miniorange-otp-verification' ) . '</h5>
+							<div class="mo-caption mt-mo-2 mr-mo-20">';
+/* translators: 1: default gateway name, 2: link to buy SMS transactions, 3: link to check plans */
+$mo_sms_gateway_text = __(
+	'SMS Gateway is a service provider for sending SMS on your behalf to your users. Your default SMS gateway is %1$s. <br> You can %2$s or %3$s.',
+	'miniorange-otp-verification'
+);
+
+$default_gateway = '<b>' . esc_html__( 'miniOrange gateway', 'miniorange-otp-verification' ) . '</b>';
+
+$recharge_url     = add_query_arg(
+	'requestOrigin',
+	'wp_otp_verification_basic_plan',
+	trailingslashit( MOV_PORTAL ) . 'initializePayment'
+);
+$buy_transactions = sprintf(
+	/* translators: 1: <a><u><i> open tags, 2: link text, 3: </i></u></a> close tags */
+	'%1$s%2$s%3$s',
+	'<a style="cursor:pointer;" target="_blank" rel="noopener noreferrer" href="' . esc_url( $recharge_url ) . '"><u><i>',
+	esc_html__( 'buy SMS transactions from the miniOrange gateway', 'miniorange-otp-verification' ),
+	'</i></u></a>'
+);
+
+$check_plans = sprintf(
+	/* translators: 1: line break, 2: <a><u><i> open tags, 3: link text, 4: </i></u></a> close tags */
+	__( '%1$s %2$s check our gateway-based plans %3$s', 'miniorange-otp-verification' ),
+	'<br>',
+	'<a href="' . esc_url( $license_url ) . '" target="_blank" rel="noopener noreferrer"><u><i>',
+	'</i></u></a>',
+);
+
+echo wp_kses(
+	sprintf( $mo_sms_gateway_text, $default_gateway, $buy_transactions, $check_plans ),
+	array(
+		'u'  => array(),
+		'i'  => array(),
+		'b'  => array(),
+		'br' => array(),
+		'a'  => array(
+			'href'   => array(),
+			'style'  => array(),
+			'target' => array(),
+			'rel'    => array(),
+		),
+	)
+);
 echo '						</div>
 						</div>
 						<div class="flex-1 pr-mo-4 pl-mo-2 py-mo-4">
 							<div class="flex">
-								<div class="w-[46%] my-mo-2">' . esc_html( mo_( 'Select Gateway type' ) ) . ': </div>
+								<div class="w-[46%] my-mo-2">' . esc_html( __( 'Select Gateway type', 'miniorange-otp-verification' ) ) . ': </div>
 								<div class="mo-select-wrapper w-[46%]">
 									<select id="custom_gateway_type" disabled name="mo_customer_validation_custom_gateway_type">
-										<option value="MoGateway">miniOrange Gateway</option>
+										<option value="MoGateway">' . esc_html__( 'miniOrange Gateway', 'miniorange-otp-verification' ) . '</option>
 									</select>									
 								</div>
 							</div>
@@ -58,9 +99,21 @@ echo '						</div>
 													</g>
 												</g>
 											</svg>
-										<div class="my-mo-5 mr-mo-4">To use your custom SMS Gateway, upgrade to the premium plan. 
-													<br>Check <a class="font-semibold text-yellow-500" href="' . esc_url( $license_url ) . '">Licensing Tab</a> to learn more.
-													</a>
+										<div class="my-mo-5 mr-mo-4">' . esc_html__( 'To use your custom SMS Gateway, upgrade to the premium plan.', 'miniorange-otp-verification' ) . ' 
+													<br>' . wp_kses(
+											sprintf(
+															/* translators: %s: Licensing tab link */
+												__( 'Check %s to learn more.', 'miniorange-otp-verification' ),
+												'<a class="font-semibold text-yellow-500" target="_blank" href="' . esc_url( $license_url ) . '">' . esc_html__( 'Licensing Tab', 'miniorange-otp-verification' ) . '</a>'
+											),
+											array(
+												'a' => array(
+													'href' => array(),
+													'class' => array(),
+													'target' => array(),
+												),
+											)
+										) . '
 										</div>
 									</div>
 								</div>
@@ -71,8 +124,8 @@ echo '						</div>
 				<div class="border-b flex flex-col gap-mo-6 px-mo-4">
 					<div class="w-full flex m-mo-4">
 						<div class="flex-1">
-							<h5 class="mo-title">' . esc_html( mo_( 'Email Gateway(SMTP) Configurations' ) ) . '</h5>
-							<p class="mo-caption mt-mo-2">' . esc_html( mo_( 'SMTP Gateway is a service provider for sending Emails on your behalf to your users.' ) ) . '</p>
+							<h5 class="mo-title">' . esc_html__( 'Email Gateway(SMTP) Configurations', 'miniorange-otp-verification' ) . '</h5>
+							<p class="mo-caption mt-mo-2">' . esc_html__( 'SMTP Gateway is a service provider for sending Emails on your behalf to your users.', 'miniorange-otp-verification' ) . '</p>
 							
 						</div>
 						<div class="flex-1 pr-mo-4 pl-mo-2 py-mo-4">
@@ -85,7 +138,7 @@ echo '						</div>
 												class="app_enable"
 												value="mo_smtp_enable" 
 												checked />
-										' . esc_html( mo_( 'Enable miniOrange SMTP' ) ) . '
+										' . esc_html__( 'Enable miniOrange SMTP', 'miniorange-otp-verification' ) . '
 									</div>
 									<div class="flex gap-mo-4">
 										<p>
@@ -94,7 +147,7 @@ echo '						</div>
 													name="mo_customer_validation_smtp_enable_type"
 													class="app_enable"
 													value="mo_your_own_smtp_enable" />
-											' . esc_html( mo_( 'Enable your own SMTP' ) ) . '
+											' . esc_html__( 'Enable your own SMTP', 'miniorange-otp-verification' ) . '
 										
 										';
 		mo_draw_tooltip(
@@ -104,10 +157,24 @@ echo '						</div>
 									echo '
 										<span class="tooltip">' . wp_kses( MoConstants::MO_CROWN_SVG, MoUtility::mo_allow_svg_array() ) . '
 											<span class="tooltiptext prem_form_tooltip" >
-												<span  class="header prem_form_header" ><b>' . esc_html( mo_( 'Premium Feature ' ) ) . '</b></span>
-												<span class="body">' . esc_html( mo_( 'To use your own SMTP, upgrade to the premium plan. ' ) ) . '
-													<br>' . esc_html( mo_( 'Check ' ) ) . '<a class="font-semibold text-yellow-500" href="' . esc_url( $license_url ) . '" target="_blank">' . esc_html( mo_( 'Licensing Tab' ) ) . '</a>' . esc_html( mo_( ' to learn more.' ) ) . '
-													</a>
+												<span  class="header prem_form_header" ><b>' . esc_html( __( 'Premium Feature ', 'miniorange-otp-verification' ) ) . '</b></span>
+												<span class="body">' . wp_kses(
+													sprintf(
+														/* translators: 1: <a> open tag, 2: link text, 3: </a> close tag */
+														__( 'To use your own SMTP, upgrade to the premium plan. %1$sCheck %2$s to learn more.%3$s', 'miniorange-otp-verification' ),
+														'<a class="font-semibold text-yellow-500" href="' . esc_url( $license_url ) . '" target="_blank" rel="noopener noreferrer">',
+														esc_html__( 'Licensing Tab', 'miniorange-otp-verification' ),
+														'</a>'
+													),
+													array(
+														'a' => array(
+															'href'   => array(),
+															'class'  => array(),
+															'target' => array(),
+															'rel'    => array(),
+														),
+													)
+												) . '
 												</span>
 											</span>
 										</span>
@@ -119,11 +186,11 @@ echo '						</div>
 					</div>
 				</div>';
 
-		echo '	<div class="border-b flex flex-col gap-mo-6 px-mo-4">
+									echo '	<div class="border-b flex flex-col gap-mo-6 px-mo-4">
 					<div class="w-full flex m-mo-4">
 						<div class="flex-1">
-							<h5 class="mo-title">' . esc_html( 'SMS Backup Gateway Configuration' ) . '</h5>
-							<p class="mo-caption mt-mo-2 mr-mo-20">' . esc_html( mo_( 'When the primary gateway is unavailable, the backup SMS gateway takes over and sends the SMS messages to recipients.' ) ) . '</p>
+							<h5 class="mo-title">' . esc_html__( 'SMS Backup Gateway Configuration', 'miniorange-otp-verification' ) . '</h5>
+							<p class="mo-caption mt-mo-2 mr-mo-20">' . esc_html( __( 'When the primary gateway is unavailable, the backup SMS gateway takes over and sends the SMS messages to recipients.', 'miniorange-otp-verification' ) ) . '</p>
 						</div>
 						<div class="flex-1">
 							<div class="pb-mo-2 pr-mo-10">
@@ -137,8 +204,27 @@ echo '						</div>
 												</g>
 											</g>
 									</svg>
-									<div class="my-mo-5 mr-mo-4">' . wp_kses( mo_( 'This is a Enterprise Plan feature. Check <a class="font-semibold text-yellow-500" href="' . esc_url( $license_url ) . '">Licensing Tab</a> to learn more.' ), MoUtility::mo_allow_html_array() ) . ' 
-										</a>
+									<div class="my-mo-5 mr-mo-4">' .
+									wp_kses(
+										sprintf(
+											/* translators: %s: Link to Licensing Tab */
+											__(
+												'This is an Enterprise Plan feature. Check %s to learn more.',
+												'miniorange-otp-verification'
+											),
+											'<a class="font-semibold text-yellow-500" target="_blank"  href="' . esc_url( $license_url ) . '">' .
+												esc_html__( 'Licensing Tab', 'miniorange-otp-verification' ) .
+												'</a>'
+										),
+										array(
+											'a' => array(
+												'href'   => array(),
+												'class'  => array(),
+												'target' => array(),
+											),
+										)
+									)
+									. ' 
 									</div>
 								</div>
 							</div>

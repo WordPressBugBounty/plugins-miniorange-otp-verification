@@ -1,5 +1,6 @@
 <?php
-/**Load adminstrator changes for MenuItems
+/**
+ * Load administrator changes for MenuItems
  *
  * @package miniorange-otp-verification/helper
  */
@@ -72,8 +73,8 @@ if ( ! class_exists( 'MenuItems' ) ) {
 		 */
 		private function add_main_menu() {
 			add_menu_page(
-				'OTP Verification',
-				'OTP Verification',
+				__( 'OTP Verification', 'miniorange-otp-verification' ),
+				__( 'OTP Verification', 'miniorange-otp-verification' ),
 				'manage_options',
 				$this->menu_slug,
 				$this->callback,

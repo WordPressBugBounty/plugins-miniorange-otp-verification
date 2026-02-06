@@ -2,36 +2,38 @@
 /**
  * Initializer functions for addon files.
  *
- * @package miniorange-otp-verification/Notifications
+ * @package OTP\Notifications\WcSMSNotification
  */
 
 /**
  * AddOn Name: WooCommerce SMS Notification
  * Plugin URI: http://miniorange.com
  * Description: Send out SMS notifications to admins, vendors, users.
- * Version: 1.0.0
  * Author: miniOrange
  * Author URI: http://miniorange.com
  * Text Domain: miniorange-otp-verification
  * WC requires at least: 2.0.0
  * WC tested up to: 3.3.4
- * License: GPL2
+ * License: Expat
+ * License URI: https://plugins.miniorange.com/mit-license
  */
 
 namespace OTP\Notifications\WcSMSNotification;
 
-use OTP\Notifications\WcSMSNotification\Handler\WooCommerceNotifications;
-use OTP\Notifications\WcSMSNotification\Helper\MoWcAddOnMessages;
-use OTP\Notifications\WcSMSNotification\Helper\WooCommerceNotificationsList;
-use OTP\Notifications\WcSMSNotification\Helper\WooCommercePremiumTags;
-use OTP\Helper\AddOnList;
-use OTP\Objects\AddOnInterface;
-use OTP\Objects\BaseAddOn;
-use OTP\Traits\Instance;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+use OTP\Notifications\WcSMSNotification\Handler\WooCommerceNotifications;
+use OTP\Notifications\WcSMSNotification\Helper\MoWcAddOnMessages;
+use OTP\Notifications\WcSMSNotification\Helper\WooCommercePremiumTags;
+use OTP\Helper\AddOnList;
+use OTP\Helper\MoMessages;
+use OTP\Objects\AddOnInterface;
+use OTP\Objects\BaseAddOn;
+use OTP\Traits\Instance;
+use OTP\Helper\MoUtility;
+
 require 'wcautoload.php';
 
 /**
@@ -60,12 +62,29 @@ if ( ! class_exists( 'WooCommerceSmsNotification' ) ) {
 		 * and enqueue_scripts WordPress hook.
 		 */
 		public function mo_sms_notif_settings_script() {
+			if ( ! function_exists( 'current_user_can' ) || ! current_user_can( 'manage_options' ) ) {
+				return;
+			}
+
 			wp_register_script( 'mo_custom_order_sms', WC_MSN_JS_URL, array( 'jquery' ), MSN_VERSION, false );
+
+			// Generate nonce and intl-tel-input utils URL for use in JavaScript.
+			$nonce     = wp_create_nonce( 'mo_custom_order_sms_nonce' );
+			$utils_url = add_query_arg(
+				array(
+					'action' => 'mo_get_intl_tel_utils',
+					'nonce'  => $nonce,
+				),
+				admin_url( 'admin-ajax.php' )
+			);
+
 			wp_localize_script(
 				'mo_custom_order_sms',
 				'mocustommsg',
 				array(
-					'siteURL' => admin_url(),
+					'siteURL'     => admin_url( 'admin-ajax.php' ),
+					'nonce'       => $nonce,
+					'telUtilsUrl' => esc_url_raw( $utils_url ),
 				)
 			);
 			wp_enqueue_script( 'mo_custom_order_sms' );
@@ -92,12 +111,12 @@ if ( ! class_exists( 'WooCommerceSmsNotification' ) ) {
 		 */
 		public function initialize_helpers() {
 			MoWcAddOnMessages::instance();
-			WooCommerceNotificationsList::instance();
 
-			$wc_premium_tags_helper = MOV_DIR . 'notifications/wcsmsnotification/helper/class-woocommercepremiumtags.php';
-			if ( file_exists( $wc_premium_tags_helper ) ) {
-				WooCommercePremiumTags::instance();
+			if ( ! MoUtility::mo_require_file( MOV_DIR . 'notifications/wcsmsnotification/helper/class-woocommercepremiumtags.php', MOV_DIR ) ) {
+				return;
 			}
+			require MOV_DIR . 'notifications/wcsmsnotification/helper/class-woocommercepremiumtags.php';
+			WooCommercePremiumTags::instance();
 		}
 
 
@@ -118,6 +137,9 @@ if ( ! class_exists( 'WooCommerceSmsNotification' ) ) {
 		 * hook of the OTP verification plugin.
 		 */
 		public function mo_sms_notif_delete_options() {
+			if ( ! function_exists( 'current_user_can' ) || ! current_user_can( 'manage_options' ) ) {
+				return;
+			}
 			delete_site_option( 'mo_wc_sms_notification_settings' );
 		}
 	}

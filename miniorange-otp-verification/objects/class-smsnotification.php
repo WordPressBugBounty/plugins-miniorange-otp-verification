@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use OTP\Helper\MoPHPSessions;
+
 /**
  * This class is used to define the base class of the SMS Notifications.
  * Each of the SMS Notification class needs to extend this class. They
@@ -19,6 +20,10 @@ use OTP\Helper\MoPHPSessions;
 if ( ! class_exists( 'SMSNotification' ) ) {
 	/**
 	 * SMSNotification class
+	 *
+	 * This abstract class provides the foundation for SMS notification functionality.
+	 * It defines common properties and methods that all SMS notification classes
+	 * must implement, including the abstract send_sms method.
 	 */
 	abstract class SMSNotification {
 
@@ -124,28 +129,25 @@ if ( ! class_exists( 'SMSNotification' ) ) {
 		public $notification_type;
 
 		/**
-		 * ----------------------------------------------------------------
-		 * constructor
-		 * ----------------------------------------------------------------
+		 * Constructor.
+		 *
+		 * @return void
 		 */
-		public function __construct(){}
+		public function __construct() {}
 
 		/**
-		 * ----------------------------------------------------------------
-		 * methods
-		 * ---------------------------------------------------------------
+		 * Abstract method to send SMS
 		 *
 		 * @param array $args sms object.
+		 * @return mixed
 		 */
-		abstract public function send_sms( array $args);
-
+		abstract public function send_sms( array $args );
 
 		/**
-		 * ----------------------------------------------------------------
-		 * setters
-		 * ----------------------------------------------------------------
+		 * Set notification in session
 		 *
 		 * @param object $notification_type notification object.
+		 * @return void
 		 */
 		public function set_notif_in_session( $notification_type ) {
 			MoPHPSessions::add_session_var( 'mo_addon_notif_type', $this->page );
@@ -162,12 +164,10 @@ if ( ! class_exists( 'SMSNotification' ) ) {
 			return $this;
 		}
 
-
 		/**
 		 * Setter function for recipient variable
 		 *
-		 * @param mixed $recipient sms reciepient.
-		 *
+		 * @param mixed $recipient sms recipient.
 		 * @return SMSNotification
 		 */
 		public function set_recipient( $recipient ) {
@@ -175,12 +175,10 @@ if ( ! class_exists( 'SMSNotification' ) ) {
 			return $this;
 		}
 
-
 		/**
-		 * Setter function for recipient variable
+		 * Setter function for sms_body variable
 		 *
 		 * @param mixed $sms_body sms body.
-		 *
 		 * @return SMSNotification
 		 */
 		public function set_sms_body( $sms_body ) {
@@ -189,10 +187,9 @@ if ( ! class_exists( 'SMSNotification' ) ) {
 		}
 
 		/**
-		 * Setter function for recipient variable
+		 * Setter function for template_name variable
 		 *
-		 * @param mixed $template_name sms body.
-		 *
+		 * @param mixed $template_name template name.
 		 * @return SMSNotification
 		 */
 		public function set_template_name( $template_name ) {
@@ -201,10 +198,9 @@ if ( ! class_exists( 'SMSNotification' ) ) {
 		}
 
 		/**
-		 * Setter function for recipient variable
+		 * Setter function for sms_tags variable
 		 *
 		 * @param mixed $sms_tags sms tags.
-		 *
 		 * @return SMSNotification
 		 */
 		public function set_sms_tags( $sms_tags ) {

@@ -2,7 +2,7 @@
 /**
  * Load admin view for Ulitmate Member Profile Form.
  *
- * @package miniorange-otp-verification/handler
+ * @package miniorange-otp-verification/handler/forms
  */
 
 namespace OTP\Handler\Forms;
@@ -10,6 +10,7 @@ namespace OTP\Handler\Forms;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
+
 use OTP\Helper\FormSessionVars;
 use OTP\Helper\MoConstants;
 use OTP\Helper\MoMessages;
@@ -61,11 +62,11 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 			$this->type_both_tag           = 'mo_um_profile_both_enable';
 			$this->form_key                = 'ULTIMATE_PROFILE_FORM';
 			$this->verify_field_key        = 'verify_field';
-			$this->form_name               = mo_( 'Ultimate Member Profile/Account Form' );
+			$this->form_name               = 'Ultimate Member Profile/Account Form';
 			$this->is_form_enabled         = get_mo_option( 'um_profile_enable' );
 			$this->restrict_duplicates     = get_mo_option( 'um_profile_restrict_duplicates' );
 			$this->button_text             = get_mo_option( 'um_profile_button_text' );
-			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : mo_( 'Click Here to send OTP' );
+			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : '';
 			$this->email_key               = 'user_email';
 			$this->phone_key               = get_mo_option( 'um_profile_phone_key' );
 			$this->phone_key               = $this->phone_key ? $this->phone_key : 'mobile_number';
@@ -86,7 +87,7 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 			add_action( 'wp_enqueue_scripts', array( $this, 'miniorange_register_um_script' ) );
 			add_action( 'um_submit_account_errors_hook', array( $this, 'miniorange_um_validation' ), 99, 1 );
 			add_action( 'um_add_error_on_form_submit_validation', array( $this, 'miniorange_um_profile_validation' ), 1, 3 );
-			$this->routeData();
+			$this->route_data();
 		}
 
 		/**
@@ -94,9 +95,9 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 		 *
 		 * @return bool
 		 */
-		private function isAccountVerificationEnabled() {
+		private function is_account_verification_enabled() {
 			return strcasecmp( $this->otp_type, $this->type_email_tag ) === 0
-			|| strcasecmp( $this->otp_type, $this->type_both_tag ) === 0;
+				|| strcasecmp( $this->otp_type, $this->type_both_tag ) === 0;
 		}
 
 		/**
@@ -104,9 +105,9 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 		 *
 		 * @return bool
 		 */
-		private function isProfileVerificationEnabled() {
+		private function is_profile_verification_enabled() {
 			return strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0
-			|| strcasecmp( $this->otp_type, $this->type_both_tag ) === 0;
+				|| strcasecmp( $this->otp_type, $this->type_both_tag ) === 0;
 		}
 
 		/**
@@ -114,17 +115,18 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 		 *
 		 * @throws ReflectionException -In case of failures, an exception is thrown.
 		 */
-		private function routeData() {
-			if ( ! array_key_exists( 'option', $_GET ) ) { // phpcs:ignore -- false positive.
+		private function route_data() {
+			if ( ! isset( $_GET['option'] ) ) {
 				return;
 			}
-			if ( ! check_ajax_referer( $this->nonce, 'security', false ) ) {
+			// Security: Use hardcoded nonce action 'form_nonce' instead of variable.
+			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ), MoConstants::ERROR_JSON_TYPE ) );
 			}
 			$data = MoUtility::mo_sanitize_array( $_POST );
-			switch ( trim( sanitize_text_field( wp_unslash( $_GET['option'] ) ) ) ) { // phpcs:ignore -- false positive.
+			switch ( trim( sanitize_text_field( wp_unslash( $_GET['option'] ) ) ) ) {
 				case 'miniorange-um-acc-ajax-verify':
-					$this->sendAjaxOTPRequest( $data );
+					$this->send_ajax_otp_request( $data );
 					break;
 			}
 		}
@@ -137,12 +139,12 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 		 * @param array $data -the post data on send OTP request.
 		 * @throws ReflectionException -In case of failures, an exception is thrown.
 		 */
-		private function sendAjaxOTPRequest( $data ) {
+		private function send_ajax_otp_request( $data ) {
 			MoUtility::initialize_transaction( $this->form_session_var );
 			$mobile_number    = MoUtility::sanitize_check( 'user_phone', $data );
 			$user_email       = MoUtility::sanitize_check( 'user_email', $data );
 			$otp_request_type = MoUtility::sanitize_check( 'otp_request_type', $data );
-			$this->startOtpTransaction( $user_email, $mobile_number, $otp_request_type );
+			$this->start_otp_transaction( $user_email, $mobile_number, $otp_request_type );
 		}
 
 		/**
@@ -153,9 +155,10 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 		 * @param string $phone_number      the phone number posted by the user during registration.
 		 * @param string $otp_request_type    the request type. Decides b/w email or sms verification.
 		 */
-		private function startOtpTransaction( $email, $phone_number, $otp_request_type ) {
+		private function start_otp_transaction( $email, $phone_number, $otp_request_type ) {
 			if ( strcasecmp( $otp_request_type, $this->type_phone_tag ) === 0 ) {
-				$this->checkDuplicates( $phone_number, $this->phone_key );
+				$phone_number = MoUtility::process_phone_number( $phone_number );
+				$this->check_duplicates( $phone_number, $this->phone_key );
 				SessionUtils::add_phone_verified( $this->form_session_var, $phone_number );
 				$this->send_challenge( null, $email, null, $phone_number, VerificationType::PHONE, null, null );
 			} else {
@@ -172,8 +175,8 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 		 * @param string $value  Value to check against.
 		 * @param string $key Key against against wich value is stored.
 		 */
-		private function checkDuplicates( $value, $key ) {
-			if ( $this->restrict_duplicates && $this->isPhoneNumberAlreadyInUse( $value, $key ) ) {
+		private function check_duplicates( $value, $key ) {
+			if ( $this->restrict_duplicates && $this->is_phone_number_already_in_use( $value, $key ) ) {
 				$message = MoMessages::showMessage( MoMessages::PHONE_EXISTS );
 				wp_send_json( MoUtility::create_json( $message, MoConstants::ERROR_JSON_TYPE ) );
 			}
@@ -185,31 +188,38 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 		 * @param string $key the usermeta key.
 		 * @return string
 		 */
-		private function getUserData( $key ) {
+		private function get_user_data( $key ) {
 			$current_user = wp_get_current_user();
 			if ( $key === $this->phone_key ) {
-				global $wpdb;
-				$results = $wpdb->get_row( $wpdb->prepare( "SELECT meta_value FROM `{$wpdb->prefix}usermeta` WHERE `meta_key` = %s AND `user_id` = %d", array( $key, $current_user->ID ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, Direct database call without caching detected -- DB Direct Query is necessary here.
-				return ( isset( $results ) ) ? $results->meta_value : '';
-			} else {
-				return $current_user->user_email;
+				$meta_value = get_user_meta( $current_user->ID, $key, true );
+				return $meta_value ? $meta_value : '';
 			}
-
+			return $current_user->user_email;
 		}
 
 		/**
 		 * Check form session. If user is successfully validated
 		 * then unset the session variables.
 		 *
-		 * @param Form $form Ultimate Member Form Object.
+		 * @param Form   $form Ultimate Member Form Object.
+		 * @param string $verification_type Optional verification type (PHONE or EMAIL). If not provided, uses get_verification_type().
 		 */
-		private function checkFormSession( $form ) {
-			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->get_verification_type() ) ) {
-				$this->unset_otp_session_variables();
+		private function check_form_session( $form, $verification_type = null ) {
+			if ( null === $verification_type ) {
+				$verification_type = $this->get_verification_type();
+			}
+			if ( VerificationType::BOTH === $verification_type ) {
+				$phone_match     = SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, VerificationType::PHONE );
+				$email_match     = SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, VerificationType::EMAIL );
+				$is_status_match = $phone_match || $email_match;
 			} else {
+				$is_status_match = SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $verification_type );
+			}
+			if ( ! $is_status_match ) {
 				$form->add_error( $this->email_key, MoUtility::get_invalid_otp_method() );
 				$form->add_error( $this->phone_key, MoUtility::get_invalid_otp_method() );
 			}
+			return $is_status_match;
 		}
 
 		/**
@@ -218,8 +228,8 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 		 *
 		 * @return \um\core\Form
 		 */
-		private function getUmFormObj() {
-			if ( $this->isUltimateMemberV2Installed() ) {
+		private function get_um_form_obj() {
+			if ( $this->is_ultimate_member_v2_installed() ) {
 				return UM()->form();
 			} else {
 				global $ultimatemember;
@@ -232,7 +242,7 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 		 *
 		 * @return boolean
 		 */
-		private function isUltimateMemberV2Installed() {
+		private function is_ultimate_member_v2_installed() {
 			if ( ! function_exists( 'is_plugin_active' ) ) {
 				include_once ABSPATH . 'wp-admin/includes/plugin.php';
 			}
@@ -246,11 +256,41 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 		 * @param string $key - meta_key to search for.
 		 * @return bool
 		 */
-		private function isPhoneNumberAlreadyInUse( $phone, $key ) {
-			global $wpdb;
-			MoUtility::process_phone_number( $phone );
-			$results = $wpdb->get_row( $wpdb->prepare( "SELECT `user_id` FROM `{$wpdb->prefix}usermeta` WHERE `meta_key` = %s AND `meta_value` =  %s", array( $key, $phone ) ) );// phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, Direct database call without caching detected -- DB Direct Query is necessary here.
-			return ! MoUtility::is_blank( $results );
+		private function is_phone_number_already_in_use( $phone, $key ) {
+			$phone = MoUtility::process_phone_number( $phone );
+
+			// Create cache key based on phone number and meta key.
+			$cache_key   = 'mo_um_phone_in_use_' . md5( $phone . '_' . $key );
+			$cache_group = 'mo_um_profile';
+
+			// Try to get from cache first.
+			$cached_result = wp_cache_get( $cache_key, $cache_group );
+			if ( false !== $cached_result ) {
+				return (bool) $cached_result;
+			}
+
+			// Query database if not in cache.
+			$args = array(
+				'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Necessary to check for duplicate phone numbers. Caching implemented above.
+					array(
+						'key'     => $key,
+						'value'   => $phone,
+						'compare' => '=',
+					),
+				),
+				'number'     => 1,
+				'fields'     => 'ID',
+			);
+
+			$users = get_users( $args );
+
+			// Check if any users were found.
+			$is_in_use = ! empty( $users );
+
+			// Store in cache for 15 minutes (900 seconds).
+			wp_cache_set( $cache_key, $is_in_use, $cache_group, 900 );
+
+			return $is_in_use;
 		}
 
 		/**
@@ -258,23 +298,24 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 		 */
 		public function miniorange_register_um_script() {
 
-			wp_register_script( 'movumprofile', MOV_URL . 'includes/js/moumprofile.min.js', array( 'jquery' ), MOV_VERSION, true );
+			wp_register_script( 'movumprofile', MOV_URL . 'includes/js/moumprofile.js', array( 'jquery' ), MOV_VERSION, true );
 			wp_localize_script(
 				'movumprofile',
 				'moumacvar',
 				array(
-					'siteURL'      => site_url(),
-					'otpType'      => $this->otp_type,
-					'emailOtpType' => $this->type_email_tag,
-					'phoneOtpType' => $this->type_phone_tag,
-					'bothOTPType'  => $this->type_both_tag,
-					'nonce'        => wp_create_nonce( $this->nonce ),
-					'buttonText'   => mo_( $this->button_text ),
-					'imgURL'       => MOV_LOADER_URL,
-					'formKey'      => $this->verify_field_key,
-					'emailValue'   => $this->getUserData( $this->email_key ),
-					'phoneValue'   => $this->getUserData( $this->phone_key ),
-					'phoneKey'     => $this->phone_key,
+					'siteURL'             => site_url(),
+					'otpType'             => $this->otp_type,
+					'emailOtpType'        => $this->type_email_tag,
+					'phoneOtpType'        => $this->type_phone_tag,
+					'bothOTPType'         => $this->type_both_tag,
+					'nonce'               => wp_create_nonce( $this->nonce ),
+					'accountProfileNonce' => wp_create_nonce( 'mo_um_account_profile_nonce' ),
+					'buttonText'          => $this->button_text,
+					'imgURL'              => MOV_LOADER_URL,
+					'formKey'             => $this->verify_field_key,
+					'emailValue'          => $this->get_user_data( $this->email_key ),
+					'phoneValue'          => $this->get_user_data( $this->phone_key ),
+					'phoneKey'            => $this->phone_key,
 				)
 			);
 			wp_enqueue_script( 'movumprofile' );
@@ -288,8 +329,8 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 		 * @param array  $args passed by the hook containing keys value pair of field and value submitted by user.
 		 * @return bool
 		 */
-		private function userHasChangeData( $type, $args ) {
-			$data = $this->getUserData( $type );
+		private function user_has_change_data( $type, $args ) {
+			$data = $this->get_user_data( $type );
 			return strcasecmp( $data, $args[ $type ] ) !== 0;
 		}
 
@@ -303,26 +344,46 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 		 * @param string $type   the type of OTP verification happening. Default is user_email.
 		 */
 		public function miniorange_um_validation( $args, $type = 'user_email' ) {
-
-			if ( ! ( isset( $_POST['_um_account_tab'] ) && sanitize_text_field( wp_unslash( $_POST['_um_account_tab'] ) ) === 'general' && isset( $_POST['user_email'] ) ) && ! isset( $_POST['profile_nonce'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+			if ( ! ( isset( $_POST['_um_account_tab'] ) && sanitize_text_field( wp_unslash( $_POST['_um_account_tab'] ) ) === 'general' && isset( $_POST['user_email'] ) ) && ! isset( $_POST['profile_nonce'] ) ) {
 				return;
 			}
+			if ( isset( $args[ $this->verify_field_key ] ) || isset( $_POST[ $this->verify_field_key ] ) ) {
+				$mo_nonce = isset( $_POST['mo_um_account_profile_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_um_account_profile_nonce'] ) ) : '';
+				if ( empty( $mo_nonce ) || ! wp_verify_nonce( $mo_nonce, 'mo_um_account_profile_nonce' ) ) {
+					return;
+				}
+			}
 			$mode = MoUtility::sanitize_check( 'mode', $args );
-			if ( $this->userHasChangeData( $type, $args ) && 'register' !== $mode ) {
-				$form = $this->getUmFormObj();
-				if ( $this->isValidationRequired( $type ) && ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
-					$key = $this->isProfileVerificationEnabled() && 'profile' === $mode ? $this->phone_key : $this->email_key;
+			if ( empty( $mode ) && isset( $_POST['_um_account_tab'] ) && sanitize_text_field( wp_unslash( $_POST['_um_account_tab'] ) ) === 'general' ) {
+				$mode = 'account';
+			}
+			// Set mode to 'profile' if phone_key is being validated and mode is not already set.
+			if ( empty( $mode ) && $type === $this->phone_key ) {
+				$mode = 'profile';
+			}
+			if ( $this->user_has_change_data( $type, $args ) && 'register' !== $mode ) {
+				$form = $this->get_um_form_obj();
+				if ( $this->is_validation_required( $type ) && ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
+					$key = $this->is_profile_verification_enabled() && 'profile' === $mode ? $this->phone_key : $this->email_key;
 					$form->add_error( $key, MoMessages::showMessage( MoMessages::PLEASE_VALIDATE ) );
 				} else {
+					$otp_validated = false;
+					if ( isset( $args[ $this->verify_field_key ] ) ) {
+						$otp_validated = $this->check_integrity_and_validate_otp( $form, $args[ $this->verify_field_key ], $args, $mode );
+					}
 					foreach ( $args as $key => $value ) {
 						if ( $key === $this->verify_field_key ) {
-							$this->checkIntegrityAndValidateOTP( $form, $value, $args, $mode );
+							continue;
 						} elseif ( $key === $this->phone_key ) {
 							$this->process_phone_numbers( $value, $form );
-						} else {
-							$this->checkIntegrity( $form, $args );
-							$this->checkFormSession( $form );
+						} elseif ( ! $otp_validated ) {
+							$this->check_integrity( $form, $args, $mode );
 						}
+					}
+					if ( $otp_validated ) {
+						$this->unset_otp_session_variables();
+					} elseif ( ! isset( $args[ $this->verify_field_key ] ) ) {
+						$this->check_form_session( $form );
 					}
 				}
 			}
@@ -336,9 +397,9 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 		 * @param string $type the type of OTP verification happening. Default is user_email.
 		 * @return bool
 		 */
-		private function isValidationRequired( $type ) {
-			return $this->isAccountVerificationEnabled() && 'user_email' === $type
-			|| $this->isProfileVerificationEnabled() && $type === $this->phone_key;
+		private function is_validation_required( $type ) {
+			return ( $this->is_account_verification_enabled() && 'user_email' === $type )
+				|| ( $this->is_profile_verification_enabled() && $type === $this->phone_key );
 		}
 
 		/**
@@ -373,7 +434,7 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 				$message = str_replace( '##phone##', $value, $phone_logic->get_otp_invalid_format_message() );
 				$form->add_error( $this->phone_key, $message );
 			}
-			$this->checkDuplicates( $value, $this->phone_key );
+			$this->check_duplicates( $value, $this->phone_key );
 		}
 
 		/**
@@ -389,17 +450,21 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 		 * @param array         $args   passed by the hook containing keys value pair of field and value submitted by user.
 		 * @param string        $mode   mode of the user.
 		 */
-		private function checkIntegrityAndValidateOTP( $form, $value, array $args, $mode ) {
-			$this->checkIntegrity( $form, $args );
+		private function check_integrity_and_validate_otp( $form, $value, array $args, $mode ) {
+			$this->check_integrity( $form, $args, $mode );
 			if ( $form->count_errors() > 0 ) {
-				return;
+				return false;
 			}
-			if ( $this->isProfileVerificationEnabled() && 'profile' === $mode ) {
+
+			$verification_type = null;
+			if ( $this->is_profile_verification_enabled() && 'profile' === $mode ) {
 				$this->validate_challenge( 'phone', null, $value );
+				$verification_type = VerificationType::PHONE;
 			} else {
 				$this->validate_challenge( 'email', null, $value );
+				$verification_type = VerificationType::EMAIL;
 			}
-			$this->checkFormSession( $form );
+			return $this->check_form_session( $form, $verification_type );
 		}
 
 		/**
@@ -409,16 +474,23 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 		 *
 		 * @param \um\core\Form $um_form Ultimate Member form Object.
 		 * @param array         $args   passed by the hook containing keys value pair of field and value submitted by user.
+		 * @param string        $mode   Optional mode to determine which field to check (account or profile).
 		 */
-		private function checkIntegrity( $um_form, array $args ) {
-			if ( $this->isProfileVerificationEnabled() ) {
-				if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $args[ $this->phone_key ] ) ) {
-					$um_form->add_error( $this->phone_key, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) );
+		private function check_integrity( $um_form, array $args, $mode = null ) {
+			if ( $this->is_profile_verification_enabled() && isset( $args[ $this->phone_key ] ) ) {
+				if ( 'account' !== $mode ) {
+					$phone = MoUtility::process_phone_number( $args[ $this->phone_key ] );
+					if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
+						$um_form->add_error( $this->phone_key, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) );
+					}
 				}
 			}
-			if ( $this->isAccountVerificationEnabled() ) {
-				if ( ! SessionUtils::is_email_verified_match( $this->form_session_var, $args[ $this->email_key ] ) ) {
-					$um_form->add_error( $this->email_key, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) );
+
+			if ( $this->is_account_verification_enabled() && isset( $args[ $this->email_key ] ) ) {
+				if ( 'profile' !== $mode ) {
+					if ( ! SessionUtils::is_email_verified_match( $this->form_session_var, $args[ $this->email_key ] ) ) {
+						$um_form->add_error( $this->email_key, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) );
+					}
 				}
 			}
 		}
@@ -443,8 +515,15 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 		 * @param string $extra_data any extra data posted by the user.
 		 * @param string $otp_type the verification type.
 		 */
-		public function handle_post_verification( $redirect_to, $user_login, $user_email, $password, $phone_number,
-											$extra_data, $otp_type ) {
+		public function handle_post_verification(
+			$redirect_to,
+			$user_login,
+			$user_email,
+			$password,
+			$phone_number,
+			$extra_data,
+			$otp_type
+		) {
 			SessionUtils::add_status( $this->form_session_var, self::VALIDATED, $otp_type );
 		}
 
@@ -473,7 +552,7 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 		 */
 		public function get_phone_number_selector( $selector ) {
 
-			if ( $this->is_form_enabled() && $this->isProfileVerificationEnabled() ) {
+			if ( $this->is_form_enabled() && $this->is_profile_verification_enabled() ) {
 				array_push( $selector, $this->phone_form_id );
 			}
 			return $selector;
@@ -483,7 +562,8 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 		 * Handles saving all the Default WordPress Registration Form related options by the admin.
 		 */
 		public function handle_form_options() {
-			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option() ) ) {
+
+			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option(), 'um_profile_enable' ) ) {
 				return;
 			}
 

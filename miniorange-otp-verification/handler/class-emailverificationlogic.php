@@ -1,6 +1,6 @@
 <?php
 /**
- * Comman handler to handle the email logic during phone verification.
+ * Common handler to handle the email logic during phone verification.
  *
  * @package miniorange-otp-verification/handler
  */
@@ -10,7 +10,6 @@ namespace OTP\Handler;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-use OTP\Helper\FormSessionVars;
 use OTP\Helper\GatewayFunctions;
 use OTP\Helper\MoConstants;
 use OTP\Helper\MoMessages;
@@ -18,7 +17,6 @@ use OTP\Helper\MoUtility;
 use OTP\Helper\SessionUtils;
 use OTP\Objects\VerificationLogic;
 use OTP\Traits\Instance;
-use OTP\LicenseLibrary\Mo_License_Service;
 use OTP\Helper\MoPHPSessions;
 
 /**
@@ -37,11 +35,11 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 		 * This function is called to handle Email Verification request. Processes
 		 * the request and starts the OTP Verification process.
 		 *
-		 * @param string $user_login    username of the user.
-		 * @param string $user_email    email of the user.
-		 * @param string $phone_number  phone number of the user.
-		 * @param string $otp_type      email or sms verification.
-		 * @param string $from_both     has user enabled from both.
+		 * @param string $user_login    Username of the user.
+		 * @param string $user_email    Email of the user.
+		 * @param string $phone_number  Phone number of the user.
+		 * @param string $otp_type      Email or SMS verification.
+		 * @param string $from_both     Whether user enabled from both.
 		 */
 		public function handle_logic( $user_login, $user_email, $phone_number, $otp_type, $from_both ) {
 			$this->checkIfUserRegistered( $otp_type, $from_both );
@@ -54,8 +52,9 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 					miniorange_site_otp_validation_form( null, null, null, $license_expired_message, $otp_type, $from_both );
 				}
 			}
-			if ( is_email( $user_email ) ) {
-				$this->handle_matched( $user_login, $user_email, $phone_number, $otp_type, $from_both );
+			$sanitized_user_email = sanitize_email( $user_email );
+			if ( is_email( $sanitized_user_email ) && ! empty( $sanitized_user_email ) ) {
+				$this->handle_matched( $user_login, $sanitized_user_email, $phone_number, $otp_type, $from_both );
 			} else {
 				$this->handle_not_matched( $user_email, $otp_type, $from_both );
 			}
@@ -63,10 +62,10 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 
 
 		/**
-		 * Funtion checks if the user is registered with miniorange and show the error message if not registered.
+		 * Function checks if the user is registered with miniorange and shows the error message if not registered.
 		 *
-		 * @param array $otp_type email or sms verification.
-		 * @param array $from_both has user enabled from both.
+		 * @param string $otp_type  email or sms verification.
+		 * @param string $from_both has user enabled from both.
 		 * @return void
 		 */
 		private function checkIfUserRegistered( $otp_type, $from_both ) {
@@ -85,14 +84,15 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 		 * This function starts the OTP Verification process if email address matches the
 		 * correct format and is not blocked by the admin.
 		 *
-		 * @param string $user_login    username of the user.
-		 * @param string $user_email    email of the user.
-		 * @param string $phone_number  phone number of the user.
-		 * @param string $otp_type      email or sms verification.
-		 * @param string $from_both     has user enabled from both option.
+		 * @param string $user_login    Username of the user.
+		 * @param string $user_email    Email of the user.
+		 * @param string $phone_number  Phone number of the user.
+		 * @param string $otp_type      Email or SMS verification.
+		 * @param string $from_both     Whether user enabled from both option.
 		 */
 		public function handle_matched( $user_login, $user_email, $phone_number, $otp_type, $from_both ) {
-			$message = str_replace( '##email##', $user_email, $this->get_is_blocked_message() );
+			$escaped_email = esc_html( $user_email );
+			$message       = str_replace( '##email##', $escaped_email, $this->get_is_blocked_message() );
 			if ( $this->is_blocked( $user_email, $phone_number ) ) {
 				if ( $this->is_ajax_form() ) {
 					wp_send_json( MoUtility::create_json( $message, MoConstants::ERROR_JSON_TYPE ) );
@@ -114,12 +114,13 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 		 * doesn't match the correct format. Check if admin has set any message, and
 		 * check if the form is an ajax form to show the message in the correct format.
 		 *
-		 * @param string $user_email    the phone number being processed.
+		 * @param string $user_email    the email being processed.
 		 * @param string $otp_type      email or sms verification.
 		 * @param string $from_both     has user enabled from both.
 		 */
 		public function handle_not_matched( $user_email, $otp_type, $from_both ) {
-			$message = str_replace( '##email##', $user_email, $this->get_otp_invalid_format_message() );
+			$escaped_email = esc_html( $user_email );
+			$message       = str_replace( '##email##', $escaped_email, $this->get_otp_invalid_format_message() );
 			if ( $this->is_ajax_form() ) {
 				wp_send_json( MoUtility::create_json( $message, MoConstants::ERROR_JSON_TYPE ) );
 			} else {
@@ -137,12 +138,16 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 		 * @param string $user_email    email of the user.
 		 * @param string $phone_number  phone number of the user.
 		 * @param string $otp_type      email or sms verification.
-		 * @param string $from_both     string has user enabled from both.
+		 * @param string $from_both     has user enabled from both.
 		 */
 		public function start_otp_verification( $user_login, $user_email, $phone_number, $otp_type, $from_both ) {
 			do_action( 'mo_generate_or_resend_otp', $user_login, $user_email, $phone_number, $otp_type, $from_both );
 			$gateway = GatewayFunctions::instance();
 			$content = $gateway->mo_send_otp_token( 'EMAIL', $user_email, '' );
+			if ( ! is_array( $content ) || ! isset( $content['status'] ) ) {
+				$this->handle_otp_sent_failed( $user_login, $user_email, $phone_number, $otp_type, $from_both, array() );
+				return;
+			}
 			switch ( $content['status'] ) {
 				case 'SUCCESS':
 					$this->handle_otp_sent( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content );
@@ -158,22 +163,28 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 		 * Checks if the current form is an AJAX form and decides what message has to be
 		 * shown to the user.
 		 *
-		 * @param string $user_login    username of the user.
-		 * @param string $user_email    email of the user.
-		 * @param string $phone_number  phone number of the user.
-		 * @param string $otp_type      email or sms verification.
-		 * @param string $from_both     has user enabled from both.
-		 * @param array  $content        string the json decoded response from server.
+		 * @param string $user_login    Username of the user.
+		 * @param string $user_email    Email of the user.
+		 * @param string $phone_number  Phone number of the user.
+		 * @param string $otp_type      Email or SMS verification.
+		 * @param string $from_both     Whether user enabled from both.
+		 * @param array  $content       JSON decoded response from server.
 		 */
 		public function handle_otp_sent( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content ) {
-			SessionUtils::set_email_transaction_id( $content['txId'] );
-			$masked_user_email = MoUtility::mo_mask_email( $user_email );
+			$tx_id = isset( $content['txId'] ) ? sanitize_text_field( wp_unslash( $content['txId'] ) ) : '';
+			if ( ! empty( $tx_id ) ) {
+				SessionUtils::set_email_transaction_id( $tx_id );
+			}
+			$safe_email        = sanitize_email( $user_email );
+			$masked_user_email = MoUtility::mo_mask_email( $safe_email );
 			$message           = str_replace( '##email##', $masked_user_email, $this->get_otp_sent_message() );
-			apply_filters( 'mo_start_reporting', $content['txId'], $user_email, $user_email, $otp_type, $message, 'OTP_SENT' );
+			if ( ! empty( $tx_id ) ) {
+				apply_filters( 'mo_start_reporting', $tx_id, $safe_email, $safe_email, $otp_type, $message, 'OTP_SENT' );
+			}
 			if ( $this->is_ajax_form() ) {
 				wp_send_json( MoUtility::create_json( $message, MoConstants::SUCCESS_JSON_TYPE ) );
 			} else {
-				miniorange_site_otp_validation_form( $user_login, $user_email, $phone_number, $message, $otp_type, $from_both );
+				miniorange_site_otp_validation_form( $user_login, $safe_email, $phone_number, $message, $otp_type, $from_both );
 			}
 		}
 
@@ -182,12 +193,12 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 		 * Checks if the current form is an AJAX form and decides what message has to be
 		 * shown to the user.
 		 *
-		 * @param string $user_login    username of the user.
-		 * @param string $user_email    email of the user.
-		 * @param string $phone_number  phone number of the user.
-		 * @param string $otp_type      email or sms verification.
-		 * @param string $from_both     has user enabled from both.
-		 * @param array  $content       the json decoded response from server.
+		 * @param string $user_login    Username of the user.
+		 * @param string $user_email    Email of the user.
+		 * @param string $phone_number  Phone number of the user.
+		 * @param string $otp_type      Email or SMS verification.
+		 * @param string $from_both     Whether user enabled from both.
+		 * @param array  $content       JSON decoded response from server.
 		 */
 		public function handle_otp_sent_failed( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content ) {
 			$message = str_replace( '##email##', $user_email, $this->get_otp_sent_failed_message() );
@@ -206,7 +217,7 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 		 */
 		public function get_otp_sent_message() {
 			$sent_msg = get_mo_option( 'success_email_message', 'mo_otp_' );
-			return $sent_msg ? mo_( $sent_msg ) : MoMessages::showMessage( MoMessages::OTP_SENT_EMAIL );
+			return $sent_msg ? $sent_msg : MoMessages::showMessage( MoMessages::OTP_SENT_EMAIL );
 		}
 
 		/**
@@ -216,20 +227,35 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 		 */
 		public function get_otp_sent_failed_message() {
 			$failed_msg = get_mo_option( 'error_email_message', 'mo_otp_' );
-			return $failed_msg ? mo_( $failed_msg ) : MoMessages::showMessage( MoMessages::ERROR_OTP_EMAIL );
+			return $failed_msg ? $failed_msg : MoMessages::showMessage( MoMessages::ERROR_OTP_EMAIL );
 		}
 
 		/**
-		 * This function checks if the email domain has been blocked by the admin
+		 * This function checks if the email domain has been blocked by the admin.
 		 *
-		 * @param string $user_email    user email.
-		 * @param string $phone_number  phone number.
+		 * @param string $user_email    User email.
+		 * @param string $phone_number  Phone number.
 		 * @return bool
 		 */
 		public function is_blocked( $user_email, $phone_number ) {
-			$blocked_email_domains = explode( ';', get_mo_option( 'blocked_domains' ) );
+			$blocked_domains_raw   = (string) get_mo_option( 'blocked_domains' );
+			$blocked_email_domains = explode( ';', $blocked_domains_raw );
+			$blocked_email_domains = array_filter(
+				array_map(
+					function ( $domain ) {
+						$domain = is_string( $domain ) ? trim( strtolower( $domain ) ) : '';
+						return $domain;
+					},
+					$blocked_email_domains,
+				),
+			);
+			$blocked_email_domains = array_values( array_unique( $blocked_email_domains ) );
 			$blocked_email_domains = apply_filters( 'mo_blocked_email_domains', $blocked_email_domains );
-			return in_array( MoUtility::get_domain( $user_email ), $blocked_email_domains, true );
+			if ( ! is_array( $blocked_email_domains ) ) {
+				$blocked_email_domains = array();
+			}
+			$domain = strtolower( MoUtility::get_domain( sanitize_email( $user_email ) ) );
+			return in_array( $domain, $blocked_email_domains, true );
 		}
 
 		/**
@@ -239,7 +265,7 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 		 */
 		public function get_is_blocked_message() {
 			$blocked_emails = get_mo_option( 'blocked_email_message', 'mo_otp_' );
-			return $blocked_emails ? mo_( $blocked_emails ) : MoMessages::showMessage( MoMessages::ERROR_EMAIL_BLOCKED );
+			return $blocked_emails ? $blocked_emails : MoMessages::showMessage( MoMessages::ERROR_EMAIL_BLOCKED );
 		}
 
 		/**
@@ -250,7 +276,7 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 		 */
 		public function get_otp_invalid_format_message() {
 			$message = get_mo_option( 'invalid_email_message', 'mo_otp_' );
-			return $message ? mo_( $message ) : MoMessages::showMessage( MoMessages::ERROR_EMAIL_FORMAT );
+			return $message ? $message : MoMessages::showMessage( MoMessages::ERROR_EMAIL_FORMAT );
 		}
 	}
 }

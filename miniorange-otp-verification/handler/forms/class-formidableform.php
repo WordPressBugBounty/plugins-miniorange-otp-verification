@@ -2,7 +2,7 @@
 /**
  * Handles the OTP verification logic for FormidableForm form.
  *
- * @package miniorange-otp-verification/handler
+ * @package miniorange-otp-verification/handler/forms
  */
 
 namespace OTP\Handler\Forms;
@@ -35,6 +35,14 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 	class FormidableForm extends FormHandler implements IFormHandler {
 
 		use Instance;
+
+		/**
+		 * Phone or email field Value
+		 *
+		 * @var string
+		 */
+		public $field_value;
+
 		/**
 		 * Initializes values
 		 */
@@ -45,10 +53,10 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 			$this->type_phone_tag          = 'mo_frm_form_phone_enable';
 			$this->type_email_tag          = 'mo_frm_form_email_enable';
 			$this->form_key                = 'FORMIDABLE_FORM';
-			$this->form_name               = mo_( 'Formidable Forms' );
+			$this->form_name               = 'Formidable Forms';
 			$this->is_form_enabled         = get_mo_option( 'frm_form_enable' );
 			$this->button_text             = get_mo_option( 'frm_button_text' );
-			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : mo_( 'Click Here to send OTP' );
+			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : '';
 			$this->generate_otp_action     = 'miniorange_frm_generate_otp';
 			$this->form_documents          = MoFormDocs::FORMIDABLE_FORM_LINK;
 			parent::__construct();
@@ -68,12 +76,10 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 			foreach ( $this->form_details as $key => $value ) {
 				array_push( $this->phone_form_id, '#' . $value['phonekey'] . ' input' );
 			}
-
 			add_filter( 'frm_validate_field_entry', array( $this, 'miniorange_otp_validation' ), 11, 4 );
 			add_action( "wp_ajax_{$this->generate_otp_action}", array( $this, 'send_otp_frm_ajax' ) );
 			add_action( "wp_ajax_nopriv_{$this->generate_otp_action}", array( $this, 'send_otp_frm_ajax' ) );
-
-				add_action( 'wp_enqueue_scripts', array( $this, 'miniorange_register_formidable_script' ) );
+			add_action( 'wp_enqueue_scripts', array( $this, 'miniorange_register_formidable_script' ) );
 		}
 		/**
 		 * This function registers the js file for enabling OTP Verification
@@ -81,16 +87,16 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 		 * javascript conflicts or jquery not defined errors.
 		 */
 		public function miniorange_register_formidable_script() {
-			wp_register_script( 'moformidable', MOV_URL . 'includes/js/formidable.min.js', array( 'jquery' ), MOV_VERSION, true );
+			wp_register_script( 'moformidable', MOV_URL . 'includes/js/formidable.js', array( 'jquery' ), MOV_VERSION, true );
 			wp_localize_script(
 				'moformidable',
 				'moformidable',
 				array(
-					'siteURL'     => wp_ajax_url(),
+					'siteURL'     => admin_url( 'admin-ajax.php' ),
 					'otpType'     => $this->otp_type,
 					'formkey'     => strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ? 'phonekey' : 'emailkey',
 					'nonce'       => wp_create_nonce( $this->nonce ),
-					'buttontext'  => mo_( $this->button_text ),
+					'buttontext'  => $this->button_text,
 					'imgURL'      => MOV_LOADER_URL,
 					'forms'       => $this->form_details,
 					'generateURL' => $this->generate_otp_action,
@@ -105,7 +111,8 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 		 * @throws ReflectionException Add exception.
 		 */
 		public function send_otp_frm_ajax() {
-			if ( ! check_ajax_referer( $this->nonce, 'security', false ) ) {
+			// Security: Use hardcoded nonce action 'form_nonce' instead of variable.
+			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ), MoConstants::ERROR_JSON_TYPE ) );
 			}
 			$data = MoUtility::mo_sanitize_array( $_POST );
@@ -130,7 +137,8 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 					)
 				);
 			} else {
-				$this->sendOTP( trim( $data['user_phone'] ), null, trim( $data['user_phone'] ), VerificationType::PHONE );
+				$user_phone = MoUtility::process_phone_number( $data['user_phone'] );
+				$this->mo_send_OTP( $user_phone, null, $user_phone, VerificationType::PHONE );
 			}
 		}
 		/**
@@ -148,7 +156,8 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 					)
 				);
 			} else {
-				$this->sendOTP( sanitize_email( $data['user_email'] ), sanitize_email( $data['user_email'] ), null, VerificationType::EMAIL );
+				$user_email = $data['user_email'];
+				$this->mo_send_OTP( $user_email, $user_email, null, VerificationType::EMAIL );
 			}
 		}
 		/**
@@ -161,7 +170,7 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 		 * @param string $otp_type OTP entered to verify.
 		 * @throws ReflectionException Adds exception.
 		 */
-		private function sendOTP( $session_value, $user_email, $phone_number, $otp_type ) {
+		private function mo_send_OTP( $session_value, $user_email, $phone_number, $otp_type ) {
 			MoUtility::initialize_transaction( $this->form_session_var );
 			if ( VerificationType::PHONE === $otp_type ) {
 				SessionUtils::add_phone_verified( $this->form_session_var, $session_value );
@@ -181,8 +190,12 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 		 * @return array
 		 */
 		public function miniorange_otp_validation( $errors, $field, $value, $args ) {
-			$form_id = isset( $_POST['form_id'] ) ? sanitize_text_field( wp_unslash( ( $_POST['form_id'] ) ) ) : '';// phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
-			if ( ! array_key_exists( $form_id, $this->form_details ) ) {
+			$form_id  = isset( $field->form_id ) ? absint( $field->form_id ) : 0;
+			$field_id = $this->getFieldId( ( $this->is_phone_verification_enabled() ? 'phone_show' : 'email_show' ), $field );
+			if ( $field->id === $field_id ) {
+				$this->field_value = $value;
+			}
+			if ( 0 === $form_id || ! array_key_exists( $form_id, $this->form_details ) ) {
 				return $errors;
 			}
 			if ( $this->getFieldId( 'verify_show', $field ) !== $field->id ) {
@@ -191,13 +204,13 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 			if ( ! MoUtility::is_blank( $errors ) ) {
 				return $errors;
 			}
-			if ( ! $this->hasOTPBeenSent( $errors, $field ) ) {
+			if ( ! $this->has_otp_been_sent( $errors, $field ) ) {
 				return $errors;
 			}
-			if ( $this->isMisMatchEmailOrPhone( $errors, $field ) ) {
+			if ( $this->is_mismatch_email_or_phone( $errors, $field ) ) {
 				return $errors;
 			}
-			if ( ! $this->isValidOTP( $value, $field, $errors ) ) {
+			if ( ! $this->is_valid_otp( $value, $field, $errors ) ) {
 				return $errors;
 			}
 			return $errors;
@@ -211,10 +224,10 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 		 * @param mixed $field  Current field information.
 		 * @return bool
 		 */
-		private function hasOTPBeenSent( &$errors, $field ) {
+		private function has_otp_been_sent( &$errors, $field ) {
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
 				$message = MoMessages::showMessage( BaseMessages::ENTER_VERIFY_CODE );
-				if ( $this->isPhoneVerificationEnabled() ) {
+				if ( $this->is_phone_verification_enabled() ) {
 					$errors[ 'field' . $this->getFieldId( 'phone_show', $field ) ] = $message;
 				} else {
 					$errors[ 'field' . $this->getFieldId( 'email_show', $field ) ] = $message;
@@ -232,11 +245,10 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 		 * @param mixed $field  Current field information.
 		 * @return mixed
 		 */
-		private function isMisMatchEmailOrPhone( &$errors, $field ) {
-			$field_id    = $this->getFieldId( ( $this->isPhoneVerificationEnabled() ? 'phone_show' : 'email_show' ), $field );
-			$field_value = isset( $_POST['item_meta'][ $field_id ] ) ? sanitize_text_field( wp_unslash( $_POST['item_meta'][ $field_id ] ) ) : '';// phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
-			if ( ! $this->checkPhoneOrEmailIntegrity( $field_value ) ) {
-				if ( $this->isPhoneVerificationEnabled() ) {
+		private function is_mismatch_email_or_phone( &$errors, $field ) {
+			$field_id = $this->getFieldId( ( $this->is_phone_verification_enabled() ? 'phone_show' : 'email_show' ), $field );
+			if ( ! $this->check_phone_or_email_integrity( $this->field_value ) ) {
+				if ( $this->is_phone_verification_enabled() ) {
 					$errors[ 'field' . $this->getFieldId( 'phone_show', $field ) ]
 					= MoMessages::showMessage( BaseMessages::PHONE_MISMATCH );
 				} else {
@@ -257,7 +269,7 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 		 * @param array  $errors Contains an array of errors to return.
 		 * @return bool
 		 */
-		private function isValidOTP( $value, $field, &$errors ) {
+		private function is_valid_otp( $value, $field, &$errors ) {
 			$otp_type = $this->get_verification_type();
 			$this->validate_challenge( $otp_type, null, $value );
 			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otp_type ) ) {
@@ -275,9 +287,10 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 		 * @param string $field_value field vcalues.
 		 * @return bool
 		 */
-		private function checkPhoneOrEmailIntegrity( $field_value ) {
-			if ( $this->isPhoneVerificationEnabled() ) {
-				return SessionUtils::is_phone_verified_match( $this->form_session_var, $field_value );
+		private function check_phone_or_email_integrity( $field_value ) {
+			if ( $this->is_phone_verification_enabled() ) {
+				$phone = MoUtility::process_phone_number( $field_value );
+				return SessionUtils::is_phone_verified_match( $this->form_session_var, $phone );
 			} else {
 				return SessionUtils::is_email_verified_match( $this->form_session_var, $field_value );
 			}
@@ -328,7 +341,7 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 		 * @return array
 		 */
 		public function get_phone_number_selector( $selector ) {
-			if ( $this->is_form_enabled && $this->isPhoneVerificationEnabled() ) {
+			if ( $this->is_form_enabled && $this->is_phone_verification_enabled() ) {
 				$selector = array_merge( $selector, $this->phone_form_id );
 			}
 			return $selector;
@@ -338,7 +351,7 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 		 *
 		 * @return boolean
 		 */
-		public function isPhoneVerificationEnabled() {
+		public function is_phone_verification_enabled() {
 			return $this->get_verification_type() === VerificationType::PHONE;
 		}
 
@@ -346,11 +359,15 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 		 * Handles saving all the frm Form related options by the admin.
 		 */
 		public function handle_form_options() {
-			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option() ) || ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->admin_nonce ) ) {
+			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option(), 'frm_form_enable' ) ) {
 				return;
 			}
-			$data                  = MoUtility::mo_sanitize_array( $_POST );
-			$form                  = $this->parseFormDetails( $data );
+			$frm_form_data = $this->sanitize_form_post( 'frm_form', '' );
+			if ( false === $frm_form_data || ! is_array( $frm_form_data ) ) {
+				return;
+			}
+			$data                  = array( 'frm_form' => $frm_form_data );
+			$form                  = $this->parse_form_details( $data );
 			$this->is_form_enabled = $this->sanitize_form_post( 'frm_form_enable' );
 			$this->otp_type        = $this->sanitize_form_post( 'frm_form_enable_type' );
 			$this->form_details    = ! empty( $form ) ? $form : '';
@@ -370,7 +387,7 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 		 *
 		 * @return array
 		 */
-		private function parseFormDetails( $data ) {
+		private function parse_form_details( $data ) {
 			$form = array();
 			if ( ! array_key_exists( 'frm_form', $data ) ) {
 				return array();
@@ -397,6 +414,7 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 		 * @return mixed
 		 */
 		private function getFieldId( $key, $field ) {
-			return $this->form_details[ $field->form_id ][ $key ]; }
+			return $this->form_details[ $field->form_id ][ $key ];
+		}
 	}
 }

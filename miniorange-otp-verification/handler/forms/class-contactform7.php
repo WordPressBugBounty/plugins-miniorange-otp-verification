@@ -1,8 +1,8 @@
 <?php
 /**
- * Handles the OTP verification logic for FormidableForm form.
+ * Handles the OTP verification logic for Contact Form 7.
  *
- * @package miniorange-otp-verification/handler
+ * @package miniorange-otp-verification/handler/forms
  */
 
 namespace OTP\Handler\Forms;
@@ -22,7 +22,8 @@ use OTP\Objects\IFormHandler;
 use OTP\Objects\VerificationType;
 use OTP\Traits\Instance;
 use ReflectionException;
-use \WPCF7_FormTag;
+use WPCF7_FormTag;
+use WPCF7_Submission;
 use WPCF7_Validation;
 
 /**
@@ -37,6 +38,7 @@ if ( ! class_exists( 'ContactForm7' ) ) {
 	class ContactForm7 extends FormHandler implements IFormHandler {
 
 		use Instance;
+
 		/**
 		 * Initializes values
 		 */
@@ -47,7 +49,7 @@ if ( ! class_exists( 'ContactForm7' ) ) {
 			$this->type_phone_tag          = 'mo_cf7_contact_phone_enable';
 			$this->type_email_tag          = 'mo_cf7_contact_email_enable';
 			$this->form_key                = 'CF7_FORM';
-			$this->form_name               = mo_( 'Contact Form 7 - Contact Form' );
+			$this->form_name               = 'Contact Form 7 - Contact Form';
 			$this->is_form_enabled         = get_mo_option( 'cf7_contact_enable' );
 			$this->generate_otp_action     = 'miniorange-cf7-contact';
 			$this->form_documents          = MoFormDocs::CF7_FORM_LINK;
@@ -67,14 +69,11 @@ if ( ! class_exists( 'ContactForm7' ) ) {
 				'input[name=' . $this->phone_key . ']',
 			);
 
-			add_filter( 'wpcf7_validate_text*', array( $this, 'validateFormPost' ), 1, 2 );
-			add_filter( 'wpcf7_validate_email*', array( $this, 'validateFormPost' ), 1, 2 );
-			add_filter( 'wpcf7_validate_email', array( $this, 'validateFormPost' ), 1, 2 );
-			add_filter( 'wpcf7_validate_tel*', array( $this, 'validateFormPost' ), 1, 2 );
+			add_filter( 'wpcf7_validate_text*', array( $this, 'mo_validate_form_post' ), 1, 2 );
+			add_filter( 'wpcf7_validate_email*', array( $this, 'mo_validate_form_post' ), 1, 2 );
+			add_filter( 'wpcf7_validate_email', array( $this, 'mo_validate_form_post' ), 1, 2 );
+			add_filter( 'wpcf7_validate_tel*', array( $this, 'mo_validate_form_post' ), 1, 2 );
 			add_action( 'wpcf7_before_send_mail', array( $this, 'unset_session' ), 1, 1 );
-
-			add_shortcode( 'mo_verify_email', array( $this, 'cf7_shortcode' ) );
-			add_shortcode( 'mo_verify_phone', array( $this, 'cf7_shortcode' ) );
 
 			add_action( 'wp_enqueue_scripts', array( $this, 'miniorange_cf7_script' ) );
 
@@ -89,42 +88,40 @@ if ( ! class_exists( 'ContactForm7' ) ) {
 		 * @throws ReflectionException Adds exception.
 		 */
 		public function handle_cf7_contact_form() {
-			if ( ! check_ajax_referer( $this->nonce, $this->nonce_key ) ) {
+			// Security: Use hardcoded nonce action 'form_nonce' and key 'security' instead of variables.
+			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json(
 					MoUtility::create_json(
 						MoMessages::showMessage( MoMessages::INVALID_OP ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
-				exit;
 			}
-			$data = MoUtility::mo_sanitize_array( $_POST );
+			$post_data = wp_unslash( $_POST );
+			$data      = MoUtility::mo_sanitize_array( $post_data );
 			MoUtility::initialize_transaction( $this->form_session_var );
 
-			$user_email = isset( $data['user_email'] ) ? ( is_email( $data['user_email'] ) ? sanitize_email( wp_unslash( $data['user_email'] ) ) : sanitize_text_field( wp_unslash( $data['user_email'] ) ) ) : '';
-			$user_phone = isset( $data['user_phone'] ) ? sanitize_text_field( wp_unslash( $data['user_phone'] ) ) : '';
-			if ( strcasecmp( $this->otp_type, $this->type_email_tag ) === 0 && $user_email ) {
-				SessionUtils::add_email_verified( $this->form_session_var, $user_email );
-				$this->send_challenge( 'test', $user_email, null, $user_email, VerificationType::EMAIL );
-			} elseif ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 && $user_phone ) {
+			$user_phone = isset( $data['user_phone'] ) && ! empty( $data['user_phone'] ) ? MoUtility::process_phone_number( $data['user_phone'] ) : '';
+			if ( strcasecmp( $this->otp_type, $this->type_email_tag ) === 0 && $data['user_email'] ) {
+				SessionUtils::add_email_verified( $this->form_session_var, $data['user_email'] );
+				$this->send_challenge( 'test', $data['user_email'], null, $data['user_email'], VerificationType::EMAIL );
+			} elseif ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 && $data['user_phone'] ) {
 				SessionUtils::add_phone_verified( $this->form_session_var, trim( $user_phone ) );
 				$this->send_challenge( 'test', '', null, trim( $user_phone ), VerificationType::PHONE );
+			} elseif ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
+				wp_send_json(
+					MoUtility::create_json(
+						MoMessages::showMessage( MoMessages::ENTER_PHONE ),
+						MoConstants::ERROR_JSON_TYPE
+					)
+				);
 			} else {
-				if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
-					wp_send_json(
-						MoUtility::create_json(
-							MoMessages::showMessage( MoMessages::ENTER_PHONE ),
-							MoConstants::ERROR_JSON_TYPE
-						)
-					);
-				} else {
-					wp_send_json(
-						MoUtility::create_json(
-							MoMessages::showMessage( MoMessages::ENTER_EMAIL ),
-							MoConstants::ERROR_JSON_TYPE
-						)
-					);
-				}
+				wp_send_json(
+					MoUtility::create_json(
+						MoMessages::showMessage( MoMessages::ENTER_EMAIL ),
+						MoConstants::ERROR_JSON_TYPE
+					)
+				);
 			}
 		}
 		/**
@@ -137,29 +134,44 @@ if ( ! class_exists( 'ContactForm7' ) ) {
 		 * @param WPCF7_FormTag    $tag    the variable denoting what type of field is being verified.
 		 * @return WPCF7_Validation
 		 */
-		public function validateFormPost( $result, $tag ) {
+		public function mo_validate_form_post( $result, $tag ) {
 
-			$tag   = new WPCF7_FormTag( $tag );
-			$name  = $tag->name;
-			$value = isset( $_POST[ $name ] ) ? trim( wp_unslash( strtr( (string) sanitize_text_field( wp_unslash( $_POST[ $name ] ) ), "\n", ' ' ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
+			$tag  = new WPCF7_FormTag( $tag );
+			$name = isset( $tag->name ) ? (string) $tag->name : '';
+			// Validate name is not empty before using as array key.
+			if ( empty( $name ) ) {
+				return $result;
+			}
+
+			// Get posted data from Contact Form 7 submission object.
+			$submission  = WPCF7_Submission::get_instance();
+			$posted_data = array();
+			if ( $submission ) {
+				$posted_data = $submission->get_posted_data();
+			}
+
+			// Get the value for this field from posted data.
+			$value = isset( $posted_data[ $name ] ) ? trim( strtr( (string) sanitize_text_field( wp_unslash( $posted_data[ $name ] ) ), "\n", ' ' ) ) : '';
+
 			if ( 'email' === $tag->basetype && $name === $this->email_key && strcasecmp( $this->otp_type, $this->type_email_tag ) === 0 ) {
 				SessionUtils::add_email_submitted( $this->form_session_var, $value );
 			}
 			if ( 'tel' === $tag->basetype && $name === $this->phone_key && strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
-				SessionUtils::add_phone_submitted( $this->form_session_var, $value );
+				$sanitized_phone = MoUtility::process_phone_number( $value );
+				SessionUtils::add_phone_submitted( $this->form_session_var, $sanitized_phone );
 			}
 
-			if ( 'text' === $tag->basetype && 'email_verify' === $name || 'text' === $tag->basetype && 'phone_verify' === $name ) {
-				$this->checkIfVerificationCodeNotEntered( $name, $result, $tag );
-				$this->checkIfVerificationNotStarted( $result, $tag );
+			if ( 'text' === $tag->basetype && ( 'email_verify' === $name || 'phone_verify' === $name ) ) {
+				$this->mo_check_if_verification_code_entered( $name, $result, $tag, $posted_data );
+				$this->mo_check_if_verification_not_started( $result, $tag );
 				if ( strcasecmp( $this->otp_type, $this->type_email_tag ) === 0 ) {
-					$this->processEmail( $result, $tag );
+					$this->mo_process_email( $result, $tag );
 				}
 				if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
 					$this->process_phone_number( $result, $tag );
 				}
 				if ( empty( $result->get_invalid_fields() ) ) {
-					if ( ! $this->processOTPEntered( $name ) ) {
+					if ( ! $this->mo_process_otp_entered( $name, $posted_data ) ) {
 						$result->invalidate( $tag, MoUtility::get_invalid_otp_method() );
 					}
 				}
@@ -200,12 +212,16 @@ if ( ! class_exists( 'ContactForm7' ) ) {
 		 * Process and validate the OTP entered by the user
 		 *
 		 * @param string $name request variable against which otp is sent.
+		 * @param array  $posted_data Posted form data from CF7 submission.
 		 * @return bool
 		 */
-		private function processOTPEntered( $name ) {
+		private function mo_process_otp_entered( $name, $posted_data = array() ) {
+			// Get OTP value from posted data instead of $_POST.
+			$otp_value    = isset( $posted_data[ $name ] ) ? sanitize_text_field( wp_unslash( $posted_data[ $name ] ) ) : '';
 			$otp_ver_type = $this->get_verification_type();
 			if ( ! SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otp_ver_type ) ) {
-				$this->validate_challenge( $otp_ver_type, $name, null );
+				// Pass OTP value directly to validate_challenge instead of relying on $_POST.
+				$this->validate_challenge( $otp_ver_type, $name, $otp_value );
 			}
 			return SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otp_ver_type );
 		}
@@ -217,9 +233,9 @@ if ( ! class_exists( 'ContactForm7' ) ) {
 		 * @param WPCF7_Validation $result form result.
 		 * @param WPCF7_FormTag    $tag form ags.
 		 */
-		private function processEmail( &$result, $tag ) {
+		private function mo_process_email( &$result, $tag ) {
 			if ( ! SessionUtils::is_email_submitted_and_verified_match( $this->form_session_var ) ) {
-				$result->invalidate( $tag, mo_( MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) ) );
+				$result->invalidate( $tag, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) );
 			}
 		}
 		/**
@@ -230,8 +246,8 @@ if ( ! class_exists( 'ContactForm7' ) ) {
 		 * @param WPCF7_FormTag    $tag form ags.
 		 */
 		private function process_phone_number( &$result, $tag ) {
-			if ( ! Sessionutils::is_phone_submitted_and_verified_match( $this->form_session_var ) ) {
-				$result->invalidate( $tag, mo_( MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) ) );
+			if ( ! SessionUtils::is_phone_submitted_and_verified_match( $this->form_session_var ) ) {
+				$result->invalidate( $tag, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) );
 			}
 		}
 
@@ -243,9 +259,9 @@ if ( ! class_exists( 'ContactForm7' ) ) {
 		 * @param WPCF7_Validation $result form result.
 		 * @param WPCF7_FormTag    $tag form tags.
 		 */
-		private function checkIfVerificationNotStarted( &$result, $tag ) {
+		private function mo_check_if_verification_not_started( &$result, $tag ) {
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
-				$result->invalidate( $tag, mo_( MoMessages::showMessage( MoMessages::PLEASE_VALIDATE ) ) );
+				$result->invalidate( $tag, MoMessages::showMessage( MoMessages::PLEASE_VALIDATE ) );
 			}
 		}
 		/**
@@ -255,21 +271,17 @@ if ( ! class_exists( 'ContactForm7' ) ) {
 		 * @param string           $name the request meta key.
 		 * @param WPCF7_Validation $result form result.
 		 * @param WPCF7_FormTag    $tag form tags.
+		 * @param array            $posted_data Posted form data from CF7 submission.
 		 * @return void
 		 */
-		private function checkIfVerificationCodeNotEntered( $name, &$result, $tag ) {
-			if ( ! MoUtility::sanitize_check( $name, $_REQUEST ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- No need for nonce verification as the function is called on third party plugin hook
-				$result->invalidate( $tag, wpcf7_get_message( 'invalid_required' ) ); //phpcs:ignore intelephense.diagnostics.undefinedFunctions -- Default function of ContactForm7 plugin.
+		private function mo_check_if_verification_code_entered( $name, &$result, $tag, $posted_data = array() ) {
+			if ( ! MoUtility::sanitize_check( $name, $posted_data ) ) {
+				if ( function_exists( 'wpcf7_get_message' ) ) {
+					$result->invalidate( $tag, wpcf7_get_message( 'invalid_required' ) );
+				} else {
+					$result->invalidate( $tag, MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ) );
+				}
 			}
-		}
-		/**
-		 * The HTML code that would replace the shortcode on the webapage.
-		 *
-		 *  @param array $attrs  array of attributes sent along with the shortcode.
-		 * @return void
-		 */
-		public function cf7_shortcode( $attrs ) {
-			return;
 		}
 
 		/**
@@ -277,17 +289,16 @@ if ( ! class_exists( 'ContactForm7' ) ) {
 		 * for Contact Form 7 using AJAX calls.
 		 */
 		public function miniorange_cf7_script() {
-			wp_register_script( 'mocf7', MOV_URL . 'includes/js/mocf7.min.js', array( 'jquery' ), MOV_VERSION, true );
+			wp_register_script( 'mocf7', MOV_URL . 'includes/js/mocf7.js', array( 'jquery' ), MOV_VERSION, true );
 			wp_localize_script(
 				'mocf7',
 				'mocf7',
 				array(
-					'siteURL' => wp_ajax_url(),
-					'otpType' => $this->otp_type,
+					'siteURL' => admin_url( 'admin-ajax.php' ),
+					'otpType' => sanitize_text_field( wp_unslash( $this->otp_type ) ),
 					'nonce'   => wp_create_nonce( $this->nonce ),
-					'field'   => $this->otp_type === $this->type_phone_tag ? 'mo_phone' : $this->email_key,
-					'imgURL'  => MOV_LOADER_URL,
-					'gaction' => $this->generate_otp_action,
+					'field'   => $this->otp_type === $this->type_phone_tag ? 'mo_phone' : sanitize_text_field( wp_unslash( $this->email_key ) ),
+					'gaction' => sanitize_key( wp_unslash( $this->generate_otp_action ) ),
 				)
 			);
 			wp_enqueue_script( 'mocf7' );
@@ -318,10 +329,14 @@ if ( ! class_exists( 'ContactForm7' ) ) {
 		 * push the formID to the selector array if OTP Verification for the
 		 * form has been enabled.
 		 *
-		 * @param string $selector - the Jquery selector to be modified.
-		 * @return mixed
+		 * @param array|string $selector The Jquery selector to be modified.
+		 * @return array The modified selector array.
 		 */
 		public function get_phone_number_selector( $selector ) {
+			// Ensure selector is an array.
+			if ( ! is_array( $selector ) ) {
+				$selector = array();
+			}
 
 			if ( $this->is_form_enabled && ( $this->otp_type === $this->type_phone_tag ) ) {
 				$selector = array_merge( $selector, $this->phone_form_id );
@@ -334,7 +349,7 @@ if ( ! class_exists( 'ContactForm7' ) ) {
 		 *
 		 *  @return bool
 		 */
-		private function emailKeyValidationCheck() {
+		private function mo_email_key_validation_check() {
 			if ( $this->otp_type === $this->type_email_tag && MoUtility::is_blank( $this->email_key ) ) {
 				do_action(
 					'mo_registration_show_message',
@@ -350,7 +365,7 @@ if ( ! class_exists( 'ContactForm7' ) ) {
 		 *  Handles saving all the CF7 form related options by the admin.
 		 */
 		public function handle_form_options() {
-			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option() ) ) {
+			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option(), 'cf7_contact_enable' ) ) {
 				return;
 			}
 			$this->is_form_enabled = $this->sanitize_form_post( 'cf7_contact_enable' );
@@ -358,7 +373,7 @@ if ( ! class_exists( 'ContactForm7' ) ) {
 			$this->email_key       = $this->sanitize_form_post( 'cf7_email_field_key' );
 
 			if ( $this->basic_validation_check( BaseMessages::CF7_CHOOSE )
-			&& $this->emailKeyValidationCheck() ) {
+			&& $this->mo_email_key_validation_check() ) {
 				update_mo_option( 'cf7_contact_enable', $this->is_form_enabled );
 				update_mo_option( 'cf7_contact_type', $this->otp_type );
 				update_mo_option( 'cf7_email_key', $this->email_key );

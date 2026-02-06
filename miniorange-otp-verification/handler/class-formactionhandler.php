@@ -20,7 +20,6 @@ use OTP\Objects\BaseActionHandler;
 use OTP\Objects\VerificationType;
 use OTP\Traits\Instance;
 use OTP\Helper\MoConstants;
-use ROC\Handler\ResendControlHandler;
 /**
  * This is the Custom Form class. This class handles all the
  * functionality related to Custom Form. It extends the FormHandler
@@ -58,17 +57,33 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 		 * @param string $password      password submitted by the user.
 		 * @param array  $extra_data    an array containing all the extra data submitted by the user.
 		 * @param bool   $from_both     denotes if user has a choice between email and phone verification.
+		 * @param string $form_session_var the form session variable.
 		 */
-		public function challenge( $user_login, $user_email, $errors, $phone_number = null,
-		$otp_type = 'email', $password = '', $extra_data = null, $from_both = false, $form_session_var = null ) {
+		public function challenge(
+			$user_login,
+			$user_email,
+			$errors,
+			$phone_number = null,
+			$otp_type = 'email',
+			$password = '',
+			$extra_data = null,
+			$from_both = false,
+			$form_session_var = null
+		) {
 
 			$phone_number       = MoUtility::process_phone_number( $phone_number );
+			$user_email         = $user_email ? $user_email : '';
+			$user_login         = sanitize_user( $user_login, true );
 			$encrypted_password = MoUtility::encrypt_password( $password );
+			if ( empty( MoPHPSessions::get_session_var( 'user_password' ) ) ) {
+				MoPHPSessions::add_session_var( 'user_password', $encrypted_password );
+			}
+
 			MoPHPSessions::add_session_var( 'current_url', MoUtility::current_page_url() );
 			MoPHPSessions::add_session_var( 'user_email', $user_email );
 			MoPHPSessions::add_session_var( 'user_login', $user_login );
-			MoPHPSessions::add_session_var( 'user_password', $encrypted_password );
 			MoPHPSessions::add_session_var( 'phone_number_mo', $phone_number );
+			$extra_data = is_array( $extra_data ) ? MoUtility::mo_sanitize_array( $extra_data ) : array();
 			MoPHPSessions::add_session_var( 'extra_data', $extra_data );
 			if ( ! is_null( $form_session_var ) ) {
 				MoPHPSessions::add_session_var( 'form_session_var', $form_session_var );
@@ -86,8 +101,8 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 		private function handleResendOTP( $otp_type, $from_both ) {
 
 			$user_email       = MoPHPSessions::get_session_var( 'user_email' );
-			$user_login       = MoPHPSessions::get_session_var( 'user_login' );
-			$phone_number     = MoPHPSessions::get_session_var( 'phone_number_mo' );
+			$user_login       = sanitize_user( MoPHPSessions::get_session_var( 'user_login' ), true );
+			$phone_number     = MoUtility::process_phone_number( MoPHPSessions::get_session_var( 'phone_number_mo' ) );
 			$extra_data       = MoPHPSessions::get_session_var( 'extra_data' );
 			$form_session_var = MoPHPSessions::get_session_var( 'form_session_var' );
 			do_action( 'mo_generate_otp', $user_login, $user_email, null, $phone_number, $otp_type, null, $extra_data, $from_both, $form_session_var );
@@ -105,10 +120,12 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 		 * @param array  $extra_data    an array containing all the extra data submitted by the user.
 		 */
 		private function handleOTPAction( $user_login, $user_email, $phone_number, $otp_type, $from_both, $extra_data ) {
+			$user_login   = sanitize_user( $user_login, true );
+			$phone_number = MoUtility::process_phone_number( $phone_number );
 			if ( MoPHPSessions::get_session_var( 'mo_blocked_time' ) && time() - MoPHPSessions::get_session_var( 'mo_blocked_time' ) < get_mo_option( 'otp_timer', 'mo_rc_sms_' ) * 60 ) {
 				apply_filters( 'mo_add_script', '' );
 			}
-			if ( get_mo_option( 'otp_timer_enable', 'mo_rc_sms_' ) ) {
+			if ( class_exists( 'OTP\Addons\resendcontrol\Handler\ResendControlHandler', false ) && get_mo_option( 'otp_timer_enable', 'mo_rc_sms_' ) ) {
 				$this->check_if_user_is_blocked( $user_login, $otp_type );
 			}
 			global $phone_logic, $email_logic;
@@ -129,12 +146,12 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 					);
 					break;
 				case VerificationType::EXTERNAL:
+					$curl_url = isset( $extra_data['curl'] ) ? esc_url_raw( $extra_data['curl'] ) : '';
+					$curl_msg = isset( $extra_data['message'] ) ? sanitize_text_field( $extra_data['message'] ) : '';
 					mo_external_phone_validation_form(
-						$extra_data['curl'],
+						$curl_url,
 						$user_email,
-						$extra_data['message'],
-						$extra_data['form'],
-						$extra_data['data']
+						$curl_msg,
 					);
 					break;
 			}
@@ -147,9 +164,14 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 		 */
 		private function handleGoBackAction() {
 
-			$url = MoPHPSessions::get_session_var( 'current_url' );
+			$redirect_url = MoPHPSessions::get_session_var( 'current_url' );
 			do_action( 'unset_session_variable' );
-			header( 'location:' . $url );
+			// Validate redirect URL is internal before redirecting.
+			if ( ! $redirect_url || ! wp_validate_redirect( $redirect_url, home_url() ) ) {
+				$redirect_url = home_url();
+			}
+			wp_safe_redirect( $redirect_url );
+			exit;
 		}
 
 		/**
@@ -178,14 +200,18 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 
 			$formatted_time = gmdate( 'i:s', $remaining_time );
 			$message        = MoMessages::showMessage( MoMessages::USER_IS_BLOCKED, array( 'remaining_time' => $formatted_time ) );
+			$resend_handler = 'OTP\Addons\resendcontrol\Handler\ResendControlHandler';
 			if ( ( $is_ajax_form || 'ajax_phone' === $user_login ) && 'external' !== $otp_type ) {
-				$message .= ResendControlHandler::mo_get_resend_timer_script( 'ajax_form', '', $remaining_time );
+				if ( class_exists( $resend_handler, false ) ) {
+					$message .= $resend_handler::mo_get_resend_timer_script( 'ajax_form', '', $remaining_time );
+				}
 				wp_send_json( MoUtility::create_json( $message, MoConstants::ERROR_JSON_TYPE ) );
 			} else {
-				ResendControlHandler::mo_get_timer_script( 'pop-up', '' );
+				if ( class_exists( $resend_handler, false ) ) {
+					$resend_handler::mo_get_timer_script( 'pop-up', '' );
+				}
 				miniorange_site_otp_validation_form( null, null, null, MoMessages::showMessage( MoMessages::USER_IS_BLOCKED, array( 'remaining_time' => $formatted_time ) ), null, null );
 			}
-
 		}
 
 
@@ -199,9 +225,9 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 		 * @return void
 		 */
 		public function validateOTP( $otp_type, $request_var, $otp ) {
-			$user_login       = MoPHPSessions::get_session_var( 'user_login' );
+			$user_login       = sanitize_user( MoPHPSessions::get_session_var( 'user_login' ), true );
 			$user_email       = MoPHPSessions::get_session_var( 'user_email' );
-			$phone_number     = MoPHPSessions::get_session_var( 'phone_number_mo' );
+			$phone_number     = MoUtility::process_phone_number( MoPHPSessions::get_session_var( 'phone_number_mo' ) );
 			$password         = MoPHPSessions::get_session_var( 'user_password' );
 			$extra_data       = MoPHPSessions::get_session_var( 'extra_data' );
 			$form_session_var = MoPHPSessions::get_session_var( 'form_session_var' );
@@ -210,10 +236,15 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 			if ( ! $is_ajax_form ) {
 				$this->mo_check_integrity( $user_login, $user_email, $password, $phone_number, $otp_type, $form_session_var );
 			}
-			$tx_id = Sessionutils::get_transaction_id( $otp_type );
-			$token = MoUtility::sanitize_check( $request_var, MoUtility::mo_sanitize_array( $_REQUEST ) );// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- No need for nonce verification as the function is called on third party plugin hook.
-			$token = ! $token ? $otp : $token;
-			if ( ! is_null( esc_attr( $tx_id ) ) ) {
+			$token = null;
+			if ( ( isset( $_REQUEST['mopopup_wpnonce'] ) && ( wp_verify_nonce( sanitize_key( wp_unslash( $_REQUEST['mopopup_wpnonce'] ) ), 'mo_popup_options' ) ) ) ) {
+				// Sanitize only the specific request var instead of the entire $_REQUEST superglobal.
+				$token = MoUtility::sanitize_check( $request_var, $_REQUEST );
+			}
+			$token = empty( $token ) ? $otp : $token;
+			$tx_id = SessionUtils::get_transaction_id( $otp_type );
+			$tx_id = esc_attr( $tx_id );
+			if ( ! empty( $tx_id ) ) {
 				$gateway           = GatewayFunctions::instance();
 				$content           = $gateway->mo_validate_otp_token( $tx_id, $token, $otp_type );
 				$validation_status = 'SUCCESS' === $content['status'] ? 'OTP_VERIFIED' : 'VERIFICATION_FAILED';
@@ -244,11 +275,17 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 			if ( empty( $mo_email_phone_values_for_mismatch_check ) || ! is_array( $mo_email_phone_values_for_mismatch_check ) ) {
 				return;
 			}
+
 			if ( VerificationType::PHONE === $otp_type ) {
-				$phone = $mo_email_phone_values_for_mismatch_check['phone'];
-				if ( ! isset( $phone ) || empty( trim( $phone ) ) ) {
+				// Safely access the 'phone' key only if it exists.
+				if ( ! isset( $mo_email_phone_values_for_mismatch_check['phone'] ) ) {
 					return;
 				}
+				$phone = $mo_email_phone_values_for_mismatch_check['phone'];
+				if ( empty( trim( (string) $phone ) ) ) {
+					return;
+				}
+
 				if ( ! SessionUtils::is_phone_verified_match( $form_session_var, $phone ) ) {
 					miniorange_site_otp_validation_form(
 						null,
@@ -258,21 +295,26 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 						$otp_type,
 						false
 					);
-				} elseif ( VerificationType::EMAIL === $otp_type ) {
-					$email = $mo_email_phone_values_for_mismatch_check['email'];
-					if ( ! isset( $email ) || empty( trim( $email ) ) ) {
-						return;
-					}
-					if ( ! SessionUtils::is_email_verified_match( $form_session_var, $email ) ) {
-						miniorange_site_otp_validation_form(
-							null,
-							$user_email,
-							$phone_number,
-							MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ),
-							$otp_type,
-							false
-						);
-					}
+				}
+			} elseif ( VerificationType::EMAIL === $otp_type ) {
+				// Safely access the 'email' key only if it exists.
+				if ( ! isset( $mo_email_phone_values_for_mismatch_check['email'] ) ) {
+					return;
+				}
+				$email = $mo_email_phone_values_for_mismatch_check['email'];
+				if ( empty( trim( (string) $email ) ) ) {
+					return;
+				}
+
+				if ( ! SessionUtils::is_email_verified_match( $form_session_var, $email ) ) {
+					miniorange_site_otp_validation_form(
+						null,
+						$user_email,
+						$phone_number,
+						MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ),
+						$otp_type,
+						false
+					);
 				}
 			}
 		}
@@ -291,7 +333,8 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 		 * @param string $otp_type The VerificationType.
 		 */
 		private function onValidationSuccess( $user_login, $user_email, $password, $phone_number, $extra_data, $otp_type ) {
-			$redirect_to = array_key_exists( 'redirect_to', $_POST ) ? esc_url_raw( wp_unslash( $_POST['redirect_to'] ) ) : '';// phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
+			$redirect_to = MoPHPSessions::get_session_var( 'redirect_to' );
+			$redirect_to = ! empty( $redirect_to ) ? esc_url_raw( $redirect_to ) : '';
 			$password    = MoUtility::decrypt_password( $password );
 			do_action( 'otp_verification_successful', $redirect_to, $user_login, $user_email, $password, $phone_number, $extra_data, $otp_type );
 		}
@@ -328,7 +371,8 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 			$extra_data   = MoPHPSessions::get_session_var( 'extra_data' );
 			$form_session = MoPHPSessions::get_session_var( 'form_session_var' );
 
-			$otp_ver_type = strcasecmp( $post_data['mo_customer_validation_otp_choice'], 'user_email_verification' ) === 0
+			$otp_choice   = isset( $post_data['mo_customer_validation_otp_choice'] ) ? sanitize_text_field( $post_data['mo_customer_validation_otp_choice'] ) : '';
+			$otp_ver_type = strcasecmp( $otp_choice, 'user_email_verification' ) === 0
 			? VerificationType::EMAIL : VerificationType::PHONE;
 
 			$this->challenge( $user_login, $user_email, null, $user_phone, $otp_ver_type, $user_pass, $extra_data, true );
@@ -355,41 +399,42 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 		 */
 		public function handle_formActions() {
 
-			if ( ( ! isset( $_POST['mopopup_wpnonce'] ) || ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['mopopup_wpnonce'] ) ), 'mo_popup_options' ) ) ) ) { // phpcs:ignore -- false positive.
+			if ( ( ! isset( $_POST['mopopup_wpnonce'] ) || ( ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['mopopup_wpnonce'] ) ), 'mo_popup_options' ) ) ) ) {
 				return;
 			}
-			if ( array_key_exists( 'option', $_REQUEST ) ) { // phpcs:ignore -- false positive.
+			$option      = isset( $_POST['option'] ) ? sanitize_text_field( wp_unslash( $_POST['option'] ) ) : '';
+			$from_both   = MoUtility::sanitize_check( 'from_both', $_POST );
+			$otp_type    = MoUtility::sanitize_check( 'otp_type', $_POST );
+			$data        = MoUtility::mo_sanitize_array( $_POST );
+			$redirect_to = MoUtility::sanitize_check( 'redirect_to', $_POST );
+			if ( ! empty( $redirect_to ) ) {
+				$redirect_to = esc_url_raw( wp_unslash( $redirect_to ) );
+				MoPHPSessions::add_session_var( 'redirect_to', $redirect_to );
+			}
 
-				$from_both    = MoUtility::sanitize_check( 'from_both', $_POST );
-				$otp_type     = MoUtility::sanitize_check( 'otp_type', $_POST );
-				$data         = MoUtility::mo_sanitize_array( $_POST );
-				$request_data = MoUtility::mo_sanitize_array( $_REQUEST );
-				$option       = trim( wp_unslash( $request_data['option'] ) );
-
-				switch ( $option ) { // phpcs:ignore -- false positive.
-					case 'validation_goBack':
-						$this->handleGoBackAction();
-						break;
-					case 'miniorange-validate-otp-form':
-						$this->validateOTP( $otp_type, 'mo_otp_token', null );
-						break;
-					case 'verification_resend_otp':
-						$this->handleResendOTP( $otp_type, $from_both );
-						break;
-					case 'miniorange-validate-otp-choice-form':
-						$this->handleOTPChoice( $data );
-						break;
-					default:
-						miniorange_site_otp_validation_form(
-							'null',
-							'null',
-							'null',
-							MoMessages::showMessage( MoMessages::INVALID_OP ),
-							$otp_type,
-							$from_both
-						);
-						break;
-				}
+			switch ( $option ) {
+				case 'validation_goBack':
+					$this->handleGoBackAction();
+					break;
+				case 'miniorange-validate-otp-form':
+					$this->validateOTP( $otp_type, 'mo_otp_token', null );
+					break;
+				case 'verification_resend_otp':
+					$this->handleResendOTP( $otp_type, $from_both );
+					break;
+				case 'miniorange-validate-otp-choice-form':
+					$this->handleOTPChoice( $data );
+					break;
+				default:
+					miniorange_site_otp_validation_form(
+						'null',
+						'null',
+						'null',
+						MoMessages::showMessage( MoMessages::INVALID_OP ),
+						$otp_type,
+						$from_both
+					);
+					break;
 			}
 		}
 	}

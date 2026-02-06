@@ -2,7 +2,7 @@
 /**
  * Ultimate Member New Customer Notifications helper
  *
- * @package miniorange-otp-verification/addons/umsmsnotification/helper/notifications
+ * @package miniorange-otp-verification/notifications/umsmsnotification/helper/notifications
  */
 
 namespace OTP\Notifications\UmSMSNotification\Helper\Notifications;
@@ -34,37 +34,51 @@ if ( ! class_exists( 'UltimateMemberNewCustomerNotification' ) ) {
 		 * @var mixed $insatance Instance.
 		 */
 		public static $instance;
-		/**
-		 * Initializes values
-		 */
-		protected function __construct() {
-			parent::__construct();
-			$this->title             = 'New Account';
-			$this->page              = 'um_new_customer_notif';
-			$this->is_enabled        = false;
-			$this->tool_tip_header   = 'NEW_UM_CUSTOMER_NOTIF_HEADER';
-			$this->tool_tip_body     = 'NEW_UM_CUSTOMER_NOTIF_BODY';
-			$this->recipient         = 'mobile_number';
-			$this->sms_body          = UltimateMemberSMSNotificationMessages::showMessage(
-				UltimateMemberSMSNotificationMessages::NEW_UM_CUSTOMER_SMS
-			);
-			$this->default_sms_body  = UltimateMemberSMSNotificationMessages::showMessage(
-				UltimateMemberSMSNotificationMessages::NEW_UM_CUSTOMER_SMS
-			);
-			$this->available_tags    = '{site-name},{username},{email},{fullname}';
-			$this->page_header       = mo_( 'NEW ACCOUNT NOTIFICATION SETTINGS' );
-			$this->page_description  = mo_( 'SMS notifications settings for New Account creation SMS sent to the users' );
-			$this->notification_type = mo_( 'Customer' );
-			self::$instance          = $this;
-		}
-
 
 		/**
-		 * Checks if there exists an existing instance of the class.
-		 * If not then creates an instance and returns it.
+		 * This function is used to get the instance of the UltimateMemberNewCustomerNotification class.
+		 *
+		 * @param array $config Configuration array.
+		 * @return UltimateMemberNewCustomerNotification Object containing the instance of the class.
 		 */
-		public static function getInstance() {
-			return null === self::$instance ? new self() : self::$instance;
+		public static function mo_otp_get_instance( $config = null ) {
+			if ( null === self::$instance ) {
+				self::$instance = new self();
+
+				// Get default SMS message once for better performance.
+				$default_sms_message = UltimateMemberSMSNotificationMessages::showMessage(
+					UltimateMemberSMSNotificationMessages::NEW_UM_CUSTOMER_SMS
+				);
+
+				// Define default configuration.
+				$default_config = array(
+					'title'             => 'New Account',
+					'page'              => 'um_new_customer_notif',
+					'is_enabled'        => false,
+					'tool_tip_header'   => 'NEW_UM_CUSTOMER_NOTIF_HEADER',
+					'tool_tip_body'     => 'NEW_UM_CUSTOMER_NOTIF_BODY',
+					'recipient'         => 'mobile_number',
+					'sms_body'          => $default_sms_message,
+					'default_sms_body'  => $default_sms_message,
+					'available_tags'    => '{site-name},{username},{email},{fullname}',
+					'page_header'       => __( 'NEW ACCOUNT NOTIFICATION SETTINGS', 'miniorange-otp-verification' ),
+					'page_description'  => __( 'SMS notifications settings for New Account creation SMS sent to the users', 'miniorange-otp-verification' ),
+					'notification_type' => __( 'Customer', 'miniorange-otp-verification' ),
+				);
+
+				// Merge provided config with defaults.
+				$final_config = $config ? (array) $config : array();
+				$final_config = array_merge( $default_config, $final_config );
+
+				// Apply configuration to instance properties.
+				foreach ( $final_config as $property => $value ) {
+					if ( property_exists( self::$instance, $property ) ) {
+						self::$instance->$property = $value;
+					}
+				}
+			}
+
+			return self::$instance;
 		}
 
 		/**
@@ -76,18 +90,21 @@ if ( ! class_exists( 'UltimateMemberNewCustomerNotification' ) ) {
 		 * @param  array $args all the arguments required to send SMS.
 		 */
 		public function send_sms( array $args ) {
+
 			if ( ! $this->is_enabled ) {
 				return;
 			}
 			$this->set_notif_in_session( $this->page );
+			$phone_number = '';
+			if ( isset( $args[ $this->recipient ] ) && is_string( $args[ $this->recipient ] ) ) {
+				$phone_number = sanitize_text_field( $args[ $this->recipient ] );
+			}
 
-			$phone_number = $args[ $this->recipient ];
-
-			$username    = um_user( 'user_login' ); // phpcs::ignore -- Default function of Ultimate Member Plugin.
-			$profile_url = um_user_profile_url(); // phpcs::ignore -- Default function of Ultimate Member Plugin.
-			$login_url   = um_get_core_page( 'login' ); // phpcs::ignore -- Default function of Ultimate Member Plugin.
-			$full_name   = um_user( 'full_name' ); // phpcs::ignore -- Default function of Ultimate Member Plugin.
-			$email       = um_user( 'user_email' ); // phpcs::ignore -- Default function of Ultimate Member Plugin.
+			$username    = um_user( 'user_login' );
+			$profile_url = um_user_profile_url();
+			$login_url   = um_get_core_page( 'login' );
+			$full_name   = um_user( 'full_name' );
+			$email       = um_user( 'user_email' );
 
 			$replaced_string = array(
 				'site-name'       => get_bloginfo(),
@@ -102,7 +119,7 @@ if ( ! class_exists( 'UltimateMemberNewCustomerNotification' ) ) {
 			if ( MoUtility::is_blank( $phone_number ) ) {
 				return;
 			}
-			MoUtility::send_phone_notif( $phone_number, $sms_body );
+			MoUtility::send_phone_notif( $phone_number, $sms_body, 'NEW_ACCOUNT' );
 		}
 	}
 }

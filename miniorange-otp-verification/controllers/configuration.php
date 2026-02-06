@@ -1,8 +1,8 @@
 <?php
 /**
- * Load admin view for ElementorProFormFree.
+ * Load admin view for gateway configuration.
  *
- * @package miniorange-otp-verification/controller/
+ * @package miniorange-otp-verification/controllers
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

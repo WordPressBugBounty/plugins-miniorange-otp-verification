@@ -2,5 +2,9 @@
 /**
  * This is index file.
  *
- * @package miniorange-otp-verification
+ * @package miniorange-otp-verification/notifications/umsmsnotification/helper/notifications
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}

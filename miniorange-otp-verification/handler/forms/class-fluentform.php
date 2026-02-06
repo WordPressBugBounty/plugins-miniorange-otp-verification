@@ -2,7 +2,7 @@
 /**
  * Handles the OTP verification logic for Fluent form.
  *
- * @package miniorange-otp-verification/handler
+ * @package miniorange-otp-verification/handler/forms
  */
 
 namespace OTP\Handler\Forms;
@@ -33,6 +33,7 @@ if ( ! class_exists( 'FluentForm' ) ) {
 	class FluentForm extends FormHandler implements IFormHandler {
 
 		use Instance;
+
 		/**
 		 * Initializes values
 		 */
@@ -45,7 +46,7 @@ if ( ! class_exists( 'FluentForm' ) ) {
 			$this->type_phone_tag          = 'mo_fluentform_phone_enable';
 			$this->type_email_tag          = 'mo_fluentform_email_enable';
 			$this->type_both_tag           = 'mo_fluentform_both_enable';
-			$this->form_name               = mo_( 'Fluent Form' );
+			$this->form_name               = 'Fluent Form';
 			$this->is_form_enabled         = get_mo_option( 'fluentform_enable' );
 			$this->generate_otp_action     = 'miniorange-fluentform-send-otp';
 			$this->validate_otp_action     = 'miniorange-fluentform-verify-code';
@@ -75,12 +76,12 @@ if ( ! class_exists( 'FluentForm' ) ) {
 		 * Function to register script and localize variables and add the script to the frontend
 		 */
 		public function mo_fluent_form_script() {
-			wp_register_script( 'mofluent', MOV_URL . 'includes/js/mofluentform.min.js', array( 'jquery' ), MOV_VERSION, true );
+			wp_register_script( 'mofluent', MOV_URL . 'includes/js/mofluentform.js', array( 'jquery' ), MOV_VERSION, true );
 			wp_localize_script(
 				'mofluent',
 				'mofluent',
 				array(
-					'siteURL'     => wp_ajax_url(),
+					'siteURL'     => admin_url( 'admin-ajax.php' ),
 					'formdetails' => $this->form_details,
 					'otpType'     => $this->otp_type,
 					'formkey'     => strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ? 'phonekey' : 'emailkey',
@@ -104,9 +105,9 @@ if ( ! class_exists( 'FluentForm' ) ) {
 			if ( ! array_key_exists( $form_id, $this->form_details ) ) {
 				return;
 			}
-			$this->checkIfOTPSent();
-			$this->checkIntegrity( $insert_data, $data, $form );
-			$this->validateOTP( $insert_data, $data, $form );
+			$this->check_if_otp_sent();
+			$this->check_integrity( $insert_data, $data, $form );
+			$this->validate_otp( $insert_data, $data, $form );
 		}
 		/**
 		 * Validate OTP.
@@ -115,7 +116,7 @@ if ( ! class_exists( 'FluentForm' ) ) {
 		 * @param array  $data - data.
 		 * @param String $form - form values.
 		 */
-		public function validateOTP( $insert_data, $data, $form ) {
+		public function validate_otp( $insert_data, $data, $form ) {
 			$otp_ver_type = $this->get_verification_type();
 			$this->validate_challenge( $otp_ver_type, null, sanitize_text_field( $data['enter_otp'] ) );
 			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otp_ver_type ) ) {
@@ -127,13 +128,12 @@ if ( ! class_exists( 'FluentForm' ) ) {
 					),
 					201
 				);
-				exit;
 			}
 		}
 		/**
 		 * Checks whether OTP sent or not.
 		 */
-		private function checkIfOTPSent() {
+		private function check_if_otp_sent() {
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
 				wp_send_json_error(
 					array(
@@ -141,7 +141,6 @@ if ( ! class_exists( 'FluentForm' ) ) {
 					),
 					201
 				);
-				exit;
 			}
 		}
 		/**
@@ -151,7 +150,7 @@ if ( ! class_exists( 'FluentForm' ) ) {
 		 * @param array  $data - data.
 		 * @param String $form - form values.
 		 */
-		private function checkIntegrity( $insert_data, $data, $form ) {
+		private function check_integrity( $insert_data, $data, $form ) {
 			$email_key = $this->form_details[ $insert_data['form_id'] ]['emailkey'];
 			$phone_key = $this->form_details[ $insert_data['form_id'] ]['phonekey'];
 
@@ -164,7 +163,6 @@ if ( ! class_exists( 'FluentForm' ) ) {
 						),
 						201
 					);
-					exit;
 				}
 			} elseif ( ! SessionUtils::is_email_verified_match( $this->form_session_var, sanitize_email( $data[ $email_key ] ) ) ) {
 				wp_send_json_error(
@@ -173,7 +171,6 @@ if ( ! class_exists( 'FluentForm' ) ) {
 					),
 					201
 				);
-				exit;
 			}
 		}
 		/**
@@ -182,17 +179,21 @@ if ( ! class_exists( 'FluentForm' ) ) {
 		 * using AJAX calls.
 		 */
 		public function send_otp() {
-			if ( isset( $_POST[ $this->nonce_key ] ) ) {
-				if ( ! check_ajax_referer( $this->nonce, $this->nonce_key ) ) {
-					return;
-				}
+			// Security: Use hardcoded nonce action 'form_nonce' and key 'security' instead of variables.
+			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
+				wp_send_json_error(
+					array(
+						'message' => MoMessages::showMessage( MoMessages::INVALID_OTP ),
+					),
+					400
+				);
 			}
 			$post_data = MoUtility::mo_sanitize_array( $_POST );
 			MoUtility::initialize_transaction( $this->form_session_var );
 			if ( $post_data['otpType'] === $this->type_phone_tag ) {
-				$this->processPhoneAndSendOTP( $post_data );
+				$this->process_phone_and_send_otp( $post_data );
 			} else {
-				$this->processEmailAndSendOTP( $post_data );
+				$this->process_email_and_send_otp( $post_data );
 			}
 		}
 
@@ -202,7 +203,7 @@ if ( ! class_exists( 'FluentForm' ) ) {
 		 *
 		 * @param array $data - this is the get / post data from the ajax call containing email or phone.
 		 */
-		private function processPhoneAndSendOTP( $data ) {
+		private function process_phone_and_send_otp( $data ) {
 			if ( ! MoUtility::sanitize_check( 'user_value', $data ) ) {
 				wp_send_json(
 					MoUtility::create_json(
@@ -223,7 +224,7 @@ if ( ! class_exists( 'FluentForm' ) ) {
 		 *
 		 * @param array $data - this is the get / post data from the ajax call containing email or phone.
 		 */
-		private function processEmailAndSendOTP( $data ) {
+		private function process_email_and_send_otp( $data ) {
 			if ( ! MoUtility::sanitize_check( 'user_value', $data ) ) {
 				wp_send_json(
 					MoUtility::create_json(
@@ -232,9 +233,18 @@ if ( ! class_exists( 'FluentForm' ) ) {
 					)
 				);
 			} else {
-				$user_value = $data['user_value'];
-				SessionUtils::add_email_verified( $this->form_session_var, $user_value );
-				$this->send_challenge( '', $user_value, null, null, VerificationType::EMAIL );
+				$raw_email = isset( $data['user_value'] ) ? (string) $data['user_value'] : '';
+				$email     = sanitize_email( wp_unslash( $raw_email ) );
+				if ( empty( $email ) || ! is_email( $email ) ) {
+					$display_email = sanitize_text_field( $raw_email );
+					$message       = str_replace( '##email##', esc_html( $display_email ), MoMessages::showMessage( MoMessages::ERROR_EMAIL_FORMAT ) );
+					wp_send_json(
+						MoUtility::create_json( $message, MoConstants::ERROR_JSON_TYPE )
+					);
+				} else {
+					SessionUtils::add_email_verified( $this->form_session_var, $email );
+					$this->send_challenge( '', $email, null, null, VerificationType::EMAIL );
+				}
 			}
 		}
 
@@ -295,14 +305,15 @@ if ( ! class_exists( 'FluentForm' ) ) {
 		 * Handles saving all the fluentform related options by the admin.
 		 */
 		public function handle_form_options() {
-			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option() ) ) {
+			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option(), 'fluentform_enable' ) ) {
 				return;
 			}
-			if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->admin_nonce ) ) {
+			$form_raw = $this->sanitize_form_post( 'fluentform_form', '' );
+			if ( empty( $form_raw ) ) {
 				return;
 			}
-			$data = MoUtility::mo_sanitize_array( $_POST );
-			$form = $this->parseFormDetails( $data );
+			$data = array( 'fluentform_form' => $form_raw );
+			$form = $this->parse_form_details( $data );
 
 			$this->is_form_enabled = $this->sanitize_form_post( 'fluentform_enable' );
 			$this->otp_type        = $this->sanitize_form_post( 'fluentform_enable_type' );
@@ -311,26 +322,25 @@ if ( ! class_exists( 'FluentForm' ) ) {
 			update_mo_option( 'fluentform_enable', $this->is_form_enabled );
 			update_mo_option( 'fluentform_enable_type', $this->otp_type );
 			update_mo_option( 'fluentform_forms', maybe_serialize( $this->form_details ) );
-
 		}
+
 		/**
 		 * Parse Form Details
 		 *
 		 * @param array $data - contains the data from the $_POST.
 		 */
-		private function parseFormDetails( $data ) {
+		private function parse_form_details( $data ) {
 			$form = array();
 			if ( ! array_key_exists( 'fluentform_form', $data ) ) {
 				return $form;
 			}
 			foreach ( array_filter( ( $data['fluentform_form']['form'] ) ) as $key => $value ) {
 
-				$key                                   = sanitize_text_field( $key );
-				$form[ sanitize_text_field( $value ) ] = array(
-					'emailkey'   => sanitize_text_field( $data['fluentform_form']['emailkey'][ $key ] ),
-					'phonekey'   => sanitize_text_field( $data['fluentform_form']['phonekey'][ $key ] ),
-					'phone_show' => sanitize_text_field( $data['fluentform_form']['phonekey'][ $key ] ),
-					'email_show' => sanitize_text_field( $data['fluentform_form']['emailkey'][ $key ] ),
+				$form[ absint( $value ) ] = array(
+					'emailkey'   => $data['fluentform_form']['emailkey'][ $key ],
+					'phonekey'   => $data['fluentform_form']['phonekey'][ $key ],
+					'phone_show' => $data['fluentform_form']['phonekey'][ $key ],
+					'email_show' => $data['fluentform_form']['emailkey'][ $key ],
 				);
 			}
 			return $form;

@@ -23,7 +23,7 @@ $whatsapp_view = '
 
 		<!--  TABS  -->
 		<div class="mo-tab-container" style="padding-top: 10px; padding-bottom: 20px;">
-			<h2 style=" font-size:1.300rem;" class="mo-heading pl-mo-4">' . esc_html( mo_( 'WhatsApp OTP Verification And Notifications' ) ) . '</h2>          
+			<h2 style=" font-size:1.300rem;" class="mo-heading pl-mo-4">' . esc_html( __( 'WhatsApp OTP Verification And Notifications', 'miniorange-otp-verification' ) ) . '</h2>          
 		</div>
 
 		<!--  TABS CONTENT  -->
@@ -32,7 +32,7 @@ $whatsapp_view = '
 				<div>
 					<div class="whatsapp-test-configuration px-mo-16">
 						<div class="mo-title flex-1" >
-							<p class="mo_wa_note text-gray-900">' . esc_html( mo_( 'This feature allows you to configure WhatsApp for OTP Verification as well as sending WooCommerce notifications and alerts via WhatsApp using the default miniOrange Business account or your personal business account.' ) ) . '
+							<p class="mo_wa_note text-gray-900">' . esc_html( __( 'This feature allows you to configure WhatsApp for OTP Verification as well as sending WooCommerce notifications and alerts via WhatsApp using the default miniOrange Business account or your personal business account.', 'miniorange-otp-verification' ) ) . '
 							</p>
 						</div>
 					</div>
@@ -41,9 +41,9 @@ $whatsapp_view = '
 				<div class="mo-whatsapp-snippet-grid">
 					<div class="mo-whatsapp-card" >
 						<div class="mo-whatsapp-header">
-								<h5 class="text-gray-900">' . esc_html( mo_( 'WhatsApp Premium Plan Features' ) ) . '</h5> &nbsp;&nbsp; 
+								<h5 class="text-gray-900">' . esc_html( __( 'WhatsApp Premium Plan Features', 'miniorange-otp-verification' ) ) . '</h5> &nbsp;&nbsp; 
 								<div class="mb-mo-1 text-gray-900"> [
-									<i><a href="' . esc_url( $license_url ) . '"	target="_blank">' . esc_html( mo_( ' Supported in WhatsApp + Twilio Plan ' ) ) . '</a></i> ]
+									<i><a href="' . esc_url( $license_url ) . '"	target="_blank" rel="noopener noreferrer">' . esc_html( __( ' Supported in WhatsApp + Twilio Plan ', 'miniorange-otp-verification' ) ) . '</a></i> ]
 								</div>	
 								<svg width="18" class="ml-mo-2 mr-mo-2 mb-mo-1" height="18" viewBox="0 0 24 24" fill="none">
 											<g id="d4a43e0162b45f718f49244b403ea8f4">
@@ -67,8 +67,8 @@ $whatsapp_view = '
 									</div>
 								</div>
 								<div class="ml-mo-4">
-									<p class="m-mo-0 font-semibold text-gray-900">' . esc_html( mo_( 'Default miniOrange Business Account' ) ) . '</p>
-									<p class="m-mo-0 text-sm text-gray-900 mt-mo-1">' . esc_html( mo_( 'Quick setup with our managed WhatsApp Business API. Purchase transactions directly from miniOrange.' ) ) . '</p>
+									<p class="m-mo-0 font-semibold text-gray-900">' . esc_html( __( 'Default miniOrange Business Account', 'miniorange-otp-verification' ) ) . '</p>
+									<p class="m-mo-0 text-sm text-gray-900 mt-mo-1">' . esc_html( __( 'Quick setup with our managed WhatsApp Business API. Purchase transactions directly from miniOrange.', 'miniorange-otp-verification' ) ) . '</p>
 								</div>
 							</li>
 
@@ -81,8 +81,8 @@ $whatsapp_view = '
 									</div>
 								</div>
 								<div class="ml-mo-4">
-									<p class="m-mo-0 font-semibold text-gray-900">' . esc_html( mo_( 'Your Personal Business Account' ) ) . '</p>
-									<p class="m-mo-0 text-sm text-gray-900 mt-mo-1">' . esc_html( mo_( 'Use your own WhatsApp Business account with full control. Purchase transactions from Meta (Facebook).' ) ) . '</p>
+									<p class="m-mo-0 font-semibold text-gray-900">' . esc_html( __( 'Your Personal Business Account', 'miniorange-otp-verification' ) ) . '</p>
+									<p class="m-mo-0 text-sm text-gray-900 mt-mo-1">' . esc_html( __( 'Use your own WhatsApp Business account with full control. Purchase transactions from Meta (Facebook).', 'miniorange-otp-verification' ) ) . '</p>
 								</div>
 							</li>
 
@@ -95,8 +95,8 @@ $whatsapp_view = '
 									</div>
 								</div>
 								<div class="ml-mo-4">
-									<p class="m-mo-0 font-semibold text-gray-900">' . esc_html( mo_( 'Custom BSP/WhatsApp provider Integration' ) ) . '</p>
-									<p class="m-mo-0 text-sm text-gray-900 mt-mo-1">' . esc_html( mo_( 'Connect with your preferred WhatsApp Business Solution Provider for enterprise-level flexibility.' ) ) . '</p>
+									<p class="m-mo-0 font-semibold text-gray-900">' . esc_html( __( 'Custom BSP/WhatsApp provider Integration', 'miniorange-otp-verification' ) ) . '</p>
+									<p class="m-mo-0 text-sm text-gray-900 mt-mo-1">' . esc_html( __( 'Connect with your preferred WhatsApp Business Solution Provider for enterprise-level flexibility.', 'miniorange-otp-verification' ) ) . '</p>
 								</div>
 							</li>
 
@@ -110,8 +110,8 @@ $whatsapp_view = '
 									</div>
 								</div>
 								<div class="ml-mo-4">
-									<p class="m-mo-0 font-bold text-gray-900">' . esc_html( mo_( 'WhatsApp OTP & Notifications' ) ) . '</p>
-									<p class="m-mo-0 text-sm text-gray-900 mt-mo-1">' . esc_html( mo_( 'Send secure OTP codes and automated notifications directly through WhatsApp for better user engagement.' ) ) . '</p>
+									<p class="m-mo-0 font-bold text-gray-900">' . esc_html( __( 'WhatsApp OTP & Notifications', 'miniorange-otp-verification' ) ) . '</p>
+									<p class="m-mo-0 text-sm text-gray-900 mt-mo-1">' . esc_html( __( 'Send secure OTP codes and automated notifications directly through WhatsApp for better user engagement.', 'miniorange-otp-verification' ) ) . '</p>
 								</div>
 							</li> 
 
@@ -124,14 +124,14 @@ $whatsapp_view = '
 									</div>
 								</div>
 								<div class="ml-mo-4">
-									<p class="m-mo-0 font-bold text-gray-900">' . esc_html( mo_( 'Smart SMS Fallback' ) ) . '</p>
-									<p class="m-mo-0 text-sm text-gray-900 mt-mo-1">' . esc_html( mo_( 'Automatic fallback to SMS OTP for users without WhatsApp number, ensuring increased delivery success rate.' ) ) . '</p>
+									<p class="m-mo-0 font-bold text-gray-900">' . esc_html( __( 'Smart SMS Fallback', 'miniorange-otp-verification' ) ) . '</p>
+									<p class="m-mo-0 text-sm text-gray-900 mt-mo-1">' . esc_html( __( 'Automatic fallback to SMS OTP for users without WhatsApp number, ensuring increased delivery success rate.', 'miniorange-otp-verification' ) ) . '</p>
 								</div>
 							</li>
 
 						</ul>
 
-						<a class="w-full ml-mo-4 mo-button primary" onClick="otpSupportOnClick(\'Hi! I am interested in using OTP/Notifications over WhatsApp Feature for my website, can you please share the pricing details?\');" >' . esc_html( mo_( 'Upgrade Now' ) ) . '</a><br>
+						<a class="w-full ml-mo-4 mo-button primary" onClick="otpSupportOnClick(\'Hi! I am interested in using OTP/Notifications over WhatsApp Feature for my website, can you please share the pricing details?\');" >' . esc_html( __( 'Upgrade Now', 'miniorange-otp-verification' ) ) . '</a><br>
 					</div>
 				</div>   
 			</section> 
@@ -190,10 +190,11 @@ echo wp_kses(
 			'hidden' => array(),
 		),
 		'a'        => array(
-			'href'   => array(),
-			'target' => array(),
-			'class'  => array(),
+			'href'    => array(),
+			'target'  => array(),
+			'class'   => array(),
 			'onclick' => array(),
+			'rel'     => array(),
 		),
 		'i'        => array(),
 		'p'        => array(
@@ -274,7 +275,7 @@ echo '
 				 	<div class="mo-popup-header-wrapper" style="border-bottom: 1px groove; background-color:#d1f7d9;">
 
                         <div class="mo-popup-text-wrapper mo-center" style="color:black;">
-                            ' . esc_html( mo_( 'Test WhatsApp OTP' ) ) . '
+                            ' . esc_html( __( 'Test WhatsApp OTP', 'miniorange-otp-verification' ) ) . '
                         </div>
 
                         <button type="button" id="mo_close_wp_pop_up_button" class="mo-popup-close-button" data-modal-hide="staticModal">
@@ -287,7 +288,7 @@ echo '
 					<div class="px-mo-5" style="background-color: white;">
 						<div class="py-mo-2 rounded-lg ">
 							<div class="p-mo-4 text-xs font-semibold rounded-lg bg-blue-50" role="alert">
-								Enter the below details to test the WhatsApp OTP on the Entered Phone number.
+								' . esc_html__( 'Enter the below details to test the WhatsApp OTP on the entered phone number.', 'miniorange-otp-verification' ) . '
 							</div>
 						</div>
                 	</div>
@@ -295,15 +296,15 @@ echo '
 					<div class="px-mo-5" id="mo_whatsapp_test_details">
 						<div class="pt-mo-4">
 							<div class="mo-input-wrapper">
-								<label class="mo-input-label">' . esc_html( mo_( 'Phone Number' ) ) . '</label>
-								<input class="mo-form-input" required style="width:300px;" id="wa_test_configuration_phone" placeholder="Enter Phone Number with country code." type="text" name="wa_test_configuration_phone" >
+								<label class="mo-input-label">' . esc_html( __( 'Phone Number', 'miniorange-otp-verification' ) ) . '</label>
+								<input class="mo-form-input" required style="width:300px;" id="wa_test_configuration_phone" placeholder="' . esc_attr__( 'Enter phone number with country code.', 'miniorange-otp-verification' ) . '" type="text" name="wa_test_configuration_phone" >
 							</div>
 						</div>
 
 						<div class="pt-mo-4">
 							<div class="mo-input-wrapper">
-								<label class="mo-input-label">' . esc_html( mo_( 'miniOrange Account Password' ) ) . '</label>
-								<input class=" mo-form-input" required type="password" style="width:300px;" id="wa_test_configuration_password" placeholder="Enter miniOrange accounts password." type="text" name="wa_test_configuration_password" />
+								<label class="mo-input-label">' . esc_html( __( 'miniOrange Account Password', 'miniorange-otp-verification' ) ) . '</label>
+								<input class=" mo-form-input" required type="password" style="width:300px;" id="wa_test_configuration_password" placeholder="' . esc_attr__( 'Enter miniOrange account password.', 'miniorange-otp-verification' ) . '" name="wa_test_configuration_password" />
 							</div>
 						</div>	
 
@@ -313,14 +314,10 @@ echo '
 							<input 	class="w-full mo-button inverted "  type="button"
 								name="mo_gateway_submit" ' . esc_attr( $disabled ) . '
 								id="whatsapp_gateway_submit"
-								value="Send WhatsApp OTP"/>
+								value="' . esc_attr__( 'Send WhatsApp OTP', 'miniorange-otp-verification' ) . '"/>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>';
-
-
-
-

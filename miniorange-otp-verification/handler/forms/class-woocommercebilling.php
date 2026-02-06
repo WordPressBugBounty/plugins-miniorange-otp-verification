@@ -2,7 +2,7 @@
 /**
  * Load admin view for User WooCommerce Billing form.
  *
- * @package miniorange-otp-verification/handler
+ * @package miniorange-otp-verification/handler/forms
  */
 
 namespace OTP\Handler\Forms;
@@ -35,6 +35,7 @@ if ( ! class_exists( 'WooCommerceBilling' ) ) {
 	class WooCommerceBilling extends FormHandler implements IFormHandler {
 
 		use Instance;
+
 		/**
 		 * Initializes values
 		 */
@@ -44,12 +45,12 @@ if ( ! class_exists( 'WooCommerceBilling' ) ) {
 			$this->form_session_var        = FormSessionVars::WC_BILLING;
 			$this->type_phone_tag          = 'mo_wcb_phone_enable';
 			$this->type_email_tag          = 'mo_wcb_email_enable';
-				$this->phone_form_id       = '#billing_phone';
+			$this->phone_form_id           = '#billing_phone';
 			$this->form_key                = 'WC_BILLING_FORM';
-			$this->form_name               = mo_( 'WooCommerce Billing Address Form' );
+			$this->form_name               = 'WooCommerce Billing Address Form';
 			$this->is_form_enabled         = get_mo_option( 'wc_billing_enable' );
 			$this->button_text             = get_mo_option( 'wc_billing_button_text' );
-			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : mo_( 'Click Here to send OTP' );
+			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : '';
 			$this->form_documents          = MoFormDocs::WC_BILLING_LINK;
 			parent::__construct();
 		}
@@ -92,18 +93,24 @@ if ( ! class_exists( 'WooCommerceBilling' ) ) {
 				return $value;
 			}
 
-			if ( $this->userHasNotChangeData( $value ) ) {
+			if ( $this->user_has_not_change_data( $value ) ) {
 				return $value;
 			}
 
-			if ( $this->otp_type === $this->type_phone_tag && $this->restrict_duplicates && $this->isDuplicate( $value, $type ) ) {
-				return $value;
+			if ( $this->otp_type === $this->type_phone_tag ) {
+				if ( $this->restrict_duplicates && $this->is_duplicate( $value, $type ) ) {
+					if ( function_exists( 'wc_add_notice' ) ) {
+							wc_add_notice(
+								MoMessages::showMessage( MoMessages::PHONE_EXISTS ),
+								MoConstants::ERROR_JSON_TYPE
+							);
+					}
+					return $value;
+				}
 			}
 
 			MoUtility::initialize_transaction( $this->form_session_var );
-			$billing_email = isset( $_POST['billing_email'] ) ? sanitize_email( wp_unslash( $_POST['billing_email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
-			$billing_phone = isset( $_POST['billing_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_phone'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
-			$this->send_challenge( null, $billing_email, null, $billing_phone, $type, null, null, null, $this->form_session_var );
+			$this->send_challenge( null, $value, null, $value, $type, null, null, null, $this->form_session_var );
 			return $value;
 		}
 
@@ -138,8 +145,14 @@ if ( ! class_exists( 'WooCommerceBilling' ) ) {
 		 * }
 		 */
 		public function get_email_phone_data() {
-			$email = isset( $_POST['billing_email'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_email'] ) ) : '';
-			$phone = isset( $_POST[ 'billing_phone' ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'billing_phone'] ) ) : '';
+			if ( ! isset( $_POST['mopopup_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['mopopup_wpnonce'] ) ), 'mo_popup_options' ) ) {
+				return array(
+					'email' => '',
+					'phone' => '',
+				);
+			}
+			$email = isset( $_POST['billing_email'] ) ? sanitize_email( wp_unslash( $_POST['billing_email'] ) ) : '';
+			$phone = isset( $_POST['billing_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_phone'] ) ) : '';
 			return array(
 				'email' => $email,
 				'phone' => $phone,
@@ -171,8 +184,8 @@ if ( ! class_exists( 'WooCommerceBilling' ) ) {
 		 * @param  string $value   phone/email.
 		 * @return boolean
 		 */
-		private function userHasNotChangeData( $value ) {
-			$data = $this->getUserData();
+		private function user_has_not_change_data( $value ) {
+			$data = $this->get_user_data();
 			return strcasecmp( $data, $value ) === 0;
 		}
 
@@ -181,12 +194,13 @@ if ( ! class_exists( 'WooCommerceBilling' ) ) {
 		 *
 		 * @return string  the meta key of the field if exists
 		 */
-		private function getUserData() {
-			global $wpdb;
-			$current_user = wp_get_current_user();
-			$key          = ( $this->otp_type === $this->type_phone_tag ) ? 'billing_phone' : 'billing_email';
-			$results      = $wpdb->get_row( $wpdb->prepare( "SELECT meta_value FROM `{$wpdb->prefix}usermeta` WHERE `meta_key` = %s AND `user_id` = %s", array( $key, $current_user->ID ) ) );// phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, Direct database call without caching detected -- DB Direct Query is necessary here.
-			return isset( $results ) ? $results->meta_value : '';
+		private function get_user_data() {
+			$current_user_id = get_current_user_id();
+			$key             = ( $this->otp_type === $this->type_phone_tag ) ? 'billing_phone' : 'billing_email';
+
+			$value = get_user_meta( $current_user_id, $key, true );
+
+			return ! empty( $value ) ? $value : '';
 		}
 
 		/**
@@ -196,20 +210,40 @@ if ( ! class_exists( 'WooCommerceBilling' ) ) {
 		 * @param  string $type   Whether its phone or email verification.
 		 * @return bool
 		 */
-		private function isDuplicate( $value, $type ) {
-			global $wpdb;
-			$key     = 'billing_' . $type;
-			$results = $wpdb->get_row( $wpdb->prepare( "SELECT `user_id` FROM `{$wpdb->prefix}usermeta` WHERE `meta_key` = %s AND `meta_value` =  %d", array( $key, $value ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, Direct database call without caching detected -- DB Direct Query is necessary here.
+		private function is_duplicate( $value, $type ) {
+			$key = 'billing_' . $type;
 
-			if ( isset( $results ) ) {
-				if ( VerificationType::PHONE === $type ) {
-					wc_add_notice( MoMessages::showMessage( MoMessages::PHONE_EXISTS ), MoConstants::ERROR_JSON_TYPE ); // phpcs:ignore intelephense.diagnostics.undefinedFunctions -- Default function of WooCommerce.
-				} elseif ( VerificationType::EMAIL === $type ) {
-					wc_add_notice( MoMessages::showMessage( MoMessages::EMAIL_EXISTS ), MoConstants::ERROR_JSON_TYPE ); // phpcs:ignore intelephense.diagnostics.undefinedFunctions -- Default function of WooCommerce.
-				}
-				return true;
+			// Create cache key based on phone number and meta key.
+			$cache_key   = 'mo_wc_value_in_use_' . md5( $value . '_' . $key );
+			$cache_group = 'mo_wc_billing';
+
+			// Try to get from cache first.
+			$cached_result = wp_cache_get( $cache_key, $cache_group );
+			if ( false !== $cached_result ) {
+				return (bool) $cached_result;
 			}
-			return false;
+
+			// Query database if not in cache.
+			$args = array(
+				'meta_query' => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Necessary to check for duplicate phone numbers. Caching implemented above.
+					array(
+						'key'     => $key,
+						'value'   => $value,
+						'compare' => '=',
+					),
+				),
+				'number'     => 1,
+				'fields'     => 'ID',
+			);
+
+			$users = get_users( $args );
+
+			// Check if any users were found.
+			$is_in_use = ! empty( $users );
+
+			// Store in cache for 15 minutes (900 seconds).
+			wp_cache_set( $cache_key, $is_in_use, $cache_group, 900 );
+			return $is_in_use;
 		}
 
 		/**
@@ -241,7 +275,7 @@ if ( ! class_exists( 'WooCommerceBilling' ) ) {
 		 * Handles saving all the visual Form related options by the admin.
 		 */
 		public function handle_form_options() {
-			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option() ) ) {
+			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option(), 'wc_billing_enable' ) ) {
 				return;
 			}
 			$this->is_form_enabled     = $this->sanitize_form_post( 'wc_billing_enable' );

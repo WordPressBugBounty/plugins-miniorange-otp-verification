@@ -2,7 +2,7 @@
 /**
  * Handles the OTP verification logic for EverestContactForm form.
  *
- * @package miniorange-otp-verification/handler
+ * @package miniorange-otp-verification/handler/forms
  */
 
 namespace OTP\Handler\Forms;
@@ -24,8 +24,8 @@ use OTP\Traits\Instance;
 use ReflectionException;
 use WP_Error;
 /**
- * This is the CalderForms Form class. This class handles all the
- * functionality related to CalderForms. It extends the FormHandler
+ * This is the EverestContactForm Form class. This class handles all the
+ * functionality related to EverestContactForm. It extends the FormHandler
  * and implements the IFormHandler class to implement some much needed functions.
  */
 if ( ! class_exists( 'EverestContactForm' ) ) {
@@ -35,6 +35,7 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 	class EverestContactForm extends FormHandler implements IFormHandler {
 
 		use Instance;
+
 		/**
 		 * Initializes values
 		 */
@@ -45,12 +46,12 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 			$this->type_phone_tag          = 'mo_everest_contact_phone_enable';
 			$this->type_email_tag          = 'mo_everest_contact_email_enable';
 			$this->form_key                = 'EVEREST_CONTACT';
-			$this->form_name               = mo_( 'Everest Contact Form' );
+			$this->form_name               = 'Everest Contact Form';
 			$this->is_form_enabled         = get_mo_option( 'everest_contact_enable' );
 			$this->phone_form_id           = array();
 			$this->form_documents          = MoFormDocs::EVEREST_CONTACT_FORM_LINK;
 			$this->generate_otp_action     = 'miniorange_everest_contact_generate_otp';
-			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : mo_( 'Click Here to send OTP' );
+			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : '';
 			parent::__construct();
 		}
 		/**
@@ -70,8 +71,8 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 			foreach ( $this->form_details as $key => $value ) {
 				array_push( $this->phone_form_id, '#evf-' . $key . '-field_' . $value['phonekey'] );
 			}
-			add_filter( 'everest_forms_process_initial_errors', array( $this, 'validateForm' ), 99, 2 );
-			add_filter( 'everest_forms_process_after_filter', array( $this, 'unset_sessionVariable' ), 99, 3 );
+			add_filter( 'everest_forms_process_initial_errors', array( $this, 'validate_form' ), 99, 2 );
+			add_filter( 'everest_forms_process_after_filter', array( $this, 'unset_session_variable' ), 99, 3 );
 
 			add_action( "wp_ajax_{$this->generate_otp_action}", array( $this, 'send_otp' ) );
 			add_action( "wp_ajax_nopriv_{$this->generate_otp_action}", array( $this, 'send_otp' ) );
@@ -86,7 +87,7 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 		 * @param string $form_data containing form/field data.
 		 * @return array
 		 */
-		public function unset_sessionVariable( $form_fields, $entry, $form_data ) {
+		public function unset_session_variable( $form_fields, $entry, $form_data ) {
 			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->get_verification_type() ) ) {
 				$this->unset_otp_session_variables();
 			}
@@ -98,16 +99,16 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 		 * javascript conflicts or jquery not defined errors.
 		 */
 		public function miniorange_register_everest_contact_script() {
-			wp_register_script( 'moeverestcontact', MOV_URL . 'includes/js/moeverestcontact.min.js', array( 'jquery' ), MOV_VERSION, true );
+			wp_register_script( 'moeverestcontact', MOV_URL . 'includes/js/moeverestcontact.js', array( 'jquery' ), MOV_VERSION, true );
 			wp_localize_script(
 				'moeverestcontact',
 				'moeverestcontact',
 				array(
-					'siteURL'     => wp_ajax_url(),
+					'siteURL'     => admin_url( 'admin-ajax.php' ),
 					'otpType'     => $this->otp_type,
 					'formkey'     => strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ? 'phonekey' : 'emailkey',
 					'nonce'       => wp_create_nonce( $this->nonce ),
-					'buttontext'  => mo_( $this->button_text ),
+					'buttontext'  => $this->button_text,
 					'imgURL'      => MOV_LOADER_URL,
 					'forms'       => $this->form_details,
 					'generateURL' => $this->generate_otp_action,
@@ -123,18 +124,17 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 		 * @throws ReflectionException Add exception.
 		 */
 		public function send_otp() {
-			if ( ! check_ajax_referer( $this->nonce, $this->nonce_key ) ) {
+			// Security: Use hardcoded nonce action 'form_nonce' and key 'security' instead of variables.
+			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( BaseMessages::INVALID_OP ),
+						MoMessages::showMessage( BaseMessages::INVALID_OTP ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
-				exit;
 			}
-			$data = MoUtility::mo_sanitize_array( $_POST );
+			$data = MoUtility::mo_sanitize_array( wp_unslash( $_POST ) );
 
-			$this->validate_ajax_request();
 			MoUtility::initialize_transaction( $this->form_session_var );
 			if ( $this->otp_type === $this->type_phone_tag ) {
 				$this->process_phone_and_start_otp_verification_process( $data );
@@ -149,10 +149,18 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 		 * @param string $data - this is the get / post data from the ajax call containing email or phone.
 		 */
 		private function process_email_and_start_otp_verification_process( $data ) {
+			global $email_logic;
 			if ( ! MoUtility::sanitize_check( 'user_email', $data ) ) {
 				wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::ENTER_EMAIL ), MoConstants::ERROR_JSON_TYPE ) );
 			} else {
-				$this->setSessionAndStartOTPVerification( sanitize_email( $data['user_email'] ), sanitize_email( $data['user_email'] ), null, VerificationType::EMAIL );
+				$raw_email       = isset( $data['user_email'] ) ? (string) $data['user_email'] : '';
+				$sanitized_email = sanitize_email( wp_unslash( $raw_email ) );
+				if ( empty( $sanitized_email ) || ! is_email( $sanitized_email ) ) {
+					$display_email = ! empty( $sanitized_email ) ? $sanitized_email : sanitize_text_field( $raw_email );
+					$message       = str_replace( '##email##', esc_html( $display_email ), $email_logic->get_otp_invalid_format_message() );
+					wp_send_json( MoUtility::create_json( $message, MoConstants::ERROR_JSON_TYPE ) );
+				}
+				$this->set_session_and_start_otp_verification( $sanitized_email, $sanitized_email, null, VerificationType::EMAIL );
 			}
 		}
 		/**
@@ -165,7 +173,8 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 			if ( ! MoUtility::sanitize_check( 'user_phone', $data ) ) {
 				wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::ENTER_PHONE ), MoConstants::ERROR_JSON_TYPE ) );
 			} else {
-				$this->setSessionAndStartOTPVerification( trim( sanitize_text_field( $data['user_phone'] ) ), null, trim( sanitize_text_field( $data['user_phone'] ) ), VerificationType::PHONE );
+				$phone = MoUtility::process_phone_number( $data['user_phone'] );
+				$this->set_session_and_start_otp_verification( $phone, null, $phone, VerificationType::PHONE );
 			}
 		}
 		/**
@@ -177,7 +186,7 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 		 * @param string $phone_number - the phone number provided by the user.
 		 * @param string $otp_type - the otp type denoting the type of otp verification. Can be phone or email.
 		 */
-		private function setSessionAndStartOTPVerification( $session_value, $user_email, $phone_number, $otp_type ) {
+		private function set_session_and_start_otp_verification( $session_value, $user_email, $phone_number, $otp_type ) {
 			SessionUtils::add_email_or_phone_verified( $this->form_session_var, $session_value, $otp_type );
 			$this->send_challenge( '', $user_email, null, $phone_number, $otp_type );
 		}
@@ -191,7 +200,7 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 		 * @param array  $form_data - the form data passed by everest contact hook.
 		 * @return $error
 		 */
-		public function validateForm( $errors, $form_data ) {
+		public function validate_form( $errors, $form_data ) {
 			$id = $form_data['id'];
 			if ( ! empty( $errors[ $id ]['header'] ) ) {
 				return $errors;
@@ -202,31 +211,33 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 
 			$form_data = $this->form_details[ $id ];
 
-			if ( ! isset( $_POST[ '_wpnonce' . $id ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
-				$errors[ $id ]['header'] = MoMessages::showMessage( BaseMessages::INVALID_OP );
+			// Security: Validate nonce if present (Everest Forms may have already validated it)
+			// Only block if nonce exists and fails verification.
+			$nonce_key    = 'everest_forms_nonce';
+			$nonce_action = 'everest-forms_process_submit';
+			if ( isset( $_POST[ $nonce_key ] ) && ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST[ $nonce_key ] ) ), $nonce_action ) ) {
+				$errors[ $id ]['header'] = MoMessages::showMessage( BaseMessages::INVALID_OTP );
 			}
-			if ( ! sanitize_key( wp_unslash( $_POST[ '_wpnonce' . $id ] ), 'everest-forms_process_submit' ) ) {// phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
-				$errors[ $id ]['header'] = MoMessages::showMessage( BaseMessages::INVALID_OP );
-			}
-			$data = MoUtility::mo_sanitize_array( $_POST );// phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
 
-			$errors = $this->checkIfOtpVerificationStarted( $errors, $data );
+			$data = MoUtility::mo_sanitize_array( wp_unslash( $_POST ) );
+
+			$errors = $this->check_if_otp_verification_started( $errors, $data );
 
 			if ( ! empty( $errors[ $id ]['header'] ) ) {
 				return $errors;
 			}
 
 			if ( isset( $form_data ) && strcasecmp( $this->otp_type, $this->type_email_tag ) === 0 ) {
-				$errors = $this->processEmail( $data, $errors, $form_data );
+				$errors = $this->process_email( $data, $errors, $form_data );
 			} elseif ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
-				$errors = $this->processPhone( $data, $errors, $form_data );
+				$errors = $this->process_phone( $data, $errors, $form_data );
 			}
 
 			if ( is_wp_error( $errors ) ) {
 				return $errors;
 			}
 			if ( isset( $form_data ) && empty( $errors ) ) {
-				$errors = $this->processOTPEntered( $data, $errors, $form_data );
+				$errors = $this->process_otp_entered( $data, $errors, $form_data );
 			}
 			return $errors;
 		}
@@ -238,7 +249,7 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 		 * @param string $form_data - the value of the form submitted.
 		 * @return WP_Error
 		 */
-		private function processOTPEntered( $data, $errors, $form_data ) {
+		private function process_otp_entered( $data, $errors, $form_data ) {
 			$id           = $data['everest_forms']['id'];
 			$otp_ver_type = $this->get_verification_type();
 			$this->validate_challenge( $otp_ver_type, null, $data['everest_forms']['form_fields'][ $form_data['verifyKey'] ] );
@@ -255,8 +266,11 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 		 * @param string $data - the value entered by the user.
 		 * @return WP_Error|string
 		 */
-		private function checkIfOtpVerificationStarted( $errors, $data ) {
-			$id = $data['everest_forms']['id'];
+		private function check_if_otp_verification_started( $errors, $data ) {
+			$id = isset( $data['everest_forms']['id'] ) ? $data['everest_forms']['id'] : '';
+			if ( empty( $id ) ) {
+				return $errors;
+			}
 			if ( ! ( SessionUtils::is_otp_initialized( $this->form_session_var ) ) ) {
 				$errors[ $id ]['header'] = MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE );
 			}
@@ -271,8 +285,8 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 		 * @param string $form_data - form data.
 		 * @return WP_Error
 		 */
-		private function processEmail( $data, $errors, $form_data ) {
-			$id = sanitize_text_field( $data['everest_forms']['id'] );
+		private function process_email( $data, $errors, $form_data ) {
+			$id = isset( $data['everest_forms']['id'] ) ? $data['everest_forms']['id'] : '';
 			if ( ! SessionUtils::is_email_verified_match( $this->form_session_var, $data['everest_forms']['form_fields'][ $form_data['emailkey'] ] ) ) {
 				$errors[ $id ]['header'] = MoMessages::showMessage( MoMessages::EMAIL_MISMATCH );
 			}
@@ -287,9 +301,10 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 		 * @param string $form_data - form data.
 		 * @return WP_Error
 		 */
-		private function processPhone( $data, $errors, $form_data ) {
-			$id = sanitize_text_field( $data['everest_forms']['id'] );
-			if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $data['everest_forms']['form_fields'][ $form_data['phonekey'] ] ) ) {
+		private function process_phone( $data, $errors, $form_data ) {
+			$id    = isset( $data['everest_forms']['id'] ) ? $data['everest_forms']['id'] : '';
+			$phone = MoUtility::process_phone_number( $data['everest_forms']['form_fields'][ $form_data['phonekey'] ] );
+			if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
 				$errors[ $id ]['header'] = MoMessages::showMessage( MoMessages::PHONE_MISMATCH );
 			}
 			return $errors;
@@ -353,17 +368,20 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 		 * @return array
 		 */
 		public function handle_form_options() {
-			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option() ) || ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->admin_nonce ) ) {
+			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option(), 'everest_contact_enable' ) ) {
 				return;
 			}
-
-			$data = MoUtility::mo_sanitize_array( $_POST );
+			$everest_contact_form_data = $this->sanitize_form_post( 'everest_contact_form', '' );
+			if ( false === $everest_contact_form_data || ! is_array( $everest_contact_form_data ) ) {
+				return;
+			}
+			$data = array( 'everest_contact_form' => $everest_contact_form_data );
 
 			$this->is_form_enabled = $this->sanitize_form_post( 'everest_contact_enable' );
 			$this->otp_type        = $this->sanitize_form_post( 'everest_contact_enable_type' );
 			$this->button_text     = $this->sanitize_form_post( 'everest_contact_button_text' );
 
-			$form = $this->parseFormDetails( $data );
+			$form = $this->parse_form_details( $data );
 
 			$this->form_details = ! empty( $form ) ? $form : '';
 
@@ -380,7 +398,7 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 		 * @param  array $data - $_POST.
 		 * @return array
 		 */
-		public function parseFormDetails( $data ) {
+		public function parse_form_details( $data ) {
 			$form = array();
 
 			if ( ! array_key_exists( 'everest_contact_form', $data ) || ! $this->is_form_enabled ) {
@@ -400,6 +418,5 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 			}
 			return $form;
 		}
-
 	}
 }

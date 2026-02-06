@@ -10,7 +10,9 @@ namespace OTP\Notifications\UmSMSNotification\Helper;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
 use OTP\Helper\MoUtility;
+use OTP\Helper\MoMessages;
 
 /**
  * This class is used to define some plugin wide utility
@@ -31,21 +33,21 @@ if ( ! class_exists( 'UltimateMemberSMSNotificationUtility' ) ) {
 		 * @return string
 		 */
 		public static function get_admin_phone_number() {
+			if ( ! function_exists( 'get_umsn_option' ) ) {
+				return '';
+			}
+			$recipient_value       = '';
 			$notification_settings = get_umsn_option( 'notification_settings_option' );
 			if ( $notification_settings ) {
-				$sms_settings    = $notification_settings->get_um_new_user_admin_notif(); // phpcs::ignore $notification_settings is an object.
-				$recipient_value = maybe_unserialize( $sms_settings->recipient );
+				$sms_settings = $notification_settings->get_um_new_user_admin_notif();
+				if ( isset( $sms_settings->recipient ) && is_string( $sms_settings->recipient ) ) {
+					$unserialized = maybe_unserialize( $sms_settings->recipient );
+					if ( is_string( $unserialized ) || is_array( $unserialized ) ) {
+						$recipient_value = $unserialized;
+					}
+				}
 			}
 			return ! empty( $recipient_value ) ? $recipient_value : '';
-		}
-
-
-		/**
-		 * Checks if the customer is registered or not and shows a message on the page
-		 * to the user so that they can register or login themselves to use the plugin.
-		 */
-		public static function is_addon_activated() {
-			MoUtility::is_addon_activated();
 		}
 	}
 }

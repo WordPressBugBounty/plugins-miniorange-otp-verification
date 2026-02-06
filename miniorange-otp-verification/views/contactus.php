@@ -8,13 +8,16 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
+if ( ! current_user_can( 'manage_options' ) ) {
+	return;
+}
 echo '
 <div class="w-[296px] contact-us-container duration-300"> 
     <div id="mo_contact_us" class="flex gap-mo-4 relative justify-end">
         <input id="contact-us-toggle" type="checkbox" class="peer sr-only"/>
 
         <span onClick="otpSupportOnClick(\'\')" class="mo_contact_us_box rounded-sm">
-            <span class="mo-heading text-white leading-normal" style="font-size:14px;">Hello there! Need Help?<br>Drop us an Email</span>
+            <span class="mo-heading text-white leading-normal" style="font-size:14px;">' . esc_html__( 'Hello there! Need Help?', 'miniorange-otp-verification' ) . '<br>' . esc_html__( 'Drop us an Email', 'miniorange-otp-verification' ) . '</span>
         </span>
 
         <span onClick="otpSupportOnClick(\'\')">
@@ -38,7 +41,7 @@ echo '
         </div>
         <div id="mo-contact-form" class="mo_contactus_popup_wrapper rounded-md hidden animate-fade-in-up">
             <div class="mo-header">
-                <h5 class="mo-heading flex-1">Contact us</h5>
+                <h5 class="mo-heading flex-1">' . esc_html__( 'Contact us', 'miniorange-otp-verification' ) . '</h5>
                     <label class="mo-icon-button" onclick="mo_otp_contactus_goback()">
                       <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                         <g id="a8e87dce2cfc3c0d3b0cee61b2290011">
@@ -55,46 +58,46 @@ echo '
                   
                         <div id="mo-chatbox" class="flex flex-col gap-mo-2">
                           <div>
-                            <p class="leading-loose">Hi! 👋 it\'s great to see you! Please select the option you need help with.</p>
+                            <p class="leading-loose">' . esc_html__( 'Hi! 👋 it\'s great to see you! Please select the option you need help with.', 'miniorange-otp-verification' ) . '</p>
                           </div>
                           <div class="mo-cloud-message-initial" id="mo-demo">
-                            1) Need the demo of the plugin
+                            ' . esc_html__( '1) Need the demo of the plugin', 'miniorange-otp-verification' ) . '
                           </div>
                           <div class="mo-cloud-message-initial" id="mo-gateway">
-                            2) Need help with the gateway setup
+                            ' . esc_html__( '2) Need help with the gateway setup', 'miniorange-otp-verification' ) . '
                           </div>
                           <div class="mo-cloud-message-initial" id="mo-no-sms">
-                            3) There was an error in sending the OTP. Please try again or contact site admin.
+                            ' . esc_html__( '3) There was an error in sending the OTP. Please try again or contact site admin.', 'miniorange-otp-verification' ) . '
                           </div>
                           <div class="mo-cloud-message-initial hidden" id="mo-form">
-                            3) Need help with the form setup
+                            ' . esc_html__( '3) Need help with the form setup', 'miniorange-otp-verification' ) . '
                           </div>
                           <div class="mo-cloud-message-initial" id="mo-premium">
-                            4) Upgraded to the premium plan but unable to activate the premium plugin
+                            ' . esc_html__( '4) Upgraded to the premium plan but unable to activate the premium plugin', 'miniorange-otp-verification' ) . '
                           </div>
                           <div class="mo-cloud-message-initial" id="mo-no-otp">
-                            5) Not receiving the OTP’s
+                            ' . esc_html__( '5) Not receiving the OTP’s', 'miniorange-otp-verification' ) . '
                           </div>
                           <div class="mo-cloud-message-initial" id="mo-custom">
-                            6) Other query
+                            ' . esc_html__( '6) Other query', 'miniorange-otp-verification' ) . '
                           </div>
                           
                         </div>
                   <div id="mo_email_form_link" class="hidden flex-col gap-mo-3" style="display:flex !important">
                     <div class="mo-input-wrapper">
-                      <label class="mo-input-label">Email</label>
+                      <label class="mo-input-label">' . esc_html__( 'Email', 'miniorange-otp-verification' ) . '</label>
                         <input type="email" class="mo-input w-full mo-field-contactus" id="mo_query_email" name="mo_query_email" value="' . esc_attr( $email ) . '"
-                          placeholder="' . esc_attr( mo_( 'Enter your Email' ) ) . '" required />
+                          placeholder="' . esc_attr( __( 'Enter your Email', 'miniorange-otp-verification' ) ) . '" required />
                     </div>
                     <div id="mo_query_phone_input" class="mo-input-wrapper">
-                      <label class="mo-input-label">' . esc_html( mo_( 'Phone' ) ) . '</label>
+                      <label class="mo-input-label">' . esc_html__( 'Phone', 'miniorange-otp-verification' ) . '</label>
                         <input type="text" class="mo-input w-full mo-field-contactus" id="mo_query_phone" name="mo_query_phone" value="' . esc_attr( $phone ) . '"
-                          placeholder="' . esc_attr( mo_( 'Enter your Phone' ) ) . '"/>
+                          placeholder="' . esc_attr( __( 'Enter your Phone', 'miniorange-otp-verification' ) ) . '"/>
                     </div>
                     <div class="mo-input-wrapper">
-                      <label class="mo-input-label">Form link/name</label>
+                      <label class="mo-input-label">' . esc_html__( 'Form link/name', 'miniorange-otp-verification' ) . '</label>
                       <input type="text" class="mo-input w-full mo-field-contactus" id="mo_query_form_link" name="mo_query_form_link"
-                          placeholder="' . esc_attr( mo_( 'Enter your form link/name' ) ) . '" required />
+                          placeholder="' . esc_attr( __( 'Enter your form link/name', 'miniorange-otp-verification' ) ) . '" required />
                     </div>
                   </div>
             </form> 

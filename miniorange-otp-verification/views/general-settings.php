@@ -5,6 +5,10 @@
  * @package miniorange-otp-verification/views
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
+
 use OTP\Helper\MoConstants;
 use OTP\Helper\MoMessages;
 use OTP\Helper\MoUtility;
@@ -15,25 +19,25 @@ echo '<div id="generalSettingsSubTabContainer" class="mo-subpage-container ' . e
 
 			wp_nonce_field( $nonce );
 	echo '	<div class="mo-header">
-				<p class="mo-heading flex-1">' . esc_html( mo_( 'General Settings' ) ) . '</p>
+				<p class="mo-heading flex-1">' . esc_html( __( 'General Settings', 'miniorange-otp-verification' ) ) . '</p>
 				<input type="submit" name="save" id="save" ' . esc_attr( $disabled ) . '
-							class="mo-button inverted" value="' . esc_attr( mo_( 'Save Settings' ) ) . '">
+							class="mo-button inverted" value="' . esc_attr( __( 'Save Settings', 'miniorange-otp-verification' ) ) . '">
 			</div>
 			<div class="border-b flex flex-col gap-mo-6 px-mo-4">
 				<div class="w-full flex m-mo-4">
 					<div class="flex-1">
-						<h5 class="mo-title">Country Code Dropdown</h5>
-						<p class="mo-caption mt-mo-2">Country code will be appended to the phone number field</p>
+						<h5 class="mo-title">' . esc_html__( 'Country Code Dropdown', 'miniorange-otp-verification' ) . '</h5>
+						<p class="mo-caption mt-mo-2">' . esc_html__( 'Country code will be appended to the phone number field', 'miniorange-otp-verification' ) . '</p>
 					</div>
 					<div class="flex-1">
 						<div id="country_code_settings" class="flex my-mo-4">
-							<div class="my-mo-2 w-[46%]">' . esc_html( mo_( 'Select Default Country Code' ) ) . ':</div>
+							<div class="my-mo-2 w-[46%]">' . esc_html( __( 'Select Default Country Code', 'miniorange-otp-verification' ) ) . ':</div>
 							<div class="w-[50%] pr-mo-4 text-sm">';
 							get_country_code_dropdown();
 	echo '  		   	</div>
 						</div>
 						<div class="flex">
-							<div class="w-[46%]">' . esc_html( mo_( 'Country Code' ) ) . ': </div>
+							<div class="w-[46%]">' . esc_html( __( 'Country Code', 'miniorange-otp-verification' ) ) . ': </div>
 							<span id="country_code"></span>
 						</div>
 						<div class="my-mo-4">
@@ -41,7 +45,7 @@ echo '<div id="generalSettingsSubTabContainer" class="mo-subpage-container ' . e
 									name="show_dropdown_on_form"
 									id="dropdownEnable"
 									value="1"' . esc_attr( mo_esc_string( $show_dropdown_on_form, 'attr' ) ) . ' />
-							' . esc_html( mo_( 'Show a country code dropdown on the phone field.' ) ) . '
+							' . esc_html( __( 'Show a country code dropdown on the phone field.', 'miniorange-otp-verification' ) ) . '
 						</div>
 					</div>
 				</div>
@@ -51,14 +55,14 @@ echo '<div id="generalSettingsSubTabContainer" class="mo-subpage-container ' . e
 				<div class="border-b flex flex-col gap-mo-6 px-mo-4">
 					<div class="w-full flex m-mo-4">
 						<div class="flex-1">
-							<h5 class="mo-title">Blocked Email Domains</h5>
-							<p class="mo-caption mt-mo-2">Please input a list of domains you wish to block.</p>
+							<h5 class="mo-title">' . esc_html__( 'Blocked Email Domains', 'miniorange-otp-verification' ) . '</h5>
+							<p class="mo-caption mt-mo-2">' . esc_html__( 'Please input a list of domains you wish to block.', 'miniorange-otp-verification' ) . '</p>
 						</div>
 						<div class="flex-1">
 							<div id="blocked_email_settings" class="w-[95%] py-mo-4 pr-mo-4">
 								<div class="mo-input-wrapper">
-									<label class="mo-input-label">' . esc_attr( mo_( 'Blocked Emails' ) ) . '</label>
-									<textarea name="mo_otp_blocked_email_domains" placeholder="' . esc_html( mo_( 'Enter semicolon-separated domains that you want to block. Eg. gmail.com;yahoo.com ' ) ) . '" rows="4" maxlength="400" class="mo-textarea" >' . esc_attr( mo_esc_string( $otp_blocked_email_domains, 'attr' ) ) . '</textarea>
+									<label class="mo-input-label">' . esc_html( __( 'Blocked Emails', 'miniorange-otp-verification' ) ) . '</label>
+									<textarea name="mo_otp_blocked_email_domains" placeholder="' . esc_html( __( 'Enter semicolon-separated domains that you want to block. Eg. gmail.com;yahoo.com ', 'miniorange-otp-verification' ) ) . '" rows="4" maxlength="400" class="mo-textarea" >' . esc_attr( mo_esc_string( $otp_blocked_email_domains, 'attr' ) ) . '</textarea>
 								</div>
 							</div>
 						</div>
@@ -69,14 +73,14 @@ echo '<div id="generalSettingsSubTabContainer" class="mo-subpage-container ' . e
 				<div class="border-b flex flex-col gap-mo-6 px-mo-4">
 					<div class="w-full flex m-mo-4">
 						<div class="flex-1">
-							<h5 class="mo-title">Blocked Phone Numbers</h5>
-							<p class="mo-caption mt-mo-2">Please input a list of phone numbers you wish to block.</p>
+							<h5 class="mo-title">' . esc_html__( 'Blocked Phone Numbers', 'miniorange-otp-verification' ) . '</h5>
+							<p class="mo-caption mt-mo-2">' . esc_html__( 'Please input a list of phone numbers you wish to block.', 'miniorange-otp-verification' ) . '</p>
 						</div>
 						<div class="flex-1">
 							<div id="blocked_sms_settings" class="w-[95%] py-mo-4 pr-mo-4">
 								<div class="mo-input-wrapper">
-									<label class="mo-input-label">' . esc_attr( mo_( 'Blocked Phone Numbers' ) ) . '</label>
-									<textarea name="mo_otp_blocked_phone_numbers" placeholder="' . esc_html( mo_( 'Enter semicolon-separated phone numbers (with country code) that you want to block. Eg. +1XXXXXXXX;+91XXXXXX ' ) ) . '" rows="4" maxlength="2000" class="mo-textarea" >' . esc_attr( mo_esc_string( $otp_blocked_phones, 'attr' ) ) . '</textarea>
+									<label class="mo-input-label">' . esc_html( __( 'Blocked Phone Numbers', 'miniorange-otp-verification' ) ) . '</label>
+									<textarea name="mo_otp_blocked_phone_numbers" placeholder="' . esc_attr( __( 'Enter semicolon-separated phone numbers (with country code) that you want to block. Eg. +1XXXXXXXX;+91XXXXXX ', 'miniorange-otp-verification' ) ) . '" rows="4" maxlength="2000" class="mo-textarea" >' . esc_attr( mo_esc_string( $otp_blocked_phones, 'attr' ) ) . '</textarea>
 								</div>
 							</div>
 						</div>
@@ -88,8 +92,8 @@ echo '<div id="generalSettingsSubTabContainer" class="mo-subpage-container ' . e
 				<div class="border-b flex flex-col gap-mo-6 pb-mo-4 px-mo-4">
 					<div class="w-full flex m-mo-4">
 						<div class="flex-1">
-							<h5 class="mo-title">Block Globally Banned Phone Numbers</h5>
-							<p class="mo-caption mt-mo-2 mr-mo-32">This feature enables admins to block the use of globally banned phone number formats, hence increases security.<b> For eg: +1111111111 will get blocked.</b></p>
+							<h5 class="mo-title">' . esc_html__( 'Block Globally Banned Phone Numbers', 'miniorange-otp-verification' ) . '</h5>
+							<p class="mo-caption mt-mo-2 mr-mo-32">' . esc_html__( 'This feature enables admins to block the use of globally banned phone number formats, hence increases security.', 'miniorange-otp-verification' ) . '<b> ' . esc_html__( 'For eg: +1111111111 will get blocked.', 'miniorange-otp-verification' ) . '</b></p>
 						</div>
 						<div class="flex-1">';
 
@@ -168,13 +172,13 @@ echo '<div id="generalSettingsSubTabContainer" class="mo-subpage-container ' . e
 				<div class="border-b flex flex-col gap-mo-6 pb-mo-4 px-mo-4">
 					<div class="w-full flex m-mo-4">
 						<div class="flex-1">
-							<h5 class="mo-title">' . esc_html( mo_( 'Block VOIP Phone Numbers' ) ) . '';
+							<h5 class="mo-title">' . esc_html( __( 'Block VOIP Phone Numbers', 'miniorange-otp-verification' ) ) . '';
 							mo_draw_tooltip(
 								MoMessages::showMessage( MoMessages::VOIP_PHONE_TITLE ),
 								MoMessages::showMessage( MoMessages::VOIP_PHONE_BODY )
 							);
 							echo '
-							</h5><p class="mo-caption mt-mo-2 mr-mo-32">' . esc_html( mo_( 'This feature enables admins to block the use of VOIP phone number formats, hence increases security.' ) ) . '</p>
+							</h5><p class="mo-caption mt-mo-2 mr-mo-32">' . esc_html( __( 'This feature enables admins to block the use of VOIP phone number formats, hence increases security.', 'miniorange-otp-verification' ) ) . '</p>
 						</div>
 						<div class="flex-1">';
 
@@ -191,7 +195,7 @@ echo '<div id="generalSettingsSubTabContainer" class="mo-subpage-container ' . e
 										</svg>
 									<div class="grow">
 										<p class="m-mo-0">Please reach out to us for enabling</p>
-										<p class="font-bold m-mo-0">' . esc_html( mo_( 'Block VOIP Phone numbers feature.' ) ) . '</p>
+										<p class="font-bold m-mo-0">' . esc_html( __( 'Block VOIP Phone numbers feature.', 'miniorange-otp-verification' ) ) . '</p>
 									</div>
 									<a class="mo-button medium primary" style="cursor:pointer;float:right;width:27%;" onClick="otpSupportOnClick(\'Hi! I am interested in using Block VOIP Numbers Feature for my website, can you please help me with more information?\');" >Contact Us</a>
 								</div>

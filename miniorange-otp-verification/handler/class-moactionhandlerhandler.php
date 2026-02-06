@@ -50,6 +50,8 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 			add_action( 'wp_ajax_mo_dismiss_notice', array( $this, 'dismiss_notice' ) );
 			add_action( 'wp_ajax_mo_dismiss_sms_notice', array( $this, 'dismiss_sms_notice' ) );
 			add_action( 'wp_ajax_mo_modal_action', array( $this, 'mo_transaction_modal_action' ) );
+			add_action( 'wp_ajax_mo_selected_country_modal_dismiss', array( $this, 'mo_selected_country_modal_dismiss' ) );
+			add_action( 'wp_ajax_mo_transaction_logs_modal_dismiss', array( $this, 'mo_transaction_logs_modal_dismiss' ) );
 			add_action( 'wp_ajax_miniorange_get_message_value', array( $this, 'get_message_value' ) );
 		}
 
@@ -62,13 +64,20 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 		public function showNotice() {
 			$license_page_url = admin_url() . 'admin.php?page=mootppricing';
 			$addon_page_url   = admin_url() . 'admin.php?page=addon';
-			$query_string     = isset( $_SERVER['QUERY_STRING'] ) ? sanitize_text_field( wp_unslash( $_SERVER['QUERY_STRING'] ) ) : ''; //phpcs:ignore -- false positive.
+			$query_string     = isset( $_SERVER['QUERY_STRING'] ) ? sanitize_text_field( wp_unslash( $_SERVER['QUERY_STRING'] ) ) : '';
 			$current_url      = admin_url() . 'admin.php?' . $query_string;
 			$is_notice_closed = get_mo_option( 'mo_hide_notice' );
 			if ( 'mo_hide_notice' !== $is_notice_closed ) {
-				if ( ( ! strcmp( MOV_TYPE, 'EnterpriseGatewayWithAddons' ) !== 0 ) && ( $current_url !== $license_page_url ) ) {
+				if ( ( strcmp( MOV_TYPE, 'EnterpriseGatewayWithAddons' ) !== 0 ) && ( $current_url !== $license_page_url ) ) {
+					$notice_html = sprintf(
+						'<b>%1$s</b><br><br>%2$s<a href="%3$s">%4$s</a>',
+						esc_html__( 'We support OTP Verification on 60+ forms, PasswordLess Login, WooCommerce SMS Notifications for Admins, Vendors & Customers, Password Reset via OTP and many more.', 'miniorange-otp-verification' ),
+						esc_html__( 'AWS SNS, Twilio Gateway & more gateways supported! Want to know more? Check it out here :', 'miniorange-otp-verification' ),
+						esc_url( $license_page_url ),
+						esc_html__( 'Plan Details', 'miniorange-otp-verification' ),
+					);
 					echo '	<div class="mo_notice updated notice is-dismissible" >
-								<p class="text-sm"><img src="' . esc_url( MOV_FEATURES_GRAPHIC ) . '" class="show_mo_icon_form" >' . wp_kses( mo_( '&ensp;<b>We support OTP Verification on 60+ forms, PasswordLess Login, WooCommerce SMS Notifications for Admins, Vendors & Customers, Password Reset via OTP and many more.<br><br>AWS SNS, Twilio Gateway & more gateways supported! Want to know more? Check it out here : <a href=' . esc_url( $license_page_url ) . '>Plan Details</a>.</b>' ), MoUtility::mo_allow_html_array() ) . '</p>
+								<p class="text-sm"><img src="' . esc_url( MOV_FEATURES_GRAPHIC ) . '" class="show_mo_icon_form" >' . wp_kses( $notice_html, MoUtility::mo_allow_html_array() ) . '</p>
 							</div>';
 				}
 			}
@@ -79,9 +88,11 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 		 * This is the check for notification on click of close notification.
 		 */
 		public function dismiss_notice() {
-			if ( current_user_can( 'manage_options' ) ) {
-				update_mo_option( 'mo_hide_notice', 'mo_hide_notice' );
+			// Security: Use hardcoded nonce action 'mo_admin_actions' instead of variable.
+			if ( ! current_user_can( 'manage_options' ) || ! check_ajax_referer( 'mo_admin_actions', 'security', false ) ) {
+				wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 			}
+			update_mo_option( 'mo_hide_notice', 'mo_hide_notice' );
 		}
 
 		/**
@@ -89,9 +100,11 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 		 * This is the check for notification on click of close notification.
 		 */
 		public function dismiss_sms_notice() {
-			if ( current_user_can( 'manage_options' ) ) {
-				update_mo_option( 'mo_hide_sms_notice', 'mo_hide_sms_notice' );
+			// Security: Use hardcoded nonce action 'mo_admin_actions' instead of variable.
+			if ( ! current_user_can( 'manage_options' ) || ! check_ajax_referer( 'mo_admin_actions', 'security', false ) ) {
+				wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 			}
+			update_mo_option( 'mo_hide_sms_notice', 'mo_hide_sms_notice' );
 		}
 
 		/**
@@ -101,60 +114,61 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 		 * the diversion.
 		 */
 		public function mo_handle_admin_actions() {
-			if ( ! isset( $_POST['option'] ) ) { //phpcs:ignore -- false positive.
+			if ( ! isset( $_POST['option'] ) ) {
 				return;
 			}
-			switch ( $_POST['option'] ) { //phpcs:ignore -- false positive.
+			$action_option = sanitize_text_field( wp_unslash( $_POST['option'] ) );
+			switch ( $action_option ) {
 				case 'mo_customer_validation_settings':
-					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->nonce ) ) {
+					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'mo_admin_actions' ) ) {
 						wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 					}
 					$this->mo_save_settings( MoUtility::mo_sanitize_array( $_POST ), MoUtility::mo_sanitize_array( $_GET ) );
 					break;
 				case 'mo_customer_validation_messages':
-					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->nonce ) ) {
+					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'mo_admin_actions' ) ) {
 						wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 					}
 					$this->mo_handle_custom_messages_form_submit( MoUtility::mo_sanitize_array( $_POST ) );
 					break;
 				case 'mo_customer_validation_popup_change':
-					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->nonce ) ) {
+					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'mo_admin_actions' ) ) {
 						wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 					}
 						$this->mo_popup_change( MoUtility::mo_sanitize_array( $_POST ) );
 					break;
 				case 'mo_validation_contact_us_query_option':
-					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->nonce ) ) {
+					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'mo_admin_actions' ) ) {
 						wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 					}
 					$this->mo_validation_support_query( MoUtility::mo_sanitize_array( $_POST ) );
 					break;
 				case 'mo_otp_extra_settings':
-					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->nonce ) ) {
+					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'mo_admin_actions' ) ) {
 						wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 					}
-					$this->mo_save_extra_settings( $_POST ); //phpcs:ignore -- sanitized within the function.
+					$this->mo_save_extra_settings( MoUtility::mo_sanitize_array( $_POST ) );
 					break;
 				case 'mo_otp_whatsapp_settings':
-					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->nonce ) ) {
+					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'mo_admin_actions' ) ) {
 						wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 					}
-					$this->mo_save_whatsapp_settings( $_POST ); //phpcs:ignore -- sanitized within the function.
+					$this->mo_save_whatsapp_settings( MoUtility::mo_sanitize_array( $_POST ) );
 					break;
 				case 'mo_general_settings':
-					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->nonce ) ) {
+					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'mo_admin_actions' ) ) {
 						wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 					}
 					$this->mo_save_general_settings( MoUtility::mo_sanitize_array( $_POST ) );
 					break;
 				case 'mo_otp_feedback_option':
-					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->nonce ) ) {
+					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'mo_admin_actions' ) ) {
 						wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 					}
 					$this->mo_validation_feedback_query( MoUtility::mo_sanitize_array( $_POST ) );
 					break;
 				case 'check_mo_ln':
-					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->nonce ) ) {
+					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'mo_admin_actions' ) ) {
 						wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 					}
 					$this->mo_check_l();
@@ -166,13 +180,13 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 					$this->mo_check_transactions();
 					break;
 				case 'mo_customer_validation_gateway_configuration':
-					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->nonce ) ) {
+					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'mo_admin_actions' ) ) {
 						wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 					}
 					$this->mo_configure_gateway( MoUtility::mo_sanitize_array( $_POST ) );
 					break;
 				case 'mo_customer_customization_form':
-					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->nonce ) ) {
+					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'mo_admin_actions' ) ) {
 						wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 					}
 					$this->mo_configure_custom_form( MoUtility::mo_sanitize_array( $_POST ) );
@@ -189,8 +203,6 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 		 */
 		private function mo_configure_custom_form( $post ) {
 
-			$this->is_valid_request();
-
 			update_mo_option( 'cf_submit_id', MoUtility::sanitize_check( 'cf_submit_id', $post ), 'mo_otp_' );
 			update_mo_option( 'cf_field_id', MoUtility::sanitize_check( 'cf_field_id', $post ), 'mo_otp_' );
 			update_mo_option( 'cf_enable_type', MoUtility::sanitize_check( 'cf_enable_type', $post ), 'mo_otp_' );
@@ -204,7 +216,10 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 			if ( ! check_ajax_referer( 'addmsgnonce', 'security', false ) ) {
 				return;
 			}
-			$msg_key   = isset( $_POST['msg_key'] ) ? sanitize_text_field( wp_unslash( $_POST['msg_key'] ) ) : ''; //phpcs:ignore -- false positive.
+			if ( ! current_user_can( 'manage_options' ) ) {
+				return;
+			}
+			$msg_key   = isset( $_POST['msg_key'] ) ? sanitize_text_field( wp_unslash( $_POST['msg_key'] ) ) : '';
 			$msg_array = MoMessages::get_original_message_list();
 			foreach ( $msg_array as $key => $value ) {
 				if ( $key === $msg_key ) {
@@ -328,7 +343,9 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 					return;
 				} else {
 					$customer_key             = is_array( json_decode( $content, true ) ) ? json_decode( $content, true ) : array( 'id' => 0 );
-					$check_whatsapp_remaining = json_decode( MocURLCall::call_api( MoConstants::HOSTNAME . '/moas/api/plugin/whatsapp/viewtransactions?customerId=' . $customer_key['id'] . '', null, array( 'Content-Type' => 'application/json' ), 'GET' ) );
+					$customer_id              = isset( $customer_key['id'] ) ? absint( $customer_key['id'] ) : 0;
+					$api_url                  = esc_url_raw( MoConstants::HOSTNAME . '/moas/api/plugin/whatsapp/viewtransactions?customerId=' . $customer_id );
+					$check_whatsapp_remaining = json_decode( MocURLCall::call_api( $api_url, null, array( 'Content-Type' => 'application/json' ), 'GET' ) );
 					$whatsapp_remaining       = isset( $check_whatsapp_remaining->message ) && ! empty( $check_whatsapp_remaining->message ) ? $check_whatsapp_remaining->message : 0;
 
 					update_mo_option( 'whatsapp_transactions_remaining', $whatsapp_remaining, 'mowp_customer_validation_' );
@@ -358,6 +375,30 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 		private function mo_save_general_settings( $posted ) {
 			delete_site_option( 'default_country_code' );
 			$default_country = isset( $posted['default_country_code'] ) ? sanitize_text_field( $posted['default_country_code'] ) : '';
+
+			if ( function_exists( 'get_sc_option' ) && ! empty( $default_country ) && isset( CountryList::$countries[ $default_country ] ) ) {
+				$selected_country_data = CountryList::$countries[ $default_country ];
+				$selected_country_name = isset( $selected_country_data['name'] ) ? $selected_country_data['name'] : '';
+				if ( ! empty( $selected_country_name ) && strtolower( $selected_country_name ) !== 'all countries' ) {
+					$sc_type    = get_sc_option( 'select_country_type' );
+					$allow_list = get_sc_option( 'selected_country_list' );
+					$block_list = get_sc_option( 'block_selected_country_list' );
+
+					if ( 'select_countries_to_show' === $sc_type ) {
+						$allowed_countries = array_filter( array_map( 'trim', explode( ';', (string) $allow_list ) ) );
+						if ( ! in_array( $selected_country_name, $allowed_countries, true ) ) {
+							do_action( 'mo_registration_show_message', sprintf( '<b>Default Country</b>: %s is not enabled in the Country Restriction Addon settings. Please select an allowed country.', esc_html( $selected_country_name ) ), 'ERROR' );
+							return;
+						}
+					} elseif ( 'select_countries_to_block' === $sc_type ) {
+						$blocked_countries = array_filter( array_map( 'trim', explode( ';', (string) $block_list ) ) );
+						if ( in_array( $selected_country_name, $blocked_countries, true ) ) {
+							do_action( 'mo_registration_show_message', sprintf( '<b>Default Country</b>: %s is blocked in the Country Restriction Addon settings. Please choose a different country.', esc_html( $selected_country_name ) ), 'ERROR' );
+							return;
+						}
+					}
+				}
+			}
 
 			update_mo_option( 'default_country', ! empty( $default_country ) ? maybe_serialize( CountryList::$countries[ $default_country ] ) : '' );
 			update_mo_option( 'blocked_domains', MoUtility::sanitize_check( 'mo_otp_blocked_email_domains', $posted ) );
@@ -427,21 +468,51 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 		 * @return void
 		 */
 		public function mo_transaction_modal_action() {
-			if ( ! current_user_can( 'manage_options' ) || ! check_ajax_referer( $this->nonce, 'security' ) ) {
+			// Security: Use hardcoded nonce action 'mo_admin_actions' instead of variable.
+			if ( ! current_user_can( 'manage_options' ) || ! check_ajax_referer( 'mo_admin_actions', 'security', false ) ) {
 				wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 			}
 			$data        = MoUtility::mo_sanitize_array( $_POST );
-			$array       = get_mo_option( 'mo_transaction_notice' );
-			$transaction = $data['shown_remaining'];
+			$array_raw   = get_mo_option( 'mo_transaction_notice' );
+			$array       = is_string( $array_raw ) ? json_decode( $array_raw, true ) : ( is_array( $array_raw ) ? $array_raw : array() );
+			$transaction = isset( $data['shown_remaining'] ) ? sanitize_text_field( wp_unslash( $data['shown_remaining'] ) ) : false;
 
 			if ( false !== $transaction ) {
 				unset( $array[ $transaction ] );
 			}
 
-			update_mo_option( 'mo_transaction_notice', $array );
+			update_mo_option( 'mo_transaction_notice', wp_json_encode( $array ) );
 			wp_send_json( MoUtility::create_json( $transaction, MoConstants::SUCCESS_JSON_TYPE ) );
 		}
 
+		/**
+		 * Store Selected Country modal dismissed timestamp so it can be shown again after 15 days.
+		 *
+		 * @return void
+		 */
+		public function mo_selected_country_modal_dismiss() {
+			// Security: Use hardcoded nonce action 'mo_admin_actions' instead of variable.
+			if ( ! current_user_can( 'manage_options' ) || ! check_ajax_referer( 'mo_admin_actions', 'security', false ) ) {
+				wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
+			}
+			update_mo_option( 'mo_selected_country_modal_dismissed_ts', time() );
+			wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::SETTINGS_SAVED ), MoConstants::SUCCESS_JSON_TYPE ) );
+		}
+
+		/**
+		 * Store Transaction Logs modal dismissed timestamp so it can be shown again after 7 days.
+		 * Also clear the activation flag since user has seen the alert.
+		 *
+		 * @return void
+		 */
+		public function mo_transaction_logs_modal_dismiss() {
+			// Security: Use hardcoded nonce action 'mo_admin_actions' instead of variable.
+			if ( ! current_user_can( 'manage_options' ) || ! check_ajax_referer( 'mo_admin_actions', 'security', false ) ) {
+				wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
+			}
+			update_mo_option( 'mo_transaction_logs_modal_dismissed_ts', time() );
+			wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::SETTINGS_SAVED ), MoConstants::SUCCESS_JSON_TYPE ) );
+		}
 
 		/**
 		 * This function checks if the popup templates have been set in the
@@ -466,19 +537,28 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 		 * @deprecated Deprecated as of version 3.2.80
 		 */
 		public function showFormHTMLData() {
-			if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->nonce ) ) {
+			if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'mo_admin_actions' ) ) {
 				wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 			}
 			$data      = MoUtility::mo_sanitize_array( $_POST );
 			$form_name = sanitize_text_field( $data['form_name'] );
+			if ( ! preg_match( '/^[A-Za-z0-9._-]+$/', $form_name ) || strpos( $form_name, '..' ) !== false || strpos( $form_name, '.' ) === 0 ) {
+				wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
+			}
 
 			$controller = MOV_DIR . 'controllers/';
 			$disabled   = ! MoUtility::micr() ? 'disabled' : '';
 			$page_list  = admin_url() . 'edit.php?post_type=page';
-			ob_start();
-			include $controller . 'forms/' . $form_name . '.php';
-			$string = ob_get_clean();
-			wp_send_json( MoUtility::create_json( $string, MoConstants::SUCCESS_JSON_TYPE ) );
+			$base_dir   = MOV_DIR . 'controllers/forms/';
+			$target     = $controller . 'forms/' . $form_name . '.php';
+			if ( MoUtility::mo_require_file( $target, $base_dir ) ) {
+				ob_start();
+				require $target;
+				$string_value = ob_get_clean();
+				wp_send_json( MoUtility::create_json( $string_value, MoConstants::SUCCESS_JSON_TYPE ) );
+			} else {
+				wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_FILE_PATH ) ) );
+			}
 		}
 
 		/**
@@ -486,7 +566,7 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 		 * return a json format view of the page.
 		 */
 		public function showGatewayConfig() {
-			if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->nonce ) ) {
+			if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'mo_admin_actions' ) ) {
 				wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 			}
 			$data                = MoUtility::mo_sanitize_array( $_POST );
@@ -534,13 +614,24 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 
 		/**
 		 * This function returns the list of form enabled during deactivation
+		 *
+		 * @return string|array
 		 */
 		public function enabled_form_list() {
-			global $wpdb;
-			$enabled_form_list = $wpdb->get_results( $wpdb->prepare( "SELECT option_name FROM `{$wpdb->prefix}options` WHERE option_value = 1 AND option_name LIKE %s", array( 'mo_%enable' ) ) );// phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, Direct database call without caching detected -- DB Direct Query is necessary here.
-			$enabled_forms     = '';
-			foreach ( $enabled_form_list as $form_name ) {
-				$curr_form_name  = str_replace( '_enable', '', $form_name->option_name );
+			// Use wp_load_alloptions() which already uses WordPress's built-in caching.
+			$options = wp_load_alloptions();
+
+			$matched = array();
+
+			foreach ( $options as $name => $value ) {
+				if ( '1' === $value && preg_match( '/^mo_.*enable$/', $name ) ) {
+					$matched[] = $name;
+				}
+			}
+
+			$enabled_forms = '';
+			foreach ( $matched as $form_name ) {
+				$curr_form_name  = str_replace( '_enable', '', $form_name );
 				$final_form_name = str_replace( 'mo_customer_validation_', '', $curr_form_name );
 				$enabled_forms  .= $final_form_name . ' , ';
 			}
@@ -573,7 +664,7 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 			}
 
 			$deactivating_plugin = strcasecmp( sanitize_text_field( $posted['plugin_deactivated'] ), 'true' ) === 0;
-			$type                = ! $deactivating_plugin ? mo_( '[ Plugin Feedback ] : ' ) : mo_( '[ Plugin Deactivated ]' );
+			$type                = ! $deactivating_plugin ? __( '[ Plugin Feedback ] : ', 'miniorange-otp-verification' ) : __( '[ Plugin Deactivated ]', 'miniorange-otp-verification' );
 
 			$views               = array();
 			$deactivationreasons = $this->mo_feedback_reasons();
@@ -594,27 +685,27 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 			$email                = get_mo_option( 'admin_email' );
 			$activation_date      = get_mo_option( 'plugin_activation_date' );
 			$activation_days      = round( ( strtotime( gmdate( 'Y-m-d h:i:sa' ) ) - strtotime( $activation_date ) ) / ( 60 * 60 * 24 ) );
-			$activation_date_html = '<br><br>Days since Activated: ' . $activation_days;
-			$server_name          = isset( $_SERVER['SERVER_NAME'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_NAME'] ) ) : ''; //phpcs:ignore -- false positive.
-			$feedback_template    = str_replace( '{{FIRST_NAME}}', $current_user->first_name, $feedback_template );
-			$feedback_template    = str_replace( '{{LAST_NAME}}', $current_user->last_name, $feedback_template );
-			$feedback_template    = str_replace( '{{PLUGIN_TYPE}}', MOV_TYPE . ':' . $customer_type . $activation_date_html, $feedback_template );
-			$feedback_template    = str_replace( '{{SERVER}}', $server_name, $feedback_template );
-			$feedback_template    = str_replace( '{{EMAIL}}', $email, $feedback_template );
-			$feedback_template    = str_replace( '{{PLUGIN}}', MoConstants::AREA_OF_INTEREST, $feedback_template );
-			$feedback_template    = str_replace( '{{VERSION}}', MOV_VERSION, $feedback_template );
+			$activation_date_html = '<br><br>Days since Activated: ' . absint( $activation_days );
+			$server_name          = isset( $_SERVER['SERVER_NAME'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_NAME'] ) ) : '';
+			$feedback_template    = str_replace( '{{FIRST_NAME}}', esc_html( $current_user->first_name ), $feedback_template );
+			$feedback_template    = str_replace( '{{LAST_NAME}}', esc_html( $current_user->last_name ), $feedback_template );
+			$feedback_template    = str_replace( '{{PLUGIN_TYPE}}', esc_html( MOV_TYPE . ':' . $customer_type ) . $activation_date_html, $feedback_template );
+			$feedback_template    = str_replace( '{{SERVER}}', esc_html( $server_name ), $feedback_template );
+			$feedback_template    = str_replace( '{{EMAIL}}', esc_html( $email ), $feedback_template );
+			$feedback_template    = str_replace( '{{PLUGIN}}', esc_html( MoConstants::AREA_OF_INTEREST ), $feedback_template );
+			$feedback_template    = str_replace( '{{VERSION}}', esc_html( MOV_VERSION ), $feedback_template );
 
-			$feedback_template = str_replace( '{{TYPE}}', $type, $feedback_template );
-			$feedback_template = str_replace( '{{FEEDBACK}}', $feedback, $feedback_template );
-			$feedback_template = str_replace( '{{ENABLED_FORMS}}', $this->enabled_form_list(), $feedback_template );
-			$feedback_template = str_replace( '{{User_consent}}', $mo_otp_contact_back, $feedback_template );
+			$feedback_template = str_replace( '{{TYPE}}', esc_html( $type ), $feedback_template );
+			$feedback_template = str_replace( '{{FEEDBACK}}', esc_html( $feedback ), $feedback_template );
+			$feedback_template = str_replace( '{{ENABLED_FORMS}}', esc_html( $this->enabled_form_list() ), $feedback_template );
+			$feedback_template = str_replace( '{{User_consent}}', esc_html( $mo_otp_contact_back ), $feedback_template );
 
 			$notif = MoUtility::send_email_notif(
 				$email,
 				'Xecurify',
 				MoConstants::FEEDBACK_EMAIL,
 				'WordPress OTP Verification Plugin Feedback',
-				$feedback_template
+				$feedback_template,
 			);
 
 			if ( $notif ) {
@@ -664,7 +755,7 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 		 * @return void
 		 */
 		private function mo_configure_sms_template( $posted ) {
-			$gateway = GatewayFunctions::instance();
+			$gateway     = GatewayFunctions::instance();
 			$sms_setting = $gateway->mo_configure_sms_template( $posted );
 			$gateway->mo_configure_email_template( $posted );
 			if ( ! $sms_setting ) {

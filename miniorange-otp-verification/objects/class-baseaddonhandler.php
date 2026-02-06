@@ -6,11 +6,12 @@
 
 namespace OTP\Objects;
 
-use OTP\Helper\MoUtility;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+use OTP\Helper\MoUtility;
+use OTP\Objects\AddOnHandlerInterface;
 
 /**
  * This abstract class is used to define the base handler class of the add-ons
@@ -23,40 +24,60 @@ if ( ! class_exists( 'BaseAddOnHandler' ) ) {
 	 */
 	abstract class BaseAddOnHandler extends BaseActionHandler implements AddOnHandlerInterface {
 
-		/**Variable declaration
+		/**
+		 * Variable declaration
 		 *
-		 * @var string $add_on_key  unique key for the addon */
+		 * @var string $add_on_key unique key for the addon
+		 */
 		protected $add_on_key;
 
-		/**Variable declaration
+		/**
+		 * Variable declaration
 		 *
-		 *  @var string $add_on_desc add-on description*/
+		 * @var string $add_on_desc add-on description
+		 */
 		protected $add_on_desc;
 
-		/**Variable declaration
+		/**
+		 * Variable declaration
 		 *
-		 *  @var string $addon_name add-on name*/
+		 * @var string $addon_name add-on name
+		 */
 		protected $addon_name;
 
-		/**Variable declaration
+		/**
+		 * Variable declaration
 		 *
-		 *  @var string $settings_url add-on description*/
+		 * @var string $settings_url add-on settings URL
+		 */
 		protected $settings_url;
 
-		/**Variable declaration
+		/**
+		 * Variable declaration
 		 *
-		 *  @var string $add_on_docs add-on documentation*/
+		 * @var string $add_on_docs add-on documentation
+		 */
 		protected $add_on_docs;
 
-		/**Variable declaration
+		/**
+		 * Variable declaration
 		 *
-		 *  @var string $add_on_video add-on video*/
+		 * @var string $add_on_video add-on video
+		 */
 		protected $add_on_video;
 
-
-		/** Constructor */
+		/**
+		 * Constructor
+		 */
 		public function __construct() {
 			parent::__construct();
+			$this->initialize_addon_properties();
+		}
+
+		/**
+		 * This function is used to initialize the addon properties.
+		 */
+		public function initialize_addon_properties() {
 			$this->set_addon_key();
 			$this->set_add_on_desc();
 			$this->set_add_on_name();
@@ -71,24 +92,27 @@ if ( ! class_exists( 'BaseAddOnHandler' ) ) {
 		 * @return string
 		 */
 		public function getAddOnKey() {
-			return $this->add_on_key; }
+			return $this->add_on_key;
+		}
 
 		/**
-		 * Return the Addon Desc
+		 * Return the Addon Description
 		 *
 		 * @return string
 		 */
 		public function getAddOnDesc() {
-			return $this->add_on_desc; }
+			return $this->add_on_desc;
+		}
 
 		/**
-		 * Return AddOnName
+		 * Return AddOn Name
 		 *
 		 * @return string
 		 */
 		public function get_add_on_name() {
 			// custom_comment To load addon tab.
-			return $this->addon_name; }
+			return $this->addon_name;
+		}
 
 		/**
 		 * Return Addon Docs link
@@ -96,7 +120,8 @@ if ( ! class_exists( 'BaseAddOnHandler' ) ) {
 		 * @return string
 		 */
 		public function getAddOnDocs() {
-			return $this->add_on_docs; }
+			return $this->add_on_docs;
+		}
 
 		/**
 		 * Return Addon Video link
@@ -104,22 +129,25 @@ if ( ! class_exists( 'BaseAddOnHandler' ) ) {
 		 * @return string
 		 */
 		public function getAddOnVideo() {
-			return $this->add_on_video; }
+			return $this->add_on_video;
+		}
 
 		/**
-		 * Return SettingsUrl
+		 * Return Settings URL
 		 *
 		 * @return string
 		 */
 		public function getSettingsUrl() {
-			return $this->settings_url; }
+			return $this->settings_url;
+		}
 
 		/**
-		 * Checks if the customer has finised his account setup
+		 * Checks if the customer has finished their account setup
 		 *
 		 * @return bool
 		 */
 		public function moAddOnV() {
-			return MoUtility::micr() && MoUtility::mclv(); }
+			return MoUtility::micr() && MoUtility::mclv();
+		}
 	}
 }

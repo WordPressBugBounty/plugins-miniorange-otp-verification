@@ -2,7 +2,7 @@
 /**
  * Handles the OTP verification logic for Forminator form.
  *
- * @package miniorange-otp-verification/handler
+ * @package miniorange-otp-verification/handler/forms
  */
 
 namespace OTP\Handler\Forms;
@@ -35,6 +35,7 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 	class ForminatorForm extends FormHandler implements IFormHandler {
 
 		use Instance;
+
 		/**
 		 * Initializes values
 		 */
@@ -45,10 +46,10 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 			$this->type_phone_tag          = 'mo_forminator_phone_enable';
 			$this->type_email_tag          = 'mo_forminator_email_enable';
 			$this->form_key                = 'FORMINATOR';
-			$this->form_name               = mo_( 'Forminator Forms' );
+			$this->form_name               = 'Forminator Forms';
 			$this->is_form_enabled         = get_mo_option( 'forminator_enable' );
 			$this->button_text             = get_mo_option( 'forminator_button_text' );
-			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : mo_( 'Click Here to send OTP' );
+			$this->button_text             = ! MoUtility::is_blank( $this->button_text ) ? $this->button_text : '';
 			$this->phone_form_id           = array();
 			$this->form_documents          = MoFormDocs::FORMINATOR_FORM_LINK;
 			$this->generate_otp_action     = 'miniorange_forminator_generate_otp';
@@ -76,8 +77,8 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 			add_action( "wp_ajax_{$this->generate_otp_action}", array( $this, 'mo_send_otp' ) );
 			add_action( "wp_ajax_nopriv_{$this->generate_otp_action}", array( $this, 'mo_send_otp' ) );
 			add_action( 'wp_enqueue_scripts', array( $this, 'miniorange_register_forminator_script' ) );
-			add_action( "wp_ajax_{$this->validate_otp_action}", array( $this, 'processFormAndValidateOTP' ) );
-			add_action( "wp_ajax_nopriv_{$this->validate_otp_action}", array( $this, 'processFormAndValidateOTP' ) );
+			add_action( "wp_ajax_{$this->validate_otp_action}", array( $this, 'process_form_and_validate_otp' ) );
+			add_action( "wp_ajax_nopriv_{$this->validate_otp_action}", array( $this, 'process_form_and_validate_otp' ) );
 			add_filter( 'forminator_custom_form_submit_errors', array( $this, 'forminator_custom_form_submit_errors' ), 1, 3 );
 			add_filter( 'forminator_form_ajax_submit_response', array( $this, 'forminator_form_ajax_submit_response' ), 1, 2 );
 		}
@@ -114,7 +115,7 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 				return $submit_errors;
 			}
 
-			$mo_error = $this->moValidationChecks( $submit_errors, $form_id, $field_data_array );
+			$mo_error = $this->mo_validation_checks( $submit_errors, $form_id, $field_data_array );
 
 			if ( $mo_error ) {
 				array_push( $submit_errors, $mo_error );
@@ -130,7 +131,7 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		 * @param array $form_id - Id of the form being processed.
 		 * @param array $field_data_array .
 		 */
-		public function moValidationChecks( $submit_errors, $form_id, $field_data_array = '' ) {
+		public function mo_validation_checks( $submit_errors, $form_id, $field_data_array = '' ) {
 			$mo_error = '';
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
 				$mo_error = MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE );
@@ -143,15 +144,16 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 
 					if ( $value['name'] === $field_id ) {
 						$field_value = $value['value'];
+						break;
 					}
 				}
 
 				if ( array_key_exists( $form_id, $this->form_details ) && $this->get_verification_type() === 'phone' ) {
-
-					if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, sanitize_text_field( $field_value ) ) ) {
+					$phone = MoUtility::process_phone_number( sanitize_text_field( $field_value ) );
+					if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
 						$mo_error = MoMessages::showMessage( MoMessages::PHONE_MISMATCH );
 					}
-				} elseif ( ! SessionUtils::is_email_verified_match( $this->form_session_var, sanitize_email( $field_value ) ) ) {
+				} elseif ( ! SessionUtils::is_email_verified_match( $this->form_session_var, sanitize_email( wp_unslash( $field_value ) ) ) ) {
 					$mo_error = MoMessages::showMessage( MoMessages::EMAIL_MISMATCH );
 				}
 			}
@@ -165,7 +167,7 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		 *
 		 * @param array $transdata array Array containing form/field data for Forminator.
 		 */
-		public function unset_sessionVariable( $transdata ) {
+		public function unset_session_variable( $transdata ) {
 			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->get_verification_type() ) ) {
 				$this->unset_otp_session_variables();
 			}
@@ -176,26 +178,26 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		 * Checks if the verification has started or not and then validates the
 		 * OTP submitted.
 		 */
-		public function processFormAndValidateOTP() {
-			if ( ! check_ajax_referer( $this->nonce, $this->nonce_key ) ) {
+		public function process_form_and_validate_otp() {
+			// Security: Use hardcoded nonce action 'form_nonce' and key 'security' instead of variables.
+			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json(
 					MoUtility::create_json(
 						MoMessages::showMessage( MoMessages::INVALID_OP ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
-				exit;
 			}
-			$data = MoUtility::mo_sanitize_array( $_POST );
+			$data = MoUtility::mo_sanitize_array( wp_unslash( $_POST ) );
 
-			$this->checkIfOTPSent();
-			$this->checkIntegrityAndValidateOTP( $data );
+			$this->check_if_otp_sent();
+			$this->check_integrity_and_validate_otp( $data );
 		}
 
 		/**
 		 * Checks whether OTP sent or not.
 		 */
-		private function checkIfOTPSent() {
+		private function check_if_otp_sent() {
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
 				wp_send_json(
 					MoUtility::create_json(
@@ -215,9 +217,9 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		 *
 		 * @param array $data - this is the get / post data from the ajax call containing email or phone.
 		 */
-		private function checkIntegrityAndValidateOTP( $data ) {
+		private function check_integrity_and_validate_otp( $data ) {
 
-			$this->checkIntegrity( $data );
+			$this->check_integrity( $data );
 			$this->validate_challenge( sanitize_text_field( $data['otpType'] ), null, sanitize_text_field( $data['otp_token'] ) );
 
 			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, sanitize_text_field( $data['otpType'] ) ) ) {
@@ -246,9 +248,10 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		 *
 		 * @param array $data - this is the get / post data from the ajax call containing email or phone.
 		 */
-		private function checkIntegrity( $data ) {
+		private function check_integrity( $data ) {
 			if ( 'phone' === $data['otpType'] ) {
-				if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, sanitize_text_field( $data['user_phone'] ) ) ) {
+				$phone = MoUtility::process_phone_number( sanitize_text_field( $data['user_phone'] ) );
+				if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
 					wp_send_json(
 						MoUtility::create_json(
 							MoMessages::showMessage( MoMessages::PHONE_MISMATCH ),
@@ -256,7 +259,7 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 						)
 					);
 				}
-			} elseif ( ! SessionUtils::is_email_verified_match( $this->form_session_var, sanitize_email( $data['user_email'] ) ) ) {
+			} elseif ( ! SessionUtils::is_email_verified_match( $this->form_session_var, sanitize_email( wp_unslash( $data['user_email'] ) ) ) ) {
 				wp_send_json(
 					MoUtility::create_json(
 						MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ),
@@ -272,21 +275,21 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		 * also localizes certain values required by the script.
 		 */
 		public function miniorange_register_forminator_script() {
-			wp_register_script( 'moforminator', MOV_URL . 'includes/js/moforminator.min.js', array( 'jquery' ), MOV_VERSION, false );
+			wp_register_script( 'moforminator', MOV_URL . 'includes/js/moforminator.js', array( 'jquery' ), MOV_VERSION, false );
 			wp_localize_script(
 				'moforminator',
 				'moforminator',
 				array(
-					'siteURL'     => wp_ajax_url(),
+					'siteURL'     => admin_url( 'admin-ajax.php' ),
 					'otpType'     => $this->ajax_processing_fields(),
 					'gnonce'      => wp_create_nonce( $this->nonce ),
 					'nonceKey'    => wp_create_nonce( $this->nonce_key ),
 					'vnonce'      => wp_create_nonce( $this->nonce ),
-					'buttontext'  => mo_( $this->button_text ),
+					'buttontext'  => $this->button_text,
 					'imgURL'      => MOV_LOADER_URL,
 					'formDetails' => $this->form_details,
-					'fieldText'   => mo_( 'Enter OTP here' ),
-					'validated'   => $this->getSessionDetails(),
+					'fieldText'   => __( 'Enter OTP here', 'miniorange-otp-verification' ),
+					'validated'   => $this->get_session_details(),
 					'gaction'     => $this->generate_otp_action,
 					'vaction'     => $this->validate_otp_action,
 				)
@@ -299,7 +302,7 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		 *
 		 * @return array
 		 */
-		private function getSessionDetails() {
+		private function get_session_details() {
 			return array(
 				VerificationType::EMAIL => SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, VerificationType::EMAIL ),
 				VerificationType::PHONE => SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, VerificationType::PHONE ),
@@ -312,21 +315,21 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		 * @return void
 		 */
 		public function mo_send_otp() {
-			if ( ! check_ajax_referer( $this->nonce, $this->nonce_key ) ) {
+			// Security: Use hardcoded nonce action 'form_nonce' and key 'security' instead of variables.
+			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json(
 					MoUtility::create_json(
 						MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
-				exit;
 			}
-			$data = MoUtility::mo_sanitize_array( $_POST );
+			$data = MoUtility::mo_sanitize_array( wp_unslash( $_POST ) );
 
 			if ( $this->otp_type === $this->type_phone_tag ) {
-				$this->mo_processPhoneAndStartOTPVerificationProcess( $data );
+				$this->mo_process_phone_and_start_otp_verification_process( $data );
 			} else {
-				$this->mo_processEmailAndStartOTPVerificationProcess( $data );
+				$this->mo_process_email_and_start_otp_verification_process( $data );
 			}
 		}
 
@@ -336,12 +339,12 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		 *
 		 * @param array $data - this is the get / post data from the ajax call containing email or phone.
 		 */
-		private function mo_processEmailAndStartOTPVerificationProcess( $data ) {
+		private function mo_process_email_and_start_otp_verification_process( $data ) {
 			if ( ! MoUtility::sanitize_check( 'user_email', $data ) ) {
 				wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::ENTER_EMAIL ), MoConstants::ERROR_JSON_TYPE ) );
 			} else {
 				MoUtility::initialize_transaction( $this->form_session_var );
-				$this->setSessionAndStartOTPVerification( $data['user_email'], $data['user_email'], null, VerificationType::EMAIL );
+				$this->set_session_and_start_otp_verification( $data['user_email'], $data['user_email'], null, VerificationType::EMAIL );
 			}
 		}
 
@@ -351,12 +354,13 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		 *
 		 * @param array $data - this is the get / post data from the ajax call containing email or phone.
 		 */
-		private function mo_processPhoneAndStartOTPVerificationProcess( $data ) {
+		private function mo_process_phone_and_start_otp_verification_process( $data ) {
 			if ( ! MoUtility::sanitize_check( 'user_phone', $data ) ) {
 				wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::ENTER_PHONE ), MoConstants::ERROR_JSON_TYPE ) );
 			} else {
 				MoUtility::initialize_transaction( $this->form_session_var );
-				$this->setSessionAndStartOTPVerification( trim( $data['user_phone'] ), null, trim( $data['user_phone'] ), VerificationType::PHONE );
+				$phone = MoUtility::process_phone_number( $data['user_phone'] );
+				$this->set_session_and_start_otp_verification( $phone, null, $phone, VerificationType::PHONE );
 			}
 		}
 
@@ -369,7 +373,7 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		 * @param string $phone_number - the phone number provided by the user.
 		 * @param string $otp_type - the otp type denoting the type of otp verification. Can be phone or email.
 		 */
-		private function setSessionAndStartOTPVerification( $session_value, $user_email, $phone_number, $otp_type ) {
+		private function set_session_and_start_otp_verification( $session_value, $user_email, $phone_number, $otp_type ) {
 			SessionUtils::add_email_or_phone_verified( $this->form_session_var, $session_value, $otp_type );
 			$this->send_challenge( '', $user_email, null, $phone_number, $otp_type );
 		}
@@ -382,7 +386,7 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		 *
 		 * @param array $entry - the data coming in the ajax call. Mostly has the otp entered.
 		 */
-		private function processOTPEntered( $entry ) {
+		private function process_otp_entered( $entry ) {
 			$otp_ver_type = $this->get_verification_type();
 			$this->validate_challenge( $otp_ver_type, null, $entry );
 			if ( ! SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otp_ver_type ) ) {
@@ -400,7 +404,7 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		 * @param array $entry - this is the ninja form variable containing the form data.
 		 * @return array
 		 */
-		private function checkIfOtpVerificationStarted( $entry ) {
+		private function check_if_otp_verification_started( $entry ) {
 			return SessionUtils::is_otp_initialized( $this->form_session_var ) ? $entry
 			: new WP_Error( 'ENTER_VERIFY_CODE', MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ) );
 		}
@@ -410,7 +414,7 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		 *
 		 * @param array $entry the data posted by the user.
 		 */
-		private function processEmail( $entry ) {
+		private function process_email( $entry ) {
 			return SessionUtils::is_email_verified_match( $this->form_session_var, $entry ) ? $entry :
 			new WP_Error( 'EMAIL_MISMATCH', MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) );
 		}
@@ -420,8 +424,9 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		 *
 		 * @param string $entry - gives the phone number entered by the user.
 		 */
-		private function processPhone( $entry ) {
-			return SessionUtils::is_phone_verified_match( $this->form_session_var, $entry ) ? $entry :
+		private function process_phone( $entry ) {
+			$phone = MoUtility::process_phone_number( $entry );
+			return SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ? $entry :
 			new WP_Error( 'PHONE_MISMATCH', MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) );
 		}
 
@@ -452,7 +457,6 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		 * @param string $otp_type the verification type.
 		 */
 		public function handle_post_verification( $redirect_to, $user_login, $user_email, $password, $phone_number, $extra_data, $otp_type ) {
-
 			SessionUtils::add_status( $this->form_session_var, self::VALIDATED, $otp_type );
 		}
 
@@ -486,20 +490,19 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		 */
 		public function handle_form_options() {
 
-			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option() ) ) {
+			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option(), 'forminator_enable' ) ) {
 				return;
 			}
-			if ( ! array_key_exists( 'forminator_form', $_POST ) || ! check_admin_referer( $this->admin_nonce ) ) {
+			$forminator_form_data = $this->sanitize_form_post( 'forminator_form', '' );
+			if ( false === $forminator_form_data || ! is_array( $forminator_form_data ) ) {
 				return;
 			}
-
-			$data = MoUtility::mo_sanitize_array( $_POST );
-
+			$data                  = array( 'forminator_form' => $forminator_form_data );
 			$this->is_form_enabled = $this->sanitize_form_post( 'forminator_enable' );
 			$this->otp_type        = $this->sanitize_form_post( 'forminator_enable_type' );
 			$this->button_text     = $this->sanitize_form_post( 'forminator_button_text' );
 
-			$form = $this->parseFormDetails( $data );
+			$form = $this->parse_form_details( $data );
 
 			$this->form_details = ! empty( $form ) ? $form : '';
 
@@ -516,20 +519,21 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		 *
 		 * @return array
 		 */
-		private function parseFormDetails( $data ) {
-			$form = array();
+		private function parse_form_details( $data ) {
 
-			foreach ( array_filter( $data['forminator_form']['form'] ) as $key => $value ) {
-				$key                                   = sanitize_text_field( $key );
-				$form[ sanitize_text_field( $value ) ] = array(
-					'emailkey'   => sanitize_text_field( $data['forminator_form']['emailkey'][ $key ] ),
-					'phonekey'   => sanitize_text_field( $data['forminator_form']['phonekey'][ $key ] ),
-					'phone_show' => sanitize_text_field( $data['forminator_form']['phonekey'][ $key ] ),
-					'email_show' => sanitize_text_field( $data['forminator_form']['emailkey'][ $key ] ),
+			$form  = array();
+			$forms = isset( $data['forminator_form']['form'] ) ? $data['forminator_form']['form'] : array();
+			foreach ( array_filter( $forms ) as $key => $value ) {
+				$emailkey       = isset( $data['forminator_form']['emailkey'][ $key ] ) ? ( $data['forminator_form']['emailkey'][ $key ] ) : '';
+				$phonekey       = isset( $data['forminator_form']['phonekey'][ $key ] ) ? ( $data['forminator_form']['phonekey'][ $key ] ) : '';
+				$form[ $value ] = array(
+					'emailkey'   => $emailkey,
+					'phonekey'   => $phonekey,
+					'phone_show' => $phonekey,
+					'email_show' => $emailkey,
 				);
 			}
 			return $form;
 		}
-
 	}
 }

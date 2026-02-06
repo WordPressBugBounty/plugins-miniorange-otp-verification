@@ -25,8 +25,10 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 	class TransactionCost {
 
 		use Instance;
-		/**Constructor
-		 **/
+
+		/**
+		 * Constructor
+		 */
 		protected function __construct() {
 			$sms_pricing = array(
 				'All Countries'                  => array(
@@ -37,7 +39,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '2486',
 					'50000 ' => '11680',
 				),
-				'Afghanistan'                  => array(
+				'Afghanistan'                    => array(
 					'100 '   => '55',
 					'500 '   => '272',
 					'1000 '  => '533',
@@ -85,7 +87,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '1562',
 					'50000 ' => '7060',
 				),
-				'Armenia'                      => array(
+				'Armenia'                        => array(
 					'100 '   => '31',
 					'500 '   => '152',
 					'1000 '  => '293',
@@ -141,7 +143,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '4739',
 					'50000 ' => '22945',
 				),
-				'Barbados'                     => array(
+				'Barbados'                       => array(
 					'100 '   => '47',
 					'500 '   => '231',
 					'1000 '  => '452',
@@ -189,7 +191,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '4979',
 					'50000 ' => '24145',
 				),
-				'Bolivia'                         => array(
+				'Bolivia'                        => array(
 					'100 '   => '32',
 					'500 '   => '156',
 					'1000 '  => '301',
@@ -197,7 +199,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '2901',
 					'50000 ' => '13755',
 				),
-				'Bosnia and Herzegovina'           => array(
+				'Bosnia and Herzegovina'         => array(
 					'100 '   => '47',
 					'500 '   => '229',
 					'1000 '  => '448',
@@ -213,7 +215,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '810',
 					'50000 ' => '3300',
 				),
-				'Botswana'                         => array(
+				'Botswana'                       => array(
 					'100 '   => '15',
 					'500 '   => '69',
 					'1000 '  => '128',
@@ -245,7 +247,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '2550',
 					'50000 ' => '12000',
 				),
-				'Burundi'                          => array(
+				'Burundi'                        => array(
 					'100 '   => '51',
 					'500 '   => '248',
 					'1000 '  => '486',
@@ -253,7 +255,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '4755',
 					'50000 ' => '23025',
 				),
-				'Cabo Verde (Cape Verde)'          => array(
+				'Cabo Verde (Cape Verde)'        => array(
 					'100 '   => '26',
 					'500 '   => '126',
 					'1000 '  => '242',
@@ -285,7 +287,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '490',
 					'50000 ' => '1700',
 				),
-				'Chad'                          => array(
+				'Chad'                           => array(
 					'100 '   => '46',
 					'500 '   => '223',
 					'1000 '  => '436',
@@ -317,7 +319,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '758',
 					'50000 ' => '3040',
 				),
-				'Congo (Republic)'                  => array(
+				'Congo (Republic)'               => array(
 					'100 '   => '20',
 					'500 '   => '95',
 					'1000 '  => '180',
@@ -325,7 +327,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '1697',
 					'50000 ' => '7735',
 				),
-				'Congo (DRC)'                      => array(
+				'Congo (DRC)'                    => array(
 					'100 '   => '26',
 					'500 '   => '125',
 					'1000 '  => '240',
@@ -333,7 +335,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '2298',
 					'50000 ' => '10740',
 				),
-				'Comoros'                      => array(
+				'Comoros'                        => array(
 					'100 '   => '41',
 					'500 '   => '198',
 					'1000 '  => '386',
@@ -349,7 +351,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '767',
 					'50000 ' => '3085',
 				),
-				'Côte d\'Ivoire'                   => array(
+				'Côte d\'Ivoire'                 => array(
 					'100 '   => '45',
 					'500 '   => '222',
 					'1000 '  => '433',
@@ -381,7 +383,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '813',
 					'50000 ' => '3315',
 				),
-				'Czechia'                       => array(
+				'Czechia'                        => array(
 					'100 '   => '14',
 					'500 '   => '65',
 					'1000 '  => '120',
@@ -397,7 +399,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '827',
 					'50000 ' => '3385',
 				),
-				'Dominica'                          => array(
+				'Dominica'                       => array(
 					'100 '   => '32',
 					'500 '   => '155',
 					'1000 '  => '300',
@@ -413,7 +415,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '1185',
 					'50000 ' => '5175',
 				),
-				'Ecuador'                         => array(
+				'Ecuador'                        => array(
 					'100 '   => '39',
 					'500 '   => '190',
 					'1000 '  => '369',
@@ -421,7 +423,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '3582',
 					'50000 ' => '17160',
 				),
-				'Eritrea'                         => array(
+				'Eritrea'                        => array(
 					'100 '   => '24',
 					'500 '   => '113',
 					'1000 '  => '216',
@@ -445,7 +447,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '3645',
 					'50000 ' => '17475',
 				),
-				'El Salvador'                        => array(
+				'El Salvador'                    => array(
 					'100 '   => '20',
 					'500 '   => '98',
 					'1000 '  => '185',
@@ -477,7 +479,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '1518',
 					'50000 ' => '6840',
 				),
-				'Fiji'                        => array(
+				'Fiji'                           => array(
 					'100 '   => '28',
 					'500 '   => '133',
 					'1000 '  => '256',
@@ -493,7 +495,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '1000',
 					'50000 ' => '4250',
 				),
-				'Gabon'                        => array(
+				'Gabon'                          => array(
 					'100 '   => '44',
 					'500 '   => '214',
 					'1000 '  => '417',
@@ -501,7 +503,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '4068',
 					'50000 ' => '19590',
 				),
-				'Gambia'                        => array(
+				'Gambia'                         => array(
 					'100 '   => '22',
 					'500 '   => '106',
 					'1000 '  => '201',
@@ -541,7 +543,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '1086',
 					'50000 ' => '4680',
 				),
-				'Guadeloupe'                         => array(
+				'Guadeloupe'                     => array(
 					'100 '   => '19',
 					'500 '   => '89',
 					'1000 '  => '167',
@@ -549,7 +551,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '1566',
 					'50000 ' => '7080',
 				),
-				'Guatemala'                         => array(
+				'Guatemala'                      => array(
 					'100 '   => '37',
 					'500 '   => '183',
 					'1000 '  => '355',
@@ -573,7 +575,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '2482',
 					'50000 ' => '11660',
 				),
-				'Guyana'                          => array(
+				'Guyana'                         => array(
 					'100 '   => '32',
 					'500 '   => '158',
 					'1000 '  => '305',
@@ -581,7 +583,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '2945',
 					'50000 ' => '13975',
 				),
-				'Haiti'                             => array(
+				'Haiti'                          => array(
 					'100 '   => '49',
 					'500 '   => '242',
 					'1000 '  => '473',
@@ -732,7 +734,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '2534',
 					'50000 ' => '11920',
 				),
-				'Kyrgyzstan'                         => array(
+				'Kyrgyzstan'                     => array(
 					'100 '   => '43',
 					'500 '   => '213',
 					'1000 '  => '415',
@@ -740,7 +742,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '4041',
 					'50000 ' => '19455',
 				),
-				'Laos'                         => array(
+				'Laos'                           => array(
 					'100 '   => '18',
 					'500 '   => '87',
 					'1000 '  => '163',
@@ -788,7 +790,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '5608',
 					'50000 ' => '27290',
 				),
-				'Liechtenstein'                      => array(
+				'Liechtenstein'                  => array(
 					'100 '   => '9',
 					'500 '   => '39',
 					'1000 '  => '67',
@@ -804,7 +806,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '802',
 					'50000 ' => '3260',
 				),
-				'Luxembourg'                      => array(
+				'Luxembourg'                     => array(
 					'100 '   => '20',
 					'500 '   => '94',
 					'1000 '  => '177',
@@ -828,7 +830,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '1162',
 					'50000 ' => '5060',
 				),
-				'Madagascar'                      => array(
+				'Madagascar'                     => array(
 					'100 '   => '52',
 					'500 '   => '256',
 					'1000 '  => '502',
@@ -836,7 +838,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '4920',
 					'50000 ' => '23850',
 				),
-				'Malawi'                      => array(
+				'Malawi'                         => array(
 					'100 '   => '45',
 					'500 '   => '220',
 					'1000 '  => '429',
@@ -868,7 +870,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '3956',
 					'50000 ' => '19030',
 				),
-				'Malta'                           => array(
+				'Malta'                          => array(
 					'100 '   => '13',
 					'500 '   => '60',
 					'1000 '  => '113',
@@ -916,7 +918,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '3480',
 					'50000 ' => '16650',
 				),
-				'Montenegro'                       => array(
+				'Montenegro'                     => array(
 					'100 '   => '28',
 					'500 '   => '134',
 					'1000 '  => '257',
@@ -980,7 +982,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '931',
 					'50000 ' => '3905',
 				),
-				'Nicaragua'                    => array(
+				'Nicaragua'                      => array(
 					'100 '   => '21',
 					'500 '   => '103',
 					'1000 '  => '195',
@@ -988,7 +990,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '1845',
 					'50000 ' => '8475',
 				),
-				'Niger'                        => array(
+				'Niger'                          => array(
 					'100 '   => '38',
 					'500 '   => '183',
 					'1000 '  => '356',
@@ -1044,7 +1046,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '2030',
 					'50000 ' => '9400',
 				),
-				'Papua New Guinea'                => array(
+				'Papua New Guinea'               => array(
 					'100 '   => '71',
 					'500 '   => '352',
 					'1000 '  => '694',
@@ -1052,7 +1054,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '6831',
 					'50000 ' => '33405',
 				),
-				'Paraguay'                         => array(
+				'Paraguay'                       => array(
 					'100 '   => '19',
 					'500 '   => '91',
 					'1000 '  => '172',
@@ -1140,7 +1142,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '3815',
 					'50000 ' => '18325',
 				),
-				'Saint Kitts and Nevis'                         => array(
+				'Saint Kitts and Nevis'          => array(
 					'100 '   => '34',
 					'500 '   => '164',
 					'1000 '  => '317',
@@ -1148,7 +1150,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '3064',
 					'50000 ' => '14570',
 				),
-				'Samoa'                         => array(
+				'Samoa'                          => array(
 					'100 '   => '38',
 					'500 '   => '188',
 					'1000 '  => '365',
@@ -1180,7 +1182,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '4334',
 					'50000 ' => '20920',
 				),
-				'Seychelles'                         => array(
+				'Seychelles'                     => array(
 					'100 '   => '26',
 					'500 '   => '126',
 					'1000 '  => '242',
@@ -1188,7 +1190,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '2313',
 					'50000 ' => '10815',
 				),
-				'Sierra Leone'                         => array(
+				'Sierra Leone'                   => array(
 					'100 '   => '54',
 					'500 '   => '268',
 					'1000 '  => '525',
@@ -1268,7 +1270,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '2871',
 					'50000 ' => '13605',
 				),
-				'Suriname'                          => array(
+				'Suriname'                       => array(
 					'100 '   => '34',
 					'500 '   => '163',
 					'1000 '  => '316',
@@ -1300,7 +1302,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '5874',
 					'50000 ' => '28620',
 				),
-				'Tajikistan'                          => array(
+				'Tajikistan'                     => array(
 					'100 '   => '61',
 					'500 '   => '303',
 					'1000 '  => '595',
@@ -1316,7 +1318,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '1076',
 					'50000 ' => '4630',
 				),
-				'Tanzania'                        => array(
+				'Tanzania'                       => array(
 					'100 '   => '53',
 					'500 '   => '258',
 					'1000 '  => '506',
@@ -1332,7 +1334,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '550',
 					'50000 ' => '2000',
 				),
-				'Timor-Leste'                       => array(
+				'Timor-Leste'                    => array(
 					'100 '   => '31',
 					'500 '   => '153',
 					'1000 '  => '295',
@@ -1340,7 +1342,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '2843',
 					'50000 ' => '13465',
 				),
-				'Trinidad and Tobago'             => array(
+				'Trinidad and Tobago'            => array(
 					'100 '   => '36',
 					'500 '   => '174',
 					'1000 '  => '337',
@@ -1348,7 +1350,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '3269',
 					'50000 ' => '15595',
 				),
-				'Togo'                             => array(
+				'Togo'                           => array(
 					'100 '   => '67',
 					'500 '   => '329',
 					'1000 '  => '648',
@@ -1372,7 +1374,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '566',
 					'50000 ' => '2080',
 				),
-				'Turkmenistan'                         => array(
+				'Turkmenistan'                   => array(
 					'100 '   => '44',
 					'500 '   => '214',
 					'1000 '  => '417',
@@ -1420,7 +1422,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '496',
 					'50000 ' => '1730',
 				),
-				'Uruguay'                       => array(
+				'Uruguay'                        => array(
 					'100 '   => '18',
 					'500 '   => '86',
 					'1000 '  => '162',
@@ -1436,7 +1438,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					'10000 ' => '5621',
 					'50000 ' => '27355',
 				),
-				'Vanuatu'                      => array(
+				'Vanuatu'                        => array(
 					'100 '   => '37',
 					'500 '   => '181',
 					'1000 '  => '351',
@@ -1501,11 +1503,14 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 			if ( ! check_ajax_referer( 'whatsappnonce', 'security', false ) ) {
 				return;
 			}
-			$target_country = isset( $_POST['target_country'] ) ? sanitize_text_field( wp_unslash( $_POST['target_country'] ) ) : ''; // phpcs:ignore -- false positive.
+			$target_country = isset( $_POST['target_country'] ) ? sanitize_text_field( wp_unslash( $_POST['target_country'] ) ) : '';
 
 			$whatsapp_pricing_response = $this->mo_wa_check_pricing( $target_country );
-			echo wp_json_encode( $whatsapp_pricing_response );
-			die();
+			if ( empty( $whatsapp_pricing_response ) ) {
+				wp_send_json_error( array( 'message' => __( 'Country not found', 'miniorange-otp-verification' ) ) );
+				return;
+			}
+			wp_send_json_success( $whatsapp_pricing_response );
 		}
 
 
@@ -1516,10 +1521,13 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 			if ( ! check_ajax_referer( 'mosmsnonce', 'security', false ) ) {
 				return;
 			}
-			$target_country       = isset( $_POST['target_country'] ) ? sanitize_text_field( wp_unslash( $_POST['target_country'] ) ) : ''; // phpcs:ignore -- false positive.
-			$sms_pricing_response = MO_SMS_PRICING[ $target_country ];
-			echo wp_json_encode( $sms_pricing_response );
-			die;
+			$target_country       = isset( $_POST['target_country'] ) ? sanitize_text_field( wp_unslash( $_POST['target_country'] ) ) : '';
+			$sms_pricing_response = isset( MO_SMS_PRICING[ $target_country ] ) ? MO_SMS_PRICING[ $target_country ] : array();
+			if ( empty( $sms_pricing_response ) ) {
+				wp_send_json_error( array( 'message' => __( 'Country not found', 'miniorange-otp-verification' ) ) );
+				return;
+			}
+			wp_send_json_success( $sms_pricing_response );
 		}
 
 
@@ -1959,6 +1967,8 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 
 		/**
 		 * Function for selected countries.
+		 *
+		 * @return array
 		 */
 		public static function get_only_country_list() {
 			$country_list = array();
@@ -1974,6 +1984,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 		 * Function to check the whatsapp pricing for the target country.
 		 *
 		 * @param string $target_country - target country.
+		 * @return array
 		 */
 		public static function check_transaction_cost( $target_country ) {
 			foreach ( self::$countries as $country ) {
@@ -1981,6 +1992,7 @@ if ( ! class_exists( 'TransactionCost' ) ) {
 					return $country['whatsappcost'];
 				}
 			}
+			return array();
 		}
 	}
 }

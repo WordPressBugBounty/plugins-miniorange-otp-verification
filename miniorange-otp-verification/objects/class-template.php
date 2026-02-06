@@ -6,13 +6,13 @@
 
 namespace OTP\Objects;
 
-use OTP\Helper\MoConstants;
-use OTP\Helper\MoMessages;
-use OTP\Helper\MoUtility;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+use OTP\Helper\MoConstants;
+use OTP\Helper\MoMessages;
+use OTP\Helper\MoUtility;
 
 /**
  * This super class is the super class which defines some common
@@ -26,7 +26,6 @@ if ( ! class_exists( 'Template' ) ) {
 	 * Template class
 	 */
 	abstract class Template extends BaseActionHandler implements MoITemplate {
-
 
 		/**
 		 * The key for the template which will uniquely
@@ -165,37 +164,37 @@ if ( ! class_exists( 'Template' ) ) {
 			add_action( 'admin_post_mo_preview_popup', array( $this, 'show_preview' ) );
 			add_action( 'admin_post_mo_popup_save', array( $this, 'save_popup' ) );
 			add_action( 'admin_post_mo_popup_reset', array( $this, 'reset_popup' ) );
-
 		}
-
 
 		/**
 		 * This function is used to preview the template based on the type passed
 		 * to the filter. This function is called when the filter admin_post_mo_preview_popup
 		 * filter is called. The filter can be used by other users to modify the
 		 * template if they choose to do so.
+		 *
+		 * @return void
 		 */
 		public function show_preview() {
-			if ( array_key_exists( 'popuptype', $_POST ) && sanitize_text_field( wp_unslash( $_POST['popuptype'] ) ) !== $this->get_template_key() ) { //phpcs:ignore -- false positive.
-				return;
-			}
-			if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->nonce ) ) {
+			if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'mo_popup_options' ) ) {
 				wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 			}
-			$data     = MoUtility::mo_sanitize_array( $_POST );
-			$message  = '<i>' . mo_( 'PopUp Message shows up here.' ) . '</i>';
-			$otp_type = VerificationType::TEST;
-			if ( ! isset( $_POST[ $this->get_template_editor_id() ] ) ) { //phpcs:ignore -- false positive.
+			if ( isset( $_POST['popuptype'] ) && sanitize_text_field( wp_unslash( $_POST['popuptype'] ) ) !== $this->get_template_key() ) {
 				return;
 			}
-			$template = wp_unslash( $_POST[ $this->get_template_editor_id() ] ); //phpcs:ignore -- false positive.
+			$data     = MoUtility::mo_sanitize_array( $_POST );
+			$message  = '<i>' . __( 'PopUp Message shows up here.', 'miniorange-otp-verification' ) . '</i>';
+			$otp_type = VerificationType::TEST;
+			if ( ! isset( $_POST[ $this->get_template_editor_id() ] ) ) {
+				return;
+			}
+			$template = wp_kses( wp_unslash( $_POST[ $this->get_template_editor_id() ] ), MoUtility::mo_allow_html_array() );
 			$this->validateRequiredFields( $template );
 			$from_both     = false;
 			$this->preview = true;
 			$preview_popup = $this->parse( $template, $message, $otp_type, $from_both );
-			$preview_popup = preg_replace('#<script(.*?)>(.*?)</script>#is', '', $preview_popup );
-			$preview_popup = preg_replace('#onclick\s*=\s*["\'].*?["\']#is', '', $preview_popup);
-
+			$preview_popup = preg_replace( '#<script\b[^>]*>.*?</script>#is', '', $preview_popup );
+			$preview_popup = preg_replace( '#\son\w+\s*=\s*(["\']).*?\1#is', '', $preview_popup );
+			$preview_popup = preg_replace( '#\s(?:href|src)\s*=\s*([\'"])\s*javascript:[^\'"]*\1#is', '', $preview_popup );
 			wp_send_json(
 				MoUtility::create_json(
 					$preview_popup,
@@ -209,9 +208,11 @@ if ( ! class_exists( 'Template' ) ) {
 		 * has set in the settings. Called using the admin_post_mo_popup_save action.
 		 * The action can be used by other users to modify the template before it is
 		 * saved in the database if they choose to do so.
+		 *
+		 * @return void
 		 */
 		public function save_popup() {
-			if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->nonce ) ) {
+			if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'mo_popup_options' ) ) {
 				wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 				return;
 			}
@@ -219,12 +220,15 @@ if ( ! class_exists( 'Template' ) ) {
 			if ( ! $this->isTemplateType( $data ) ) {
 				return;
 			}
-			if ( ! isset( $_POST[ $this->get_template_editor_id() ] ) ) { //phpcs:ignore -- false positive.
+			if ( ! isset( $_POST[ $this->get_template_editor_id() ] ) ) {
 				return;
 			}
-			$template = htmlspecialchars( wp_unslash( $_POST[ $this->get_template_editor_id() ] )); //phpcs:ignore -- false positive.
+			$template = wp_kses( wp_unslash( $_POST[ $this->get_template_editor_id() ] ), MoUtility::mo_allow_html_array() );
 			$this->validateRequiredFields( $template );
-			$email_templates                              = maybe_unserialize( get_mo_option( 'custom_popups' ) );
+			$email_templates = maybe_unserialize( get_mo_option( 'custom_popups' ) );
+			if ( ! is_array( $email_templates ) ) {
+				$email_templates = array();
+			}
 			$email_templates[ $this->get_template_key() ] = $template;
 			update_mo_option( 'custom_popups', $email_templates );
 			wp_send_json(
@@ -234,12 +238,15 @@ if ( ! class_exists( 'Template' ) ) {
 				)
 			);
 		}
+
 		/**
 		 * This function is called to reset the pop up in the database.
 		 * Called using the admin_post_mo_popup_reset action.
+		 *
+		 * @return void
 		 */
 		public function reset_popup() {
-			if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->nonce ) ) {
+			if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'mo_popup_options' ) ) {
 				wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 				return;
 			}
@@ -247,12 +254,19 @@ if ( ! class_exists( 'Template' ) ) {
 			if ( ! $this->isTemplateType( $data ) ) {
 				return;
 			}
-			if ( ! isset( $_POST[ $this->get_template_editor_id() ] ) ) { //phpcs:ignore -- false positive.
+			if ( ! isset( $_POST[ $this->get_template_editor_id() ] ) ) {
 				return;
 			}
-			$templates                                     = apply_filters( 'mo_template_defaults', array() );
-			$popup_templates                               = maybe_unserialize( get_mo_option( 'custom_popups' ) );
-			$popup_templates [ $this->get_template_key() ] = $templates [ $this->get_template_key() ];
+			$templates       = apply_filters( 'mo_template_defaults', array() );
+			$popup_templates = maybe_unserialize( get_mo_option( 'custom_popups' ) );
+			if ( ! is_array( $popup_templates ) ) {
+				$popup_templates = array();
+			}
+			$key                   = $this->get_template_key();
+			$template_for_response = isset( $templates[ $key ] ) ? $templates[ $key ] : '';
+			if ( isset( $templates[ $key ] ) ) {
+				$popup_templates[ $key ] = $templates[ $key ];
+			}
 			if ( $this->get_template_key() === 'DEFAULT' ) {
 				update_mo_option( 'selected_popup', 'Default' );
 			}
@@ -261,13 +275,12 @@ if ( ! class_exists( 'Template' ) ) {
 				MoUtility::create_json(
 					array(
 						'message'  => $this->showSuccessMessage( MoMessages::showMessage( MoMessages::TEMPLATE_RESET ) ),
-						'template' => $templates [ $this->get_template_key() ],
+						'template' => $template_for_response,
 					),
 					MoConstants::SUCCESS_JSON_TYPE
 				)
 			);
 		}
-
 
 		/**
 		 * This function is used to build the template based on the type passed
@@ -287,10 +300,11 @@ if ( ! class_exists( 'Template' ) ) {
 				return $template;
 			}
 			$email_templates = maybe_unserialize( get_mo_option( 'custom_popups' ) );
-			$template        = $email_templates[ $this->get_template_key() ];
+			if ( is_array( $email_templates ) && isset( $email_templates[ $this->get_template_key() ] ) ) {
+				$template = $email_templates[ $this->get_template_key() ];
+			}
 			return $this->parse( $template, $message, $otp_type, $from_both );
 		}
-
 
 		/**
 		 * This function checks if the template passed to it has the required
@@ -298,6 +312,7 @@ if ( ! class_exists( 'Template' ) ) {
 		 * return true.
 		 *
 		 * @param mixed $template template.
+		 * @return void
 		 */
 		protected function validateRequiredFields( $template ) {
 			foreach ( $this->required_tags as $tag ) {
@@ -330,7 +345,6 @@ if ( ! class_exists( 'Template' ) ) {
 			}
 		}
 
-
 		/**
 		 * This function is used to show message on the screen for the popup
 		 * as an indication to the admin/user that the process was
@@ -344,7 +358,6 @@ if ( ! class_exists( 'Template' ) ) {
 			return str_replace( '{{CONTENT}}', $message, $this->pane_content );
 		}
 
-
 		/**
 		 * This function is used to normal message on the screen for the popup
 		 * as an indication to the admin/user that the process was
@@ -357,7 +370,6 @@ if ( ! class_exists( 'Template' ) ) {
 			$message = str_replace( '{{MESSAGE}}', $message, $this->message_div );
 			return str_replace( '{{CONTENT}}', $message, $this->pane_content );
 		}
-
 
 		/**
 		 * This function detects if the form setting being saved or the preview
@@ -378,12 +390,22 @@ if ( ! class_exists( 'Template' ) ) {
 		|-------------------------------------------------------------------------
 		 */
 
-		/** This function returns the current Templates Key */
+		/**
+		 * This function returns the current Templates Key
+		 *
+		 * @return string
+		 */
 		public function get_template_key() {
-			return $this->key; }
+			return $this->key;
+		}
 
-		/** This function returns the current Templates Editor Id */
+		/**
+		 * This function returns the current Templates Editor Id
+		 *
+		 * @return string
+		 */
 		public function get_template_editor_id() {
-			return $this->template_editor_id; }
+			return $this->template_editor_id;
+		}
 	}
 }

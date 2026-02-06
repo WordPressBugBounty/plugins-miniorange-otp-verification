@@ -12,58 +12,77 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 if ( ! class_exists( 'NotificationSettings' ) ) {
 	/**
-	 *  This class is used to generate notification settings
-	 *  specific to email or sms settings. These settings are then passed
-	 *  to the cURL function to send notifications.
+	 * This class is used to generate notification settings
+	 * specific to email or sms settings. These settings are then passed
+	 * to the cURL function to send notifications.
 	 */
 	class NotificationSettings {
 
-		/**Varibale declaration
+		/**
+		 * Variable declaration
 		 *
 		 * @var string
 		 */
 		public $send_sms;
-		/**Varibale declaration
+
+		/**
+		 * Variable declaration
 		 *
 		 * @var string
 		 */
 		public $send_email;
-		/**Varibale declaration
+
+		/**
+		 * Variable declaration
 		 *
 		 * @var string
 		 */
 		public $phone_number;
-		/**Varibale declaration
+
+		/**
+		 * Variable declaration
 		 *
 		 * @var string
 		 */
 		public $from_email;
-		/**Varibale declaration
+
+		/**
+		 * Variable declaration
 		 *
 		 * @var string
 		 */
 		public $from_name;
-		/**Varibale declaration
+
+		/**
+		 * Variable declaration
 		 *
 		 * @var string
 		 */
 		public $to_email;
-		/**Varibale declaration
+
+		/**
+		 * Variable declaration
 		 *
 		 * @var string
 		 */
 		public $to_name;
-		/**Varibale declaration
+
+		/**
+		 * Variable declaration
 		 *
 		 * @var string
 		 */
 		public $subject;
-		/**Varibale declaration
+
+		/**
+		 * Variable declaration
 		 *
 		 * @var string
 		 */
 		public $bcc_email;
-		/**Varibale declaration
+
+		/**
+		 * Variable declaration
 		 *
 		 * @var string
 		 */
@@ -71,17 +90,23 @@ if ( ! class_exists( 'NotificationSettings' ) ) {
 
 		/**
 		 * Constructor.
+		 *
+		 * @param string $phone_number Phone number for SMS notifications.
+		 * @param string $message Message content for SMS notifications.
+		 * @param string $from_email From email for email notifications.
+		 * @param string $from_name From name for email notifications.
+		 * @param string $to_email To email for email notifications.
 		 */
-		public function __construct() {
-			if ( func_num_args() < 4 ) {
-				$this->create_sms_notification_settings( func_get_arg( 0 ), func_get_arg( 1 ) );
-			} else {
+		public function __construct( $phone_number = '', $message = '', $from_email = '', $from_name = '', $to_email = '' ) {
+			if ( ! empty( $phone_number ) && ! empty( $message ) ) {
+				$this->create_sms_notification_settings( $phone_number, $message );
+			} elseif ( ! empty( $from_email ) && ! empty( $from_name ) && ! empty( $to_email ) ) {
 				$this->create_email_notification_settings(
-					func_get_arg( 0 ),
-					func_get_arg( 1 ),
-					func_get_arg( 2 ),
-					func_get_arg( 3 ),
-					func_get_arg( 4 )
+					$from_email,
+					$from_name,
+					$to_email,
+					'',
+					$message
 				);
 			}
 		}
@@ -89,15 +114,15 @@ if ( ! class_exists( 'NotificationSettings' ) ) {
 		/**
 		 * Create Phone notification settings
 		 *
-		 * @param  string $phone_number phone number.
-		 * @param  string $message message to send.
+		 * @param string $phone_number phone number.
+		 * @param string $message message to send.
+		 * @return void
 		 */
 		public function create_sms_notification_settings( $phone_number, $message ) {
 			$this->send_sms     = true;
 			$this->phone_number = $phone_number;
 			$this->message      = $message;
 		}
-
 
 		/**
 		 * Create Email notification settings
@@ -107,6 +132,7 @@ if ( ! class_exists( 'NotificationSettings' ) ) {
 		 * @param string $to_email to email param.
 		 * @param string $subject subject of notification.
 		 * @param string $message message content.
+		 * @return void
 		 */
 		public function create_email_notification_settings( $from_email, $from_name, $to_email, $subject, $message ) {
 			$this->send_email = true;

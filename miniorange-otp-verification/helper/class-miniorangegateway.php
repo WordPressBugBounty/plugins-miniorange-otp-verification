@@ -1,5 +1,6 @@
 <?php
-/**Load adminstrator changes for Miniorange Gateway
+/**
+ * Load administrator changes for Miniorange Gateway
  *
  * @package miniorange-otp-verification/helper
  */
@@ -22,7 +23,7 @@ use OTP\Addons\PasscodeOverCalltwilio\VerifyOverCallAddon;
 use OTP\Addons\passwordresetwp\WordPressPasswordReset;
 use OTP\Addons\ipbasedropdown\EnableIpBaseCountryCode;
 use OTP\Addons\APIVerification\APIAddon;
-use OTP\Addons\ResendControl\MiniOrangeResendControl;
+use OTP\Addons\resendcontrol\ResendControl;
 use OTP\Addons\MoBulkSMS\MoBulkSMSInit;
 use OTP\Addons\CountryCodeDropdown\CountryCodeDropdownInit;
 use OTP\Addons\bothemailandphone\EmailAndPhone;
@@ -54,30 +55,33 @@ if ( ! class_exists( 'MiniOrangeGateway' ) ) {
 		 */
 		private $nonce;
 
-		/**Constructor
-		 **/
+		/**
+		 * Constructor
+		 */
 		public function __construct() {
 			$this->nonce = 'mo_admin_actions';
 			$this->load_hooks();
 		}
 
-		/**Loads Hooks for ajax
-		 **/
+		/**
+		 * Loads Hooks for ajax
+		 */
 		public function load_hooks() {
 			add_action( 'wp_ajax_wa_miniorange_get_test_response', array( $this, 'get_gateway_response' ) );
 			add_action( 'wp_ajax_miniorange_get_test_response', array( $this, 'get_gateway_response' ) );
 		}
 
-		/**Global variable
+		/**
+		 * Global variable
 		 *
 		 * @var string application_name used in API calls */
 		private $application_name = 'wp_otp_verification';
 
 		/**
-		 * ---------------------------------------------------------------------------------------
-		 * FUNCTIONS RELATED TO ADDONS
-		 * ---------------------------------------------------------------------------------------
-		 **/
+		 * Register addons
+		 *
+		 * @return void
+		 */
 		public function register_addons() {
 			UltimateMemberSmsNotification::instance();
 			WooCommerceSmsNotification::instance();
@@ -100,7 +104,7 @@ if ( ! class_exists( 'MiniOrangeGateway' ) ) {
 				APIAddon::instance();
 			}
 			if ( file_exists( MOV_DIR . 'addons/resendcontrol' ) ) {
-				require MOV_DIR . 'addons/resendcontrol/miniorange-rc-validation.php';
+				ResendControl::instance();
 			}
 			if ( file_exists( MOV_DIR . 'addons/countrycode' ) ) {
 				SelectedCountryCode::instance();
@@ -129,10 +133,16 @@ if ( ! class_exists( 'MiniOrangeGateway' ) ) {
 			if ( file_exists( MOV_DIR . 'addons/wcselectedcategory' ) ) {
 				WcSelectedCategory::instance();
 			}
+			if ( file_exists( MOV_DIR . 'addons/otpspampreventer' ) ) {
+				require MOV_DIR . 'addons/otpspampreventer/miniorange-osp-validation.php';
+			}
 		}
 
-		/**Function for showing addonlist
-		 * */
+		/**
+		 * Shows addon list
+		 *
+		 * @return void
+		 */
 		public function show_addon_list() {
 			$addon_list = AddOnList::instance();
 			$addon_list = $addon_list->get_list();
@@ -145,7 +155,7 @@ if ( ! class_exists( 'MiniOrangeGateway' ) ) {
 
 			$premium_feature_list = PremiumFeatureList::instance();
 			$premium_addon_list   = $premium_feature_list->get_premium_add_on_list();
-			$request_uri          = remove_query_arg( array( 'addon', 'form', 'subpage' ), isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ); // phpcs:ignore -- false positive.
+			$request_uri          = remove_query_arg( array( 'addon', 'form', 'subpage' ), isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' );
 			$license_url          = add_query_arg( array( 'page' => 'mootppricing' ), $request_uri );
 
 			foreach ( $addon_list as $addon ) {
@@ -167,15 +177,24 @@ if ( ! class_exists( 'MiniOrangeGateway' ) ) {
 									<div class="flex w-full mt-mo-4 justify-center item-center">';
 				if ( ! empty( $addon_key['guide_link'] ) ) {
 
-					echo '  			<a href="' . esc_url( $addon_key['guide_link'] ) . '" target="_blank" class="flex-1 mr-mo-1  mo-button secondary "  > Setup Guide </a>';
+					echo '  			<a href="' . esc_url( $addon_key['guide_link'] ) . '" target="_blank" class="flex-1 mr-mo-1  mo-button secondary "  >' . esc_html__( 'Setup Guide', 'miniorange-otp-verification' ) . '</a>';
 				}
-				echo '					<a href="' . esc_url( $addon->getSettingsUrl() ) . '" class="flex-1 mr-mo-1  mo-button inverted "  >  Settings </a>
+				echo '					<a href="' . esc_url( $addon->getSettingsUrl() ) . '" class="flex-1 mr-mo-1  mo-button inverted " > ' . esc_html__( 'Settings', 'miniorange-otp-verification' ) . '</a>
 									</div>
 								</div>';
 			}
 
 			foreach ( $premium_addon_list as $key => $value ) {
-				if ( ! array_key_exists( $key, $addon_list ) ) {
+				if ( ! in_array(
+					$key,
+					array_map(
+						function ( $addon ) {
+							return is_object( $addon ) && method_exists( $addon, 'getAddOnKey' ) ? $addon->getAddOnKey() : null;
+						},
+						$addon_list
+					),
+					true
+				) ) {
 					echo '			<div class="mo-addon-card">
 										<div class="grow">
 											<div class="flex">';
@@ -186,7 +205,7 @@ if ( ! class_exists( 'MiniOrangeGateway' ) ) {
 												<p class="font-semibold text-md">' . esc_html( $value['name'] ) . '</p>
 						';
 					if ( isset( $value['plan_name'] ) ) {
-						echo '					<div style="font-size:10px !important">*This feature is included in the <b><a href="' . esc_attr( $license_url ) . '" target="_blank"><i><u>' . esc_html( $value['plan_name'] ) . '</u></i></a></b> </div>';
+						echo '					<div style="font-size:10px !important">*This feature is included in the <b><a href="' . esc_url( $license_url ) . '" target="_blank"><i><u>' . esc_html( $value['plan_name'] ) . '</u></i></a></b> </div>';
 					}
 						echo '				</div>';
 					foreach ( $value['description'] as $f_key ) {
@@ -198,16 +217,16 @@ if ( ! class_exists( 'MiniOrangeGateway' ) ) {
 					echo '			</div>
 									<div class="flex w-full mt-mo-4 justify-center item-center">';
 					if ( '' !== $value['guide_link'] ) {
-						echo '       	<a href="' . esc_url( $value['guide_link'] ) . '" target="_blank" class="flex-1 mr-mo-1  mo-button secondary "  >  Know More </a>';
+						echo '       	<a href="' . esc_url( $value['guide_link'] ) . '" target="_blank" class="flex-1 mr-mo-1  mo-button secondary "  >' . esc_html__( 'Know More', 'miniorange-otp-verification' ) . '</a>';
 					} else {
-						echo '			<a class="flex-1 mo-button secondary mr-mo-2" style="cursor:pointer;" onClick="otpSupportOnClick(\'' . esc_html( $value['guide_request_msg'] ) . '\');" > Know More</a>';
+						echo '			<a class="flex-1 mo-button secondary mr-mo-2" style="cursor:pointer;" onClick="otpSupportOnClick(\'' . esc_js( $value['guide_request_msg'] ) . '\');" >' . esc_html__( 'Know More', 'miniorange-otp-verification' ) . '</a>';
 					}
 
 					if ( isset( $value['upgrade_slug'] ) ) {
 						$upgrade_link = MOV_PORTAL . '/initializePayment?requestOrigin=' . $value['upgrade_slug'];
-						echo '			<a class="flex-1 mo-button inverted ml-mo-2 " target="_blank" href="' . esc_url( $upgrade_link ) . '"  style="cursor:pointer;"> Get Addon</a>';
+						echo '			<a class="flex-1 mo-button inverted ml-mo-2 " target="_blank" href="' . esc_url( $upgrade_link ) . '"  style="cursor:pointer;">' . esc_html__( 'Get Addon', 'miniorange-otp-verification' ) . '</a>';
 					} else {
-						echo '			<a class="flex-1 mo-button inverted ml-mo-2 " style="cursor:pointer;"  onclick="otpSupportOnClick(\'' . esc_html( $value['support_msg'] ) . '\')"> Get Addon</a>';
+						echo '			<a class="flex-1 mo-button inverted ml-mo-2 " style="cursor:pointer;"  onclick="otpSupportOnClick(\'' . esc_js( $value['support_msg'] ) . '\')">' . esc_html__( 'Get Addon', 'miniorange-otp-verification' ) . '</a>';
 					}
 					echo '		</div>
 							</div>';
@@ -216,9 +235,9 @@ if ( ! class_exists( 'MiniOrangeGateway' ) ) {
 		}
 
 		/**
-		 * ---------------------------------------------------------------------------------------
-		 * FUNCTIONS RELATED TO LICENSING AND SYNC
-		 * ---------------------------------------------------------------------------------------
+		 * Hourly sync
+		 *
+		 * @return void
 		 */
 		public function hourly_sync() {
 			$customer_key = get_mo_option( 'admin_customer_key' );
@@ -227,21 +246,25 @@ if ( ! class_exists( 'MiniOrangeGateway' ) ) {
 				MoUtility::handle_mo_check_ln( false, $customer_key, $api_key );
 			}
 		}
-		/** Flushing Cache
+
+		/**
+		 * Flushing Cache
+		 *
+		 * @return void
 		 */
 		public function flush_cache() {
-
 		}
 
-		/** MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
 		 * @param object $post postarray.
 		 */
 		public function vlk( $post ) {
-
 		}
 
-		/** MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
 		 * @return bool
 		 */
@@ -249,8 +272,8 @@ if ( ! class_exists( 'MiniOrangeGateway' ) ) {
 			return true;
 		}
 
-
-		/** MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
 		 * @return bool
 		 */
@@ -259,7 +282,8 @@ if ( ! class_exists( 'MiniOrangeGateway' ) ) {
 		}
 
 
-		/** MoInternal Function
+		/**
+		 * MoInternal Function
 		 *
 		 * @return bool
 		 */
@@ -292,15 +316,14 @@ if ( ! class_exists( 'MiniOrangeGateway' ) ) {
 		 * @param object $posted post values.
 		 */
 		public function mo_configure_sms_template( $posted ) {
-
 		}
+
 		/**
 		 * Returns the email template
 		 *
 		 * @param object $posted post values.
 		 */
 		public function mo_configure_email_template( $posted ) {
-
 		}
 
 		/**
@@ -324,18 +347,28 @@ if ( ! class_exists( 'MiniOrangeGateway' ) ) {
 		 * @param bool $disabled value.
 		 */
 		public function template_configuration_page( $disabled ) {
-			$request_uri = remove_query_arg( array( 'addon', 'form', 'subpage' ), isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ); // phpcs:ignore -- false positive.
+			$request_uri = remove_query_arg( array( 'addon', 'form', 'subpage' ), isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' );
 			$license_url = add_query_arg( array( 'page' => 'mootppricing' ), $request_uri );
-			require MOV_DIR . '/views/mtemplatesettings.php';
+			$file_path   = realpath( MOV_DIR . 'views/mtemplatesettings.php' );
+			$base_dir    = realpath( MOV_DIR . 'views/' );
+			if ( MoUtility::mo_require_file( $file_path, $base_dir ) ) {
+				require $file_path;
+			}
 		}
+
 		/**
-		 * Function for test SMS Configuration for Whatsapp Feature
+		 * Get gateway response
+		 *
+		 * @return void
 		 */
 		public function get_gateway_response() {
-			if ( ! check_ajax_referer( $this->nonce, 'security', false ) ) {
+			// Security: Use hardcoded nonce action 'mo_admin_actions' instead of variable.
+			if ( ! check_ajax_referer( 'mo_admin_actions', 'security', false ) ) {
 				return;
 			}
-
+			if ( ! current_user_can( 'manage_options' ) ) {
+				return;
+			}
 			$data                      = MoUtility::mo_sanitize_array( $_POST );
 			$test_configuration_number = isset( $data['test_config_number'] ) ? $data['test_config_number'] : '';
 			$test_configuration_type   = isset( $data['action'] ) ? $data['action'] : '';
@@ -451,7 +484,8 @@ if ( ! class_exists( 'MiniOrangeGateway' ) ) {
 			}
 		}
 
-		/** FUNCTIONS RELATED TO VISUAL TOUR
+		/**
+		 * Functions related to visual tour.
 		 *
 		 * @return array
 		 */

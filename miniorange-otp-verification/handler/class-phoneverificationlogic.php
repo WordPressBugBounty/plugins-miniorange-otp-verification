@@ -47,12 +47,13 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 		 */
 		public function handle_logic( $user_login, $user_email, $phone_number, $otp_type, $from_both ) {
 			$this->checkIfUserRegistered( $otp_type, $from_both );
+			$phone_number            = MoUtility::process_phone_number( (string) $phone_number );
 			$match                   = MoUtility::validate_phone_number( $phone_number );
 			$is_country_block        = MoUtility::check_for_selected_country_addon( $phone_number );
 			$message                 = MoMessages::showMessage( MoMessages::BLOCKED_COUNTRY );
 			$mle                     = MoUtility::mllc();
 			$license_expired_message = MoMessages::showMessage( MoMessages::ERROR_OTP_PHONE );
-			if ( $mle['STATUS'] ) {
+			if ( is_array( $mle ) && isset( $mle['STATUS'] ) && $mle['STATUS'] ) {
 				if ( $this->is_ajax_form() ) {
 					wp_send_json( MoUtility::create_json( $license_expired_message, MoConstants::ERROR_JSON_TYPE ) );
 				} else {
@@ -108,7 +109,9 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 		 * @param string $from_both string has user enabled from both.
 		 */
 		public function handle_matched( $user_login, $user_email, $phone_number, $otp_type, $from_both ) {
-			$message = str_replace( '##phone##', $phone_number, $this->get_is_blocked_message() );
+			$phone_number  = MoUtility::process_phone_number( (string) $phone_number );
+			$escaped_phone = esc_html( $phone_number );
+			$message       = str_replace( '##phone##', $escaped_phone, $this->get_is_blocked_message() );
 			if ( $this->is_blocked( $user_email, $phone_number ) ) {
 				if ( $this->is_ajax_form() ) {
 					wp_send_json( MoUtility::create_json( $message, MoConstants::ERROR_JSON_TYPE ) );
@@ -139,11 +142,9 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 		public function start_otp_verification( $user_login, $user_email, $phone_number, $otp_type, $from_both ) {
 			do_action( 'mo_generate_or_resend_otp', $user_login, $user_email, $phone_number, $otp_type, $from_both );
 			$gateway           = GatewayFunctions::instance();
-			$verification_type = 'SMS';		
-		
-			// Only fail early if NOT MiniOrange Plan and no gateway type selected
+			$verification_type = 'SMS';
 			if ( ! $gateway->is_mg() && ! get_mo_option( 'custome_gateway_type' ) ) {
-				$this->handle_otp_sent_failed( $user_login, $user_email, $phone_number, $otp_type, $from_both, [] );
+				$this->handle_otp_sent_failed( $user_login, $user_email, $phone_number, $otp_type, $from_both, array() );
 				return;
 			}
 
@@ -169,7 +170,8 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 		 * @param string $from_both has user enabled from both.
 		 */
 		public function handle_not_matched( $phone_number, $otp_type, $from_both ) {
-			$message = str_replace( '##phone##', $phone_number, $this->get_otp_invalid_format_message() );
+			$escaped_phone = esc_html( $phone_number );
+			$message       = str_replace( '##phone##', $escaped_phone, $this->get_otp_invalid_format_message() );
 			if ( $this->is_ajax_form() ) {
 				wp_send_json( MoUtility::create_json( $message, MoConstants::ERROR_JSON_TYPE ) );
 			} else {
@@ -191,7 +193,8 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 		 * @param array  $content string the json decoded response from server.
 		 */
 		public function handle_otp_sent_failed( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content ) {
-			$message = str_replace( '##phone##', $phone_number, $this->get_otp_sent_failed_message() );
+			$escaped_phone = esc_html( $phone_number );
+			$message       = str_replace( '##phone##', $escaped_phone, $this->get_otp_sent_failed_message() );
 
 			if ( $this->is_ajax_form() ) {
 				wp_send_json( MoUtility::create_json( $message, MoConstants::ERROR_JSON_TYPE ) );
@@ -214,10 +217,15 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 		 * @param array  $content string the json decoded response from server.
 		 */
 		public function handle_otp_sent( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content ) {
-			SessionUtils::set_phone_transaction_id( $content['txId'] );
+			$tx_id = isset( $content['txId'] ) ? sanitize_text_field( wp_unslash( $content['txId'] ) ) : '';
+			if ( ! empty( $tx_id ) ) {
+				SessionUtils::set_phone_transaction_id( $tx_id );
+			}
 			$masked_phone_number = MoUtility::mo_mask_phone_number( $phone_number );
-			$message = str_replace( '##phone##', $masked_phone_number, $this->get_otp_sent_message() );
-			apply_filters( 'mo_start_reporting', $content['txId'], $phone_number, $phone_number, $otp_type, $message, 'OTP_SENT' );
+			$message             = str_replace( '##phone##', $masked_phone_number, $this->get_otp_sent_message() );
+			if ( ! empty( $tx_id ) ) {
+				apply_filters( 'mo_start_reporting', $tx_id, $phone_number, $phone_number, $otp_type, $message, 'OTP_SENT' );
+			}
 			if ( $this->is_ajax_form() ) {
 				wp_send_json( MoUtility::create_json( $message, MoConstants::SUCCESS_JSON_TYPE ) );
 			} else {
@@ -233,7 +241,7 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 		 */
 		public function get_otp_sent_message() {
 			$send_msg = get_mo_option( 'success_phone_message', 'mo_otp_' );
-			return $send_msg ? mo_( $send_msg ) : MoMessages::showMessage( MoMessages::OTP_SENT_PHONE );
+			return $send_msg ? $send_msg : MoMessages::showMessage( MoMessages::OTP_SENT_PHONE );
 		}
 
 
@@ -244,7 +252,7 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 		 */
 		public function get_otp_sent_failed_message() {
 			$failed_msg = get_mo_option( 'error_phone_message', 'mo_otp_' );
-			$failed_msg = $failed_msg ? mo_( $failed_msg ) : MoMessages::showMessage( MoMessages::ERROR_OTP_PHONE );
+			$failed_msg = $failed_msg ? $failed_msg : MoMessages::showMessage( MoMessages::ERROR_OTP_PHONE );
 
 			$failed_msg = apply_filters( 'mo_get_otp_sent_failed_message', $failed_msg );
 
@@ -260,7 +268,7 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 		 */
 		public function get_otp_invalid_format_message() {
 			$invalid_msg = get_mo_option( 'invalid_phone_message', 'mo_otp_' );
-			return $invalid_msg ? mo_( $invalid_msg ) : MoMessages::showMessage( MoMessages::ERROR_PHONE_FORMAT );
+			return $invalid_msg ? $invalid_msg : MoMessages::showMessage( MoMessages::ERROR_PHONE_FORMAT );
 		}
 
 
@@ -285,7 +293,7 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 		 */
 		public function get_is_blocked_message() {
 			$blocked_msg = get_mo_option( 'blocked_phone_message', 'mo_otp_' );
-			return $blocked_msg ? mo_( $blocked_msg ) : MoMessages::showMessage( MoMessages::ERROR_PHONE_BLOCKED );
+			return $blocked_msg ? $blocked_msg : MoMessages::showMessage( MoMessages::ERROR_PHONE_BLOCKED );
 		}
 	}
 }
