@@ -159,12 +159,10 @@ echo '
 				</div>
 			</form>
 
-			<div class="hidden">
-				<div class="mo-header">
-					<p class="mo-heading flex-1">' . esc_html( __( 'Advance Settings', 'miniorange-otp-verification' ) ) . '</p>
-				</div>
+			<div class="mo-header">
+				<p class="mo-heading flex-1">' . esc_html( __( 'Advance Settings', 'miniorange-otp-verification' ) ) . '</p>
 			</div>
-			<div class="flex-1 px-mo-8 pt-mo-4 hidden">   
+			<div class="flex-1 px-mo-8 pt-mo-4">   
 				<div class="design-tab-container">
 					<div class="design-tabs-wrapper">
 						<div class=" design-tab-item active" target-wrapper="div-wrapper" target-tab="mo_default_popup">
@@ -176,7 +174,7 @@ echo '
 					</div>
 				</div>
 			</div>
-	<div id="advance_box" class="hidden">
+	<div id="advance_box">
 		<div class="mo_tab_div">
 
 			<div id="first-dynamic-table">
@@ -187,20 +185,23 @@ echo '
 							' . esc_html__( 'The pop-up appears when the OTP is sent successfully.', 'miniorange-otp-verification' ) . '
 						</div>
 			
-						<form name="defaultPreview" method="post" action="' . esc_url( admin_post_url() ) . '" target="defaultPreview">
+						<form name="defaultPreview" method="post" action="" target="defaultPreview">
 							<div class="flex px-mo-6 py-mo-4 space-x-mo-4">
 								<div class="design-template-div"> 
 									<div class="design-template-note"><b>' . esc_html__( 'The popup should contain these tags:', 'miniorange-otp-verification' ) . '</b><br> {{JQUERY}}, {{GO_BACK_ACTION_CALL}}, {{FORM_ID}}, {{OTP_FIELD_NAME}}, {{REQUIRED_FIELDS}}, {{REQUIRED_FORMS_SCRIPTS}}, {{BUTTON_NAME}}, {{BUTTON_ID}}, {{BUTTON_TYPE}}, {{OTP_FIELD_CLASS}}, {{OTP_FIELD_HIDDEN}}, {{OTP_FIELD_ID}}</div>  
 									<input type="hidden" class="mo-input" id="popactionvalue" name="action" value=""> 
-									<input type="hidden" class="mo-input" name="popuptype" value="' . esc_attr( $default_template_type ) . '"> ';
-							wp_nonce_field( $nonce, 'popup_display_nonce' );
-							wp_editor( $custom_default_popup, $editor_id, $template_settings );
-echo '                          </div>
+									<input type="hidden" class="mo-input" name="popuptype" value="' . esc_attr( $default_template_type ) . '"> 
+									';
+								wp_nonce_field( $nonce, 'popup_display_nonce' );
+								wp_editor( $custom_default_popup, $editor_id, $template_settings );
+?><input type="hidden" name="<?php echo esc_attr( $editor_id ); ?>" value="<?php echo esc_attr( $custom_default_popup ); ?>">
+								<?php
+								echo '                          </div>
 								<div class="design-template-div"> 
 									<div class="flex gap-mo-4 my-mo-2 mr-mo-2" style="float:right;">
-										<input type="button" id="popupbutton" ' . esc_attr( $disabled ) . ' class="mo-button secondary text-sm" data-popup="mo_popup_reset" data-iframe="defaultPreview" value="' . esc_attr( __( 'Reset', 'miniorange-otp-verification' ) ) . '">                   
-										<input type="button" id="popupbutton" ' . esc_attr( $disabled ) . ' class="mo-button secondary text-sm" data-popup="mo_preview_popup" data-iframe="defaultPreview" value="' . esc_attr( __( ' Preview', 'miniorange-otp-verification' ) ) . '"> 
-										<input type="button" id="popupbutton" ' . esc_attr( $disabled ) . ' class="mo-button inverted text-sm" data-popup="mo_popup_save" data-iframe="defaultPreview" value="' . esc_attr( __( ' Save Settings', 'miniorange-otp-verification' ) ) . '">                   
+										<input type="button" class="popupbutton mo-button secondary text-sm" ' . esc_attr( $disabled ) . ' data-popup="mo_popup_reset" data-iframe="defaultPreview" value="' . esc_attr( __( 'Reset', 'miniorange-otp-verification' ) ) . '">                   
+										<input type="button" class="popupbutton mo-button secondary text-sm" ' . esc_attr( $disabled ) . ' data-popup="mo_preview_popup" data-iframe="defaultPreview" value="' . esc_attr( __( ' Preview', 'miniorange-otp-verification' ) ) . '"> 
+										<input type="button" class="popupbutton mo-button inverted text-sm" ' . esc_attr( $disabled ) . ' data-popup="mo_popup_save" data-iframe="defaultPreview" value="' . esc_attr( __( ' Save Settings', 'miniorange-otp-verification' ) ) . '">                   
 									</div>
 									<iframe id="defaultPreview" name="defaultPreview" src="" scrolling="no" style="width:100%;border-radius: 4px;height:467px; background: white; border: 1px solid #dcdcde;"></iframe> 
 								</div>
@@ -220,14 +221,14 @@ echo '                          </div>
 								<div class="design-template-note"><b>' . esc_html__( 'The popup should contain these tags:', 'miniorange-otp-verification' ) . '</b><br> {{JQUERY}}, {{GO_BACK_ACTION_CALL}}, {{FORM_ID}}, {{MESSAGE}}, {{REQUIRED_FIELDS}}, {{REQUIRED_FORMS_SCRIPTS}}</div>
 								<input type="hidden" id="popactionvalue" name="action" value=""> 
 								<input type="hidden" name="popuptype" value="' . esc_attr( ( $userchoice_template_type ) ) . '"> ';
-							wp_nonce_field( $nonce, 'popup_display_nonce' );
-							wp_editor( $custom_userchoice_popup, $editor_id2, $template_settings2 );
-echo '                      </div>
+								wp_nonce_field( $nonce, 'popup_display_nonce' );
+								wp_editor( $custom_userchoice_popup, $editor_id2, $template_settings2 );
+								echo '                      </div>
 							<div class="design-template-div"> 
 								<div class="flex gap-mo-4 my-mo-2 mr-mo-2" style="float:right;">
-									<input type="button" id="popupbutton" ' . esc_attr( $disabled ) . ' class="mo-button secondary text-sm" data-popup="mo_popup_reset" data-iframe="userchoicePreview" value="' . esc_attr( __( 'Reset', 'miniorange-otp-verification' ) ) . '">                   
-									<input type="button" id="popupbutton" ' . esc_attr( $disabled ) . ' class="mo-button secondary text-sm" data-popup="mo_preview_popup" data-iframe="userchoicePreview" value="' . esc_attr( __( ' Preview', 'miniorange-otp-verification' ) ) . '"> 
-									<input type="button" id="popupbutton" ' . esc_attr( $disabled ) . ' class="mo-button inverted text-sm" data-popup="mo_popup_save" data-iframe="userchoicePreview" value="' . esc_attr( __( ' Save Settings', 'miniorange-otp-verification' ) ) . '">                   
+									<input type="button" class="popupbutton mo-button secondary text-sm" ' . esc_attr( $disabled ) . ' data-popup="mo_popup_reset" data-iframe="userchoicePreview" value="' . esc_attr( __( 'Reset', 'miniorange-otp-verification' ) ) . '">                   
+									<input type="button" class="popupbutton mo-button secondary text-sm" ' . esc_attr( $disabled ) . ' data-popup="mo_preview_popup" data-iframe="userchoicePreview" value="' . esc_attr( __( ' Preview', 'miniorange-otp-verification' ) ) . '"> 
+									<input type="button" class="popupbutton mo-button inverted text-sm" ' . esc_attr( $disabled ) . ' data-popup="mo_popup_save" data-iframe="userchoicePreview" value="' . esc_attr( __( ' Save Settings', 'miniorange-otp-verification' ) ) . '">                   
 								</div>
 								<iframe id="userchoicePreview" name="userchoicePreview" src="" scrolling="no" style="width:100%;border-radius: 4px;height:467px; background: white;	border: 1px solid #dcdcde;"></iframe>
 							</div>
@@ -247,15 +248,15 @@ echo '                      </div>
 								<div class="design-template-note"><b>' . esc_html__( 'The popup should contain these tags:', 'miniorange-otp-verification' ) . '</b><br> {{JQUERY}}, {{GO_BACK_ACTION_CALL}}, {{FORM_ID}}, {{REQUIRED_FIELDS}}, {{MESSAGE}}, {{PHONE_FIELD_NAME}}, {{OTP_MESSAGE_BOX}}, {{VERIFY_CODE_BOX}}, {{VERIFICATION_FIELD_NAME}}, {{VALIDATE_BTN_ID}}, {{SEND_OTP_BTN_ID}}</div>
 								<input type="hidden" id="popactionvalue" name="action" value="">
 								<input type="hidden" name="popuptype" value="' . esc_attr( $external_template_type ) . '"> ';
-							wp_nonce_field( $nonce, 'popup_display_nonce' );
-							wp_editor( $custom_external_popup, $editor_id3, $template_settings3 );
-echo '
+								wp_nonce_field( $nonce, 'popup_display_nonce' );
+								wp_editor( $custom_external_popup, $editor_id3, $template_settings3 );
+								echo '
 							</div>
 							<div class="design-template-div"> 
 								<div class="flex gap-mo-4 my-mo-2 mr-mo-2" style="float:right;">
-									<input type="button" id="popupbutton" ' . esc_attr( $disabled ) . ' class="mo-button secondary text-sm" data-popup="mo_popup_reset" data-iframe="externalPreview" value="' . esc_attr( __( 'Reset', 'miniorange-otp-verification' ) ) . '">                   
-									<input type="button" id="popupbutton" ' . esc_attr( $disabled ) . ' class="mo-button secondary text-sm" data-popup="mo_preview_popup" data-iframe="externalPreview" value="' . esc_attr( __( ' Preview', 'miniorange-otp-verification' ) ) . '"> 
-									<input type="button" id="popupbutton" ' . esc_attr( $disabled ) . ' class="mo-button inverted text-sm" data-popup="mo_popup_save" data-iframe="externalPreview" value="' . esc_attr( __( ' Save Settings', 'miniorange-otp-verification' ) ) . '">                   
+									<input type="button" class="popupbutton mo-button secondary text-sm" ' . esc_attr( $disabled ) . ' data-popup="mo_popup_reset" data-iframe="externalPreview" value="' . esc_attr( __( 'Reset', 'miniorange-otp-verification' ) ) . '">                   
+									<input type="button" class="popupbutton mo-button secondary text-sm" ' . esc_attr( $disabled ) . ' data-popup="mo_preview_popup" data-iframe="externalPreview" value="' . esc_attr( __( ' Preview', 'miniorange-otp-verification' ) ) . '"> 
+									<input type="button" class="popupbutton mo-button inverted text-sm" ' . esc_attr( $disabled ) . ' data-popup="mo_popup_save" data-iframe="externalPreview" value="' . esc_attr( __( ' Save Settings', 'miniorange-otp-verification' ) ) . '">                   
 								</div>
 								<iframe id="externalPreview" name="externalPreview" src="" scrolling="no" style="width:100%;border-radius: 4px;height:467px; background: white; border: 1px solid #dcdcde;"></iframe> 
 							</div>
@@ -276,15 +277,15 @@ echo '
 								<div class="design-template-note"><b>' . esc_html__( 'The popup should contain these tags:', 'miniorange-otp-verification' ) . '</b><br> {{JQUERY}}, {{GO_BACK_ACTION_CALL}}, {{FORM_ID}}, {{MESSAGE}}, {{REQUIRED_FIELDS}}, {{REQUIRED_FORMS_SCRIPTS}}</div> 
 								<input type="hidden" id="popactionvalue" name="action" value="">
 								<input type="hidden" name="popuptype" value="' . esc_attr( $error_template_type ) . '"> ';
-							wp_nonce_field( $nonce, 'popup_display_nonce' );
-							wp_editor( $error_popup, $editor_id4, $template_settings4 );
-echo '
+								wp_nonce_field( $nonce, 'popup_display_nonce' );
+								wp_editor( $error_popup, $editor_id4, $template_settings4 );
+								echo '
 							</div>
 							<div class="design-template-div"> 
 								<div class="flex gap-mo-4 my-mo-2 mr-mo-2" style="float:right;">
-									<input type="button" id="popupbutton" ' . esc_attr( $disabled ) . ' class="mo-button secondary text-sm" data-popup="mo_popup_reset" data-iframe="errorPreview" value="' . esc_attr( __( 'Reset', 'miniorange-otp-verification' ) ) . '">                   
-									<input type="button" id="popupbutton" ' . esc_attr( $disabled ) . ' class="mo-button secondary text-sm" data-popup="mo_preview_popup" data-iframe="errorPreview" value="' . esc_attr( __( 'Preview', 'miniorange-otp-verification' ) ) . '"> 
-									<input type="button" id="popupbutton" ' . esc_attr( $disabled ) . ' class="mo-button inverted text-sm" data-popup="mo_popup_save" data-iframe="errorPreview" value="' . esc_attr( __( 'Save Settings', 'miniorange-otp-verification' ) ) . '">                   
+									<input type="button" class="popupbutton mo-button secondary text-sm" ' . esc_attr( $disabled ) . ' data-popup="mo_popup_reset" data-iframe="errorPreview" value="' . esc_attr( __( 'Reset', 'miniorange-otp-verification' ) ) . '">                   
+									<input type="button" class="popupbutton mo-button secondary text-sm" ' . esc_attr( $disabled ) . ' data-popup="mo_preview_popup" data-iframe="errorPreview" value="' . esc_attr( __( 'Preview', 'miniorange-otp-verification' ) ) . '"> 
+									<input type="button" class="popupbutton mo-button inverted text-sm" ' . esc_attr( $disabled ) . ' data-popup="mo_popup_save" data-iframe="errorPreview" value="' . esc_attr( __( 'Save Settings', 'miniorange-otp-verification' ) ) . '">                   
 								</div>
 								<iframe id="errorPreview" name="errorPreview" src="" scrolling="no" style="width:100%;border-radius: 4px;height:467px; background: white; border: 1px solid #dcdcde;"></iframe> 
 							</div>
@@ -300,39 +301,32 @@ echo '
 </div>
 </div>';
 
-// Register and enqueue the design editor script.
-$script_handle = 'mo-design-editor';
-if ( ! wp_script_is( $script_handle, 'registered' ) ) {
-	wp_register_script(
-		$script_handle,
-		MOV_URL . 'includes/js/mo-design-editor.js',
-		array( 'jquery' ),
-		MOV_VERSION,
-		true
-	);
-}
-
-// Prepare data for localization.
-$message_html = isset( $message ) ? wp_kses( $message, MoUtility::mo_allow_html_array() ) : '';
-$loader_html  = isset( $loaderimgdiv ) ? wp_kses(
-	$loaderimgdiv,
-	array(
-		'img' => array( 'src' => array() ),
-		'div' => array( 'style' => array() ),
-	)
-) : '';
-
-// Enqueue script.
-wp_enqueue_script( $script_handle );
-
-// Localize script with necessary data.
-wp_localize_script(
-	$script_handle,
-	'moDesignEditor',
-	array(
-		'message'          => $message_html,
-		'loaderHtml'       => $loader_html,
-		'ajaxUrl'          => admin_url( 'admin-post.php' ),
-		'resetConfirmText' => esc_js( __( 'Reset the OTP Popup Template back to default? Please note this will delete all custom Popup settings.', 'miniorange-otp-verification' ) ),
-	)
-);
+								$script_handle = 'mo-design-editor';
+								if ( ! wp_script_is( $script_handle, 'registered' ) ) {
+									wp_register_script(
+										$script_handle,
+										MOV_URL . 'includes/js/mo-design-editor.js',
+										array( 'jquery' ),
+										MOV_VERSION,
+										true
+									);
+								}
+								$message_html = isset( $message ) ? wp_kses( $message, MoUtility::mo_allow_html_array() ) : '';
+								$loader_html  = isset( $loaderimgdiv ) ? wp_kses(
+									$loaderimgdiv,
+									array(
+										'img' => array( 'src' => array() ),
+										'div' => array( 'style' => array() ),
+									)
+								) : '';
+								wp_localize_script(
+									$script_handle,
+									'moDesignEditor',
+									array(
+										'message'          => $message_html,
+										'loaderHtml'       => $loader_html,
+										'ajaxUrl'          => admin_url( 'admin-ajax.php' ),
+										'resetConfirmText' => esc_js( __( 'Reset the OTP Popup Template back to default? Please note this will delete all custom Popup settings.', 'miniorange-otp-verification' ) ),
+									)
+								);
+								wp_enqueue_script( $script_handle );

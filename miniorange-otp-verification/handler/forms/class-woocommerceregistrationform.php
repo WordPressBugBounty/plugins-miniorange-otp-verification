@@ -520,10 +520,8 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 		 * @param string $password_generated - the password provided by the user.
 		 */
 		public function register_woocommerce_user( $customer_id, $new_customer_data, $password_generated ) {
-			if ( ( isset( $_POST['woocommerce-register-nonce'] ) && wp_verify_nonce(
-				sanitize_text_field( wp_unslash( $_POST['woocommerce-register-nonce'] ) ),
-				'woocommerce-register'
-			) ) ) {
+			$nonce = isset( $_POST['woocommerce-register-nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['woocommerce-register-nonce'] ) ) : '';
+			if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'woocommerce-register' ) ) {
 				return;
 			}
 			$data = MoUtility::mo_sanitize_array( $_POST );

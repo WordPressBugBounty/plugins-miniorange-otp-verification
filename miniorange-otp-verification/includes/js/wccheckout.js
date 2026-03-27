@@ -1,5 +1,21 @@
 jQuery(document).ready(function () {
     const $mo = (typeof window.$mo !== 'undefined') ? window.$mo : jQuery;
+    function moWcPopupMessageStripStyles() {
+        const $m = jQuery('#mo_message_wc_pop_up');
+        if ($m.length) {
+            $m.removeAttr('style');
+            $m.removeData('mo-osp-error-message');
+        }
+    }
+
+    function moWcPopupMessageErrorStyle() {
+        return {
+            'background-color': 'transparent',
+            'background': 'none',
+            'box-shadow': 'none',
+            'color': '#ff5b5b'
+        };
+    }
     let methods = mowccheckout.paymentMethods || {};
     let hideButton = mowccheckout.popupEnabled && !mowccheckout.isLoggedIn;
 
@@ -86,12 +102,18 @@ jQuery(document).ready(function () {
             crossDomain: true,
             dataType: "json",
             success: function (response) {
-                jQuery("#mo_message_wc_pop_up").text(response.message);
                 if (response.result === "success") {
+                    moWcPopupMessageStripStyles();
+                    jQuery("#mo_message_wc_pop_up").text(response.message).show();
                     // CRITICAL: Remove ALL existing notice groups before submitting form
                     $mo(".woocommerce-NoticeGroup-checkout").remove();
                     $mo("#popup_wc_mo").hide();
                     $mo('form[name="checkout"]').submit();
+                } else {
+                    jQuery("#mo_message_wc_pop_up").text(response.message).css({
+                        // "background-color": "#ffefef",
+                        "color": "#ff5b5b"
+                    }).show();
                 }
             },
             error: function (xhr, status, error) {
@@ -371,7 +393,8 @@ jQuery(document).ready(function () {
                     if (response.result === "success") {
                         window.mo_wc_otp_initialized = true;
                         $mo(".blockUI").hide();
-                        jQuery("#mo_message_wc_pop_up").text(response.message).removeAttr("style");
+                        moWcPopupMessageStripStyles();
+                        jQuery("#mo_message_wc_pop_up").text(response.message).show();
                         $mo(".digit-group input[type='text']").val("");
                         $mo("input[name='order_verify']").val("");
                         $mo("#popup_wc_mo").show();
@@ -432,21 +455,55 @@ jQuery(document).ready(function () {
                 .on("click.moPopupOtp", sendPopupOtp);
         }
         
-        $mo("input[name=payment_method]").each(function () {
-            let payment = $mo(this).val();
+        if (mowccheckout.selectivePaymentEnabled) {
             show = false;
-            if (($mo(this).is(':checked') && methods.hasOwnProperty(payment)) || !mowccheckout.selectivePaymentEnabled) {
-                show = true;
-                return false;
+            $mo("input[name=payment_method]").each(function () {
+                let payment = $mo(this).val();
+                if ($mo(this).is(':checked') && methods.hasOwnProperty(payment)) {
+                    show = true;
+                    return false;
+                }
+            });
+            if (!show) {
+                let wcPaymentMethod = $mo('#payment_method').val();
+                if (wcPaymentMethod && methods.hasOwnProperty(wcPaymentMethod)) {
+                    show = true;
+                }
             }
-        });
+        }
         
         show ? showOtpFields() : hideOtpFields();
     };
     
+    $mo(document).on('change', 'input[name=payment_method]', function() {
+        handlePaymentMethodChange();
+    });
+    
+    let initialStateChecks = 0;
+    const maxInitialStateChecks = 100;
+    const initialStateRetryDelay = 100;
+
+    function checkInitialState() {
+        if ($mo("input[name=payment_method]").length > 0) {
+            handlePaymentMethodChange();
+            return;
+        }
+
+        if (initialStateChecks >= maxInitialStateChecks) {
+            return;
+        }
+
+        initialStateChecks += 1;
+        setTimeout(checkInitialState, initialStateRetryDelay);
+    }
+    
+    checkInitialState();
     setTimeout(function () {
         handlePaymentMethodChange();
     }, 200);
+    setTimeout(function () {
+        handlePaymentMethodChange();
+    }, 500);
     
     $mo(document).ajaxComplete(function (event, xhr, settings) {
         if (settings.url.includes("wc-ajax=update_order_review")) { 

@@ -160,7 +160,14 @@ if ( ! class_exists( 'MoOtpSpamPreventerAddonHandler' ) ) {
 			}
 
 			wp_enqueue_style( 'mo-osp-admin', MO_OSP_URL . 'includes/css/mo-admin.css', array(), '1.6.0' );
-			wp_enqueue_script( 'mo-osp-admin', MO_OSP_URL . 'includes/js/spam-preventer-admin.js', array( 'jquery' ), '1.0.0', true );
+			$mo_osp_admin_js = MO_OSP_DIR . 'includes/js/spam-preventer-admin.js';
+			wp_enqueue_script(
+				'mo-osp-admin',
+				MO_OSP_URL . 'includes/js/spam-preventer-admin.js',
+				array( 'jquery' ),
+				file_exists( $mo_osp_admin_js ) ? (string) filemtime( $mo_osp_admin_js ) : '1.0.1',
+				true
+			);
 			wp_localize_script(
 				'mo-osp-admin',
 				'mo_osp_admin_ajax',

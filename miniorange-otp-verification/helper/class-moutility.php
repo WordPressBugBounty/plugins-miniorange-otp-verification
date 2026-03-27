@@ -70,13 +70,14 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		public static function mo_allow_html_array() {
 			$allowed_tags = array(
 				'a'          => array(
-					'style'  => array(),
-					'class'  => array(),
-					'href'   => array(),
-					'rel'    => array(),
-					'title'  => array(),
-					'hidden' => array(),
-					'target' => array(),
+					'style'   => array(),
+					'class'   => array(),
+					'href'    => array(),
+					'rel'     => array(),
+					'title'   => array(),
+					'hidden'  => array(),
+					'target'  => array(),
+					'onclick' => array(),
 				),
 				'b'          => array(
 					'style' => array(),
@@ -229,6 +230,9 @@ if ( ! class_exists( 'MoUtility' ) ) {
 				),
 				'html'           => array(),
 				'body'           => array(),
+				'style'          => array(
+					'type' => array(),
+				),
 				'div'            => array(
 					'name'     => array(),
 					'dir'      => array(),
@@ -285,12 +289,13 @@ if ( ! class_exists( 'MoUtility' ) ) {
 					'hidden' => array(),
 				),
 				'a'              => array(
-					'href'   => array(),
-					'target' => array(),
-					'rel'    => array(),
-					'title'  => array(),
-					'hidden' => array(),
-					'class'  => array(),
+					'href'    => array(),
+					'target'  => array(),
+					'rel'     => array(),
+					'title'   => array(),
+					'hidden'  => array(),
+					'class'   => array(),
+					'onclick' => array(),
 				),
 				'svg'            => array(
 					'class'   => array(),

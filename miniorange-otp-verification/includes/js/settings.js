@@ -1305,9 +1305,68 @@ jQuery(document).ready(function () {
     //     var href = $mo('#LicensingPlanButton').attr('href');
     //     window.location.href = href+'&subpage=custpackage';
     // })
-     $mo("#mo_check_transactions").click(function(){
-        var href = $mo('form#mo_check_transactions_form').submit();
-    })
+
+    $mo(document).on('click', '.mo-refresh-btn', function(e){
+        e.preventDefault();
+        
+        var $button = $mo(this);
+        var $container = $mo("#mo_check_transactions");
+        var $form = $mo('form#mo_check_transactions_form');
+        var originalButtonHtml = $button[0].outerHTML;
+        var svgHtml = $mo(originalButtonHtml).find('svg')[0].outerHTML;
+        
+        $button.empty().append('<span class="mo-transaction-loader"></span>');
+        
+        var nonce = $form.find('input[name="_nonce"]').val();
+        
+        $mo.ajax({
+            url: moadminsettings.ajaxUrl,
+            type: "POST",
+            data: {
+                action: "mo_check_transactions_ajax",
+                _nonce: nonce
+            },
+            dataType: "json",
+            success: function(response) {
+                if (response.success && response.data) {
+                    var data = response.data;
+                    if (data.transactions_text) {
+                        var buttonClasses = 'mo-refresh-btn';
+                        if (data.active_class) {
+                            buttonClasses += ' ' + data.active_class;
+                        }
+                        var buttonHtml = '<button class="' + buttonClasses + '">' + svgHtml + '</button>';
+                        $container.html(data.transactions_text + ' ' + buttonHtml);
+                        var $newButton = $container.find('.mo-refresh-btn');
+                        $container.removeClass('mo-active-notice-bar');
+                        if (data.active_class) {
+                            $container.addClass(data.active_class);
+                        }
+                        var $parentFlex = $container.closest('.flex');
+                        if (data.hidden === 'hidden') {
+                            $parentFlex.addClass('hidden');
+                        } else {
+                            $parentFlex.removeClass('hidden');
+                        }
+                    } else {
+                        $button.empty().append(svgHtml);
+                    }
+                } else {
+                    $button.empty().append(svgHtml);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error refreshing transactions:', {
+                    status: status,
+                    error: error,
+                    response: xhr.responseText,
+                    statusCode: xhr.status
+                });
+                
+                $button.empty().append(svgHtml);
+            }
+        });
+    });
 
     jQuery(document.body).on( 'click', '.mo_notice .notice-dismiss', function(e) {
         $mo.ajax({

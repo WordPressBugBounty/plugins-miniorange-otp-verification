@@ -5,7 +5,7 @@ Tags: OTP, OTP Login, SMS Notifications, Phone Verification, Email Verification
 Requires at least: 3.5
 Tested up to: 6.9
 Requires PHP: 5.3.0
-Stable tag: 5.4.8
+Stable tag: 5.4.9
 License: Expat
 License URI: https://plugins.miniorange.com/mit-license
 OTP Verification via Email/SMS/WhatsApp,SMS Notifications for WooCommerce,OTP Login with Phone,PasswordLess Login.Custom Gateway for OTP Verification
@@ -211,6 +211,12 @@ Please mail us at **otpsupport@xecurify.com/info@xecurify.com**. You can also su
 8. OTP Verification Plugin Settings
 
 == Changelog ==
+= 5.4.9 =
+* Spam preventer addon improvements and bug fixes.
+* Added unblock user feature in the spam preventer addon.
+* Reintroduced popup design feature with enhancements.
+* WooCommerce checkout and registration form bug fixes.
+* Reintroduced Paid Memberships Pro form for OTP verification.
 = 5.4.8 =
 * miniOrange WordPress OTP Verification
 * Spam preventor addon Bug Fixes.
@@ -292,6 +298,12 @@ For older changelog entries, please see the [additional changelog.txt file](http
 
 
 == Upgrade Notice ==
+= 5.4.9 =
+* Spam preventer addon improvements and bug fixes.
+* Added unblock user feature in the spam preventer addon.
+* Reintroduced popup design feature with enhancements.
+* WooCommerce checkout and registration form bug fixes.
+* Reintroduced Paid Memberships Pro form for OTP verification.
 = 5.4.8 =
 * miniOrange WordPress OTP Verification
 * Spam preventor addon Bug Fixes.
@@ -309,11 +321,11 @@ For older changelog entries, please see the [additional changelog.txt file](http
 * Readme updates
 = 5.4.4 =
 * miniOrange WordPress OTP Verification
- * WC Block Checkout Form issue fix
- * Login Form issue fix
- * Formidable Form issue fix
- * WordPress beta compatibility
- * Addons issue fix
+* WC Block Checkout Form issue fix
+* Login Form issue fix
+* Formidable Form issue fix
+* WordPress beta compatibility
+* Addons issue fix
 = 5.4.3 =
 * miniOrange WordPress OTP Verification
 * Security fixes updates

@@ -65,6 +65,9 @@ if ( ! class_exists( 'FormList' ) ) {
 		 * @param FormHandler $form   the formHandler Object of the Form.
 		 */
 		public function add( $key, $form ) {
+			if ( null === $key ) {
+				$key = '';
+			}
 			$this->forms[ $key ] = $form;
 			if ( $form->is_form_enabled() ) {
 				$this->enabled_forms[ $key ] = $form;
@@ -103,6 +106,7 @@ if ( ! class_exists( 'FormList' ) ) {
 				'FORMINATOR',
 				'WPFORMS',
 				'ULTIMATE_FORM',
+				'PM_PRO_FORM',
 				'MO_LOGIN_REG_USING_PHONE_FORM',
 			);
 			return $this->important_forms;

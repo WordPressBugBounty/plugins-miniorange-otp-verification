@@ -225,13 +225,19 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 				);
 			}
 			$data = MoUtility::mo_sanitize_array( wp_unslash( $_POST ) );
+			$otp_type = MoUtility::sanitize_check( 'otpType', $data );
+			if ( VerificationType::EMAIL === $otp_type ) {
+				$data['user_phone'] = '';
+			} elseif ( VerificationType::PHONE === $otp_type ) {
+				$data['user_email'] = '';
+			}
 			MoPHPSessions::check_session();
 			MoUtility::initialize_transaction( $this->form_session_var );
-			if ( MoUtility::sanitize_check( 'otpType', $data ) === VerificationType::PHONE ) {
+			if ( $otp_type === VerificationType::PHONE ) {
 				$this->check_phone_validity( $data );
 				$this->process_phone_and_send_otp( $data );
 			}
-			if ( MoUtility::sanitize_check( 'otpType', $data ) === VerificationType::EMAIL ) {
+			if ( $otp_type === VerificationType::EMAIL ) {
 				$this->process_email_and_send_otp( $data );
 			}
 		}

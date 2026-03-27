@@ -77,7 +77,7 @@ if ( ! class_exists( 'WooCommerceSmsNotification' ) ) {
 				),
 				admin_url( 'admin-ajax.php' )
 			);
-
+			$plan_name = MoUtility::micv();
 			wp_localize_script(
 				'mo_custom_order_sms',
 				'mocustommsg',
@@ -85,6 +85,7 @@ if ( ! class_exists( 'WooCommerceSmsNotification' ) ) {
 					'siteURL'     => admin_url( 'admin-ajax.php' ),
 					'nonce'       => $nonce,
 					'telUtilsUrl' => esc_url_raw( $utils_url ),
+					'planName'    => $plan_name,
 				)
 			);
 			wp_enqueue_script( 'mo_custom_order_sms' );

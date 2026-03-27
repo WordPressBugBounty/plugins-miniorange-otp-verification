@@ -1474,6 +1474,8 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 	margin-right: 0.5rem;
 	display: flex;
 	align-items: center;
+	flex-wrap: nowrap;
+	white-space: nowrap;
 	border-radius: 9999px;
 	--tw-bg-opacity: 1;
 	background-color: rgb(249 250 251 / var(--tw-bg-opacity));
@@ -1494,6 +1496,7 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 	--tw-bg-opacity: 1;
 	background-color: rgb(241 245 249 / var(--tw-bg-opacity));
 	padding: 0.25rem;
+	flex-shrink: 0;
 }
 
 .mo-active-notice-bar {
@@ -1501,6 +1504,27 @@ Constrain images and videos to the parent width and preserve their intrinsic asp
 	background-color: rgb(254 242 242 / var(--tw-bg-opacity)) !important;
 	--tw-text-opacity: 1 !important;
 	color: rgb(239 68 68 / var(--tw-text-opacity)) !important;
+}
+
+@keyframes mo-spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.mo-transaction-loader {
+	display: inline-block;
+	width: 18px;
+	height: 18px;
+	border: 2px solid rgb(241 245 249);
+	border-top-color: rgb(0 0 0);
+	border-radius: 50%;
+	animation: mo-spin 0.8s linear infinite;
+	vertical-align: middle;
+	flex-shrink: 0;
 }
 
 .mo-form-button.secondary {

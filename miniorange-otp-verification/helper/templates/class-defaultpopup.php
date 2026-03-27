@@ -108,45 +108,104 @@ if ( ! class_exists( 'DefaultPopup' ) ) {
 		 * @return mixed|string
 		 */
 		public function parse( $template, $message, $otp_type, $from_both ) {
+			if ( $this->preview ) {
+				$replacements = array(
+					'{{MO_CSS_URL}}'             => esc_url( MOV_CSS_URL ),
+					'{{JQUERY}}'                 => esc_url( $this->jquery_url ),
+					'{{HEADER}}'                 => __( 'Validate OTP (One Time Passcode)', 'miniorange-otp-verification' ),
+					'{{MESSAGE}}'                => __( 'This is a preview of the default OTP popup.', 'miniorange-otp-verification' ),
+					'{{BUTTON_TEXT}}'            => __( 'Validate OTP', 'miniorange-otp-verification' ),
+					'{{RESEND_OTP}}'             => __( 'Resend OTP', 'miniorange-otp-verification' ),
+					'{{FORM_ID}}'                => 'mo_validate_form',
+					'{{OTP_FIELD_NAME}}'         => 'mo_otp_token',
+					'{{OTP_FIELD_TITLE}}'        => __( 'Enter Code', 'miniorange-otp-verification' ),
+					'{{OTP_FIELD_CLASS}}'        => 'mo_customer_validation-textbox mo-new-ui-validation-textbox',
+					'{{BUTTON_TYPE}}'            => 'submit',
+					'{{BUTTON_ID}}'              => 'miniorange_otp_token_submit',
+					'{{BUTTON_NAME}}'            => 'miniorange_otp_token_submit',
+					'{{OTP_MESSAGE_BOX}}'        => 'mo_message',
+					'{{GO_BACK}}'                => 'X',
+					'{{GO_BACK_ACTION_CALL}}'    => '',
+					'{{REQUIRED_FORMS_SCRIPTS}}' => '',
+					'{{OTP_FIELD_HIDDEN}}'       => '',
+					'{{OTP_FIELD_ID}}'           => '',
+					'{{OTP_FIELD_CSS}}'          => '',
+					'{{VALIDATE_BUTTON_OTP}}'    => '',
+					'{{REQUIRED_FIELDS}}'        => '',
+					'{{LOADER_IMG}}'             => '',
+					'{{EXTRA_POST_DATA}}'        => '',
+					'{{SCRIPT}}'                 => '',
+				);
+				return str_replace( array_keys( $replacements ), array_values( $replacements ), $template );
+			}
+
 			$from_both              = $from_both ? 'true' : 'false';
 			$required_scripts       = $this->getRequiredFormsSkeleton( $otp_type, $from_both );
-			$extra_post_data        = $this->preview ? '' : extra_post_data();
-			$extra_form_fields      = $this->getExtraFormFields( $otp_type, $from_both );
+			$extra_post_data        = extra_post_data();
+			$extra_form_fields      = (string) $this->getExtraFormFields( $otp_type, $from_both );
 			$extra_form_fields     .= '<input type="hidden" name="option" value="miniorange-validate-otp-form" />';
-			$extra_form_fields     .= '<input type="hidden" id="mopopup_wpnonce" name="mopopup_wpnonce" value="' . wp_create_nonce( $this->nonce ) . '"/>';
+			$extra_form_fields     .= '<input type="hidden" id="mopopup_wpnonce" name="mopopup_wpnonce" value="' . esc_attr( wp_create_nonce( $this->nonce ) ) . '"/>';
 			$append_input_field     = $this->giveInputField();
 			$append_input_field_css = $this->giveInputFieldCSS();
 			$selected_popup         = get_mo_option( 'selected_popup' );
 			$button_html            = $this->addButtonFieldOtp();
 			$this->getRequiredScripts();
 
-			$template = str_replace( '{{JQUERY}}', esc_url( $this->jquery_url ), $template );
-			$template = str_replace( '{{FORM_ID}}', 'mo_validate_form', $template );
-			$template = str_replace( '{{GO_BACK_ACTION_CALL}}', 'mo_validation_goback();', $template );
-			$template = str_replace( '{{OTP_MESSAGE_BOX}}', 'mo_message', $template );
-			$template = str_replace( '{{MO_CSS_URL}}', esc_url( MOV_CSS_URL ), $template );
-			$template = str_replace( '{{REQUIRED_FORMS_SCRIPTS}}', $required_scripts, $template );
-			$template = str_replace( '{{HEADER}}', __( 'Validate OTP (One Time Passcode)', 'miniorange-otp-verification' ), $template );
-			$template = str_replace( '{{GO_BACK}}', 'X', $template );
-			$template = str_replace( '{{MESSAGE}}', esc_html( $message ), $template );
-			$template = str_replace( '{{OTP_STYLE}}', $append_input_field, $template );
-			$template = str_replace( '{{OTP_FIELD_CSS}}', $append_input_field_css, $template );
-			$template = str_replace( '{{OTP_FIELD_NAME}}', 'mo_otp_token', $template );
-			$template = str_replace( '{{OTP_FIELD_TITLE}}', __( 'Enter Code', 'miniorange-otp-verification' ), $template );
-			$template = str_replace( '{{OTP_FIELD_HIDDEN}}', 'Catchy' === $selected_popup ? 'hidden' : '', $template );
-			$template = str_replace( '{{OTP_FIELD_ID}}', 'Catchy' === $selected_popup ? 'hidden_input_field' : '', $template );
-			$template = str_replace( '{{OTP_FIELD_CLASS}}', 'Streaky' === $selected_popup ? 'otp-streaky-input' : 'mo_customer_validation-textbox mo-new-ui-validation-textbox', $template );
-			$template = str_replace( '{{VALIDATE_BUTTON_OTP}}', $button_html, $template );
-			$template = str_replace( '{{BUTTON_TYPE}}', 'Catchy' === $selected_popup ? 'button' : 'submit', $template );
-			$template = str_replace( '{{BUTTON_ID}}', 'Catchy' === $selected_popup ? 'mo_sec_otp_submit_button' : 'miniorange_otp_token_submit', $template );
-			$template = str_replace( '{{BUTTON_NAME}}', 'Catchy' === $selected_popup ? '' : 'miniorange_otp_token_submit', $template );
-			$template = str_replace( '{{BUTTON_TEXT}}', __( 'Validate OTP', 'miniorange-otp-verification' ), $template );
-			$template = str_replace( '{{REQUIRED_FIELDS}}', $extra_form_fields, $template );
-			$template = str_replace( '{{LOADER_IMG}}', $this->img, $template );
-			$template = str_replace( '{{EXTRA_POST_DATA}}', $extra_post_data, $template );
-			$template = str_replace( '{{RESEND_OTP}}', __( 'Resend OTP', 'miniorange-otp-verification' ), $template );
-			$template = str_replace( '{{SCRIPT}}', '', $template );
-			$template = apply_filters( 'mo_add_script', $template );
+			$is_catchy    = ( 'Catchy' === $selected_popup );
+			$is_streaky   = ( 'Streaky' === $selected_popup );
+			$replacements = array(
+				'{{JQUERY}}'                 => esc_url( $this->jquery_url ),
+				'{{FORM_ID}}'                => 'mo_validate_form',
+				'{{GO_BACK_ACTION_CALL}}'    => 'mo_validation_goback();',
+				'{{OTP_MESSAGE_BOX}}'        => 'mo_message',
+				'{{MO_CSS_URL}}'             => esc_url( MOV_CSS_URL ),
+				'{{REQUIRED_FORMS_SCRIPTS}}' => $required_scripts,
+				'{{HEADER}}'                 => __( 'Validate OTP (One Time Passcode)', 'miniorange-otp-verification' ),
+				'{{GO_BACK}}'                => 'X',
+				'{{OTP_STYLE}}'              => $append_input_field,
+				'{{OTP_FIELD_CSS}}'          => $append_input_field_css,
+				'{{OTP_FIELD_NAME}}'         => 'mo_otp_token',
+				'{{OTP_FIELD_TITLE}}'        => __( 'Enter Code', 'miniorange-otp-verification' ),
+				'{{OTP_FIELD_HIDDEN}}'       => $is_catchy ? 'hidden' : '',
+				'{{OTP_FIELD_ID}}'           => $is_catchy ? 'hidden_input_field' : '',
+				'{{OTP_FIELD_CLASS}}'        => $is_streaky ? 'otp-streaky-input' : 'mo_customer_validation-textbox mo-new-ui-validation-textbox',
+				'{{VALIDATE_BUTTON_OTP}}'    => $button_html,
+				'{{BUTTON_TYPE}}'            => $is_catchy ? 'button' : 'submit',
+				'{{BUTTON_ID}}'              => $is_catchy ? 'mo_sec_otp_submit_button' : 'miniorange_otp_token_submit',
+				'{{BUTTON_NAME}}'            => $is_catchy ? '' : 'miniorange_otp_token_submit',
+				'{{BUTTON_TEXT}}'            => __( 'Validate OTP', 'miniorange-otp-verification' ),
+				'{{REQUIRED_FIELDS}}'        => $extra_form_fields,
+				'{{LOADER_IMG}}'             => $this->img,
+				'{{EXTRA_POST_DATA}}'        => $extra_post_data,
+				'{{RESEND_OTP}}'             => __( 'Resend OTP', 'miniorange-otp-verification' ),
+				'{{SCRIPT}}'                 => '',
+			);
+			$template     = str_replace( array_keys( $replacements ), array_values( $replacements ), $template );
+			$template     = str_replace(
+				'{{MESSAGE}}',
+				wp_kses(
+					$message,
+					array(
+						'div'    => array(
+							'id'    => true,
+							'class' => true,
+							'style' => true,
+						),
+						'span'   => array(
+							'id'    => true,
+							'class' => true,
+							'style' => true,
+						),
+						'i'      => array(),
+						'em'     => array(),
+						'strong' => array(),
+						'b'      => array(),
+						'br'     => array(),
+					)
+				),
+				$template
+			);
+			$template     = apply_filters( 'mo_add_script', $template );
 			return wp_kses( $template, MoUtility::mo_allow_popup_tags() );
 		}
 
@@ -252,17 +311,17 @@ if ( ! class_exists( 'DefaultPopup' ) ) {
 		private function getRequiredFormsSkeleton( $otp_type, $from_both ) {
 			$required_fields = '<form name="f" method="post" action="" id="validation_goBack_form">
 									<input id="validation_goBack" name="option" value="validation_goBack" type="hidden"/>
-									<input type="hidden" id="mopopup_wpnonce" name="mopopup_wpnonce" value="' . wp_create_nonce( $this->nonce ) . '"/>
+									<input type="hidden" id="mopopup_wpnonce" name="mopopup_wpnonce" value="' . esc_attr( wp_create_nonce( $this->nonce ) ) . '"/>
 								</form>
 								<form name="f" method="post" action="" id="verification_resend_otp_form">
-									<input type="hidden" id="mopopup_wpnonce" name="mopopup_wpnonce" value="' . wp_create_nonce( $this->nonce ) . '"/>
+									<input type="hidden" id="mopopup_wpnonce" name="mopopup_wpnonce" value="' . esc_attr( wp_create_nonce( $this->nonce ) ) . '"/>
 									<input id="verification_resend_otp" name="option" value="verification_resend_otp" type="hidden"/>
 									<input name="otp_type" value="' . esc_attr( $otp_type ) . '" type="hidden"/>
 									<input type="hidden" id="from_both" name="from_both" value="' . esc_attr( $from_both ) . '"/> {{EXTRA_POST_DATA}}
 								</form>
 								<form name="f" method="post" action="" id="goBack_choice_otp_form">
 									<input id="verification_resend_otp" name="option" value="verification_resend_otp_both" type="hidden"/>
-									<input type="hidden" id="mopopup_wpnonce" name="mopopup_wpnonce" value="' . wp_create_nonce( $this->nonce ) . '"/>
+									<input type="hidden" id="mopopup_wpnonce" name="mopopup_wpnonce" value="' . esc_attr( wp_create_nonce( $this->nonce ) ) . '"/>
 									<input type="hidden" id="from_both" name="from_both" value="' . esc_attr( $from_both ) . '"/>{{EXTRA_POST_DATA}}</form>';
 			return wp_kses( $required_fields, MoUtility::mo_allow_html_array() );
 		}

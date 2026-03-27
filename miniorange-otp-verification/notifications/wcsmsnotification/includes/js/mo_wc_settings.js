@@ -1,8 +1,6 @@
 
 jQuery(document).ready(function () {
     var $mo = jQuery;
-
-    // Initialize intl-tel-input for the billing phone field (admin order custom SMS box).
     if (typeof window.intlTelInput === "function" && typeof mocustommsg !== "undefined" && mocustommsg.telUtilsUrl) {
         var phoneInput = document.querySelector("#billing_phone");
         if (phoneInput && !$mo(phoneInput).data("intlTelInputInitialized")) {
@@ -14,28 +12,63 @@ jQuery(document).ready(function () {
             $mo(phoneInput).data("intlTelInputInitialized", true);
         }
     }
+    $mo('button').on('click', function () {
+        const buttonid = $mo(this).attr('id');
+        if(!buttonid){
+            return;
+        }
+        let textareaid;
+        const suffix = buttonid.includes('wcfm') ? '_sms_body' : '_smsbody';
+        textareaid = buttonid.replace('btn-', '') + suffix;
+        if (!textareaid) {
+            return;
+        }
+        $mo('.mo-tag').off('click').on('click', function () {
+            const $tag = $mo(this);
+            const tagText = $tag.text().trim();
+            const $textarea = $mo('#' + textareaid);
+            const textarea = $textarea[0];
+            if (!$textarea.length || !textarea) {
+                return;
+            }
+            const currentVal = $textarea.val() || '';
+            const $parentContainer = $tag.closest('.w-full.flex');
+            const isPremium = $parentContainer.length > 0 && $parentContainer.find('.mo-title').text().includes("Premium Tags");
+            if (isPremium && mocustommsg.planName !== 'wp_email_verification_intranet_woocommerce_plan') {
+                return;
+            }
+            if (currentVal.includes(tagText)) {
+                return;
+            }
+            let cursorPosition = textarea ? textarea.selectionStart : currentVal.length;
+            if (cursorPosition < 0) {
+                cursorPosition = currentVal.length;
+            }
+            let newText = currentVal.slice(0, cursorPosition) + tagText + currentVal.slice(cursorPosition);
+            $textarea.val(newText);
+            if (textarea) {
+                const newCursorPosition = cursorPosition + tagText.length;
+                textarea.setSelectionRange(newCursorPosition, newCursorPosition);
+                textarea.focus();
+            }
+        });
+    });
 
     $mo("#mo_custom_order_send_message").on("click", function () {
         $mo("#custom_order_sms_meta_box").block({
             message: null,
             overlayCSS: { background: "#fff", opacity: 0.6 }
         });
-
-        // Ensure global config is available before making the AJAX call.
         if (typeof mocustommsg === "undefined" || !mocustommsg.siteURL || !mocustommsg.nonce) {
             $mo("#custom_order_sms_meta_box").unblock();
             return;
         }
 
         $mo.ajax({
-            // Use the standard WordPress admin-ajax endpoint.
             url: mocustommsg.siteURL + "?mo_send_custome_msg_option=mo_send_order_custom_msg",
             type: "POST",
             data: {
-                // Mirror the GET parameter in POST so the PHP handler can both
-                // locate the request and perform nonce verification.
                 mo_send_custome_msg_option: "mo_send_order_custom_msg",
-                // Send the nonce generated in PHP for CSRF protection.
                 security: mocustommsg.nonce,
                 numbers: $mo("#custom_order_sms_meta_box #billing_phone").val(),
                 msg: $mo("#custom_order_sms_meta_box #mo_wc_custom_order_msg").val()

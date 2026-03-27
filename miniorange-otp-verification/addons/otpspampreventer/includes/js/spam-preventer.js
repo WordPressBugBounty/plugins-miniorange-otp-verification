@@ -29,6 +29,51 @@
     ];
 
     /**
+     * WooCommerce block checkout: popup "send OTP" button id contains "send_otp" so it matches
+     * button[id*="send_otp"]. Do not hide or disable it — hide() stuck the button; disable() stuck
+     * it when AJAX errors / validation responses did not run our restore paths (user fixes form
+     * and cannot retry). Double-send is acceptable; server enforces limits.
+     */
+    function isWcBlockCheckoutPopupSendButton($btn) {
+        if (!$btn || !$btn.length) {
+            return false;
+        }
+        if ($btn.attr('id') === 'miniorange_wc_popup_send_otp_token') {
+            return true;
+        }
+        return $btn.closest('#miniorange_wc_popup_send_otp_token').length > 0;
+    }
+
+    function mospPrepareOtpButtonForRequest($mobutton) {
+        if (!$mobutton || !$mobutton.length) {
+            return;
+        }
+        if (isWcBlockCheckoutPopupSendButton($mobutton)) {
+            const $wcPrep = $mobutton.closest('#miniorange_wc_popup_send_otp_token');
+            ($wcPrep.length ? $wcPrep : $mobutton).data('mo-osp-waiting-for-response', true);
+            return;
+        }
+        $mobutton.hide();
+        $mobutton.data('mo-osp-waiting-for-response', true);
+    }
+
+    function mospRestoreOtpButtonAfterRequest($btn) {
+        if (!$btn || !$btn.length) {
+            return;
+        }
+        if (isWcBlockCheckoutPopupSendButton($btn)) {
+            const $wc = $btn.closest('#miniorange_wc_popup_send_otp_token');
+            if ($wc.length) {
+                $wc.prop('disabled', false).css('opacity', '').removeAttr('aria-busy').show();
+                $wc.data('mo-osp-waiting-for-response', false);
+            }
+        } else {
+            $btn.show();
+            $btn.data('mo-osp-waiting-for-response', false);
+        }
+    }
+
+    /**
      * Initialize spam preventer (following resendcontrol pattern)
      */
     function initializeSpamPreventer() {
@@ -297,13 +342,14 @@
         
         // Display the error message
         $momessageElem.text(errorMessage);
-        $momessageElem.css({
-            'background-color': '#ffefef',
-            'color': '#ff5b5b',
-            'padding': '10px',
-            'border-radius': '4px',
-            'margin': '10px 0'
-        });
+        mospApplyMoMessageErrorStyles($momessageElem);
+        if (!isWcCheckoutPopupMessageDisplay($momessageElem)) {
+            $momessageElem.css({
+                'padding': '10px',
+                'border-radius': '4px',
+                'margin': '10px 0'
+            });
+        }
         $momessageElem.show();
         
         // Start the timer (use isBlocked=true for error messages)
@@ -321,10 +367,10 @@
             // Show error message to user
             const messageElement = findMessageElement();
             if (messageElement && messageElement.length > 0) {
-                $mo(messageElement).text('Puzzle verification required but puzzle system is not loaded. Please refresh the page.').css({
-                    'background-color': '#ffefef',
-                    'color': '#ff5b5b'
-                }).show();
+                const $msgEl = $mo(messageElement);
+                $msgEl.text('Puzzle verification required but puzzle system is not loaded. Please refresh the page.');
+                mospApplyMoMessageErrorStyles($msgEl);
+                $msgEl.show();
             }
             return;
         }
@@ -454,10 +500,10 @@
                     console.error('[OSP] MO_OSP_Puzzle still not available after wait');
                     const messageElement = findMessageElement();
                     if (messageElement && messageElement.length > 0) {
-                        $mo(messageElement).text('Puzzle verification required but puzzle system failed to load. Please refresh the page.').css({
-                            'background-color': '#ffefef',
-                            'color': '#ff5b5b'
-                        }).show();
+                        const $msgEl = $mo(messageElement);
+                        $msgEl.text('Puzzle verification required but puzzle system failed to load. Please refresh the page.');
+                        mospApplyMoMessageErrorStyles($msgEl);
+                        $msgEl.show();
                     }
                 }
             }, 500);
@@ -503,11 +549,7 @@
      * Setup post-OTP handling - intercept AJAX responses and add timers
      */
     function setupPostOTPHandling($mobutton, messageSelector) {
-        // Hide button immediately to prevent double clicks
-        $mobutton.hide();
-        
-        // Store button reference for later use
-        $mobutton.data('mo-osp-waiting-for-response', true);
+        mospPrepareOtpButtonForRequest($mobutton);
     }
 
     /**
@@ -610,10 +652,7 @@
             
             // Replace the message content with error message (overwrite any success message)
             $messageElement.text(errorMessage);
-            $messageElement.css({
-                'background-color': '#ffefef',
-                'color': '#ff5b5b'
-            });
+            mospApplyMoMessageErrorStyles($messageElement);
             $messageElement.show();
             
             // Set a flag to prevent success message from overwriting this error
@@ -642,23 +681,24 @@
                 $messageElement.data('mo-osp-timer-added', false);
                 $messageElement.data('mo-osp-timer-active', false);
                 // Update message styling for error
-                $messageElement.css({
-                    'background-color': '#ffefef',
-                    'color': '#ff5b5b'
-                });
+                mospApplyMoMessageErrorStyles($messageElement);
                 const $button = findButtonForMessage(messageElement);
                 startBlockTimer(totalSeconds, $button, messageElement, messageText);
                 return;
             }
         }
         
-        // Check if it's a success message (OTP sent)
+        // Check if it's a success message (OTP actually sent — not mismatch/validation copy containing "OTP"/"sent")
         // But don't process if we have an active error message
         const $messageElement = $mo(messageElement);
-        if (isSuccess && (messageText.includes('sent') || messageText.includes('OTP') || messageText.includes('passcode'))) {
+        if (isSuccess && mospMessageMatchesOtpSentResendTimerAllowlist(messageText)) {
             // Check if we have an active error message - if so, don't overwrite it
             if ($messageElement.data('mo-osp-error-message')) {
                 return;
+            }
+
+            if (isWcCheckoutPopupMessageDisplay($messageElement)) {
+                neutralizeWcCheckoutPopupMessageStyle($messageElement);
             }
             
             // CRITICAL: Skip cooldown check for external popup responses
@@ -751,6 +791,12 @@
      * Find message element using various selectors
      */
     function findMessageElement() {
+        // Prefer WooCommerce checkout popup message so cooldown/timer targets the same node the user sees.
+        const $wcPopupMsg = $mo('#mo_message_wc_pop_up');
+        if ($wcPopupMsg.length && $wcPopupMsg.is(':visible')) {
+            return $wcPopupMsg.first();
+        }
+
         const selectors = [
             'div[id*="mo_message"]',
             '#mo_message',
@@ -758,14 +804,14 @@
             '[id*="mo_message"]',
             '[class*="mo_message"]'
         ];
-        
+
         for (let i = 0; i < selectors.length; i++) {
             const $elem = $mo(selectors[i]);
             if ($elem.length > 0 && $elem.is(':visible')) {
                 return $elem.first();
             }
         }
-        
+
         return null;
     }
 
@@ -776,7 +822,16 @@
         if (!$messageElement || $messageElement.length === 0) {
             return $mo();
         }
-        
+
+        // WC block checkout: message is #mo_message_wc_pop_up; do not use the first generic
+        // "Send OTP" control elsewhere in the checkout form (wrong target for hide/show/timer).
+        if (isWcCheckoutPopupMessageDisplay($messageElement)) {
+            const $wcBtn = $mo('button#miniorange_wc_popup_send_otp_token').first();
+            if ($wcBtn.length > 0) {
+                return $wcBtn;
+            }
+        }
+
         // Try to find button near the message element
         const $form = $messageElement.closest('form');
         if ($form.length > 0) {
@@ -834,22 +889,24 @@
         if ($momessageElem.length > 0) {
             $momessageElem.show();
             
-            // CRITICAL: Preserve success message styling (green background, dark text)
-            // Check if this is a success message by looking at background color
-            const bgColor = $momessageElem.css('background-color');
-            const isSuccessMessage = bgColor && (
-                bgColor === 'rgb(142, 237, 142)' || 
-                bgColor === '#8eed8e' ||
-                bgColor.indexOf('142, 237, 142') !== -1 ||
-                $momessageElem.css('background-color').indexOf('8eed8e') !== -1
-            );
-            
-            if (isSuccessMessage) {
-                // Ensure success styling is preserved (green background, dark text for readability)
-                $momessageElem.css({
-                    'color': '#464646', // Dark green text for better readability on green background
-                    'background-color': '#8eed8e', // Green background
-                });
+            if (isWcCheckoutPopupMessageDisplay($momessageElem)) {
+                neutralizeWcCheckoutPopupMessageStyle($momessageElem);
+            } else {
+                // CRITICAL: Preserve success message styling (green background, dark text)
+                const bgColor = $momessageElem.css('background-color');
+                const isSuccessMessage = bgColor && (
+                    bgColor === 'rgb(142, 237, 142)' ||
+                    bgColor === '#8eed8e' ||
+                    bgColor.indexOf('142, 237, 142') !== -1 ||
+                    $momessageElem.css('background-color').indexOf('8eed8e') !== -1
+                );
+
+                if (isSuccessMessage) {
+                    $momessageElem.css({
+                        'color': '#464646',
+                        'background-color': '#8eed8e',
+                    });
+                }
             }
         }
         
@@ -866,6 +923,63 @@
         }
         
         startTimer(timeLeft, $momessageElem[0], $mobutton, message, true);
+    }
+
+    function isWcCheckoutPopupMessageDisplay($display) {
+        const $d = $mo($display);
+        return $d.length && $d.attr('id') === 'mo_message_wc_pop_up';
+    }
+
+    /**
+     * WC block/classic checkout popup: success text should have no inline error/success colors.
+     */
+    function neutralizeWcCheckoutPopupMessageStyle($display) {
+        const $d = $mo($display);
+        if (!isWcCheckoutPopupMessageDisplay($d)) {
+            return;
+        }
+        $d.removeAttr('style');
+        $d.removeData('mo-osp-error-message');
+    }
+
+    /**
+     * Error styling: WC checkout popup has no pink background; other mo_message containers keep the alert bar.
+     */
+    function mospApplyMoMessageErrorStyles($el) {
+        const $e = $mo($el);
+        if (!$e.length) {
+            return;
+        }
+        if (isWcCheckoutPopupMessageDisplay($e)) {
+            $e.css({
+                'background-color': 'transparent',
+                'background': 'none',
+                'color': '#ff5b5b'
+            });
+            return;
+        }
+        $e.css({
+            'background-color': '#ffefef',
+            'color': '#ff5b5b'
+        });
+    }
+
+    /**
+     * Check if message container is plugin-owned.
+     */
+    function isPluginMessageContainer($display) {
+        if (!$display || $display.length === 0) {
+            return false;
+        }
+        if ($display.is('#mo_message, #mo_message_wc_pop_up, .mo_message')) {
+            return true;
+        }
+        const id = ($display.attr('id') || '').toLowerCase();
+        if (id.indexOf('mo_message') !== -1) {
+            return true;
+        }
+        const className = ($display.attr('class') || '').toLowerCase();
+        return className.indexOf('mo_message') !== -1;
     }
 
     /**
@@ -885,10 +999,12 @@
             } else if (displayMessage) {
                 $display.text(displayMessage);
             }
+            neutralizeWcCheckoutPopupMessageStyle($display);
             return;
         }
         
         const $display = $mo(display);
+        const shouldAppendTimer = isPluginMessageContainer($display);
         
         // Check if timer is already active - prevent duplicate timers
         if ($display.data('mo-osp-timer-active')) {
@@ -903,24 +1019,28 @@
         // Update immediately
         const minutes = String(Math.floor(timer / 60)).padStart(2, '0');
         const seconds = String(timer % 60).padStart(2, '0');
-        const formattedMessage = formatTimerMessage(displayMessage, minutes, seconds, timer, isBlocked);
+        const formattedMessage = formatTimerMessage(displayMessage, minutes, seconds, timer, isBlocked, shouldAppendTimer);
         $display.text(formattedMessage);
         
         // CRITICAL: Set success styling AFTER text update to override any inline styles
         if (!isBlocked) {
-            const bgColor = $display.css('background-color');
-            const isSuccessMessage = bgColor && (
-                bgColor === 'rgb(142, 237, 142)' || 
-                bgColor === '#8eed8e' ||
-                bgColor.indexOf('142, 237, 142') !== -1
-            );
-            
-            if (isSuccessMessage) {
-                // Override inline styles to ensure correct success styling
-                $display.css({
-                    'color': '#464646', // Dark green text for better readability on green background
-                    'background-color': '#8eed8e', // Green background
-                });
+            if (isWcCheckoutPopupMessageDisplay($display)) {
+                neutralizeWcCheckoutPopupMessageStyle($display);
+            } else {
+                const bgColor = $display.css('background-color');
+                const isSuccessMessage = bgColor && (
+                    bgColor === 'rgb(142, 237, 142)' ||
+                    bgColor === '#8eed8e' ||
+                    bgColor.indexOf('142, 237, 142') !== -1
+                );
+
+                if (isSuccessMessage) {
+                    // Override inline styles to ensure correct success styling
+                    $display.css({
+                        'color': '#464646', // Dark green text for better readability on green background
+                        'background-color': '#8eed8e', // Green background
+                    });
+                }
             }
         }
         
@@ -947,13 +1067,37 @@
                 $display.data('mo-osp-timer-added', false);
                 $display.data('mo-osp-error-message', false);
                 
-                // Hide message and show button
-                $display.hide();
-                if (button && button.length > 0) {
-                    $mo(button).show();
-                    $mo(button).data('mo-osp-waiting-for-response', false);
+                neutralizeWcCheckoutPopupMessageStyle($display);
+
+                // WC checkout popup + success resend cooldown: keep OTP-sent text visible (strip countdown only).
+                const domEl = display && display.nodeType === 1 ? display : null;
+                const isWcPopupTarget = !isBlocked && (
+                    isWcCheckoutPopupMessageDisplay($display) ||
+                    (domEl && domEl.id === 'mo_message_wc_pop_up')
+                );
+                if (isWcPopupTarget) {
+                    const stripResendLine = function (t) {
+                        if (!t || typeof t !== 'string') {
+                            return '';
+                        }
+                        return t.replace(/\s*You can send the next OTP after\s+\d{1,2}:\d{2}\.?/gi, '').trim();
+                    };
+                    let baseMsg = stripResendLine(typeof displayMessage === 'string' ? mospStripHtml(displayMessage) : '');
+                    if (!baseMsg && window.verifyOTPmessage) {
+                        baseMsg = stripResendLine(mospStripHtml(String(window.verifyOTPmessage)));
+                    }
+                    if (!baseMsg) {
+                        baseMsg = stripResendLine($display.text() || '');
+                    }
+                    $display.text(baseMsg);
+                    $display.show();
+                } else {
+                    $display.hide();
                 }
-                
+                if (button && button.length > 0) {
+                    mospRestoreOtpButtonAfterRequest($mo(button));
+                }
+
                 // Remove from active timers
                 const index = activeTimers.indexOf(timerFunction);
                 if (index > -1) {
@@ -964,26 +1108,7 @@
 
             const minutes = String(Math.floor(timer / 60)).padStart(2, '0');
             const seconds = String(timer % 60).padStart(2, '0');
-            const formattedMessage = formatTimerMessage(displayMessage, minutes, seconds, timer, isBlocked);
-            
-            // CRITICAL: Preserve success message styling when updating text
-            // Check if this is a success message (not blocked) and has green background
-            if (!isBlocked) {
-                const bgColor = $display.css('background-color');
-                const isSuccessMessage = bgColor && (
-                    bgColor === 'rgb(142, 237, 142)' || 
-                    bgColor === '#8eed8e' ||
-                    bgColor.indexOf('142, 237, 142') !== -1
-                );
-                
-                if (isSuccessMessage) {
-                    // Preserve success styling when updating text
-                    $display.css({
-                        'color': '#464646', // Dark green text for readability
-                        'background-color': '#8eed8e', // Green background
-                    });
-                }
-            }
+            const formattedMessage = formatTimerMessage(displayMessage, minutes, seconds, timer, isBlocked, shouldAppendTimer);
             
             // Always update the message text
             // For error messages (isBlocked=true), we need to update the countdown
@@ -992,19 +1117,23 @@
             
             // CRITICAL: Set success styling AFTER text update to override any inline styles
             if (!isBlocked) {
-                const bgColor = $display.css('background-color');
-                const isSuccessMessage = bgColor && (
-                    bgColor === 'rgb(142, 237, 142)' || 
-                    bgColor === '#8eed8e' ||
-                    bgColor.indexOf('142, 237, 142') !== -1
-                );
-                
-                if (isSuccessMessage) {
-                    // Override inline styles to ensure correct success styling
-                    $display.css({
-                        'color': '#464646', // Dark green text for readability
-                        'background-color': '#8eed8e', // Green background
-                    });
+                if (isWcCheckoutPopupMessageDisplay($display)) {
+                    neutralizeWcCheckoutPopupMessageStyle($display);
+                } else {
+                    const bgColor = $display.css('background-color');
+                    const isSuccessMessage = bgColor && (
+                        bgColor === 'rgb(142, 237, 142)' ||
+                        bgColor === '#8eed8e' ||
+                        bgColor.indexOf('142, 237, 142') !== -1
+                    );
+
+                    if (isSuccessMessage) {
+                        // Override inline styles to ensure correct success styling
+                        $display.css({
+                            'color': '#464646', // Dark green text for readability
+                            'background-color': '#8eed8e', // Green background
+                        });
+                    }
                 }
             }
         }, 1000);
@@ -1013,11 +1142,118 @@
     }
 
     /**
+     * Plain text from HTML (e.g. verifyOTPmessage may contain markup).
+     */
+    function mospStripHtml(str) {
+        if (!str || typeof str !== 'string') {
+            return '';
+        }
+        const tmp = document.createElement('div');
+        tmp.innerHTML = str;
+        return (tmp.textContent || tmp.innerText || '').trim();
+    }
+
+    /**
+     * Normalize text for message classification (NBSP, trim).
+     */
+    function mospNormalizeMessageText(text) {
+        if (!text || typeof text !== 'string') {
+            return '';
+        }
+        return text.replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    /**
+     * Validation / mismatch / failure copy — never append resend countdown to these.
+     */
+    function mospIsNegativeOtpFeedbackMessage(text) {
+        if (!text || typeof text !== 'string') {
+            return false;
+        }
+        const t = mospNormalizeMessageText(text).toLowerCase();
+        // Mismatch / comparison errors often contain "OTP" and "sent" but are not send-success (e.g. WC phone mismatch).
+        if (/\b(do\s+not|does\s+not|did\s+not|don'?t)\s+match\b/.test(t)) {
+            return true;
+        }
+        if (/\bnot\s+match\b/.test(t) && /\b(?:otp|phone|email|number|verification|code|contact|submission)\b/.test(t)) {
+            return true;
+        }
+        if (/\botp\b.*\bsent\b.*\bnot\s+match\b/.test(t) || /\bsent\b.*\botp\b.*\bnot\s+match\b/.test(t)) {
+            return true;
+        }
+        // Normal send-success copy includes "Please enter the OTP below" — not a validation failure.
+        if (/\b(?:otp|passcode|verification\s+code|sms\s+code|code)\s+has\s+been\s+sent\b/.test(t)) {
+            return false;
+        }
+        if (/\bhas\s+been\s+sent\s+to\b/.test(t)) {
+            return false;
+        }
+        return /\b(mismatch|invalid|incorrect|failed|failure|unsuccessful|wrong\s+(?:otp|code|number)|expired|verification\s+failed|not\s+verified|unable\s+to|could\s+not|must\s+enter|please\s+enter|is\s+required|are\s+required|\berror\b|exceeded\s+the\s+limit|try\s+again)\b/i.test(t);
+    }
+
+    /**
+     * Messages that may receive the client line: "You can send the next OTP after MM:SS."
+     * Mirrors default English strings from MoMessages (OTP_SENT_PHONE, OTP_SENT_EMAIL, OTP_SENT, SMS_SENT_SUCCESS).
+     * Customized admin messages that change wording will not match until they keep the same opening/closing phrases.
+     *
+     * Not included: LIMIT_OTP_SENT / USER_IS_BLOCKED_* (server already supplies cooldown text);
+     * CHOOSE_METHOD / mismatch / error strings.
+     */
+    function mospMessageMatchesOtpSentResendTimerAllowlist(text) {
+        if (!text || typeof text !== 'string') {
+            return false;
+        }
+        if (mospIsNegativeOtpFeedbackMessage(text)) {
+            return false;
+        }
+        const plain = mospStripHtml(String(text));
+        let base = mospNormalizeMessageText(plain).replace(/\s+/g, ' ').trim().toLowerCase();
+        base = base.replace(/\s*you can send the next otp after\s+\d{1,2}:\d{2}\.?/gi, '').trim();
+
+        if (/click\s+here\s+to\s+send\s+otp|send\s+otp\s+to\s+continue/i.test(base)) {
+            return false;
+        }
+
+        // MoMessages::OTP_SENT_PHONE — "A OTP (One Time Passcode) has been sent to … Please enter the OTP in the field below to verify your phone."
+        if (base.indexOf('a otp (one time passcode) has been sent to ') === 0 &&
+            base.indexOf('please enter the otp in the field below to verify your phone') !== -1) {
+            return true;
+        }
+
+        // MoMessages::OTP_SENT_EMAIL — "A One Time Passcode has been sent to … Please enter the OTP below to verify your Email Address"
+        if (base.indexOf('a one time passcode has been sent to ') === 0 &&
+            base.indexOf('please enter the otp below to verify your email address') !== -1) {
+            return true;
+        }
+
+        // MoMessages::OTP_SENT — "A passcode has been sent to {{method}}. Please enter the otp below to verify your account."
+        if (base.indexOf('a passcode has been sent to ') === 0 &&
+            base.indexOf('please enter the otp below to verify your account') !== -1) {
+            return true;
+        }
+
+        // MoMessages::SMS_SENT_SUCCESS
+        if (base === 'sms was sent successfully.' || base === 'sms was sent successfully') {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Format timer message with countdown (consolidated logic)
      */
-    function formatTimerMessage(displayMessage, minutes, seconds, totalSeconds, isBlocked) {
-        const serverMessage = displayMessage || (isBlocked ? 'You are temporarily blocked.' : 'Please wait before requesting another OTP.');
-        
+    function formatTimerMessage(displayMessage, minutes, seconds, totalSeconds, isBlocked, shouldAppendTimer) {
+        const strippedDisplay = typeof displayMessage === 'string'
+            ? displayMessage.replace(/\s*You can send the next OTP after\s+\d{1,2}:\d{2}\.?/gi, '').trim()
+            : displayMessage;
+        let serverMessage = strippedDisplay || (isBlocked ? 'You are temporarily blocked.' : 'Please wait before requesting another OTP.');
+
+        // Never attach or keep the resend line on validation / mismatch messages.
+        if (!isBlocked && mospIsNegativeOtpFeedbackMessage(serverMessage)) {
+            return serverMessage;
+        }
+
         // Check if message has placeholder patterns
         if (serverMessage.includes('{minutes}') && serverMessage.includes('{seconds}')) {
             return serverMessage.replace('{minutes}', minutes).replace('{seconds}', seconds);
@@ -1046,13 +1282,22 @@
         }
         
         // For cooldown messages, try to use window.verifyOTPmessage if available and no server message
-        if (!isBlocked && (!displayMessage || displayMessage.trim() === '') && window.verifyOTPmessage) {
+        if (!isBlocked && (!strippedDisplay || strippedDisplay.trim() === '') && window.verifyOTPmessage) {
+            if (!shouldAppendTimer) {
+                return window.verifyOTPmessage;
+            }
+            const verifyPlain = mospStripHtml(String(window.verifyOTPmessage));
+            if (mospIsNegativeOtpFeedbackMessage(verifyPlain) || !mospMessageMatchesOtpSentResendTimerAllowlist(verifyPlain)) {
+                return window.verifyOTPmessage;
+            }
             return window.verifyOTPmessage + ` You can send the next OTP after ${minutes}:${seconds}.`;
         }
         
-        // Fallback: add countdown to server message
-        // For success messages, use a more descriptive text
+        // Fallback: add countdown to server message (only for allowlisted OTP-sent copy from MoMessages)
         if (!isBlocked) {
+            if (!shouldAppendTimer || mospIsNegativeOtpFeedbackMessage(serverMessage) || !mospMessageMatchesOtpSentResendTimerAllowlist(serverMessage)) {
+                return serverMessage;
+            }
             return `${serverMessage} You can send the next OTP after ${minutes}:${seconds}.`;
         }
         return `${serverMessage} (${minutes}:${seconds} remaining)`;
@@ -1160,12 +1405,14 @@
             delete window.verifyOTPmessage;
         }
         
-        // Hide any existing messages
-        $mo('div[id*="mo_message"]').hide();
+        // Hide any existing messages (never hide WC checkout popup line — id contains substring "mo_message")
+        $mo('div[id*="mo_message"]').not('#mo_message_wc_pop_up').hide();
         
         // Show all OTP buttons
         buttonSelectors.forEach(function(selector) {
-            $mo(selector).show();
+            $mo(selector).each(function() {
+                mospRestoreOtpButtonAfterRequest($mo(this));
+            });
         });
     };
 
@@ -1179,7 +1426,13 @@
                 // Check added nodes
                 mutation.addedNodes.forEach(function(node) {
                     if (node.nodeType === 1) { // Element node
-                        checkAndAddTimerToMessage($mo(node));
+                        const $node = $mo(node);
+                        const $messageCandidate = $node.is('[id*="mo_message"], .mo_message, [class*="mo_message"]') 
+                            ? $node 
+                            : $node.find('[id*="mo_message"], .mo_message, [class*="mo_message"]').first();
+                        if ($messageCandidate.length > 0) {
+                            checkAndAddTimerToMessage($messageCandidate);
+                        }
                     }
                 });
                 
@@ -1227,10 +1480,7 @@
                                                 errorMessage = errorMessage.replace('{minutes}', formattedMinutes).replace('{seconds}', formattedSeconds);
                                             }
                                             $msgElem.text(errorMessage);
-                                            $msgElem.css({
-                                                'background-color': '#ffefef',
-                                                'color': '#ff5b5b'
-                                            });
+                                            mospApplyMoMessageErrorStyles($msgElem);
                                             // Clear timer flags and restart timer
                                             $msgElem.data('mo-osp-timer-active', false);
                                             $msgElem.data('mo-osp-timer-added', false);
@@ -1379,6 +1629,15 @@
             return;
         }
         
+        const messageSelector = '[id*="mo_message"], .mo_message, [class*="mo_message"]';
+        // Only act on OTP message containers to avoid corrupting unrelated text
+        if (!$messageElement.is(messageSelector)) {
+            const $innerMessage = $messageElement.find(messageSelector).first();
+            if ($innerMessage.length === 0) {
+                return;
+            }
+            $messageElement = $innerMessage;
+        }
         const messageText = $messageElement.text() || '';
         
         if (!messageText.trim()) {
@@ -1409,10 +1668,7 @@
             if (currentText !== messageText) {
                 $messageElement.text(messageText);
             }
-            $messageElement.css({
-                'background-color': '#ffefef',
-                'color': '#ff5b5b'
-            });
+            mospApplyMoMessageErrorStyles($messageElement);
             $messageElement.show();
             
             const totalSeconds = extractTimerFromMessage(messageText);
@@ -1454,17 +1710,18 @@
             }
         }
         
-        // Check if it's a success message (OTP sent) - but only if it doesn't already have a timer
-        // AND if there's no active error message.
-        // IMPORTANT: Avoid triggering on "send OTP" prompts (e.g. "Click Here to send OTP").
+        // Success OTP-sent only (MutationObserver): same rules as interceptAjaxResponse — not generic "sent"/"OTP"
         const looksLikeSendPrompt = /click\s+here\s+to\s+send\s+otp|send\s+otp/i.test(messageText);
-        const looksLikeSentMessage = /sent|otp\s+sent|has\s+been\s+sent|passcode/i.test(messageText);
-        if (looksLikeSentMessage && !looksLikeSendPrompt &&
+        if (mospMessageMatchesOtpSentResendTimerAllowlist(messageText) && !looksLikeSendPrompt &&
             !messageText.match(/\d{1,2}:\d{2}\s*(remaining|minutes?|mins?)/i)) {
             
             // Check if we have an active error message - if so, don't process success message
             if ($messageElement.data('mo-osp-error-message')) {
                 return;
+            }
+
+            if (isWcCheckoutPopupMessageDisplay($messageElement)) {
+                neutralizeWcCheckoutPopupMessageStyle($messageElement);
             }
             
             // Skip if timer already added (only for success messages)
@@ -1509,7 +1766,7 @@
                             // No cooldown, show button
                             const $button = findButtonForMessage($messageElement);
                             if ($button && $button.length > 0) {
-                                $button.show();
+                                mospRestoreOtpButtonAfterRequest($button);
                             }
                             $messageElement.data('mo-osp-timer-added', false); // Allow retry
                         }
@@ -1520,7 +1777,7 @@
                             // HTML response - likely an error page, skip timer
                             const $button = findButtonForMessage($messageElement);
                             if ($button && $button.length > 0) {
-                                $button.show();
+                                mospRestoreOtpButtonAfterRequest($button);
                             }
                             $messageElement.data('mo-osp-timer-added', false);
                             return;

@@ -95,6 +95,23 @@ if ( ! class_exists( 'MoOtpSpamIntegration' ) ) {
 		 * @phpcs:disable WordPress.Security.NonceVerification.Missing -- Called from OTP generation hook, no nonce available
 		 */
 		public function mosp_check_spam_before_otp_send( $user_login, $user_email, $phone_number, $otp_type, $from_both ) {
+			$otp_type = strtolower( trim( (string) $otp_type ) );
+			switch ( $otp_type ) {
+				case \OTP\Objects\VerificationType::EMAIL:
+					$phone_number = '';
+					break;
+				case \OTP\Objects\VerificationType::PHONE:
+					$user_email = '';
+					break;
+				case \OTP\Objects\VerificationType::BOTH:
+					// Keep both identifiers.
+					break;
+			}
+
+			if ( ! empty( $phone_number ) && strpos( $phone_number, '@' ) !== false ) {
+				$phone_number = '';
+			}
+
 			if ( ! empty( $user_email ) ) {
 				MoPHPSessions::add_session_var( 'user_email', $user_email );
 			}
@@ -224,6 +241,28 @@ if ( ! class_exists( 'MoOtpSpamIntegration' ) ) {
 						$attempt_recorded = true;
 						return;
 					}
+
+					if ( $requires_puzzle ) {
+						$is_ajax_form = apply_filters( 'is_ajax_form', false );
+						if ( $is_ajax_form || 'ajax_phone' === $user_login ) {
+							wp_send_json(
+								array(
+									'result'          => 'puzzle_required',
+									'message'         => __( 'Please complete the security verification to continue.', 'miniorange-otp-verification' ),
+									'puzzle_required' => true,
+									'authType'        => 'PUZZLE_REQUIRED',
+								)
+							);
+						} else {
+							$puzzle_email = ! empty( $user_email ) ? $user_email : 'puzzle@temp.local';
+							$puzzle_phone = ! empty( $phone_number ) ? $phone_number : null;
+							miniorange_site_otp_validation_form( $user_login, $puzzle_email, $puzzle_phone, __( 'Please complete the security verification to continue.', 'miniorange-otp-verification' ), $otp_type, $from_both );
+						}
+						exit;
+					}
+
+					// Block window is over (0s left) but stale $is_blocked — allow OTP send instead of a bogus 00:00 error.
+					return;
 				}
 
 				$message      = $this->handler->mosp_get_block_message_with_timer( $remaining_time );
@@ -311,11 +350,12 @@ if ( ! class_exists( 'MoOtpSpamIntegration' ) ) {
 				return;
 			}
 
+			$mo_osp_admin_js = MO_OSP_DIR . 'includes/js/spam-preventer-admin.js';
 			wp_enqueue_script(
 				'mo-osp-admin',
 				MO_OSP_URL . 'includes/js/spam-preventer-admin.js',
 				array( 'jquery' ),
-				'1.0.0',
+				file_exists( $mo_osp_admin_js ) ? (string) filemtime( $mo_osp_admin_js ) : '1.0.1',
 				true
 			);
 
@@ -339,7 +379,7 @@ if ( ! class_exists( 'MoOtpSpamIntegration' ) ) {
 			$email = MoPHPSessions::get_session_var( 'user_email' );
 			$phone = MoPHPSessions::get_session_var( 'phone_number_mo' );
 			// phpcs:disable WordPress.Security.NonceVerification.Missing
-			$browser_id = isset( $_POST['mo_osp_browser_id'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_osp_browser_id'] ) ) : '';
+			$browser_id        = isset( $_POST['mo_osp_browser_id'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_osp_browser_id'] ) ) : '';
 			$ip                = $this->handler->mosp_get_client_ip();
 			$is_ip_whitelisted = false;
 			if ( ! empty( $ip ) ) {
@@ -547,14 +587,14 @@ if ( ! class_exists( 'MoOtpSpamIntegration' ) ) {
 			}
 
 			$otp_verification_options = array(
-				'cf_submit_id',          
-				'wc_default_enable',      
-				'wp_default_enable',      
-				'wp_login_enable',        
-				'wc_checkout_enable',     
-				'bp_registration_enable', 
-				'um_default_enable',      
-				'pmpro_default_enable',   
+				'cf_submit_id',
+				'wc_default_enable',
+				'wp_default_enable',
+				'wp_login_enable',
+				'wc_checkout_enable',
+				'bp_registration_enable',
+				'um_default_enable',
+				'pmpro_default_enable',
 			);
 
 			foreach ( $otp_verification_options as $option ) {

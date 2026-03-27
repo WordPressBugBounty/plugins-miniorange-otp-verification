@@ -35,52 +35,17 @@ if ( ! class_exists( 'MoPuzzleHelper' ) ) {
 		 */
 		public static function mosp_generate_secure_puzzle() {
 			$puzzle_templates = array(
-				// Basic addition.
+				// Simple addition.
 				array(
 					'type' => 'add',
-					'min'  => 5,
-					'max'  => 25,
-				),
-				array(
-					'type' => 'add',
-					'min'  => 10,
-					'max'  => 50,
-				),
-
-				// Basic subtraction.
-				array(
-					'type' => 'sub',
-					'min'  => 10,
-					'max'  => 30,
-				),
-				array(
-					'type' => 'sub',
-					'min'  => 20,
-					'max'  => 50,
-				),
-
-				// Basic multiplication.
-				array(
-					'type' => 'mul',
-					'min'  => 2,
+					'min'  => 1,
 					'max'  => 9,
 				),
+				// Simple subtraction.
 				array(
-					'type' => 'mul',
-					'min'  => 3,
-					'max'  => 12,
-				),
-
-				// Mixed operations.
-				array(
-					'type' => 'mixed_add_sub',
-					'min'  => 5,
-					'max'  => 20,
-				),
-				array(
-					'type' => 'mixed_sub_add',
-					'min'  => 10,
-					'max'  => 25,
+					'type' => 'sub',
+					'min'  => 1,
+					'max'  => 9,
 				),
 			);
 
@@ -103,35 +68,9 @@ if ( ! class_exists( 'MoPuzzleHelper' ) ) {
 						'answer'   => $a - $b,
 					);
 
-				case 'mul':
-					$a = wp_rand( $template['min'], $template['max'] );
-					$b = wp_rand( 2, 9 );
-					return array(
-						'question' => "{$a} × {$b}",
-						'answer'   => $a * $b,
-					);
-
-				case 'mixed_add_sub':
-					$a = wp_rand( $template['min'], $template['max'] );
-					$b = wp_rand( 5, 15 );
-					$c = wp_rand( 3, 10 );
-					return array(
-						'question' => "{$a} + {$b} - {$c}",
-						'answer'   => $a + $b - $c,
-					);
-
-				case 'mixed_sub_add':
-					$a = wp_rand( $template['min'], $template['max'] );
-					$b = wp_rand( 5, 15 );
-					$c = wp_rand( 3, 10 );
-					return array(
-						'question' => "{$a} - {$b} + {$c}",
-						'answer'   => $a - $b + $c,
-					);
-
 				default:
-					$a = wp_rand( 5, 20 );
-					$b = wp_rand( 5, 20 );
+					$a = wp_rand( 1, 9 );
+					$b = wp_rand( 1, 9 );
 					return array(
 						'question' => "{$a} + {$b}",
 						'answer'   => $a + $b,

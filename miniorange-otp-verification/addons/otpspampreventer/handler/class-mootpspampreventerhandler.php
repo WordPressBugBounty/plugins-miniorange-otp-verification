@@ -13,6 +13,7 @@ use OSP\Helper\MoSecurityHelper;
 use OSP\Traits\Instance;
 use OTP\Helper\MoMessages;
 use OTP\Helper\MoPHPSessions;
+use OTP\Helper\MoUtility;
 
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -52,13 +53,13 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 		 */
 		public function mosp_save_settings( $posted ) {
 			$settings                  = array();
-			$settings['enabled']       = true;
+			$settings['enabled']       = isset( $posted['mo_osp_enabled'] );
 			$settings['cooldown_time'] = isset( $posted['mo_osp_cooldown_time'] ) ? absint( $posted['mo_osp_cooldown_time'] ) : 60;
 
 			$max_attempts             = isset( $posted['mo_osp_max_attempts'] ) ? absint( $posted['mo_osp_max_attempts'] ) : 3;
 			$settings['max_attempts'] = max( 1, min( 10, $max_attempts ) );
 
-			$settings['block_time'] = isset( $posted['mo_osp_block_time'] ) ? absint( $posted['mo_osp_block_time'] ) : 3600;
+			$settings['block_time'] = isset( $posted['mo_osp_block_time'] ) ? absint( $posted['mo_osp_block_time'] ) : 900;
 
 			$settings['daily_limit']  = isset( $posted['mo_osp_daily_limit'] ) ? absint( $posted['mo_osp_daily_limit'] ) : 10;
 			$settings['hourly_limit'] = isset( $posted['mo_osp_hourly_limit'] ) ? absint( $posted['mo_osp_hourly_limit'] ) : 5;
@@ -128,6 +129,10 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 		 * @return bool True if blocked, false if allowed
 		 */
 		public function mosp_is_blocked( $email, $phone, $browser_id = '', $context = 'otp_send' ) {
+			if ( ! $this->mosp_is_addon_enabled() ) {
+				return false;
+			}
+
 			$settings = $this->storage->mosp_get_settings();
 
 			$ip = $this->mosp_get_client_ip();
@@ -183,6 +188,10 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 		 * @return void
 		 */
 		public function mosp_record_attempt_for_identifiers( $email, $phone, $browser_id = '' ) {
+			if ( ! $this->mosp_is_addon_enabled() ) {
+				return;
+			}
+
 			$settings = $this->storage->mosp_get_settings();
 
 			$ip = $this->mosp_get_client_ip();
@@ -190,12 +199,18 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 			$identifiers = $this->mosp_get_all_identifiers( $email, $phone, $ip, $browser_id );
 
 			$current_time = time();
+			$context      = array(
+				'ip'         => $ip,
+				'browser_id' => $browser_id,
+				'email'      => $email,
+				'phone'      => $phone,
+			);
 
 			foreach ( $identifiers as $identifier ) {
-				$this->mosp_record_identifier_attempt( $identifier, $current_time );
+				$this->mosp_record_identifier_attempt( $identifier, $current_time, $context );
 			}
 
-			$this->mosp_record_cross_identifier_attempt( $email, $phone, $ip, $browser_id, $current_time );
+			$this->mosp_record_cross_identifier_attempt( $email, $phone, $ip, $browser_id, $current_time, $context );
 
 			$this->mosp_record_daily_hourly_attempts( $email, $phone );
 		}
@@ -217,24 +232,77 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 			$now           = time();
 			$blocked_until = $now + $remaining_time;
 
+			// Extract identifier type and value for storage.
+			$identifier_type_map = array();
+			foreach ( $identifiers as $identifier ) {
+				if ( strpos( $identifier, 'email:' ) === 0 ) {
+					$identifier_type_map[ $identifier ] = array(
+						'type'  => 'email',
+						'value' => substr( $identifier, 6 ),
+					);
+				} elseif ( strpos( $identifier, 'phone:' ) === 0 ) {
+					$identifier_type_map[ $identifier ] = array(
+						'type'  => 'phone',
+						'value' => substr( $identifier, 6 ),
+					);
+				} elseif ( strpos( $identifier, 'ip:' ) === 0 ) {
+					$identifier_type_map[ $identifier ] = array(
+						'type'  => 'ip',
+						'value' => substr( $identifier, 3 ),
+					);
+				} elseif ( strpos( $identifier, 'browser:' ) === 0 ) {
+					$identifier_type_map[ $identifier ] = array(
+						'type'  => 'browser',
+						'value' => substr( $identifier, 8 ),
+					);
+				} else {
+					$identifier_type_map[ $identifier ] = array(
+						'type'  => 'unknown',
+						'value' => $identifier,
+					);
+				}
+			}
+
 			foreach ( $identifiers as $identifier ) {
 				$key  = $this->storage->mosp_hash_key( $identifier );
 				$data = $this->storage->mosp_get_spam_data( $key );
 
+				$id_info = isset( $identifier_type_map[ $identifier ] ) ? $identifier_type_map[ $identifier ] : array(
+					'type'  => 'unknown',
+					'value' => '',
+				);
+
 				if ( false === $data ) {
 					$data = array(
-						'type'          => 'identifier',
+						'type'          => $id_info['type'],
+						'identifier'    => $id_info['value'], // Store original identifier value.
 						'attempts'      => array(),
 						'blocked_until' => 0,
 						'total_blocks'  => 0,
 						'created'       => $now,
 						'last_attempt'  => $now,
 					);
+				} else {
+					// Update type if not set or is 'identifier' or 'unknown'.
+					if ( ! isset( $data['type'] ) || 'identifier' === $data['type'] || 'unknown' === $data['type'] ) {
+						$data['type'] = $id_info['type'];
+					}
+					// Store original identifier value if not set.
+					if ( ! isset( $data['identifier'] ) || empty( $data['identifier'] ) ) {
+						$data['identifier'] = $id_info['value'];
+					}
 				}
 
 				if ( ! isset( $data['blocked_until'] ) || $data['blocked_until'] < $blocked_until ) {
+					$old_blocked_until     = isset( $data['blocked_until'] ) ? $data['blocked_until'] : 0;
 					$data['blocked_until'] = $blocked_until;
 					$data['block_reason']  = $block_reason;
+
+					// Store original identifier value for display (admin-only access, no masking needed).
+					if ( ! empty( $id_info['value'] ) ) {
+						$data['identifier'] = $id_info['value'];
+					}
+
 					$this->storage->mosp_update_spam_data( $key, $data );
 				}
 			}
@@ -252,12 +320,14 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 		public function mosp_get_all_identifiers( $email, $phone, $ip, $browser_id ) {
 			$identifiers = array();
 
-			if ( ! empty( $email ) ) {
-				$identifiers[] = 'email:' . $email;
+			$norm_email = $this->mosp_normalize_email_for_spam( $email );
+			if ( '' !== $norm_email ) {
+				$identifiers[] = 'email:' . $norm_email;
 			}
 
-			if ( ! empty( $phone ) ) {
-				$identifiers[] = 'phone:' . $phone;
+			$norm_phone = $this->mosp_normalize_phone_for_spam( $phone );
+			if ( '' !== $norm_phone ) {
+				$identifiers[] = 'phone:' . $norm_phone;
 			}
 
 			if ( ! empty( $ip ) ) {
@@ -272,6 +342,105 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 		}
 
 		/**
+		 * Normalize email for spam/rate-limit keys (stable casing).
+		 *
+		 * @param string $email Email.
+		 * @return string
+		 */
+		private function mosp_normalize_email_for_spam( $email ) {
+			return strtolower( trim( (string) $email ) );
+		}
+
+		/**
+		 * Normalize phone the same way as puzzle verification (MoUtility) so reset/clear hits the same DB rows as OTP send.
+		 *
+		 * @param string $phone Phone.
+		 * @return string
+		 */
+		private function mosp_normalize_phone_for_spam( $phone ) {
+			$phone = trim( (string) $phone );
+			if ( '' === $phone ) {
+				return '';
+			}
+			if ( class_exists( '\OTP\Helper\MoUtility' ) ) {
+				$processed = MoUtility::process_phone_number( $phone );
+				$digits    = preg_replace( '/\D/', '', (string) $processed );
+				if ( strlen( $digits ) >= 6 ) {
+					return $processed;
+				}
+			}
+			return preg_replace( '/[^0-9+]/', '', $phone );
+		}
+
+		/**
+		 * Cross-identifier strings (IP + credential) using normalized email/phone.
+		 *
+		 * @param string $email      Email.
+		 * @param string $phone      Phone.
+		 * @param string $ip         IP.
+		 * @param string $browser_id Browser id.
+		 * @return string[]
+		 */
+		private function mosp_build_cross_identifier_strings( $email, $phone, $ip, $browser_id ) {
+			if ( empty( $ip ) ) {
+				return array();
+			}
+			$cross = array();
+			$ne    = $this->mosp_normalize_email_for_spam( $email );
+			if ( '' !== $ne ) {
+				$cross[] = 'cross_ip_email:' . $ip . '|' . $ne;
+			}
+			$np = $this->mosp_normalize_phone_for_spam( $phone );
+			if ( '' !== $np ) {
+				$cross[] = 'cross_ip_phone:' . $ip . '|' . $np;
+			}
+			if ( ! empty( $browser_id ) ) {
+				$cross[] = 'cross_ip_browser:' . $ip . '|' . $browser_id;
+			}
+			return $cross;
+		}
+
+		/**
+		 * Every spam row to clear after puzzle success (canonical + legacy raw-phone keys).
+		 *
+		 * @param string $email      Email.
+		 * @param string $phone      Phone.
+		 * @param string $ip         IP.
+		 * @param string $browser_id Browser id.
+		 * @return string[]
+		 */
+		private function mosp_get_identifiers_to_reset_on_puzzle_success( $email, $phone, $ip, $browser_id ) {
+			$out = array_merge(
+				$this->mosp_get_all_identifiers( $email, $phone, $ip, $browser_id ),
+				$this->mosp_build_cross_identifier_strings( $email, $phone, $ip, $browser_id )
+			);
+
+			$norm_phone = $this->mosp_normalize_phone_for_spam( $phone );
+			$raw_phone  = trim( (string) $phone );
+			if ( '' !== $raw_phone ) {
+				$legacy_vals = array_unique(
+					array_filter(
+						array(
+							$raw_phone,
+							preg_replace( '/[^0-9+]/', '', $raw_phone ),
+						)
+					)
+				);
+				foreach ( $legacy_vals as $lp ) {
+					if ( '' === $lp || $lp === $norm_phone ) {
+						continue;
+					}
+					$out[] = 'phone:' . $lp;
+					if ( ! empty( $ip ) ) {
+						$out[] = 'cross_ip_phone:' . $ip . '|' . $lp;
+					}
+				}
+			}
+
+			return array_values( array_unique( array_filter( $out ) ) );
+		}
+
+		/**
 		 * Check cross-identifier blocking (IP + OTP type combination).
 		 *
 		 * @param string $email Email address.
@@ -281,31 +450,11 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 		 * @return bool True if should be blocked
 		 */
 		private function mosp_is_cross_identifier_blocked( $email, $phone, $ip, $browser_id ) {
-			if ( empty( $ip ) ) {
-				return false;
-			}
-
-			$cross_identifiers = array();
-
-			if ( ! empty( $email ) ) {
-				$cross_identifiers[] = 'cross_ip_email:' . $ip . '|' . $email;
-			}
-
-			if ( ! empty( $phone ) ) {
-				$cross_identifiers[] = 'cross_ip_phone:' . $ip . '|' . $phone;
-			}
-
-			if ( ! empty( $browser_id ) ) {
-				$cross_identifiers[] = 'cross_ip_browser:' . $ip . '|' . $browser_id;
-			}
-
-			foreach ( $cross_identifiers as $cross_identifier ) {
-				$cross_blocked = $this->is_identifier_blocked( $cross_identifier );
-				if ( $cross_blocked ) {
+			foreach ( $this->mosp_build_cross_identifier_strings( $email, $phone, $ip, $browser_id ) as $cross_identifier ) {
+				if ( $this->is_identifier_blocked( $cross_identifier ) ) {
 					return true;
 				}
 			}
-
 			return false;
 		}
 
@@ -317,29 +466,12 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 		 * @param string $ip IP address.
 		 * @param string $browser_id Browser fingerprint ID.
 		 * @param int    $current_time Current timestamp.
+		 * @param array  $context Context array.
 		 * @return void
 		 */
-		private function mosp_record_cross_identifier_attempt( $email, $phone, $ip, $browser_id, $current_time ) {
-			if ( empty( $ip ) ) {
-				return;
-			}
-
-			$cross_identifiers = array();
-
-			if ( ! empty( $email ) ) {
-				$cross_identifiers[] = 'cross_ip_email:' . $ip . '|' . $email;
-			}
-
-			if ( ! empty( $phone ) ) {
-				$cross_identifiers[] = 'cross_ip_phone:' . $ip . '|' . $phone;
-			}
-
-			if ( ! empty( $browser_id ) ) {
-				$cross_identifiers[] = 'cross_ip_browser:' . $ip . '|' . $browser_id;
-			}
-
-			foreach ( $cross_identifiers as $cross_identifier ) {
-				$this->mosp_record_identifier_attempt( $cross_identifier, $current_time );
+		private function mosp_record_cross_identifier_attempt( $email, $phone, $ip, $browser_id, $current_time, $context = array() ) {
+			foreach ( $this->mosp_build_cross_identifier_strings( $email, $phone, $ip, $browser_id ) as $cross_identifier ) {
+				$this->mosp_record_identifier_attempt( $cross_identifier, $current_time, $context );
 			}
 		}
 
@@ -353,6 +485,13 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 		 * @return array Block data with remaining time
 		 */
 		public function mosp_get_block_data( $email, $phone, $browser_id = '', $context = 'otp_send' ) {
+			if ( ! $this->mosp_is_addon_enabled() ) {
+				return array(
+					'remaining_time' => 0,
+					'reason'         => '',
+				);
+			}
+
 			$current_time = time();
 			$settings     = $this->storage->mosp_get_settings();
 
@@ -467,6 +606,14 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 		 * @return array Array with 'would_be_blocked' (bool), 'reason' (string), and 'remaining_time' (int)
 		 */
 		public function mosp_would_be_blocked_after_attempt_with_details( $email, $phone, $browser_id = '' ) {
+			if ( ! $this->mosp_is_addon_enabled() ) {
+				return array(
+					'would_be_blocked' => false,
+					'reason'           => '',
+					'remaining_time'   => 0,
+				);
+			}
+
 			$settings    = $this->storage->mosp_get_settings();
 			$ip          = $this->mosp_get_client_ip();
 			$identifiers = $this->mosp_get_all_identifiers( $email, $phone, $ip, $browser_id );
@@ -760,9 +907,10 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 		 *
 		 * @param string $identifier The identifier.
 		 * @param int    $current_time Current timestamp.
+		 * @param array  $context Context array.
 		 */
-		private function mosp_record_identifier_attempt( $identifier, $current_time ) {
-			$this->storage->mosp_record_attempt_with_timestamp( $identifier, $current_time );
+		private function mosp_record_identifier_attempt( $identifier, $current_time, $context = array() ) {
+			$this->storage->mosp_record_attempt_with_timestamp( $identifier, $current_time, $context );
 		}
 
 		/**
@@ -775,6 +923,10 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 		 * @return bool|WP_Error
 		 */
 		public function mosp_check_spam_before_otp_send( $allow, $user_login, $user_email, $phone_number ) {
+			if ( ! $this->mosp_is_addon_enabled() ) {
+				return $allow;
+			}
+
 			$settings = $this->storage->mosp_get_settings();
 
 			if ( ! empty( $user_email ) ) {
@@ -814,16 +966,28 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 		 * @return void
 		 */
 		public function mosp_record_otp_attempt( $user_login, $user_email, $phone_number ) {
+			if ( ! $this->mosp_is_addon_enabled() ) {
+				return;
+			}
+
 			$settings = $this->storage->mosp_get_settings();
+			$ip       = $this->mosp_get_client_ip();
+			$browser  = $this->get_browser_id();
 
 			$identifiers = $this->mosp_get_request_identifiers( $user_email, $phone_number );
+			$context     = array(
+				'ip'         => $ip,
+				'browser_id' => $browser,
+				'email'      => isset( $identifiers['email'] ) ? $identifiers['email'] : '',
+				'phone'      => isset( $identifiers['phone'] ) ? $identifiers['phone'] : '',
+			);
 
 			foreach ( $identifiers as $type => $identifier ) {
 				if ( empty( $identifier ) || $this->storage->mosp_is_whitelisted( $identifier, $type ) ) {
 					continue;
 				}
 
-				$this->storage->mosp_record_attempt( $identifier, $type );
+				$this->storage->mosp_record_attempt( $identifier, $type, $context );
 			}
 		}
 
@@ -1054,6 +1218,11 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 			}
 
 			if ( $proxy_detection['trusted_proxy'] ) {
+				foreach ( $candidates as $candidate ) {
+					if ( 'HTTP_CF_CONNECTING_IP' === $candidate['source'] && ! $candidate['spoofable'] ) {
+						return $candidate['ip'];
+					}
+				}
 				foreach ( $candidates as $candidate ) {
 					if ( ! $candidate['spoofable'] ) {
 						return $candidate['ip'];
@@ -1363,6 +1532,10 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 		 * @return bool.
 		 */
 		public function mosp_requires_puzzle_verification( $email, $phone, $ip, $browser_id ) {
+			if ( ! $this->mosp_is_addon_enabled() ) {
+				return false;
+			}
+
 			return $this->storage->mosp_is_puzzle_required_for_user( $email, $phone, $ip, $browser_id );
 		}
 
@@ -1376,17 +1549,35 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 		 * @return void.
 		 */
 		public function mosp_clear_puzzle_requirements( $email, $phone, $ip, $browser_id ) {
-			$identifiers = array(
-				'email'   => $email,
-				'phone'   => $phone,
-				'ip'      => $ip,
-				'browser' => $browser_id,
-			);
+			$to_clear = array();
 
-			foreach ( $identifiers as $type => $identifier ) {
-				if ( ! empty( $identifier ) ) {
-					$this->storage->mosp_clear_puzzle_requirement( $identifier );
-				}
+			$raw_email  = trim( (string) $email );
+			$norm_email = $this->mosp_normalize_email_for_spam( $email );
+			if ( '' !== $raw_email ) {
+				$to_clear[] = $raw_email;
+			}
+			if ( '' !== $norm_email && $norm_email !== $raw_email ) {
+				$to_clear[] = $norm_email;
+			}
+
+			$raw_phone  = trim( (string) $phone );
+			$norm_phone = $this->mosp_normalize_phone_for_spam( $phone );
+			if ( '' !== $raw_phone ) {
+				$to_clear[] = $raw_phone;
+			}
+			if ( '' !== $norm_phone && $norm_phone !== $raw_phone ) {
+				$to_clear[] = $norm_phone;
+			}
+
+			if ( ! empty( $ip ) ) {
+				$to_clear[] = $ip;
+			}
+			if ( ! empty( $browser_id ) ) {
+				$to_clear[] = $browser_id;
+			}
+
+			foreach ( array_unique( array_filter( $to_clear ) ) as $identifier ) {
+				$this->storage->mosp_clear_puzzle_requirement( $identifier );
 			}
 		}
 
@@ -1398,6 +1589,10 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 		 * @return bool True if puzzle was completed
 		 */
 		public function mosp_has_completed_limit_puzzle( $email, $phone ) {
+			if ( ! $this->mosp_is_addon_enabled() ) {
+				return false;
+			}
+
 			$identifiers = $this->mosp_get_limit_identifiers( $email, $phone );
 			if ( empty( $identifiers ) ) {
 				return false;
@@ -1451,7 +1646,7 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 			$ip         = $this->mosp_get_client_ip();
 			$browser_id = $this->get_browser_id();
 
-			$identifiers = $this->mosp_get_all_identifiers( $email, $phone, $ip, $browser_id );
+			$identifiers = $this->mosp_get_identifiers_to_reset_on_puzzle_success( $email, $phone, $ip, $browser_id );
 
 			foreach ( $identifiers as $identifier ) {
 				$key  = $this->storage->mosp_hash_key( $identifier );
@@ -1483,6 +1678,10 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 		 * @return bool True if puzzle is required
 		 */
 		public function mosp_requires_limit_puzzle_verification( $email, $phone ) {
+			if ( ! $this->mosp_is_addon_enabled() ) {
+				return false;
+			}
+
 			$settings    = $this->storage->mosp_get_settings();
 			$identifiers = $this->mosp_get_limit_identifiers( $email, $phone );
 			if ( empty( $identifiers ) ) {
@@ -1659,11 +1858,13 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 		 * @return string User identifier
 		 */
 		private function mosp_get_user_identifier( $email, $phone ) {
-			if ( ! empty( $phone ) ) {
-				return 'phone:' . preg_replace( '/[^0-9+]/', '', $phone );
+			$np = $this->mosp_normalize_phone_for_spam( $phone );
+			if ( '' !== $np ) {
+				return 'phone:' . $np;
 			}
-			if ( ! empty( $email ) ) {
-				return 'email:' . strtolower( trim( $email ) );
+			$ne = $this->mosp_normalize_email_for_spam( $email );
+			if ( '' !== $ne ) {
+				return 'email:' . $ne;
 			}
 			return '';
 		}
@@ -1680,12 +1881,18 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 			$identifiers = array();
 
 			if ( $settings['track_phone'] && ! empty( $phone ) ) {
-				$identifiers[] = 'phone:' . preg_replace( '/[^0-9+]/', '', $phone );
+				$np = $this->mosp_normalize_phone_for_spam( $phone );
+				if ( '' !== $np ) {
+					$identifiers[] = 'phone:' . $np;
+				}
 				return $identifiers;
 			}
 
 			if ( $settings['track_email'] && ! empty( $email ) ) {
-				$identifiers[] = 'email:' . strtolower( trim( $email ) );
+				$ne = $this->mosp_normalize_email_for_spam( $email );
+				if ( '' !== $ne ) {
+					$identifiers[] = 'email:' . $ne;
+				}
 			}
 
 			return $identifiers;
@@ -1776,6 +1983,249 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 				}
 			}
 			return $cleared;
+		}
+
+		/**
+		 * Check if addon is enabled.
+		 *
+		 * @return bool
+		 */
+		private function mosp_is_addon_enabled() {
+			$settings = $this->storage->mosp_get_settings();
+			return ! empty( $settings['enabled'] );
+		}
+
+		/**
+		 * Unblock a user by identifier hash.
+		 *
+		 * @param string $identifier_hash The hashed identifier.
+		 * @return array Result with 'success' and 'message' keys.
+		 */
+		public function mosp_unblock_user_by_hash( $identifier_hash ) {
+			if ( empty( $identifier_hash ) ) {
+				return array(
+					'success' => false,
+					'message' => __( 'Invalid identifier hash.', 'miniorange-otp-verification' ),
+				);
+			}
+
+			// The identifier_hash is already the hash, so use it directly.
+			$key           = $identifier_hash;
+			$data          = $this->storage->mosp_get_spam_data( $key );
+			$blocked_until = 0;
+			$block_reason  = '';
+
+			if ( false !== $data ) {
+				$blocked_until = isset( $data['blocked_until'] ) ? (int) $data['blocked_until'] : 0;
+				$block_reason  = isset( $data['block_reason'] ) ? $data['block_reason'] : '';
+
+				// Clear block status.
+				$data['blocked_until'] = 0;
+				$data['block_reason']  = '';
+				$data['attempts']      = array();
+				$data['last_attempt']  = 0;
+
+				$this->storage->mosp_update_spam_data( $key, $data );
+
+				$related_identifiers = $this->mosp_build_related_identifiers( $data );
+				$this->mosp_clear_identifiers_data( $related_identifiers );
+			}
+
+			// Clear rate limit data for all window types using the helper.
+			$window_types = array( 'hourly', 'daily' );
+			foreach ( $window_types as $window_type ) {
+				$rate_key = 'rate_limit_' . $window_type . '_' . $identifier_hash;
+				$this->storage->mosp_delete_spam_data( $rate_key );
+			}
+
+			// Clear puzzle requirements.
+			$this->storage->mosp_clear_puzzle_requirement( $identifier_hash );
+
+			// Clear cache.
+			wp_cache_delete( 'mosp_blocked_users_list', 'mo_osp' );
+			wp_cache_delete( 'mosp_rate_limit_hourly_options', 'mo_osp' );
+			wp_cache_delete( 'mosp_rate_limit_daily_options', 'mo_osp' );
+			wp_cache_delete( 'mosp_spam_data_option_names', 'mo_osp' );
+
+			$this->mosp_clear_related_blocks_by_reason( $blocked_until, $block_reason, $identifier_hash );
+
+			return array(
+				'success' => true,
+				'message' => __( 'User unblocked successfully.', 'miniorange-otp-verification' ),
+			);
+		}
+
+		/**
+		 * Clear all blocked-user data, rate limits, and puzzle flags (admin only).
+		 *
+		 * @return array{ success: bool, message: string, deleted: int }
+		 */
+		public function mosp_clear_all_blocked_data() {
+			$deleted = $this->storage->mosp_clear_all_otp_spam_data();
+
+			if ( 0 === $deleted ) {
+				return array(
+					'success' => false,
+					'deleted' => 0,
+					'message' => __( 'No entries found to clear.', 'miniorange-otp-verification' ),
+				);
+			}
+
+			return array(
+				'success' => true,
+				'deleted' => $deleted,
+				'message' => sprintf(
+					/* translators: %d: number of database options removed */
+					_n(
+						'Cleared %d stored entry (blocks, rate limits, and puzzle flags).',
+						'Cleared %d stored entries (blocks, rate limits, and puzzle flags).',
+						$deleted,
+						'miniorange-otp-verification'
+					),
+					$deleted
+				),
+			);
+		}
+
+		/**
+		 * Build related identifiers from stored metadata.
+		 *
+		 * @param array $data Spam data.
+		 * @return array
+		 */
+		private function mosp_build_related_identifiers( $data ) {
+			$related_identifiers = array();
+			if ( isset( $data['last_ip'] ) && filter_var( $data['last_ip'], FILTER_VALIDATE_IP ) ) {
+				$related_identifiers[] = $data['last_ip'];
+				$related_identifiers[] = 'ip:' . $data['last_ip'];
+			}
+			if ( isset( $data['last_browser'] ) && ! empty( $data['last_browser'] ) ) {
+				$related_identifiers[] = $data['last_browser'];
+				$related_identifiers[] = 'browser:' . $data['last_browser'];
+			}
+			if ( isset( $data['last_email'] ) && ! empty( $data['last_email'] ) ) {
+				$related_identifiers[] = $data['last_email'];
+				$related_identifiers[] = 'email:' . $data['last_email'];
+			}
+			if ( isset( $data['last_phone'] ) && ! empty( $data['last_phone'] ) ) {
+				$related_identifiers[] = $data['last_phone'];
+				$related_identifiers[] = 'phone:' . $data['last_phone'];
+			}
+
+			$last_ip      = isset( $data['last_ip'] ) ? $data['last_ip'] : '';
+			$last_email   = isset( $data['last_email'] ) ? $data['last_email'] : '';
+			$last_phone   = isset( $data['last_phone'] ) ? $data['last_phone'] : '';
+			$last_browser = isset( $data['last_browser'] ) ? $data['last_browser'] : '';
+
+			if ( $last_ip && $last_email ) {
+				$related_identifiers[] = 'cross_ip_email:' . $last_ip . '|' . $last_email;
+			}
+			if ( $last_ip && $last_phone ) {
+				$related_identifiers[] = 'cross_ip_phone:' . $last_ip . '|' . $last_phone;
+			}
+			if ( $last_ip && $last_browser ) {
+				$related_identifiers[] = 'cross_ip_browser:' . $last_ip . '|' . $last_browser;
+			}
+
+			return array_values( array_unique( array_filter( $related_identifiers ) ) );
+		}
+
+		/**
+		 * Clear spam + rate-limit data for identifiers.
+		 *
+		 * @param array $identifiers Identifiers to clear.
+		 * @return void
+		 */
+		private function mosp_clear_identifiers_data( $identifiers ) {
+			if ( empty( $identifiers ) || ! is_array( $identifiers ) ) {
+				return;
+			}
+
+			foreach ( $identifiers as $identifier ) {
+				if ( empty( $identifier ) ) {
+					continue;
+				}
+				$hash = $this->storage->mosp_hash_key( $identifier );
+
+				$identifier_data = $this->storage->mosp_get_spam_data( $hash );
+				if ( false !== $identifier_data ) {
+					$identifier_data['blocked_until'] = 0;
+					$identifier_data['block_reason']  = '';
+					$identifier_data['attempts']      = array();
+					$identifier_data['last_attempt']  = 0;
+					$this->storage->mosp_update_spam_data( $hash, $identifier_data );
+				}
+
+				$window_types = array( 'hourly', 'daily' );
+				foreach ( $window_types as $window_type ) {
+					$this->storage->mosp_delete_spam_data( 'rate_limit_' . $window_type . '_' . $hash );
+					delete_mo_option( 'mo_osp_rate_limit_' . $window_type . '_' . $hash );
+				}
+
+				$this->storage->mosp_clear_puzzle_requirement( $hash );
+			}
+		}
+
+		/**
+		 * Clear blocks that share the same block reason and time.
+		 *
+		 * @param int    $blocked_until Blocked until timestamp.
+		 * @param string $block_reason Block reason.
+		 * @param string $exclude_hash Identifier hash to skip.
+		 * @return void
+		 */
+		private function mosp_clear_related_blocks_by_reason( $blocked_until, $block_reason, $exclude_hash ) {
+			if ( empty( $blocked_until ) || empty( $block_reason ) ) {
+				return;
+			}
+
+			global $wpdb;
+
+			$option_names = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$wpdb->prepare(
+					"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+					$wpdb->esc_like( 'mo_customer_validation_' . MoOtpSpamStorage::SPAM_DATA_PREFIX ) . '%'
+				)
+			);
+
+			if ( empty( $option_names ) ) {
+				return;
+			}
+
+			foreach ( $option_names as $db_option_name ) {
+				$option_key = str_replace( 'mo_customer_validation_', '', $db_option_name );
+				$hash_key   = str_replace( MoOtpSpamStorage::SPAM_DATA_PREFIX, '', $option_key );
+
+				if ( $hash_key === $exclude_hash ) {
+					continue;
+				}
+
+				$spam_data = $this->storage->mosp_get_spam_data( $hash_key );
+				if ( false === $spam_data ) {
+					continue;
+				}
+
+				$spam_blocked_until = isset( $spam_data['blocked_until'] ) ? (int) $spam_data['blocked_until'] : 0;
+				$spam_block_reason  = isset( $spam_data['block_reason'] ) ? $spam_data['block_reason'] : '';
+
+				if ( $spam_blocked_until !== (int) $blocked_until || $spam_block_reason !== $block_reason ) {
+					continue;
+				}
+
+				$spam_data['blocked_until'] = 0;
+				$spam_data['block_reason']  = '';
+				$spam_data['attempts']      = array();
+				$spam_data['last_attempt']  = 0;
+				$this->storage->mosp_update_spam_data( $hash_key, $spam_data );
+
+				$window_types = array( 'hourly', 'daily' );
+				foreach ( $window_types as $window_type ) {
+					$rate_key = 'rate_limit_' . $window_type . '_' . $hash_key;
+					$this->storage->mosp_delete_spam_data( $rate_key );
+				}
+
+				$this->storage->mosp_clear_puzzle_requirement( $hash_key );
+			}
 		}
 	}
 }

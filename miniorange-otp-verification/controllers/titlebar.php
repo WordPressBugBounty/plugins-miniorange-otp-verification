@@ -73,7 +73,7 @@ $mo_whatsapp_gateway_enabled = $whatsapp_enabled && $mo_whatsapp_type_enabled &&
 $mo_smtp_enabled             = $is_free_plugin || ( $smtp_enabled && 'mo_smtp_enable' === $smtp_enabled );
 $license_plan                = get_mo_option( 'customer_license_plan' );
 $remaining_total_txn         = $remaining_email + $remaining_sms;
-$active_class                = $remaining_total_txn < 15 ? 'mo-active-notice-bar' : '';
+$active_class                = $remaining_total_txn < MoConstants::LOW_TRANSACTION_THRESHOLD ? 'mo-active-notice-bar' : '';
 $mo_transactions             = null;
 
 // Compute transactions display text.

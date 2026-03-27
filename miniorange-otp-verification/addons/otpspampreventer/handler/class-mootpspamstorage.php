@@ -101,8 +101,19 @@ if ( ! class_exists( 'MoOtpSpamStorage' ) ) {
 
 			update_mo_option( $option_name, maybe_serialize( $data ) );
 
-			$saved_data = get_mo_option( $option_name );
-			$success    = ( $saved_data === $data );
+			$saved_data = $this->mosp_get_spam_data( $key );
+
+			$success = false;
+			if ( false !== $saved_data && is_array( $saved_data ) ) {
+				$key_fields_match = true;
+				if ( isset( $data['blocked_until'] ) ) {
+					$key_fields_match = $key_fields_match && ( isset( $saved_data['blocked_until'] ) && (int) $saved_data['blocked_until'] === (int) $data['blocked_until'] );
+				}
+				if ( isset( $data['block_reason'] ) ) {
+					$key_fields_match = $key_fields_match && ( isset( $saved_data['block_reason'] ) && $saved_data['block_reason'] === $data['block_reason'] );
+				}
+				$success = $key_fields_match;
+			}
 
 			return $success;
 		}
@@ -147,7 +158,7 @@ if ( ! class_exists( 'MoOtpSpamStorage' ) ) {
 				'enabled'       => true,
 				'cooldown_time' => 60,
 				'max_attempts'  => 3,
-				'block_time'    => 3600,
+				'block_time'    => 900,
 				'daily_limit'   => 10,
 				'hourly_limit'  => 5,
 				'track_phone'   => true,
@@ -229,7 +240,7 @@ if ( ! class_exists( 'MoOtpSpamStorage' ) ) {
 		 * @param string $type The type of identifier.
 		 * @return array The updated attempt data.
 		 */
-		public function mosp_record_attempt( $identifier, $type ) {
+		public function mosp_record_attempt( $identifier, $type, $context = array() ) {
 			$key  = $this->mosp_hash_key( $identifier );
 			$data = $this->mosp_get_spam_data( $key );
 			$now  = time();
@@ -243,6 +254,36 @@ if ( ! class_exists( 'MoOtpSpamStorage' ) ) {
 					'created'       => $now,
 					'last_attempt'  => $now,
 				);
+			} else {
+				if ( ! isset( $data['type'] ) || 'identifier' === $data['type'] || 'unknown' === $data['type'] ) {
+					$data['type'] = $type;
+				}
+				if ( ! isset( $data['identifier'] ) && ! empty( $identifier ) ) {
+					if ( strpos( $identifier, 'email:' ) === 0 ) {
+						$data['identifier'] = substr( $identifier, 6 );
+					} elseif ( strpos( $identifier, 'phone:' ) === 0 ) {
+						$data['identifier'] = substr( $identifier, 6 );
+					} elseif ( strpos( $identifier, 'ip:' ) === 0 ) {
+						$data['identifier'] = substr( $identifier, 3 );
+					} elseif ( strpos( $identifier, 'browser:' ) === 0 ) {
+						$data['identifier'] = substr( $identifier, 8 );
+					}
+				}
+			}
+
+			if ( is_array( $context ) ) {
+				if ( ! empty( $context['ip'] ) && filter_var( $context['ip'], FILTER_VALIDATE_IP ) ) {
+					$data['last_ip'] = $context['ip'];
+				}
+				if ( ! empty( $context['browser_id'] ) ) {
+					$data['last_browser'] = $context['browser_id'];
+				}
+				if ( ! empty( $context['email'] ) ) {
+					$data['last_email'] = strtolower( trim( (string) $context['email'] ) );
+				}
+				if ( ! empty( $context['phone'] ) ) {
+					$data['last_phone'] = trim( (string) $context['phone'] );
+				}
 			}
 
 			$attempts_before = isset( $data['attempts'] ) && is_array( $data['attempts'] ) ? count( $data['attempts'] ) : 0;
@@ -1031,9 +1072,10 @@ if ( ! class_exists( 'MoOtpSpamStorage' ) ) {
 		 *
 		 * @param string $identifier The full identifier (e.g., 'email:user@example.com').
 		 * @param int    $timestamp The attempt timestamp.
+		 * @param array  $context Optional context data.
 		 * @return void
 		 */
-		public function mosp_record_attempt_with_timestamp( $identifier, $timestamp ) {
+		public function mosp_record_attempt_with_timestamp( $identifier, $timestamp, $context = array() ) {
 			$key  = $this->mosp_hash_key( $identifier );
 			$data = $this->mosp_get_spam_data( $key );
 
@@ -1043,6 +1085,37 @@ if ( ! class_exists( 'MoOtpSpamStorage' ) ) {
 					'blocked_until' => 0,
 					'created'       => $timestamp,
 				);
+			}
+
+			if ( is_array( $context ) ) {
+				if ( ! empty( $context['ip'] ) && filter_var( $context['ip'], FILTER_VALIDATE_IP ) ) {
+					$data['last_ip'] = $context['ip'];
+				}
+				if ( ! empty( $context['browser_id'] ) ) {
+					$data['last_browser'] = $context['browser_id'];
+				}
+				if ( ! empty( $context['email'] ) ) {
+					$data['last_email'] = strtolower( trim( (string) $context['email'] ) );
+				}
+				if ( ! empty( $context['phone'] ) ) {
+					$data['last_phone'] = trim( (string) $context['phone'] );
+				}
+			}
+
+			if ( is_string( $identifier ) && strpos( $identifier, ':' ) !== false ) {
+				list( $id_type, $id_value ) = explode( ':', $identifier, 2 );
+				$id_value                   = trim( (string) $id_value );
+				if ( ! empty( $id_value ) ) {
+					if ( 'email' === $id_type ) {
+						$data['last_email'] = strtolower( $id_value );
+					} elseif ( 'phone' === $id_type ) {
+						$data['last_phone'] = $id_value;
+					} elseif ( 'ip' === $id_type ) {
+						$data['last_ip'] = $id_value;
+					} elseif ( 'browser' === $id_type ) {
+						$data['last_browser'] = $id_value;
+					}
+				}
 			}
 
 			if ( ! isset( $data['attempts'] ) ) {
@@ -1061,6 +1134,491 @@ if ( ! class_exists( 'MoOtpSpamStorage' ) ) {
 			);
 
 			$this->mosp_update_spam_data( $key, $data );
+		}
+
+		/**
+		 * Get all currently blocked users.
+		 *
+		 * @param int $limit Maximum number of entries to return (default 100).
+		 * @param int $offset Offset for pagination (default 0).
+		 * @return array Array of blocked user data.
+		 */
+		public function mosp_get_all_blocked_users( $limit = 100, $offset = 0 ) {
+			return $this->mosp_get_blocked_users_from_rate_limits( $limit, $offset );
+		}
+
+		/**
+		 * Delete all spam/block rows, rate-limit options, and puzzle-requirement flags (admin "clear all").
+		 *
+		 * @return int Number of options deleted.
+		 */
+		public function mosp_clear_all_otp_spam_data() {
+			global $wpdb;
+
+			$deleted = 0;
+
+			$like_patterns = array(
+				$wpdb->esc_like( 'mo_customer_validation_' . self::SPAM_DATA_PREFIX ) . '%',
+				$wpdb->esc_like( 'mo_customer_validation_mo_osp_rate_limit_' ) . '%',
+			);
+
+			foreach ( $like_patterns as $like ) {
+				$option_names = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+					$wpdb->prepare(
+						"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+						$like
+					)
+				);
+				foreach ( $option_names as $option_name ) {
+					delete_site_option( $option_name );
+					++$deleted;
+				}
+			}
+
+			$puzzle_like  = $wpdb->esc_like( 'mo_osp_puzzle_' ) . '%';
+			$puzzle_names = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$wpdb->prepare(
+					"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+					$puzzle_like
+				)
+			);
+			foreach ( $puzzle_names as $option_name ) {
+				delete_option( $option_name );
+				++$deleted;
+			}
+
+			wp_cache_delete( 'mosp_blocked_users_list', 'mo_osp' );
+			wp_cache_delete( 'mosp_spam_data_option_names', 'mo_osp' );
+			wp_cache_delete( 'mosp_uninstall_spam_option_names', 'mo_osp' );
+			wp_cache_delete( 'mosp_rate_limit_hourly_options', 'mo_osp' );
+			wp_cache_delete( 'mosp_rate_limit_daily_options', 'mo_osp' );
+			wp_cache_delete( 'mosp_rate_limit_hourly_option_names', 'mo_osp' );
+			wp_cache_delete( 'mosp_rate_limit_daily_option_names', 'mo_osp' );
+
+			return $deleted;
+		}
+
+		/**
+		 * Get blocked users by checking rate limit data and spam data.
+		 *
+		 * @param int $limit Maximum number of entries to return.
+		 * @param int $offset Offset for pagination.
+		 * @return array Array of blocked user data.
+		 */
+		public function mosp_get_blocked_users_from_rate_limits( $limit = 100, $offset = 0 ) {
+			global $wpdb;
+
+			$now                = time();
+			$blocked            = array();
+			$settings           = $this->mosp_get_settings();
+			$window_types       = array( 'hourly', 'daily' );
+			$seen_hashes        = array();
+			$hash_to_identifier = array();
+			$priority           = array(
+				'phone'   => 3,
+				'email'   => 2,
+				'ip'      => 1,
+				'browser' => 0,
+			);
+
+			foreach ( $window_types as $window_type ) {
+				$cache_key    = 'mosp_rate_limit_' . $window_type . '_options';
+				$option_names = wp_cache_get( $cache_key, 'mo_osp' );
+
+				if ( false === $option_names ) {
+					$option_names = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+						$wpdb->prepare(
+							"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+							$wpdb->esc_like( 'mo_customer_validation_mo_osp_rate_limit_' . $window_type . '_' ) . '%'
+						)
+					);
+					wp_cache_set( $cache_key, $option_names, 'mo_osp', 300 );
+				}
+
+				foreach ( $option_names as $db_option_name ) {
+					$option_key     = str_replace( 'mo_customer_validation_', '', $db_option_name );
+					$rate_limit_key = str_replace( self::SPAM_DATA_PREFIX, '', $option_key );
+
+					$key_parts = explode( '_', $rate_limit_key );
+					if ( count( $key_parts ) >= 4 ) {
+						$identifier_hash = $key_parts[3];
+
+						if ( ! isset( $hash_to_identifier[ $identifier_hash ] ) ) {
+							$hash_to_identifier[ $identifier_hash ] = null;
+						}
+					}
+				}
+			}
+
+			$cache_key         = 'mosp_spam_data_option_names';
+			$spam_option_names = wp_cache_get( $cache_key, 'mo_osp' );
+
+			if ( false === $spam_option_names ) {
+				$spam_option_names = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+					$wpdb->prepare(
+						"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+						$wpdb->esc_like( 'mo_customer_validation_' . self::SPAM_DATA_PREFIX ) . '%'
+					)
+				);
+				wp_cache_set( $cache_key, $spam_option_names, 'mo_osp', 300 );
+			}
+
+			foreach ( $spam_option_names as $db_option_name ) {
+				$option_key = str_replace( 'mo_customer_validation_', '', $db_option_name );
+
+				$hash_key = str_replace( self::SPAM_DATA_PREFIX, '', $option_key );
+
+				if ( strpos( $option_key, 'rate_limit_' ) !== false ) {
+					continue;
+				}
+
+				$spam_data = $this->mosp_get_spam_data( $hash_key );
+
+				if ( false === $spam_data || ! is_array( $spam_data ) ) {
+					continue;
+				}
+
+				$blocked_until = isset( $spam_data['blocked_until'] ) ? (int) $spam_data['blocked_until'] : 0;
+				$block_reason  = isset( $spam_data['block_reason'] ) ? $spam_data['block_reason'] : '';
+
+				if ( $blocked_until > $now && in_array( $block_reason, array( 'hourly_limit_exceeded', 'daily_limit_exceeded', 'max_attempts_exceeded' ), true ) ) {
+					$remaining_time = $blocked_until - $now;
+
+					$identifier_type  = isset( $spam_data['type'] ) ? $spam_data['type'] : 'unknown';
+					$identifier_value = isset( $spam_data['identifier'] ) ? $spam_data['identifier'] : '';
+
+					if ( ! empty( $identifier_value ) ) {
+						$identifier_display = $identifier_value;
+					} else {
+						$identifier_display = 'User: ' . substr( $hash_key, -8 );
+					}
+
+					if ( 'unknown' === $identifier_type || 'identifier' === $identifier_type ) {
+						$identifier_info = $this->mosp_infer_identifier_from_hash( $hash_key, $spam_data );
+						$identifier_type = $identifier_info['type'];
+						if ( empty( $identifier_value ) && ! empty( $identifier_info['value'] ) ) {
+							$identifier_value   = $identifier_info['value'];
+							$identifier_display = $identifier_value;
+						}
+					}
+
+					$user_key = $block_reason . '_' . $blocked_until;
+
+					if ( in_array( $hash_key, $seen_hashes, true ) ) {
+						continue;
+					}
+
+					$is_duplicate = false;
+					foreach ( $blocked as $existing ) {
+						if ( $existing['block_reason'] === $block_reason &&
+							abs( $existing['blocked_until'] - $blocked_until ) < 5 && // Within 5 seconds.
+							'unknown' !== $existing['identifier_type'] &&
+							'unknown' !== $identifier_type ) {
+							$existing_priority = isset( $priority[ $existing['identifier_type'] ] ) ? $priority[ $existing['identifier_type'] ] : 0;
+							$current_priority  = isset( $priority[ $identifier_type ] ) ? $priority[ $identifier_type ] : 0;
+
+							if ( $current_priority > $existing_priority ) {
+								$blocked      = array_filter(
+									$blocked,
+									function ( $item ) use ( $existing ) {
+										return $item['identifier_hash'] !== $existing['identifier_hash'];
+									}
+								);
+								$blocked      = array_values( $blocked );
+								$is_duplicate = false;
+								break;
+							} else {
+								$is_duplicate = true;
+								break;
+							}
+						}
+					}
+
+					if ( $is_duplicate ) {
+						continue;
+					}
+
+					$blocked[] = array(
+						'identifier_hash'   => $hash_key,
+						'identifier_masked' => $identifier_display,
+						'identifier_type'   => $identifier_type,
+						'identifier_value'  => $identifier_value,
+						'block_reason'      => $block_reason,
+						'blocked_until'     => $blocked_until,
+						'remaining_time'    => $remaining_time,
+					);
+
+					$seen_hashes[] = $hash_key;
+				}
+			}
+
+			foreach ( $window_types as $window_type ) {
+				$cache_key    = 'mosp_rate_limit_' . $window_type . '_options';
+				$option_names = wp_cache_get( $cache_key, 'mo_osp' );
+
+				if ( false === $option_names ) {
+					$option_names = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+						$wpdb->prepare(
+							"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+							$wpdb->esc_like( 'mo_customer_validation_mo_osp_rate_limit_' . $window_type . '_' ) . '%'
+						)
+					);
+					wp_cache_set( $cache_key, $option_names, 'mo_osp', 300 );
+				}
+
+				$limit_value = 'hourly' === $window_type ? $settings['hourly_limit'] : $settings['daily_limit'];
+
+				foreach ( $option_names as $db_option_name ) {
+					$option_key = str_replace( 'mo_customer_validation_', '', $db_option_name );
+
+					$rate_limit_key = str_replace( self::SPAM_DATA_PREFIX, '', $option_key );
+					$rate_data      = $this->mosp_get_spam_data( $rate_limit_key );
+
+					if ( false === $rate_data || ! is_array( $rate_data ) || ! isset( $rate_data['attempts'] ) || ! is_array( $rate_data['attempts'] ) ) {
+						continue;
+					}
+
+					$window_seconds   = 'hourly' === $window_type ? 3600 : 86400;
+					$window_start     = $now - $window_seconds;
+					$current_attempts = count(
+						array_filter(
+							$rate_data['attempts'],
+							function ( $timestamp ) use ( $window_start ) {
+								return $timestamp > $window_start;
+							}
+						)
+					);
+
+					if ( $current_attempts >= $limit_value ) {
+						$key_parts = explode( '_', $rate_limit_key );
+						if ( count( $key_parts ) >= 4 ) {
+							$identifier_hash = $key_parts[3];
+
+							if ( in_array( $identifier_hash, $seen_hashes, true ) ) {
+								continue;
+							}
+
+							$in_window = array_filter(
+								$rate_data['attempts'],
+								function ( $timestamp ) use ( $window_start ) {
+									return $timestamp > $window_start;
+								}
+							);
+
+							if ( ! empty( $in_window ) ) {
+								$oldest_attempt = min( $in_window );
+								$reset_time     = $oldest_attempt + $window_seconds;
+								$remaining_time = max( 0, $reset_time - $now );
+
+								$spam_data = $this->mosp_get_spam_data( $identifier_hash );
+
+								$blocked_until = 0;
+								$block_reason  = $window_type . '_limit_exceeded';
+
+								if ( false !== $spam_data && is_array( $spam_data ) && isset( $spam_data['blocked_until'] ) && $spam_data['blocked_until'] > $now ) {
+									$blocked_until  = $spam_data['blocked_until'];
+									$block_reason   = isset( $spam_data['block_reason'] ) ? $spam_data['block_reason'] : $block_reason;
+									$remaining_time = $blocked_until - $now;
+								}
+
+								$identifier_type    = 'unknown';
+								$identifier_value   = '';
+								$identifier_display = 'User: ' . substr( $identifier_hash, -8 );
+
+								if ( false !== $spam_data && is_array( $spam_data ) ) {
+									if ( isset( $spam_data['type'] ) ) {
+										$identifier_type = $spam_data['type'];
+									}
+									if ( isset( $spam_data['identifier'] ) && ! empty( $spam_data['identifier'] ) ) {
+										$identifier_value   = $spam_data['identifier'];
+										$identifier_display = $identifier_value;
+									}
+								}
+
+								if ( empty( $identifier_value ) && isset( $rate_data['identifier'] ) ) {
+									$rate_identifier = $rate_data['identifier'];
+									if ( strpos( $rate_identifier, 'phone:' ) === 0 ) {
+										$identifier_type    = 'phone';
+										$identifier_value   = substr( $rate_identifier, 6 );
+										$identifier_display = $identifier_value;
+									} elseif ( strpos( $rate_identifier, 'email:' ) === 0 ) {
+										$identifier_type    = 'email';
+										$identifier_value   = substr( $rate_identifier, 6 );
+										$identifier_display = $identifier_value;
+									}
+								}
+
+								if ( 'unknown' === $identifier_type || 'identifier' === $identifier_type ) {
+									if ( ! empty( $spam_data['last_email'] ) ) {
+										$identifier_type    = 'email';
+										$identifier_value   = $spam_data['last_email'];
+										$identifier_display = $identifier_value;
+									} elseif ( ! empty( $spam_data['last_phone'] ) ) {
+										$identifier_type    = 'phone';
+										$identifier_value   = $spam_data['last_phone'];
+										$identifier_display = $identifier_value;
+									} elseif ( ! empty( $spam_data['last_ip'] ) ) {
+										$identifier_type    = 'ip';
+										$identifier_value   = $spam_data['last_ip'];
+										$identifier_display = $identifier_value;
+									} elseif ( ! empty( $spam_data['last_browser'] ) ) {
+										$identifier_type    = 'browser';
+										$identifier_value   = $spam_data['last_browser'];
+										$identifier_display = $identifier_value;
+									} elseif ( ! empty( $identifier_value ) && strpos( $identifier_value, '@' ) !== false ) {
+										$identifier_type = 'email';
+									}
+								}
+
+								$calculated_blocked_until = $blocked_until > 0 ? $blocked_until : ( $now + $remaining_time );
+								$is_duplicate             = false;
+								foreach ( $blocked as $existing ) {
+									if ( $existing['block_reason'] === $block_reason &&
+										abs( $existing['blocked_until'] - $calculated_blocked_until ) < 5 ) {
+										$existing_priority = isset( $priority[ $existing['identifier_type'] ] ) ? $priority[ $existing['identifier_type'] ] : 0;
+										$current_priority  = isset( $priority[ $identifier_type ] ) ? $priority[ $identifier_type ] : 0;
+
+										if ( $current_priority > $existing_priority ) {
+											$blocked      = array_filter(
+												$blocked,
+												function ( $item ) use ( $existing ) {
+													return $item['identifier_hash'] !== $existing['identifier_hash'];
+												}
+											);
+											$blocked      = array_values( $blocked );
+											$is_duplicate = false;
+											break;
+										} else {
+											$is_duplicate = true;
+											break;
+										}
+									}
+								}
+
+								if ( $is_duplicate ) {
+									continue;
+								}
+
+								$blocked[] = array(
+									'identifier_hash'   => $identifier_hash,
+									'identifier_masked' => $identifier_display,
+									'identifier_type'   => $identifier_type,
+									'identifier_value'  => $identifier_value,
+									'block_reason'      => $block_reason,
+									'blocked_until'     => $calculated_blocked_until,
+									'remaining_time'    => $remaining_time,
+								);
+
+								$seen_hashes[] = $identifier_hash;
+							}
+						}
+					}
+				}
+			}
+
+			// Sort by remaining time (longest first).
+			usort(
+				$blocked,
+				function ( $a, $b ) {
+					return $b['remaining_time'] - $a['remaining_time'];
+				}
+			);
+
+			$total   = count( $blocked );
+			$blocked = array_slice( $blocked, $offset, $limit );
+
+			return array(
+				'users' => $blocked,
+				'total' => $total,
+			);
+		}
+
+		/**
+		 * Infer identifier type and value from hash by checking rate limit data.
+		 *
+		 * @param string $hash The identifier hash.
+		 * @param array  $spam_data The spam data array.
+		 * @return array Array with 'type', 'value', and 'masked' keys (masked now contains original value).
+		 */
+		private function mosp_infer_identifier_from_hash( $hash, $spam_data ) {
+			global $wpdb;
+
+			$result = array(
+				'type'   => 'unknown',
+				'value'  => '',
+				'masked' => 'User: ' . substr( $hash, -8 ),
+			);
+
+			if ( isset( $spam_data['identifier'] ) && ! empty( $spam_data['identifier'] ) ) {
+				$result['value']  = $spam_data['identifier'];
+				$result['masked'] = $spam_data['identifier'];
+			}
+
+			if ( isset( $spam_data['type'] ) && 'identifier' !== $spam_data['type'] && 'unknown' !== $spam_data['type'] ) {
+				$result['type'] = $spam_data['type'];
+			}
+
+			$window_types = array( 'hourly', 'daily' );
+			foreach ( $window_types as $window_type ) {
+				$rate_limit_key = 'rate_limit_' . $window_type . '_' . $hash;
+				$rate_data      = $this->mosp_get_spam_data( $rate_limit_key );
+
+				if ( false !== $rate_data && is_array( $rate_data ) ) {
+					if ( isset( $rate_data['identifier'] ) && ! empty( $rate_data['identifier'] ) ) {
+						$rate_identifier = $rate_data['identifier'];
+						if ( strpos( $rate_identifier, 'phone:' ) === 0 ) {
+							$result['type']   = 'phone';
+							$result['value']  = substr( $rate_identifier, 6 );
+							$result['masked'] = $result['value'];
+						} elseif ( strpos( $rate_identifier, 'email:' ) === 0 ) {
+							$result['type']   = 'email';
+							$result['value']  = substr( $rate_identifier, 6 );
+							$result['masked'] = $result['value'];
+						}
+					} elseif ( 'unknown' === $result['type'] ) {
+						if ( ! empty( $spam_data['last_email'] ) ) {
+							$result['type']   = 'email';
+							$result['value']  = $spam_data['last_email'];
+							$result['masked'] = $result['value'];
+						} elseif ( ! empty( $spam_data['last_phone'] ) ) {
+							$result['type']   = 'phone';
+							$result['value']  = $spam_data['last_phone'];
+							$result['masked'] = $result['value'];
+						} elseif ( ! empty( $spam_data['last_ip'] ) ) {
+							$result['type']   = 'ip';
+							$result['value']  = $spam_data['last_ip'];
+							$result['masked'] = $result['value'];
+						} elseif ( ! empty( $spam_data['last_browser'] ) ) {
+							$result['type']   = 'browser';
+							$result['value']  = $spam_data['last_browser'];
+							$result['masked'] = $result['value'];
+						}
+					}
+					break;
+				}
+			}
+
+			if ( 'unknown' === $result['type'] ) {
+				if ( ! empty( $spam_data['last_email'] ) ) {
+					$result['type']   = 'email';
+					$result['value']  = $spam_data['last_email'];
+					$result['masked'] = $result['value'];
+				} elseif ( ! empty( $spam_data['last_phone'] ) ) {
+					$result['type']   = 'phone';
+					$result['value']  = $spam_data['last_phone'];
+					$result['masked'] = $result['value'];
+				} elseif ( ! empty( $spam_data['last_ip'] ) ) {
+					$result['type']   = 'ip';
+					$result['value']  = $spam_data['last_ip'];
+					$result['masked'] = $result['value'];
+				} elseif ( ! empty( $spam_data['last_browser'] ) ) {
+					$result['type']   = 'browser';
+					$result['value']  = $spam_data['last_browser'];
+					$result['masked'] = $result['value'];
+				}
+			}
+
+			return $result;
 		}
 	}
 }

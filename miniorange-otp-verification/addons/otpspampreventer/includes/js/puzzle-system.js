@@ -735,6 +735,7 @@
         findSendOTPButton: function() {
             // Try multiple selectors to find the send OTP button
             var buttonSelectors = [
+                'button#miniorange_wc_popup_send_otp_token',
                 '#mo_wc_send_otp',
                 'input[id*="send_otp"]',
                 'button[id*="send_otp"]',

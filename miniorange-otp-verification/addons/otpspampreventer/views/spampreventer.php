@@ -23,6 +23,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<input type="submit" name="save" id="save" class="mo-button inverted" value="<?php echo esc_attr( __( 'Save Settings', 'miniorange-otp-verification' ) ); ?>">
 		</div>
 
+		<div id="mo-osp-admin-notice-container"></div>
+
+		<div class="mo-osp-addon-toggle-row">
+			<label class="mo-osp-addon-toggle mo-osp-addon-toggle-emphasis" for="mo_osp_enabled">
+				<input type="checkbox" id="mo_osp_enabled" name="mo_osp_enabled" value="1" <?php checked( ! empty( $settings['enabled'] ) ); ?> />
+				<span><?php echo esc_html( __( 'Enable Addon', 'miniorange-otp-verification' ) ); ?></span>
+			</label>
+		</div>
+
 		<div class="mo-osp-card">
 			<div class="mo-osp-card-header">
 				<h3 class="mo-osp-section-title">
@@ -168,6 +177,64 @@ if ( ! defined( 'ABSPATH' ) ) {
 							</div>
 							<p class="mo-osp-field-desc"><?php echo esc_html( __( 'Enter one IP address per line (e.g., 192.168.1.1). These IPs will bypass all protection.', 'miniorange-otp-verification' ) ); ?></p>
 						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="mo-osp-card">
+			<div class="mo-osp-card-header">
+				<h3 class="mo-osp-section-title">
+					<svg class="mo-osp-section-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<path d="M12 2C6.48 2 2 6.48 2 12S6.48 22 12 22 22 17.52 22 12 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor"/>
+					</svg>
+					<?php echo esc_html( __( 'Blocked Users', 'miniorange-otp-verification' ) ); ?>
+				</h3>
+				<p class="mo-osp-section-desc"><?php echo esc_html( __( 'View and manage users who are currently blocked due to rate limits or excessive attempts.', 'miniorange-otp-verification' ) ); ?></p>
+			</div>
+
+			<div class="mo-osp-card-body">
+				<div id="mo-osp-blocked-users-container">
+					<div class="mo-osp-loading" id="mo-osp-blocked-users-loading" style="display: none;">
+						<p><?php echo esc_html( __( 'Loading blocked users...', 'miniorange-otp-verification' ) ); ?></p>
+					</div>
+					<div id="mo-osp-blocked-users-table-container">
+						<table class="mo-osp-blocked-users-table" id="mo-osp-blocked-users-table">
+							<thead>
+								<tr>
+									<th><?php echo esc_html( __( 'User Identifier', 'miniorange-otp-verification' ) ); ?></th>
+									<th><?php echo esc_html( __( 'Block Reason', 'miniorange-otp-verification' ) ); ?></th>
+									<th><?php echo esc_html( __( 'Remaining Time', 'miniorange-otp-verification' ) ); ?></th>
+									<th><?php echo esc_html( __( 'Actions', 'miniorange-otp-verification' ) ); ?></th>
+								</tr>
+							</thead>
+							<tbody id="mo-osp-blocked-users-tbody">
+								<tr>
+									<td colspan="4" class="mo-osp-no-data">
+										<?php echo esc_html( __( 'No blocked users found.', 'miniorange-otp-verification' ) ); ?>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="mo-osp-blocked-users-pagination" id="mo-osp-blocked-users-pagination" style="display: none;">
+						<button type="button" class="mo-button mo-button-secondary" id="mo-osp-prev-page" disabled><?php echo esc_html( __( 'Previous', 'miniorange-otp-verification' ) ); ?></button>
+						<span id="mo-osp-page-info"></span>
+						<button type="button" class="mo-button mo-button-secondary" id="mo-osp-next-page" disabled><?php echo esc_html( __( 'Next', 'miniorange-otp-verification' ) ); ?></button>
+					</div>
+					<div class="mo-osp-blocked-users-actions">
+						<button type="button" class="mo-button mo-button-secondary" id="mo-osp-clear-all-blocked-users">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+								<path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM8 9H16V19H8V9ZM15.5 4L14.5 3H9.5L8.5 4H5V6H19V4H15.5Z" fill="currentColor"/>
+							</svg>
+							<?php echo esc_html( __( 'Clear All', 'miniorange-otp-verification' ) ); ?>
+						</button>
+						<button type="button" class="mo-button mo-button-secondary" id="mo-osp-refresh-blocked-users">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+								<path d="M17.65 6.35C16.2 4.9 14.21 4 12 4C7.58 4 4 7.58 4 12S7.58 20 12 20C15.73 20 18.84 17.45 19.73 14H17.65C16.83 16.33 14.61 18 12 18C8.69 18 6 15.31 6 12S8.69 6 12 6C13.66 6 15.14 6.69 16.22 7.78L13 11H20V4L17.65 6.35Z" fill="currentColor"/>
+							</svg>
+							<?php echo esc_html( __( 'Refresh List', 'miniorange-otp-verification' ) ); ?>
+						</button>
 					</div>
 				</div>
 			</div>

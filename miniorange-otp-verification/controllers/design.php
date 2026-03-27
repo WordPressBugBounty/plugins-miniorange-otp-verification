@@ -41,7 +41,6 @@ if ( ! is_array( $email_templates ) ) {
 	$email_templates = array();
 }
 
-// Safely fetch custom popup templates; default to empty string if not set.
 $custom_default_popup    = isset( $email_templates[ $default_popup->get_template_key() ] ) ? $email_templates[ $default_popup->get_template_key() ] : '';
 $custom_external_popup   = isset( $email_templates[ $external_popup->get_template_key() ] ) ? $email_templates[ $external_popup->get_template_key() ] : '';
 $custom_userchoice_popup = isset( $email_templates[ $user_choice_popup->get_template_key() ] ) ? $email_templates[ $user_choice_popup->get_template_key() ] : '';

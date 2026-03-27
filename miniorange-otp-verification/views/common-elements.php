@@ -536,7 +536,7 @@ function get_wc_payment_dropdown( $disabled, $checkout_payment_plans ) {
 		} elseif ( ! $checkout_payment_plans ) {
 			echo 'selected';
 		}
-		echo ' value="' . esc_attr( $payment_plan->id ) . ' ">' . esc_html( $payment_plan->title ) . '</option>';
+		echo ' value="' . esc_attr( $payment_plan->id ) . '">' . esc_html( $payment_plan->title ) . '</option>';
 	}
 	echo '</select>';
 }

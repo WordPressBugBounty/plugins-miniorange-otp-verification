@@ -124,7 +124,7 @@ if ( ! class_exists( 'ExternalPopup' ) ) {
 			$template = str_replace( '{{OTP_MESSAGE_BOX}}', 'mo_message', $template );
 			$template = str_replace( '{{HEADER}}', __( 'Validate OTP (One Time Passcode)', 'miniorange-otp-verification' ), $template );
 			$template = str_replace( '{{GO_BACK}}', 'X', $template );
-			$template = str_replace( '{{MESSAGE}}', esc_html( $message ), $template );
+			$template = str_replace( '{{MESSAGE}}', wp_kses( $message, array( 'i' => array(), 'em' => array(), 'strong' => array(), 'b' => array(), 'br' => array() ) ), $template );
 			$template = str_replace( '{{REQUIRED_FIELDS}}', $extra_form_fields, $template );
 			$template = str_replace( '{{PHONE_FIELD_NAME}}', 'mo_phone_number', $template );
 			$template = str_replace( '{{OTP_FIELD_TITLE}}', __( 'Enter Code', 'miniorange-otp-verification' ), $template );

@@ -2,7 +2,7 @@
 /**
  * Load admin view for Paid Membership Form.
  *
- * @package miniorange-otp-verification/handler
+ * @package miniorange-otp-verification/handler/forms
  */
 
 namespace OTP\Handler\Forms;
@@ -26,13 +26,14 @@ use ReflectionException;
  * functionality related to Paid Membership Pro Plugin. It extends the FormHandler
  * and implements the IFormHandler class to implement some much needed functions.
  */
-if ( ! class_exists( 'PaidMembershipForm' ) ) {
+if ( ! class_exists( 'OTP\Handler\Forms\PaidMembershipForm' ) ) {
 	/**
 	 * PaidMembershipForm class
 	 */
 	class PaidMembershipForm extends FormHandler implements IFormHandler {
 
 		use Instance;
+
 		/**
 		 * Constructor to declare variables of the class on initialization
 		 **/
@@ -41,7 +42,7 @@ if ( ! class_exists( 'PaidMembershipForm' ) ) {
 			$this->is_ajax_form            = false;
 			$this->form_session_var        = FormSessionVars::PMPRO_REGISTRATION;
 			$this->form_key                = 'PM_PRO_FORM';
-			$this->form_name               = mo_( 'Paid MemberShip Pro Registration Form' );
+			$this->form_name               = 'Paid MemberShip Pro Registration Form';
 			$this->phone_form_id           = 'input[name=phone_paidmembership]';
 			$this->type_phone_tag          = 'pmpro_phone_enable';
 			$this->type_email_tag          = 'pmpro_email_enable';
@@ -61,18 +62,34 @@ if ( ! class_exists( 'PaidMembershipForm' ) ) {
 		public function handle_form() {
 			$this->otp_type = get_mo_option( 'pmpro_otp_type' );
 			add_action( 'wp_enqueue_scripts', array( $this, 'show_phone_field_on_page' ) );
-			add_filter( 'pmpro_registration_checks', array( $this, 'paidMembershipProRegistrationCheck' ), 1, 1 );
+			add_action( 'pmpro_checkout_before_submit_button', array( $this, 'add_pmpro_registration_nonce' ) );
+			add_filter( 'pmpro_registration_checks', array( $this, 'paid_membership_pro_registration_check' ), 1, 1 );
 			add_action( 'user_register', array( $this, 'miniorange_registration_save' ), 10, 1 );
-
 		}
+
 		/**
-		 * Function to save phone number in database.
+		 * Outputs a nonce on the PM Pro checkout form so we can verify the request in miniorange_registration_save.
+		 */
+		public function add_pmpro_registration_nonce() {
+			if ( ! $this->is_form_enabled ) {
+				return;
+			}
+			wp_nonce_field( 'mo_pmpro_save_phone', 'mo_pmpro_save_phone_nonce' );
+		}
+
+		/**
+		 * Saves the phone number to user meta when a user registers via Paid Membership Pro checkout.
+		 * Runs on the user_register hook after PM Pro creates the user. Only saves when the request
+		 * includes our nonce (i.e. came from the PM Pro checkout form) and phone_paidmembership is present.
 		 *
-		 * @param string $user_id fetching userid.
-		 **/
+		 * @param int $user_id The ID of the newly registered user.
+		 */
 		public function miniorange_registration_save( $user_id ) {
-			if ( isset( $_POST['phone_paidmembership'] ) ) {// phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
-				update_user_meta( $user_id, 'mo_phone_number', MoUtility::process_phone_number( sanitize_text_field( wp_unslash( $_POST['phone_paidmembership'] ) ) ) );// phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+			if ( ! isset( $_POST['mo_pmpro_save_phone_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['mo_pmpro_save_phone_nonce'] ) ), 'mo_pmpro_save_phone' ) ) {
+				return;
+			}
+			if ( isset( $_POST['phone_paidmembership'] ) ) {
+				update_user_meta( $user_id, 'mo_phone_number', MoUtility::process_phone_number( sanitize_text_field( wp_unslash( $_POST['phone_paidmembership'] ) ) ) );
 			}
 		}
 
@@ -81,26 +98,30 @@ if ( ! class_exists( 'PaidMembershipForm' ) ) {
 		 * to check if otp verification needs to start. Checks for any paid membership
 		 * pro form validation errors and then checks
 		 *
-		 * @param bool $okay This variable decides if there is any error in the form(it is true by default).
+		 * @param bool $continue_registration Whether to continue with registration (from PM Pro's pmpro_registration_checks filter).
 		 * @throws ReflectionException .
 		 */
-		public function paidMembershipProRegistrationCheck( $okay ) {
+		public function paid_membership_pro_registration_check( $continue_registration ) {
 			global $pmpro_msgt;
 
 			if ( 'pmpro_error' === $pmpro_msgt ) {
-				return $okay;
+				return $continue_registration;
 			}
 
 			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->get_verification_type() ) ) {
 				$this->unset_otp_session_variables();
-				return $okay;
+				return $continue_registration;
 			}
 
-			if ( $this->get_verification_type() === VerificationType::PHONE && ! $this->validatePhone( $_POST ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+			if ( ! isset( $_POST['mo_pmpro_save_phone_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['mo_pmpro_save_phone_nonce'] ) ), 'mo_pmpro_save_phone' ) ) {
+				return $continue_registration;
+			}
+
+			if ( $this->get_verification_type() === VerificationType::PHONE && ! $this->validate_phone( $_POST ) ) {
 				return false;
 			}
 			MoUtility::initialize_transaction( $this->form_session_var );
-			$this->startOTPVerificationProcess( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook
+			$this->start_otp_verification_process( $_POST );
 		}
 
 		/**
@@ -109,10 +130,10 @@ if ( ! class_exists( 'PaidMembershipForm' ) ) {
 		 *
 		 * @param object $data form data.
 		 */
-		private function startOTPVerificationProcess( $data ) {
-			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
+		private function start_otp_verification_process( $data ) {
+			if ( $this->otp_type === $this->type_phone_tag ) {
 				$this->send_challenge( '', '', null, trim( sanitize_text_field( $data['phone_paidmembership'] ) ), 'phone', null, null, null, $this->form_session_var );
-			} elseif ( strcasecmp( $this->otp_type, $this->type_email_tag ) === 0 ) {
+			} elseif ( $this->otp_type === $this->type_email_tag ) {
 				$this->send_challenge( '', sanitize_email( $data['bemail'] ), null, sanitize_email( $data['bemail'] ), 'email', null, null, null, $this->form_session_var );
 			}
 		}
@@ -124,12 +145,19 @@ if ( ! class_exists( 'PaidMembershipForm' ) ) {
 		 * functions and global variables. The function returns if an existing error is
 		 * found.
 		 *
+		 * Uses globals (defined outside this file):
+		 * - $pmpro_msg, $pmpro_msgt, $pmpro_requirebilling: Paid Membership Pro checkout
+		 *   variables. We set them so PM Pro displays our error and stops registration.
+		 * - $phone_logic: Instance of PhoneVerificationLogic (set in MoInit::initialize_globals()).
+		 *   Used to get the invalid-phone message template via get_otp_invalid_format_message().
+		 *
 		 * @param object $data form data.
+		 * @return bool True if validation passes, false otherwise.
 		 */
-		public function validatePhone( $data ) {
-
+		public function validate_phone( $data ) {
 			global $pmpro_msg, $pmpro_msgt, $phone_logic, $pmpro_requirebilling;
-			$phone_value = sanitize_text_field( $data['phone_paidmembership'] );
+
+			$phone_value = isset( $data['phone_paidmembership'] ) ? sanitize_text_field( $data['phone_paidmembership'] ) : '';
 			if ( $this->restrict_duplicates ) {
 				global $wpdb;
 				$existing_user = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Caching is implemented above.
@@ -148,7 +176,7 @@ if ( ! class_exists( 'PaidMembershipForm' ) ) {
 			}
 
 			if ( ! MoUtility::validate_phone_number( $phone_value ) ) {
-				$message              = str_replace( '##phone##', $phone_value, $phone_logic->get_otp_invalid_format_message() );
+				$message              = str_replace( '##phone##', esc_html( $phone_value ), $phone_logic->get_otp_invalid_format_message() );
 				$pmpro_msgt           = 'pmpro_error';
 				$pmpro_requirebilling = false;
 				$pmpro_msg            = apply_filters( 'pmpro_set_message', $message, $pmpro_msgt );
@@ -162,8 +190,14 @@ if ( ! class_exists( 'PaidMembershipForm' ) ) {
 		 * append the phone field on the form.
 		 */
 		public function show_phone_field_on_page() {
-			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
-				wp_enqueue_script( 'paidmembershipscript', MOV_URL . 'includes/js/paidmembershippro.min.js?version=' . MOV_VERSION, array( 'jquery' ), MOV_VERSION, false );
+			if ( $this->otp_type === $this->type_phone_tag ) {
+				wp_enqueue_script(
+					'paidmembershipscript',
+					MOV_URL . 'includes/js/paidmembershippro.js',
+					array( 'jquery' ),
+					MOV_VERSION,
+					false
+				);
 			}
 		}
 
@@ -179,7 +213,7 @@ if ( ! class_exists( 'PaidMembershipForm' ) ) {
 		public function handle_failed_verification( $user_login, $user_email, $phone_number, $otp_type ) {
 
 			$otp_ver_type = $this->get_verification_type();
-			$from_both    = VerificationType::BOTH === $otp_ver_type ? true : false;
+			$from_both    = VerificationType::BOTH === $otp_ver_type;
 			miniorange_site_otp_validation_form(
 				$user_login,
 				$user_email,
@@ -199,10 +233,15 @@ if ( ! class_exists( 'PaidMembershipForm' ) ) {
 		 * }
 		 */
 		public function get_email_phone_data() {
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce is checked in the caller function.
+			if ( ! isset( $_POST['mopopup_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['mopopup_wpnonce'] ) ), 'mo_popup_options' ) ) {
+				return array(
+					'email' => '',
+					'phone' => '',
+				);
+			}
 			$data  = MoUtility::mo_sanitize_array( $_POST );
-			$phone = trim( $data['phone_paidmembership'] );
-			$email = sanitize_email( $data['bemail'] );
+			$phone = isset( $data['phone_paidmembership'] ) ? trim( $data['phone_paidmembership'] ) : '';
+			$email = isset( $data['bemail'] ) ? sanitize_email( $data['bemail'] ) : '';
 			return array(
 				'email' => $email,
 				'phone' => MoUtility::process_phone_number( $phone ),
@@ -245,7 +284,7 @@ if ( ! class_exists( 'PaidMembershipForm' ) ) {
 		public function get_phone_number_selector( $selector ) {
 
 			if ( self::is_form_enabled() && $this->otp_type === $this->type_phone_tag ) {
-				array_push( $selector, $this->phone_form_id );
+				$selector[] = $this->phone_form_id;
 			}
 			return $selector;
 		}
@@ -255,7 +294,7 @@ if ( ! class_exists( 'PaidMembershipForm' ) ) {
 		 * Handles saving all the Classify Theme form related options by the admin.
 		 */
 		public function handle_form_options() {
-			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option() ) || ! current_user_can( 'manage_options' ) || ! check_admin_referer( $this->admin_nonce ) ) {
+			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option(), 'pmpro_enable' ) ) {
 				return;
 			}
 

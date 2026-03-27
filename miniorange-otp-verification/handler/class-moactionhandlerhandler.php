@@ -53,6 +53,7 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 			add_action( 'wp_ajax_mo_selected_country_modal_dismiss', array( $this, 'mo_selected_country_modal_dismiss' ) );
 			add_action( 'wp_ajax_mo_transaction_logs_modal_dismiss', array( $this, 'mo_transaction_logs_modal_dismiss' ) );
 			add_action( 'wp_ajax_miniorange_get_message_value', array( $this, 'get_message_value' ) );
+			add_action( 'wp_ajax_mo_check_transactions_ajax', array( $this, 'mo_check_transactions_ajax' ) );
 		}
 
 
@@ -172,12 +173,6 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 						wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 					}
 					$this->mo_check_l();
-					break;
-				case 'mo_check_transactions':
-					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'mo_check_transactions_form', '_nonce' ) ) {
-						wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
-					}
-					$this->mo_check_transactions();
 					break;
 				case 'mo_customer_validation_gateway_configuration':
 					if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'mo_admin_actions' ) ) {
@@ -732,6 +727,78 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 			);
 		}
 
+		/**
+		 * AJAX handler to refresh transaction counts without page reload.
+		 * Returns updated transaction display string and individual values.
+		 *
+		 * @return void
+		 */
+		public function mo_check_transactions_ajax() {
+			if ( ! current_user_can( 'manage_options' ) || ! check_ajax_referer( 'mo_check_transactions_form', '_nonce', false ) ) {
+				wp_send_json_error( array( 'message' => esc_html( MoMessages::showMessage( MoMessages::INVALID_OP ) ) ) );
+			}
+
+			self::mo_check_transactions();
+
+			$remaining_email_option = get_mo_option( 'email_transactions_remaining' );
+			$remaining_email        = is_numeric( $remaining_email_option ) ? absint( $remaining_email_option ) : 0;
+
+			$remaining_sms_option = get_mo_option( 'phone_transactions_remaining' );
+			$remaining_sms        = is_numeric( $remaining_sms_option ) ? absint( $remaining_sms_option ) : 0;
+
+			$remaining_whatsapp_option = get_mo_option( 'whatsapp_transactions_remaining', 'mowp_customer_validation_' );
+			$remaining_whatsapp        = is_numeric( $remaining_whatsapp_option ) ? absint( $remaining_whatsapp_option ) : 0;
+
+			$is_logged_in              = MoUtility::micr();
+			$is_free_plugin             = strcmp( MOV_TYPE, 'MiniOrangeGateway' ) === 0;
+			$gateway_type               = get_mo_option( 'custome_gateway_type' );
+			$smtp_enabled               = get_mo_option( 'smtp_enable_type' );
+			$whatsapp_enabled           = get_mo_option( 'mo_whatsapp_enable' );
+			$mo_whatsapp_type_enabled   = get_mo_option( 'mo_whatsapp_type' );
+			$mo_sms_as_backup           = get_mo_option( 'mo_sms_as_backup' );
+
+			$mo_whatsapp_gateway_enabled = $whatsapp_enabled && $mo_whatsapp_type_enabled && 'mo_whatsapp' === $mo_whatsapp_type_enabled;
+			$mo_smtp_enabled              = $is_free_plugin || ( $smtp_enabled && 'mo_smtp_enable' === $smtp_enabled );
+
+			$mo_transactions = null;
+			if ( $is_logged_in ) {
+				if ( $mo_whatsapp_gateway_enabled ) {
+					if ( $is_free_plugin || ( 'MoGateway' === $gateway_type && $mo_smtp_enabled ) ) {
+						$mo_transactions = 'WhatsApp: ' . esc_attr( $remaining_whatsapp ) . '  |  SMS: ' . esc_attr( $remaining_sms ) . ' | Email: ' . esc_attr( $remaining_email );
+					} elseif ( 'MoGateway' === $gateway_type && ! $mo_smtp_enabled ) {
+						$mo_transactions = 'WhatsApp: ' . esc_attr( $remaining_whatsapp ) . '  |  SMS: ' . esc_attr( $remaining_sms );
+					} elseif ( 'MoGateway' !== $gateway_type && $mo_smtp_enabled ) {
+						$mo_transactions = 'WhatsApp: ' . esc_attr( $remaining_whatsapp ) . '  | Email: ' . esc_attr( $remaining_email );
+					} else {
+						$mo_transactions = 'WhatsApp: ' . esc_attr( $remaining_whatsapp );
+					}
+				} elseif ( $is_free_plugin ) {
+					$mo_transactions = 'SMS: ' . esc_attr( $remaining_sms ) . ' | Email: ' . esc_attr( $remaining_email );
+				} elseif ( 'MoGateway' === $gateway_type ) {
+					if ( $mo_smtp_enabled ) {
+						$mo_transactions = 'SMS: ' . esc_attr( $remaining_sms ) . ' | Email: ' . esc_attr( $remaining_email );
+					} else {
+						$mo_transactions = 'SMS: ' . esc_attr( $remaining_sms );
+					}
+				} elseif ( $mo_smtp_enabled ) {
+					$mo_transactions = 'Email: ' . esc_attr( $remaining_email );
+				}
+			}
+
+			$remaining_total_txn = $remaining_email + $remaining_sms;
+			$active_class        = $remaining_total_txn < MoConstants::LOW_TRANSACTION_THRESHOLD ? 'mo-active-notice-bar' : '';
+
+			wp_send_json_success(
+				array(
+					'transactions_text'  => $mo_transactions,
+					'remaining_sms'      => $remaining_sms,
+					'remaining_email'   => $remaining_email,
+					'remaining_whatsapp' => $remaining_whatsapp,
+					'active_class'       => $active_class,
+					'hidden'             => is_null( $mo_transactions ) ? 'hidden' : '',
+				)
+			);
+		}
 
 		/**
 		 * Check the license of the user and update the transaction count in WordPress

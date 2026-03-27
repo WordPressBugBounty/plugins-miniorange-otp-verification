@@ -76,6 +76,11 @@ if ( ! class_exists( 'MoOtpSpamAjax' ) ) {
 
 			add_action( 'wp_ajax_mo_osp_unblock_user', array( $this, 'mosp_unblock_user_ajax' ) );
 			add_action( 'wp_ajax_nopriv_mo_osp_unblock_user', array( $this, 'mosp_unblock_user_ajax' ) );
+
+			add_action( 'wp_ajax_mo_osp_get_blocked_users', array( $this, 'mosp_get_blocked_users_ajax' ) );
+			add_action( 'wp_ajax_mo_osp_unblock_user_by_hash', array( $this, 'mosp_unblock_user_by_hash_ajax' ) );
+			add_action( 'wp_ajax_mo_osp_clear_all_blocked_users', array( $this, 'mosp_clear_all_blocked_users_ajax' ) );
+			add_action( 'wp_ajax_mo_osp_toggle_addon', array( $this, 'mosp_toggle_addon_ajax' ) );
 		}
 
 		/**
@@ -168,7 +173,7 @@ if ( ! class_exists( 'MoOtpSpamAjax' ) ) {
 			$max_attempts             = isset( $_POST['max_attempts'] ) ? absint( $_POST['max_attempts'] ) : 3;
 			$settings['max_attempts'] = max( 1, min( 10, $max_attempts ) );
 
-			$settings['block_time'] = isset( $_POST['block_time'] ) ? absint( $_POST['block_time'] ) : 3600;
+			$settings['block_time'] = isset( $_POST['block_time'] ) ? absint( $_POST['block_time'] ) : 900;
 
 			$settings['daily_limit']  = isset( $_POST['daily_limit'] ) ? absint( $_POST['daily_limit'] ) : 10;
 			$settings['hourly_limit'] = isset( $_POST['hourly_limit'] ) ? absint( $_POST['hourly_limit'] ) : 5;
@@ -810,6 +815,191 @@ if ( ! class_exists( 'MoOtpSpamAjax' ) ) {
 					'remaining_time' => $block_remaining,
 				)
 			);
+		}
+
+		/**
+		 * AJAX handler for getting list of blocked users (admin only).
+		 *
+		 * @return void Sends JSON response with blocked users list.
+		 */
+		public function mosp_get_blocked_users_ajax() {
+			check_ajax_referer( 'mo_osp_admin_nonce', 'security' );
+
+			if ( ! current_user_can( 'manage_options' ) ) {
+				wp_send_json_error(
+					array( 'message' => __( 'Insufficient permissions', 'miniorange-otp-verification' ) ),
+					403
+				);
+			}
+
+			$limit  = isset( $_POST['limit'] ) ? absint( $_POST['limit'] ) : 100;
+			$offset = isset( $_POST['offset'] ) ? absint( $_POST['offset'] ) : 0;
+
+			$result = $this->storage->mosp_get_all_blocked_users( $limit, $offset );
+
+			foreach ( $result['users'] as &$user ) {
+				$user['remaining_time_formatted'] = $this->mosp_format_time( $user['remaining_time'] );
+				$user['block_reason_label']       = $this->mosp_get_block_reason_label( $user['block_reason'] );
+			}
+
+			wp_send_json_success( $result );
+		}
+
+		/**
+		 * AJAX handler for unblocking user by hash (admin only).
+		 *
+		 * @return void Sends JSON response.
+		 */
+		public function mosp_unblock_user_by_hash_ajax() {
+			check_ajax_referer( 'mo_osp_admin_nonce', 'security' );
+
+			if ( ! current_user_can( 'manage_options' ) ) {
+				wp_send_json_error(
+					array( 'message' => __( 'Insufficient permissions', 'miniorange-otp-verification' ) ),
+					403
+				);
+			}
+
+			$identifier_hash = isset( $_POST['identifier_hash'] ) ? sanitize_text_field( wp_unslash( $_POST['identifier_hash'] ) ) : '';
+
+			if ( empty( $identifier_hash ) ) {
+				wp_send_json_error(
+					array( 'message' => __( 'Invalid identifier hash', 'miniorange-otp-verification' ) ),
+					400
+				);
+			}
+
+			$result = $this->handler->mosp_unblock_user_by_hash( $identifier_hash );
+
+			if ( $result['success'] ) {
+				wp_send_json_success( array( 'message' => $result['message'] ) );
+			} else {
+				wp_send_json_error(
+					array( 'message' => $result['message'] ),
+					400
+				);
+			}
+		}
+
+		/**
+		 * AJAX handler: clear all blocked users / limits / puzzle flags (admin only).
+		 *
+		 * @return void
+		 */
+		public function mosp_clear_all_blocked_users_ajax() {
+			check_ajax_referer( 'mo_osp_admin_nonce', 'security' );
+
+			if ( ! current_user_can( 'manage_options' ) ) {
+				wp_send_json_error(
+					array( 'message' => __( 'Insufficient permissions', 'miniorange-otp-verification' ) ),
+					403
+				);
+			}
+
+			$result = $this->handler->mosp_clear_all_blocked_data();
+
+			if ( ! $result['success'] ) {
+				wp_send_json_error( array( 'message' => $result['message'] ) );
+			}
+
+			wp_send_json_success(
+				array(
+					'message' => $result['message'],
+					'deleted' => $result['deleted'],
+				)
+			);
+		}
+
+		/**
+		 * AJAX handler for enabling/disabling addon (admin only).
+		 *
+		 * @return void Sends JSON response.
+		 */
+		public function mosp_toggle_addon_ajax() {
+			check_ajax_referer( 'mo_osp_admin_nonce', 'security' );
+
+			if ( ! current_user_can( 'manage_options' ) ) {
+				wp_send_json_error(
+					array( 'message' => __( 'Insufficient permissions', 'miniorange-otp-verification' ) ),
+					403
+				);
+			}
+
+			$enabled             = isset( $_POST['enabled'] ) ? absint( $_POST['enabled'] ) : 0;
+			$settings            = $this->storage->mosp_get_settings();
+			$settings['enabled'] = ( 1 === $enabled );
+
+			$result = $this->storage->mosp_update_settings( $settings );
+
+			if ( $result ) {
+				$message = $settings['enabled']
+					? __( 'Addon enabled.', 'miniorange-otp-verification' )
+					: __( 'Addon disabled.', 'miniorange-otp-verification' );
+				wp_send_json_success( array( 'message' => $message ) );
+			}
+
+			wp_send_json_error(
+				array( 'message' => __( 'Failed to update addon status.', 'miniorange-otp-verification' ) ),
+				500
+			);
+		}
+
+		/**
+		 * Format time in seconds to human-readable format.
+		 *
+		 * @param int $seconds Time in seconds.
+		 * @return string Formatted time string.
+		 */
+		private function mosp_format_time( $seconds ) {
+			if ( $seconds < 60 ) {
+				// translators: %d: Number of seconds.
+				return sprintf( _n( '%d second', '%d seconds', $seconds, 'miniorange-otp-verification' ), $seconds );
+			} elseif ( $seconds < 3600 ) {
+				$minutes = floor( $seconds / 60 );
+				$secs    = $seconds % 60;
+				if ( $secs > 0 ) {
+					// translators: %d: Number of minutes.
+					$minutes_str = sprintf( _n( '%d minute', '%d minutes', $minutes, 'miniorange-otp-verification' ), $minutes );
+					// translators: %d: Number of seconds.
+					$seconds_str = sprintf( _n( '%d second', '%d seconds', $secs, 'miniorange-otp-verification' ), $secs );
+					return $minutes_str . ' ' . $seconds_str;
+				}
+				// translators: %d: Number of minutes.
+				return sprintf( _n( '%d minute', '%d minutes', $minutes, 'miniorange-otp-verification' ), $minutes );
+			} else {
+				$hours   = floor( $seconds / 3600 );
+				$minutes = floor( ( $seconds % 3600 ) / 60 );
+				if ( $minutes > 0 ) {
+					// translators: %d: Number of hours.
+					$hours_str = sprintf( _n( '%d hour', '%d hours', $hours, 'miniorange-otp-verification' ), $hours );
+					// translators: %d: Number of minutes.
+					$minutes_str = sprintf( _n( '%d minute', '%d minutes', $minutes, 'miniorange-otp-verification' ), $minutes );
+					return $hours_str . ' ' . $minutes_str;
+				}
+				// translators: %d: Number of hours.
+				return sprintf( _n( '%d hour', '%d hours', $hours, 'miniorange-otp-verification' ), $hours );
+			}
+		}
+
+		/**
+		 * Get human-readable label for block reason.
+		 *
+		 * @param string $reason Block reason code.
+		 * @return string Human-readable label.
+		 */
+		private function mosp_get_block_reason_label( $reason ) {
+			switch ( $reason ) {
+				case 'hourly_limit_exceeded':
+					return __( 'Hourly Limit Exceeded', 'miniorange-otp-verification' );
+				case 'daily_limit_exceeded':
+					return __( 'Daily Limit Exceeded', 'miniorange-otp-verification' );
+				case 'max_attempts_exceeded':
+					return __( 'Max Attempts Exceeded', 'miniorange-otp-verification' );
+				case 'cooldown':
+					return __( 'Cooldown Period', 'miniorange-otp-verification' );
+				default:
+					return __( 'Blocked', 'miniorange-otp-verification' );
+			}
 		}
 	}
 }

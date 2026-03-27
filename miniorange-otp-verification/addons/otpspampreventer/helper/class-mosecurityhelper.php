@@ -15,6 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use OTP\Helper\MoPHPSessions;
+use OTP\Helper\MoUtility;
 
 if ( ! class_exists( 'MoSecurityHelper' ) ) {
 	/**
@@ -35,6 +36,76 @@ if ( ! class_exists( 'MoSecurityHelper' ) ) {
 		const COUNTING_WINDOW_SECONDS = 900; // 15 minutes (15 * 60)
 
 		/**
+		 * Normalize email or phone the same way as puzzle verify / OTP send paths.
+		 *
+		 * @param string $value Raw value.
+		 * @param bool   $is_email Whether this value is an email field.
+		 * @return string
+		 */
+		private static function mosp_identifier_for_puzzle_key( $value, $is_email ) {
+			$value = trim( (string) $value );
+			if ( '' === $value ) {
+				return '';
+			}
+			if ( $is_email ) {
+				return sanitize_email( $value );
+			}
+			return MoUtility::process_phone_number( $value );
+		}
+
+		/**
+		 * All user-identifier strings that may have been used to build the puzzle token
+		 * (WooCommerce phone checkout clears email in the spam hook but puzzle AJAX often sends both).
+		 *
+		 * @param string $user_email Email from current request context.
+		 * @param string $phone_number Phone from current request context.
+		 * @return string[] Unique normalized identifiers.
+		 */
+		private static function mosp_collect_puzzle_verification_identifiers( $user_email, $phone_number ) {
+			$pairs = array(
+				array( $user_email, true ),
+				array( $phone_number, false ),
+				array( MoPHPSessions::get_session_var( 'user_email' ), true ),
+				array( MoPHPSessions::get_session_var( 'phone_number_mo' ), false ),
+			);
+			$ids   = array();
+			foreach ( $pairs as $pair ) {
+				$n = self::mosp_identifier_for_puzzle_key( $pair[0], $pair[1] );
+				if ( '' !== $n ) {
+					$ids[] = $n;
+				}
+			}
+			return array_values( array_unique( $ids ) );
+		}
+
+		/**
+		 * Build session/token key string for one identifier (must match generate path).
+		 *
+		 * @param string $user_identifier Normalized email or phone.
+		 * @return string
+		 */
+		private static function mosp_build_puzzle_verification_key_string( $user_identifier ) {
+			$session_id = session_id() ? session_id() : wp_get_session_token();
+			$ip         = self::mosp_get_client_ip();
+			return 'mo_osp_puzzle_verified_' . md5( $user_identifier . $session_id . $ip );
+		}
+
+		/**
+		 * Every puzzle verification key to try for this request (email-only, phone-only, session fallbacks).
+		 *
+		 * @param string $user_email Email address.
+		 * @param string $phone_number Phone number.
+		 * @return string[]
+		 */
+		public static function mosp_get_puzzle_verification_keys( $user_email, $phone_number ) {
+			$keys = array();
+			foreach ( self::mosp_collect_puzzle_verification_identifiers( $user_email, $phone_number ) as $id ) {
+				$keys[] = self::mosp_build_puzzle_verification_key_string( $id );
+			}
+			return array_values( array_unique( array_filter( $keys ) ) );
+		}
+
+		/**
 		 * Verify puzzle completion through secure server-side validation
 		 *
 		 * This method replaces the vulnerable $_POST['mo_osp_puzzle_processed'] check
@@ -45,20 +116,23 @@ if ( ! class_exists( 'MoSecurityHelper' ) ) {
 		 * @return bool True if puzzle verification is valid and recent.
 		 */
 		public static function mosp_is_puzzle_verification_valid( $user_email, $phone_number ) {
-			$verification_key  = self::mosp_get_puzzle_verification_key( $user_email, $phone_number );
-			$verification_time = MoPHPSessions::get_session_var( $verification_key );
+			$keys = self::mosp_get_puzzle_verification_keys( $user_email, $phone_number );
 
-			if ( $verification_time && ( time() - $verification_time ) <= 300 ) {
-				$used_key = $verification_key . '_used';
-				if ( MoPHPSessions::get_session_var( $used_key ) ) {
-					return false;
+			foreach ( $keys as $verification_key ) {
+				if ( '' === $verification_key ) {
+					continue;
 				}
+				$verification_time = MoPHPSessions::get_session_var( $verification_key );
+				if ( $verification_time && ( time() - $verification_time ) <= 300 ) {
+					$used_key = $verification_key . '_used';
+					if ( MoPHPSessions::get_session_var( $used_key ) ) {
+						continue;
+					}
 
-				MoPHPSessions::add_session_var( $used_key, time() );
-
-				MoPHPSessions::unset_session( $verification_key );
-
-				return true;
+					MoPHPSessions::add_session_var( $used_key, time() );
+					MoPHPSessions::unset_session( $verification_key );
+					return true;
+				}
 			}
 
 			$posted_verified = isset( $_POST['puzzle_verified'] ) ? sanitize_text_field( wp_unslash( $_POST['puzzle_verified'] ) ) : '';
@@ -67,7 +141,10 @@ if ( ! class_exists( 'MoSecurityHelper' ) ) {
 
 			if ( 'true' === $posted_verified && ! empty( $posted_nonce ) && ! empty( $posted_token ) ) {
 				if ( wp_verify_nonce( $posted_nonce, 'mo_osp_puzzle_verify' ) ) {
-					if ( hash_equals( $verification_key, $posted_token ) ) {
+					foreach ( $keys as $verification_key ) {
+						if ( '' === $verification_key || ! hash_equals( $verification_key, $posted_token ) ) {
+							continue;
+						}
 						$used_key = $verification_key . '_used';
 						if ( ! MoPHPSessions::get_session_var( $used_key ) ) {
 							MoPHPSessions::add_session_var( $used_key, time() );
@@ -100,11 +177,15 @@ if ( ! class_exists( 'MoSecurityHelper' ) ) {
 		 * @return string Unique verification key.
 		 */
 		public static function mosp_get_puzzle_verification_key( $user_email, $phone_number ) {
-			$user_identifier = ! empty( $user_email ) ? $user_email : $phone_number;
-			$session_id      = session_id() ? session_id() : wp_get_session_token();
-			$ip              = self::mosp_get_client_ip();
-
-			return 'mo_osp_puzzle_verified_' . md5( $user_identifier . $session_id . $ip );
+			if ( ! empty( $user_email ) ) {
+				$id = self::mosp_identifier_for_puzzle_key( $user_email, true );
+			} else {
+				$id = self::mosp_identifier_for_puzzle_key( $phone_number, false );
+			}
+			if ( '' === $id ) {
+				return '';
+			}
+			return self::mosp_build_puzzle_verification_key_string( $id );
 		}
 
 
@@ -116,12 +197,11 @@ if ( ! class_exists( 'MoSecurityHelper' ) ) {
 		 * @return string Verification token.
 		 */
 		public static function mosp_generate_puzzle_verification_token( $email, $phone ) {
-			$user_identifier = ! empty( $email ) ? $email : $phone;
-			$session_id      = session_id() ? session_id() : wp_get_session_token();
-			$ip              = self::mosp_get_client_ip();
-			$timestamp       = time();
-
-			$verification_key = 'mo_osp_puzzle_verified_' . md5( $user_identifier . $session_id . $ip );
+			$timestamp        = time();
+			$verification_key = self::mosp_get_puzzle_verification_key( $email, $phone );
+			if ( '' === $verification_key ) {
+				return '';
+			}
 
 			MoPHPSessions::add_session_var( $verification_key, $timestamp );
 

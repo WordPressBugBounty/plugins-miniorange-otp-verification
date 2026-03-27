@@ -8,6 +8,37 @@
 }
 
 /* Using plugin's existing mo-header classes - no custom header CSS needed */
+/* Addon toggle */
+.mo-osp-addon-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 16px;
+    color: rgb(51 65 85);
+}
+
+.mo-osp-addon-toggle input {
+    margin: 0;
+}
+
+/* Toggle placement above basic settings */
+.mo-osp-addon-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 0 20px 12px 20px;
+}
+
+.mo-osp-addon-toggle-emphasis {
+    padding: 2px 0;
+    font-weight: 700;
+    color: rgb(30 64 175);
+}
+
+.mo-osp-addon-toggle-emphasis input {
+    transform: scale(1.2);
+}
 
 /* SVG Icon Styles */
 .mo-osp-header-icon {
@@ -40,6 +71,7 @@
     display: flex;
     align-items: center;
 }
+
 
 .mo-input-label {
     display: flex !important;
@@ -620,4 +652,204 @@
 /* Ensure button text is still visible during processing */
 .mo-osp-processing {
     color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Blocked Users Table Styles */
+.mo-osp-blocked-users-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    background: rgb(255 255 255);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.mo-osp-blocked-users-table thead {
+    background: rgb(249 250 251);
+    border-bottom: 2px solid rgb(229 231 235);
+}
+
+.mo-osp-blocked-users-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    color: rgb(55 65 81);
+    border-bottom: 1px solid rgb(229 231 235);
+}
+
+.mo-osp-blocked-users-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgb(243 244 246);
+    font-size: 14px;
+    color: rgb(75 85 99);
+}
+
+.mo-osp-blocked-users-table tbody tr:hover {
+    background: rgb(249 250 251);
+}
+
+.mo-osp-blocked-users-table tbody tr.mo-osp-expired {
+    opacity: 0.6;
+}
+
+.mo-osp-blocked-users-table .mo-osp-no-data,
+.mo-osp-blocked-users-table .mo-osp-error {
+    text-align: center;
+    padding: 24px;
+    color: rgb(107 114 128);
+    font-style: italic;
+}
+
+.mo-osp-blocked-users-table .mo-osp-error {
+    color: rgb(220 38 38);
+}
+
+.mo-osp-identifier-type {
+    display: inline-block;
+    padding: 2px 8px;
+    background: rgb(243 244 246);
+    color: rgb(75 85 99);
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-right: 8px;
+    text-transform: capitalize;
+}
+
+.mo-osp-identifier-masked {
+    font-family: monospace;
+    color: rgb(55 65 81);
+}
+
+.mo-osp-block-reason {
+    display: inline-block;
+    padding: 4px 10px;
+    background: rgb(254 242 242);
+    color: rgb(185 28 28);
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.mo-osp-remaining-time {
+    font-weight: 600;
+    color: rgb(220 38 38);
+    font-family: monospace;
+}
+
+.mo-osp-blocked-users-actions {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.mo-osp-blocked-users-pagination {
+    margin-top: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 0;
+}
+
+.mo-osp-blocked-users-pagination button {
+    min-width: 100px;
+}
+
+.mo-osp-blocked-users-pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.mo-osp-loading {
+    text-align: center;
+    padding: 24px;
+    color: rgb(107 114 128);
+}
+
+.mo-button-small {
+    padding: 6px 12px;
+    font-size: 13px;
+    min-height: auto;
+}
+
+.mo-button-small:hover {
+    transform: none;
+}
+
+/* Unblock User Button Styling */
+.mo-osp-unblock-user {
+    background: rgb(220 38 38) !important;
+    color: rgb(255 255 255) !important;
+    border: 1px solid rgb(185 28 28) !important;
+    border-radius: 6px !important;
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    min-width: auto !important;
+    text-decoration: none !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.mo-osp-unblock-user:hover {
+    background: rgb(185 28 28) !important;
+    border-color: rgb(153 27 27) !important;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-1px) !important;
+}
+
+.mo-osp-unblock-user:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.mo-osp-unblock-user:disabled,
+.mo-osp-unblock-user[disabled] {
+    background: rgb(156 163 175) !important;
+    border-color: rgb(156 163 175) !important;
+    color: rgb(255 255 255) !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+    transform: none !important;
+}
+
+.mo-osp-unblock-user:disabled:hover,
+.mo-osp-unblock-user[disabled]:hover {
+    background: rgb(156 163 175) !important;
+    border-color: rgb(156 163 175) !important;
+    transform: none !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Responsive table */
+@media (max-width: 768px) {
+    .mo-osp-blocked-users-table-container {
+        overflow-x: auto;
+    }
+
+    .mo-osp-blocked-users-table {
+        min-width: 600px;
+    }
+
+    .mo-osp-blocked-users-table th,
+    .mo-osp-blocked-users-table td {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .mo-osp-blocked-users-actions {
+        flex-direction: column;
+    }
+
+    .mo-osp-blocked-users-actions button {
+        width: 100%;
+    }
 }

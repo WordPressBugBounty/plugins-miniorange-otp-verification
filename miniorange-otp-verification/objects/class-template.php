@@ -157,37 +157,42 @@ if ( ! class_exists( 'Template' ) ) {
 								'</div>
 								';
 
-			$this->img   = str_replace( '{{LOADER_CSV}}', MOV_LOADER_URL, $this->img );
+			$this->img   = str_replace( '{{LOADER_CSV}}', esc_url( MOV_LOADER_URL ), $this->img );
 			$this->nonce = 'mo_popup_options';
 			add_filter( 'mo_template_defaults', array( $this, 'get_defaults' ), 1, 1 );
 			add_filter( 'mo_template_build', array( $this, 'build' ), 1, 5 );
-			add_action( 'admin_post_mo_preview_popup', array( $this, 'show_preview' ) );
-			add_action( 'admin_post_mo_popup_save', array( $this, 'save_popup' ) );
-			add_action( 'admin_post_mo_popup_reset', array( $this, 'reset_popup' ) );
+			add_action( 'wp_ajax_mo_preview_popup', array( $this, 'show_preview' ), 1 );
+			add_action( 'wp_ajax_mo_popup_save', array( $this, 'save_popup' ), 1 );
+			add_action( 'wp_ajax_mo_popup_reset', array( $this, 'reset_popup' ), 1 );
 		}
 
 		/**
 		 * This function is used to preview the template based on the type passed
-		 * to the filter. This function is called when the filter admin_post_mo_preview_popup
-		 * filter is called. The filter can be used by other users to modify the
+		 * to the filter. This function is called via wp_ajax_mo_preview_popup (AJAX).
+		 * The filter can be used by other users to modify the
 		 * template if they choose to do so.
 		 *
 		 * @return void
 		 */
 		public function show_preview() {
-			if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'mo_popup_options' ) ) {
-				wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
+			if ( ! current_user_can( 'manage_options' ) || ! check_ajax_referer( 'mo_popup_options', '_wpnonce', false ) ) {
+				wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::INVALID_OP ), MoConstants::ERROR_JSON_TYPE ) );
 			}
 			if ( isset( $_POST['popuptype'] ) && sanitize_text_field( wp_unslash( $_POST['popuptype'] ) ) !== $this->get_template_key() ) {
 				return;
 			}
-			$data     = MoUtility::mo_sanitize_array( $_POST );
-			$message  = '<i>' . __( 'PopUp Message shows up here.', 'miniorange-otp-verification' ) . '</i>';
-			$otp_type = VerificationType::TEST;
-			if ( ! isset( $_POST[ $this->get_template_editor_id() ] ) ) {
-				return;
+			$message   = __( 'PopUp Message shows up here.', 'miniorange-otp-verification' );
+			$otp_type  = VerificationType::TEST;
+			$editor_id = $this->get_template_editor_id();
+			if ( ! isset( $_POST[ $editor_id ] ) ) {
+				wp_send_json( MoUtility::create_json( '', MoConstants::ERROR_JSON_TYPE ) );
 			}
-			$template = wp_kses( wp_unslash( $_POST[ $this->get_template_editor_id() ] ), MoUtility::mo_allow_html_array() );
+			$template = isset( $_POST[ $editor_id ] )
+				? wp_kses(
+					wp_unslash( $_POST[ $editor_id ] ),
+					MoUtility::mo_allow_popup_tags()
+				)
+				: '';
 			$this->validateRequiredFields( $template );
 			$from_both     = false;
 			$this->preview = true;
@@ -195,6 +200,9 @@ if ( ! class_exists( 'Template' ) ) {
 			$preview_popup = preg_replace( '#<script\b[^>]*>.*?</script>#is', '', $preview_popup );
 			$preview_popup = preg_replace( '#\son\w+\s*=\s*(["\']).*?\1#is', '', $preview_popup );
 			$preview_popup = preg_replace( '#\s(?:href|src)\s*=\s*([\'"])\s*javascript:[^\'"]*\1#is', '', $preview_popup );
+			while ( ob_get_level() ) {
+				ob_end_clean();
+			}
 			wp_send_json(
 				MoUtility::create_json(
 					$preview_popup,
@@ -205,25 +213,24 @@ if ( ! class_exists( 'Template' ) ) {
 
 		/**
 		 * This function is called to save the pop up in the database that the admin
-		 * has set in the settings. Called using the admin_post_mo_popup_save action.
+		 * has set in the settings. Called via wp_ajax_mo_popup_save (AJAX).
 		 * The action can be used by other users to modify the template before it is
 		 * saved in the database if they choose to do so.
 		 *
 		 * @return void
 		 */
 		public function save_popup() {
-			if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'mo_popup_options' ) ) {
-				wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
-				return;
+			if ( ! current_user_can( 'manage_options' ) || ! check_ajax_referer( 'mo_popup_options', '_wpnonce', false ) ) {
+				wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::INVALID_OP ), MoConstants::ERROR_JSON_TYPE ) );
 			}
 			$data = MoUtility::mo_sanitize_array( $_POST );
 			if ( ! $this->isTemplateType( $data ) ) {
 				return;
 			}
 			if ( ! isset( $_POST[ $this->get_template_editor_id() ] ) ) {
-				return;
+				wp_send_json( MoUtility::create_json( '', MoConstants::ERROR_JSON_TYPE ) );
 			}
-			$template = wp_kses( wp_unslash( $_POST[ $this->get_template_editor_id() ] ), MoUtility::mo_allow_html_array() );
+			$template = wp_kses( wp_unslash( $_POST[ $this->get_template_editor_id() ] ), MoUtility::mo_allow_popup_tags() );
 			$this->validateRequiredFields( $template );
 			$email_templates = maybe_unserialize( get_mo_option( 'custom_popups' ) );
 			if ( ! is_array( $email_templates ) ) {
@@ -231,6 +238,9 @@ if ( ! class_exists( 'Template' ) ) {
 			}
 			$email_templates[ $this->get_template_key() ] = $template;
 			update_mo_option( 'custom_popups', $email_templates );
+			while ( ob_get_level() ) {
+				ob_end_clean();
+			}
 			wp_send_json(
 				MoUtility::create_json(
 					$this->showSuccessMessage( MoMessages::showMessage( MoMessages::TEMPLATE_SAVED ) ),
@@ -241,21 +251,20 @@ if ( ! class_exists( 'Template' ) ) {
 
 		/**
 		 * This function is called to reset the pop up in the database.
-		 * Called using the admin_post_mo_popup_reset action.
+		 * Called via wp_ajax_mo_popup_reset (AJAX).
 		 *
 		 * @return void
 		 */
 		public function reset_popup() {
-			if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'mo_popup_options' ) ) {
-				wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
-				return;
+			if ( ! current_user_can( 'manage_options' ) || ! check_ajax_referer( 'mo_popup_options', '_wpnonce', false ) ) {
+				wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::INVALID_OP ), MoConstants::ERROR_JSON_TYPE ) );
 			}
 			$data = MoUtility::mo_sanitize_array( $_POST );
 			if ( ! $this->isTemplateType( $data ) ) {
 				return;
 			}
 			if ( ! isset( $_POST[ $this->get_template_editor_id() ] ) ) {
-				return;
+				wp_send_json( MoUtility::create_json( '', MoConstants::ERROR_JSON_TYPE ) );
 			}
 			$templates       = apply_filters( 'mo_template_defaults', array() );
 			$popup_templates = maybe_unserialize( get_mo_option( 'custom_popups' ) );
@@ -267,10 +276,13 @@ if ( ! class_exists( 'Template' ) ) {
 			if ( isset( $templates[ $key ] ) ) {
 				$popup_templates[ $key ] = $templates[ $key ];
 			}
-			if ( $this->get_template_key() === 'DEFAULT' ) {
+			if ( 'DEFAULT' === $key ) {
 				update_mo_option( 'selected_popup', 'Default' );
 			}
 			update_mo_option( 'custom_popups', $popup_templates );
+			while ( ob_get_level() ) {
+				ob_end_clean();
+			}
 			wp_send_json(
 				MoUtility::create_json(
 					array(

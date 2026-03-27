@@ -1,6 +1,20 @@
 jQuery(document).ready(function () {
-    var $mo = (typeof window !== 'undefined' && window.$mo) ? window.$mo : jQuery;
+    if (typeof jQuery.fn.$mo !== 'function') {
+        jQuery.fn.$mo = function () {
+            return this;
+        };
+    }
+    var $mo = jQuery;
     var popupInitialized = false;
+
+    /** WC popup message: plain text only (no inline error/success colors left from spam preventer). */
+    function moWcPopupMessageStripStyles() {
+        var $m = jQuery('#mo_message_wc_pop_up');
+        if ($m.length) {
+            $m.removeAttr('style');
+            $m.removeData('mo-osp-error-message');
+        }
+    }
 
     function check_form_loaded() {
         if ($mo('.wc-block-components-address-form__phone input[type="tel"]').length || jQuery(".wc-block-components-text-input input[type=tel]").length) {
@@ -130,9 +144,38 @@ jQuery(document).ready(function () {
         let methods = mowcnewcheckout.paymentMethods;
         let payment_based_otp = mowcnewcheckout.selectivePaymentEnabled;
     
-        toggleSubmitButton();
-    
-        $mo('input[name="radio-control-wc-payment-method-options"]').on('click', function () {
+        function checkInitialState() {
+            let hasPaymentMethods = $mo('input[name="radio-control-wc-payment-method-options"]').length > 0 || 
+                                    $mo('.wc-block-components-payment-methods').length > 0 ||
+                                    $mo('input[name=payment_method]').length > 0;
+            
+            if (hasPaymentMethods) {
+                toggleSubmitButton();
+            } else {
+                setTimeout(checkInitialState, 100);
+            }
+        }
+        
+        checkInitialState();
+        
+        setTimeout(function() {
+            toggleSubmitButton();
+        }, 300);
+        setTimeout(function() {
+            toggleSubmitButton();
+        }, 600);
+        setTimeout(function() {
+            toggleSubmitButton();
+        }, 1000);
+        setTimeout(function() {
+            toggleSubmitButton();
+        }, 1500);
+        
+        $mo(document).on('click change', 'input[name="radio-control-wc-payment-method-options"], input[name=payment_method]', function () {
+            toggleSubmitButton();
+        });
+        
+        $mo(document).on('wc-blocks-payment-method-selected', function() {
             toggleSubmitButton();
         });
     
@@ -140,30 +183,95 @@ jQuery(document).ready(function () {
             let selectedValue = $mo('input[name="radio-control-wc-payment-method-options"]:checked').val();
             
             let show_otp_button = false;
-            $mo("input[name=payment_method]").each(function () {
-                let payment = $mo(this).val();
-                show_otp_button = false;
-                if (($mo(this).is(':checked') && methods.hasOwnProperty(payment)) || !mowcnewcheckout.selectivePaymentEnabled) {
-                    show_otp_button = true;
-                    return false;
-                }
-            });
-            if (methods.hasOwnProperty(selectedValue) && payment_based_otp) {
+            
+            if (!payment_based_otp) {
                 show_otp_button = true;
+            } else {
+                if (selectedValue && methods.hasOwnProperty(selectedValue)) {
+                    show_otp_button = true;
+                } else {
+                    let blockPaymentMethod = $mo('.wc-block-components-payment-methods input:checked').data('payment-method-id') ||
+                                           $mo('.wc-block-components-payment-methods input:checked').attr('id');
+                    if (blockPaymentMethod) {
+                        blockPaymentMethod = blockPaymentMethod.replace('wc-payment-method-', '').replace('payment_method_', '');
+                        if (methods.hasOwnProperty(blockPaymentMethod)) {
+                            show_otp_button = true;
+                        }
+                    }
+                    
+                    if (!show_otp_button) {
+                        $mo("input[name=payment_method]").each(function () {
+                            let payment = $mo(this).val();
+                            if ($mo(this).is(':checked') && methods.hasOwnProperty(payment)) {
+                                show_otp_button = true;
+                                return false;
+                            }
+                        });
+                    }
+                    
+                    if (!show_otp_button) {
+                        let wcPaymentMethod = $mo('input[name="payment_method"]:checked').val();
+                        if (!wcPaymentMethod) {
+                            let $paymentInputs = $mo('input[name="payment_method"]');
+                            if ($paymentInputs.length === 1) {
+                                wcPaymentMethod = $paymentInputs.first().val();
+                            }
+                        }
+                        if (wcPaymentMethod && methods.hasOwnProperty(wcPaymentMethod)) {
+                            show_otp_button = true;
+                        }
+                    }
+                    
+                    if (!show_otp_button) {
+                        let activePaymentMethod = $mo('.wc-block-components-payment-methods .wc-block-components-radio-control__option--checked').find('input').val() ||
+                                                 $mo('.wc-block-components-payment-methods .wc-block-components-radio-control__option--checked').data('value');
+                        if (activePaymentMethod && methods.hasOwnProperty(activePaymentMethod)) {
+                            show_otp_button = true;
+                        }
+                    }
+                    
+                    if (!show_otp_button && typeof wc !== 'undefined' && wc.wcBlocksData && wc.wcBlocksData.storeApi) {
+                        try {
+                            let storeData = wc.wcBlocksData.storeApi;
+                            if (storeData.paymentMethodData && storeData.paymentMethodData.selectedPaymentMethod) {
+                                let storePaymentMethod = storeData.paymentMethodData.selectedPaymentMethod;
+                                if (methods.hasOwnProperty(storePaymentMethod)) {
+                                    show_otp_button = true;
+                                }
+                            }
+                        } catch(e) {
+                        }
+                    }
+                    
+                    if (!show_otp_button) {
+                        $mo('.wc-block-components-payment-methods input[type="radio"]:checked').each(function() {
+                            let payment = $mo(this).val();
+                            if (payment && methods.hasOwnProperty(payment)) {
+                                show_otp_button = true;
+                                return false;
+                            }
+                        });
+                    }
+                    
+                    if (!show_otp_button) {
+                        $mo('.wc-block-components-payment-methods input:checked, .wc-block-checkout__payment-methods input:checked').each(function() {
+                            let payment = $mo(this).val() || $mo(this).attr('value');
+                            if (payment && methods.hasOwnProperty(payment)) {
+                                show_otp_button = true;
+                                return false;
+                            }
+                        });
+                    }
+                }
             }
     
-            if (show_otp_button) {
+            if (mowcnewcheckout.popupEnabled) {
+                $mo("button#miniorange_wc_popup_send_otp_token").show();
+                $mo('.wc-block-components-checkout-place-order-button').hide();
+            } else if (show_otp_button) {
                 $mo("#miniorange_otp_token_submit_wc_block_checkout").show();
-                if (mowcnewcheckout.popupEnabled) {
-                    $mo("#miniorange_wc_popup_send_otp_token").show();
-                    $mo('.wc-block-components-checkout-place-order-button').hide();
-                }
             } else {
                 $mo("#miniorange_otp_token_submit_wc_block_checkout").hide();
-                if (mowcnewcheckout.popupEnabled) {
-                    $mo("#miniorange_wc_popup_send_otp_token").hide();
-                    $mo('.wc-block-components-checkout-place-order-button').show();
-                }
             }
         }
     }
@@ -174,7 +282,12 @@ jQuery(document).ready(function () {
         
         if (mowcnewcheckout.popupEnabled) {
             $mo('.wc-block-components-checkout-place-order-button').hide();
-            $mo('.wc-block-components-checkout-place-order-button').after('<button id="miniorange_wc_popup_send_otp_token" class="wp-element-button" type="button">' + mowcnewcheckout.buttonText + '</button>');
+            var $wcPopupBtn = $mo('button#miniorange_wc_popup_send_otp_token');
+            if ($wcPopupBtn.length === 0) {
+                $mo('.wc-block-components-checkout-place-order-button').after('<button id="miniorange_wc_popup_send_otp_token" class="wp-element-button" type="button">' + mowcnewcheckout.buttonText + '</button>');
+            } else {
+                $wcPopupBtn.show().prop('disabled', false).css('opacity', '');
+            }
             
             if (jQuery('.otp-catchy-box').length > 0) {
                 jQuery(".digit-group input.otp-catchy").each(function () {
@@ -239,13 +352,15 @@ jQuery(document).ready(function () {
                     $mo(".mo_customer_validation-login-container").show();
                     
                     let user = $mo("#" + mowcnewcheckout.field).val();
+                    let sendPhone = (mowcnewcheckout.otpType === 'email') ? '' : user;
+                    let sendEmail = (mowcnewcheckout.otpType === 'phone') ? '' : user;
                     
                     $mo.ajax({
                         url: mowcnewcheckout.siteURL,
                         type: "POST",
                         data: {
-                            user_phone: user,
-                            user_email: user,
+                            user_phone: sendPhone,
+                            user_email: sendEmail,
                             action: mowcnewcheckout.gaction,
                             security: mowcnewcheckout.nonce,
                             otpType: mowcnewcheckout.otpType
@@ -258,8 +373,8 @@ jQuery(document).ready(function () {
                                     window.mo_wc_otp_initialized = true;
                                 }
                                 $mo(".blockUI").hide();
-                                jQuery("#mo_message_wc_pop_up").text(response.message);
-                                jQuery("#mo_message_wc_pop_up").
+                                moWcPopupMessageStripStyles();
+                                jQuery("#mo_message_wc_pop_up").text(response.message).show();
                                 $mo(".digit-group input[type='text']").val("");
                                 $mo("input[name='order_verify']").val("");
                                 $mo("#popup_wc_mo").show();
@@ -268,11 +383,17 @@ jQuery(document).ready(function () {
                                     window.mo_wc_otp_initialized = false;
                                 }
                                 jQuery("#mo_message_wc_pop_up").empty().append(response.message);
+                                jQuery("#mo_message_wc_pop_up").css({
+                                    // "background-color": "#ffefef",
+                                    "color": "#ff5b5b"
+                                });
                                 $mo(".blockUI").hide();
                             }
+                            $mo('button#miniorange_wc_popup_send_otp_token').show().prop('disabled', false).css('opacity', '');
                         },
                         error: function (xhr, status, error) {
                             console.error('AJAX Error:', error);
+                            $mo('button#miniorange_wc_popup_send_otp_token').show().prop('disabled', false).css('opacity', '');
                         }
                     });
                     
@@ -299,6 +420,8 @@ jQuery(document).ready(function () {
             
             $mo("#miniorange_otp_token_submit_wc_block_checkout").on("click", function () {
                 let user = $mo("#" + mowcnewcheckout.field).val();
+                let sendPhone = (mowcnewcheckout.otpType === 'email') ? '' : user;
+                let sendEmail = (mowcnewcheckout.otpType === 'phone') ? '' : user;
                 let otp = $mo("input[name=phone_verify]");
                 let msg_box = $mo("#mo_message");
                 
@@ -318,8 +441,8 @@ jQuery(document).ready(function () {
                     url: mowcnewcheckout.siteURL,
                     type: "POST",
                     data: { 
-                        user_phone: user, 
-                        user_email: user, 
+                        user_phone: sendPhone, 
+                        user_email: sendEmail, 
                         action: mowcnewcheckout.gaction, 
                         security: mowcnewcheckout.nonce, 
                         otpType: mowcnewcheckout.otpType 
@@ -360,6 +483,8 @@ jQuery(document).ready(function () {
             
             $mo("#miniorange_verify_otp_token").on("click", function () {
                 let user = $mo("#" + mowcnewcheckout.field).val();
+                let sendPhone = (mowcnewcheckout.otpType === 'email') ? '' : user;
+                let sendEmail = (mowcnewcheckout.otpType === 'phone') ? '' : user;
                 let otp_token = $mo("#mo_otp_token").val();
                 let msg_box = $mo("#mo_message");
                 
@@ -375,8 +500,8 @@ jQuery(document).ready(function () {
                     url: mowcnewcheckout.siteURL,
                     type: "POST",
                     data: { 
-                        user_phone: user, 
-                        user_email: user, 
+                        user_phone: sendPhone, 
+                        user_email: sendEmail, 
                         action: mowcnewcheckout.vaction, 
                         security: mowcnewcheckout.nonce, 
                         otpType: mowcnewcheckout.otpType, 
@@ -435,13 +560,15 @@ jQuery(document).ready(function () {
         jQuery("#mo_message_wc_pop_up").empty().append(img).show();
         
         let user = $mo("#" + mowcnewcheckout.field).val();
+        let sendPhone = (mowcnewcheckout.otpType === 'email') ? '' : user;
+        let sendEmail = (mowcnewcheckout.otpType === 'phone') ? '' : user;
         
         $mo.ajax({
             url: mowcnewcheckout.siteURL,
             type: "POST",
             data: { 
-                user_phone: user, 
-                user_email: user, 
+                user_phone: sendPhone, 
+                user_email: sendEmail, 
                 action: mowcnewcheckout.vaction, 
                 security: mowcnewcheckout.nonce, 
                 otpType: mowcnewcheckout.otpType, 
@@ -449,12 +576,18 @@ jQuery(document).ready(function () {
             },
             crossDomain: true,
             dataType: "json",   
-            success: function (response) { 
-                jQuery("#mo_message_wc_pop_up").text(response.message);
+            success: function (response) {
                 if (response.result === "success") {
+                    moWcPopupMessageStripStyles();
+                    jQuery("#mo_message_wc_pop_up").text(response.message).show();
                     $mo("#popup_wc_mo").hide();
                     $mo('form[name="checkout"]').submit();
                     $mo('.wc-block-components-checkout-place-order-button').click();
+                } else {
+                    jQuery("#mo_message_wc_pop_up").text(response.message).css({
+                        // "background-color": "#ffefef",
+                        "color": "#ff5b5b"
+                    }).show();
                 }
             },
             error: function (xhr, status, error) {
