@@ -97,5 +97,6 @@ if ( ! class_exists( 'FormSessionVars' ) ) {
 		const MO_WS_FORMS                   = 'mo_ws_form';
 		const LOGIN_REGISTER_WITH_PHONE     = 'login_register_with_phone';
 		const MO_LOGIN_REG_USING_PHONE_FORM = 'miniOrange - Login and register using phone only';
+		const LOGIN_PHONE_ONLY              = 'login_phone_only';
 	}
 }

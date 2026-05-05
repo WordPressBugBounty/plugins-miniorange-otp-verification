@@ -54,4 +54,14 @@ jQuery(document).ready(function () {
             });
         });
     });
+
+    $mo(document).on(
+        'wpcf7mailsent wpcf7invalid wpcf7spam wpcf7mailfailed wpcf7reset',
+        function (e) {
+            const $form = $mo(e.target).closest('form');
+            if ($form.length) {
+                $form.find('#mo_message').empty().hide();
+            }
+        }
+    );
 });

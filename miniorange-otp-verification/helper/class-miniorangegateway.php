@@ -88,6 +88,9 @@ if ( ! class_exists( 'MiniOrangeGateway' ) ) {
 			if ( file_exists( MOV_DIR . 'addons/passwordresetwc' ) ) {
 				WooCommercePasswordReset::instance();
 			}
+			if ( file_exists( MOV_DIR . 'addons/loginwithphone' ) ) {
+				require_once MOV_DIR . 'addons/loginwithphone/miniorange-login-phone-validation.php';
+			}
 			if ( file_exists( MOV_DIR . 'addons/regwithphone' ) ) {
 				require MOV_DIR . 'addons/regwithphone/miniorange-rwp-validation.php';
 			}

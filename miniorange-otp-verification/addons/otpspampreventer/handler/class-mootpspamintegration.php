@@ -95,6 +95,10 @@ if ( ! class_exists( 'MoOtpSpamIntegration' ) ) {
 		 * @phpcs:disable WordPress.Security.NonceVerification.Missing -- Called from OTP generation hook, no nonce available
 		 */
 		public function mosp_check_spam_before_otp_send( $user_login, $user_email, $phone_number, $otp_type, $from_both ) {
+			if ( ! $this->mosp_is_addon_enabled() ) {
+				return;
+			}
+
 			$otp_type = strtolower( trim( (string) $otp_type ) );
 			switch ( $otp_type ) {
 				case \OTP\Objects\VerificationType::EMAIL:
@@ -298,6 +302,10 @@ if ( ! class_exists( 'MoOtpSpamIntegration' ) ) {
 				return;
 			}
 
+			if ( ! $this->mosp_is_addon_enabled() ) {
+				return;
+			}
+
 			if ( ! $this->is_otp_verification_active_on_page() ) {
 				return;
 			}
@@ -374,6 +382,10 @@ if ( ! class_exists( 'MoOtpSpamIntegration' ) ) {
 		 * This is called via mo_include_js action when popup is rendered.
 		 */
 		public function mosp_include_timer_js() {
+			if ( ! $this->mosp_is_addon_enabled() ) {
+				return;
+			}
+
 			$settings = $this->storage->mosp_get_settings();
 
 			$email = MoPHPSessions::get_session_var( 'user_email' );
@@ -388,6 +400,13 @@ if ( ! class_exists( 'MoOtpSpamIntegration' ) ) {
 
 			$cooldown_remaining = $is_ip_whitelisted ? 0 : $this->mosp_get_cooldown_remaining_time( $email, $phone, $browser_id );
 			$is_blocked         = $this->handler->mosp_is_blocked( $email, $phone, $browser_id, 'popup_render' );
+
+			/*
+			 * mo_include_js runs mid-document (during popup HTML). Bundled scripts end with IIFEs like })(jQuery);
+			 * Inline code below also invokes jQuery immediately. Force core jQuery to print first so it is defined.
+			 */
+			wp_enqueue_script( 'jquery' );
+			wp_print_scripts( 'jquery' );
 
 			wp_register_style( 'mo-osp-puzzle-css-popup', MO_OSP_URL . 'includes/css/mo-admin.css', array(), '1.0.5', 'all' );
 			wp_print_styles( 'mo-osp-puzzle-css-popup' );
@@ -441,7 +460,8 @@ if ( ! class_exists( 'MoOtpSpamIntegration' ) ) {
 			$puzzle_message = __( 'Please complete the security verification to continue.', 'miniorange-otp-verification' );
 			?>
 			<script type="text/javascript">
-			(function($) {
+			(function() {
+				function moOspRunInlinePuzzle($) {
 				'use strict';
 				
 				if (window.mo_osp_inline_puzzle_check_executed) {
@@ -547,7 +567,26 @@ if ( ! class_exists( 'MoOtpSpamIntegration' ) ) {
 				} else {
 					setTimeout(runCheckOnce, 300);
 				}
-			})(jQuery);
+				}
+				function moOspTryInlinePuzzle() {
+					var jq = window.jQuery;
+					if (typeof jq === 'undefined') {
+						return false;
+					}
+					moOspRunInlinePuzzle(jq);
+					return true;
+				}
+				if (!moOspTryInlinePuzzle()) {
+					var moOspInlineIv = setInterval(function () {
+						if (moOspTryInlinePuzzle()) {
+							clearInterval(moOspInlineIv);
+						}
+					}, 30);
+					setTimeout(function () {
+						clearInterval(moOspInlineIv);
+					}, 15000);
+				}
+			})();
 			</script>
 			<?php
 		}
@@ -557,6 +596,10 @@ if ( ! class_exists( 'MoOtpSpamIntegration' ) ) {
 		 */
 		public function mosp_add_puzzle_popup_to_frontend() {
 			if ( is_admin() ) {
+				return;
+			}
+
+			if ( ! $this->mosp_is_addon_enabled() ) {
 				return;
 			}
 
@@ -609,12 +652,26 @@ if ( ! class_exists( 'MoOtpSpamIntegration' ) ) {
 		/**
 		 * Provide addon cooldown time to host plugin for server-side formatting.
 		 *
-		 * @param int $default Default fallback value.
+		 * @param int $default_value Default fallback value.
 		 * @return int seconds
 		 */
-		public function mosp_filter_get_cooldown_time( $default = 60 ) {
+		public function mosp_filter_get_cooldown_time( $default_value = 60 ) {
+			if ( ! $this->mosp_is_addon_enabled() ) {
+				return (int) $default_value;
+			}
+
 			$settings = $this->storage->mosp_get_settings();
-			return isset( $settings['cooldown_time'] ) ? (int) $settings['cooldown_time'] : (int) $default;
+			return isset( $settings['cooldown_time'] ) ? (int) $settings['cooldown_time'] : (int) $default_value;
+		}
+
+		/**
+		 * Check if spam preventer addon is enabled in settings.
+		 *
+		 * @return bool
+		 */
+		private function mosp_is_addon_enabled() {
+			$settings = $this->storage->mosp_get_settings();
+			return ! empty( $settings['enabled'] );
 		}
 
 		/**

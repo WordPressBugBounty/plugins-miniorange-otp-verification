@@ -64,23 +64,27 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 		 **/
 		public function showNotice() {
 			$license_page_url = admin_url() . 'admin.php?page=mootppricing';
-			$addon_page_url   = admin_url() . 'admin.php?page=addon';
-			$query_string     = isset( $_SERVER['QUERY_STRING'] ) ? sanitize_text_field( wp_unslash( $_SERVER['QUERY_STRING'] ) ) : '';
-			$current_url      = admin_url() . 'admin.php?' . $query_string;
+			$current_page_raw = filter_input( INPUT_GET, 'page', FILTER_UNSAFE_RAW );
+			$current_page     = is_string( $current_page_raw ) ? sanitize_text_field( wp_unslash( $current_page_raw ) ) : '';
+			$allowed_pages    = array( 'mosettings', 'monotifications', 'otpsettings', 'mogateway', 'moreporting', 'mowhatsapp', 'addon', 'otpaccount', 'mootppricing' );
 			$is_notice_closed = get_mo_option( 'mo_hide_notice' );
-			if ( 'mo_hide_notice' !== $is_notice_closed ) {
-				if ( ( strcmp( MOV_TYPE, 'EnterpriseGatewayWithAddons' ) !== 0 ) && ( $current_url !== $license_page_url ) ) {
-					$notice_html = sprintf(
-						'<b>%1$s</b><br><br>%2$s<a href="%3$s">%4$s</a>',
-						esc_html__( 'We support OTP Verification on 60+ forms, PasswordLess Login, WooCommerce SMS Notifications for Admins, Vendors & Customers, Password Reset via OTP and many more.', 'miniorange-otp-verification' ),
-						esc_html__( 'AWS SNS, Twilio Gateway & more gateways supported! Want to know more? Check it out here :', 'miniorange-otp-verification' ),
-						esc_url( $license_page_url ),
-						esc_html__( 'Plan Details', 'miniorange-otp-verification' ),
-					);
-					echo '	<div class="mo_notice updated notice is-dismissible" >
-								<p class="text-sm"><img src="' . esc_url( MOV_FEATURES_GRAPHIC ) . '" class="show_mo_icon_form" >' . wp_kses( $notice_html, MoUtility::mo_allow_html_array() ) . '</p>
-							</div>';
-				}
+			$is_hidden_window = is_numeric( $is_notice_closed ) && ( time() - (int) $is_notice_closed ) < ( 7 * DAY_IN_SECONDS );
+
+			if ( ! in_array( $current_page, $allowed_pages, true ) || $is_hidden_window ) {
+				return;
+			}
+
+			if ( ( strcmp( MOV_TYPE, 'EnterpriseGatewayWithAddons' ) !== 0 ) && ( 'mootppricing' !== $current_page ) ) {
+				$notice_html = sprintf(
+					'<b>%1$s</b><br><br>%2$s<a href="%3$s">%4$s</a>',
+					esc_html__( 'We support OTP Verification on 60+ forms, PasswordLess Login, WooCommerce SMS Notifications for Admins, Vendors & Customers, Password Reset via OTP and many more.', 'miniorange-otp-verification' ),
+					esc_html__( 'AWS SNS, Twilio Gateway & more gateways supported! Want to know more? Check it out here :', 'miniorange-otp-verification' ),
+					esc_url( $license_page_url ),
+					esc_html__( 'Plan Details', 'miniorange-otp-verification' ),
+				);
+				echo '	<div class="mo_notice updated notice is-dismissible" >
+							<p class="text-sm"><img src="' . esc_url( MOV_FEATURES_GRAPHIC ) . '" class="show_mo_icon_form" >' . wp_kses( $notice_html, MoUtility::mo_allow_html_array() ) . '</p>
+						</div>';
 			}
 		}
 
@@ -93,7 +97,7 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 			if ( ! current_user_can( 'manage_options' ) || ! check_ajax_referer( 'mo_admin_actions', 'security', false ) ) {
 				wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 			}
-			update_mo_option( 'mo_hide_notice', 'mo_hide_notice' );
+			update_mo_option( 'mo_hide_notice', time() );
 		}
 
 		/**
@@ -105,7 +109,7 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 			if ( ! current_user_can( 'manage_options' ) || ! check_ajax_referer( 'mo_admin_actions', 'security', false ) ) {
 				wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 			}
-			update_mo_option( 'mo_hide_sms_notice', 'mo_hide_sms_notice' );
+			update_mo_option( 'mo_hide_sms_notice', time() );
 		}
 
 		/**
@@ -749,16 +753,16 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 			$remaining_whatsapp_option = get_mo_option( 'whatsapp_transactions_remaining', 'mowp_customer_validation_' );
 			$remaining_whatsapp        = is_numeric( $remaining_whatsapp_option ) ? absint( $remaining_whatsapp_option ) : 0;
 
-			$is_logged_in              = MoUtility::micr();
-			$is_free_plugin             = strcmp( MOV_TYPE, 'MiniOrangeGateway' ) === 0;
-			$gateway_type               = get_mo_option( 'custome_gateway_type' );
-			$smtp_enabled               = get_mo_option( 'smtp_enable_type' );
-			$whatsapp_enabled           = get_mo_option( 'mo_whatsapp_enable' );
-			$mo_whatsapp_type_enabled   = get_mo_option( 'mo_whatsapp_type' );
-			$mo_sms_as_backup           = get_mo_option( 'mo_sms_as_backup' );
+			$is_logged_in             = MoUtility::micr();
+			$is_free_plugin           = strcmp( MOV_TYPE, 'MiniOrangeGateway' ) === 0;
+			$gateway_type             = get_mo_option( 'custome_gateway_type' );
+			$smtp_enabled             = get_mo_option( 'smtp_enable_type' );
+			$whatsapp_enabled         = get_mo_option( 'mo_whatsapp_enable' );
+			$mo_whatsapp_type_enabled = get_mo_option( 'mo_whatsapp_type' );
+			$mo_sms_as_backup         = get_mo_option( 'mo_sms_as_backup' );
 
 			$mo_whatsapp_gateway_enabled = $whatsapp_enabled && $mo_whatsapp_type_enabled && 'mo_whatsapp' === $mo_whatsapp_type_enabled;
-			$mo_smtp_enabled              = $is_free_plugin || ( $smtp_enabled && 'mo_smtp_enable' === $smtp_enabled );
+			$mo_smtp_enabled             = $is_free_plugin || ( $smtp_enabled && 'mo_smtp_enable' === $smtp_enabled );
 
 			$mo_transactions = null;
 			if ( $is_logged_in ) {
@@ -792,7 +796,7 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 				array(
 					'transactions_text'  => $mo_transactions,
 					'remaining_sms'      => $remaining_sms,
-					'remaining_email'   => $remaining_email,
+					'remaining_email'    => $remaining_email,
 					'remaining_whatsapp' => $remaining_whatsapp,
 					'active_class'       => $active_class,
 					'hidden'             => is_null( $mo_transactions ) ? 'hidden' : '',

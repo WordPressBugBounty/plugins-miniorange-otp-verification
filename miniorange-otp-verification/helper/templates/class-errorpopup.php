@@ -110,9 +110,10 @@ if ( ! class_exists( 'ErrorPopup' ) ) {
 			$template = str_replace( '{{REQUIRED_FORMS_SCRIPTS}}', $required_scripts, $template );
 			$template = str_replace( '{{HEADER}}', __( 'Validate OTP (One Time Passcode)', 'miniorange-otp-verification' ), $template );
 			$template = str_replace( '{{GO_BACK}}', 'X', $template );
-			$template = str_replace( '{{MESSAGE}}', wp_kses( $message, array( 'i' => array(), 'em' => array(), 'strong' => array(), 'b' => array(), 'br' => array() ) ), $template );
+			// Same rich-text rules as post content so links/line breaks in OTP messages (e.g. admin password hint) are kept.
+			$template = str_replace( '{{MESSAGE}}', wp_kses_post( $message ), $template );
 			$template = str_replace( '{{SCRIPT}}', '', $template );
-			return wp_kses( $template, MoUtility::mo_allow_popup_tags() );
+			return wp_kses( $template, MoUtility::mo_popup_html_kses_allowed() );
 		}
 
 		/**

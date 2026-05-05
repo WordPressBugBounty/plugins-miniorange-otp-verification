@@ -246,7 +246,7 @@ function get_mo_class( $obj ) {
 /**
  * To check if package.json file can be found through WP site URL or not.
  * BuildScript.php updates the package.json file content in the below function instead of package.json to be used further in autoload.php
- * example package.json string ["name"=>"miniorange-otp-verification","version"=>"5.4.9","type"=>"MiniOrangeGateway","testMode"=>false,"failMode"=>false,"hostname"=>"https:\/\/login.xecurify.com","dCustomerKey"=>"16555","dApiKey"=>"fFd2XcvTGDemZvbw1bcUesNJWEqKbbUq","sslVerify"=>true,"session"=>"SESSION"]
+ * example package.json string ["name"=>"miniorange-otp-verification","version"=>"5.5.0","type"=>"MiniOrangeGateway","testMode"=>false,"failMode"=>false,"hostname"=>"https:\/\/login.xecurify.com","dCustomerKey"=>"16555","dApiKey"=>"fFd2XcvTGDemZvbw1bcUesNJWEqKbbUq","sslVerify"=>true,"session"=>"SESSION"]
  *
  * @return string
  */
@@ -254,7 +254,7 @@ function initialize_package_json() {
 	$package = wp_json_encode(
 		array(
 			'name'         => 'miniorange-otp-verification',
-			'version'      => '5.4.9',
+			'version'      => '5.5.0',
 			'type'         => 'MiniOrangeGateway',
 			'testmode'     => false,
 			'failmode'     => false,

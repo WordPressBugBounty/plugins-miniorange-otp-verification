@@ -222,10 +222,20 @@ if ( ! class_exists( 'UltimateMemberRegistrationForm' ) ) {
 		 * @return array
 		 */
 		private function extract_args( $args ) {
+			$phone = '';
+			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0
+				|| strcasecmp( $this->otp_type, $this->type_both_tag ) === 0 ) {
+				if ( isset( $args[ $this->phone_key ] ) ) {
+					$phone = $args[ $this->phone_key ];
+				} else {
+					$phone = $this->get_um_dynamic_field_value( $this->phone_key, $args );
+				}
+			}
+
 			return array(
 				'user_login'     => $args['user_login'],
 				'user_email'     => $args['user_email'],
-				$this->phone_key => $args[ $this->phone_key ],
+				$this->phone_key => $phone,
 				'user_password'  => $args['user_password'],
 			);
 		}

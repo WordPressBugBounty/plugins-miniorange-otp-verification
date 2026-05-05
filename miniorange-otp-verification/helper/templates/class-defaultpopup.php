@@ -181,32 +181,10 @@ if ( ! class_exists( 'DefaultPopup' ) ) {
 				'{{SCRIPT}}'                 => '',
 			);
 			$template     = str_replace( array_keys( $replacements ), array_values( $replacements ), $template );
-			$template     = str_replace(
-				'{{MESSAGE}}',
-				wp_kses(
-					$message,
-					array(
-						'div'    => array(
-							'id'    => true,
-							'class' => true,
-							'style' => true,
-						),
-						'span'   => array(
-							'id'    => true,
-							'class' => true,
-							'style' => true,
-						),
-						'i'      => array(),
-						'em'     => array(),
-						'strong' => array(),
-						'b'      => array(),
-						'br'     => array(),
-					)
-				),
-				$template
-			);
-			$template     = apply_filters( 'mo_add_script', $template );
-			return wp_kses( $template, MoUtility::mo_allow_popup_tags() );
+			// Post-style HTML keeps links and breaks for messages extended by filters (e.g. WP login admin hint).
+			$template = str_replace( '{{MESSAGE}}', wp_kses_post( $message ), $template );
+			$template = apply_filters( 'mo_add_script', $template );
+			return wp_kses( $template, MoUtility::mo_popup_html_kses_allowed() );
 		}
 
 		/**
@@ -327,20 +305,38 @@ if ( ! class_exists( 'DefaultPopup' ) ) {
 		}
 
 		/**
+		 * Register and print moDefaultPopUp.js (resend OTP, go back, form UX).
+		 *
+		 * @param bool $allow_reprint_if_done When true, allow printing again if WP already marked moPopUps as printed
+		 *                                    (e.g. first print went to a buffer that was discarded by ob_end_clean).
+		 */
+		private function print_default_popup_scripts( $allow_reprint_if_done = false ) {
+			do_action( 'mo_include_js' );
+			if ( ! wp_script_is( 'moPopUps', 'registered' ) ) {
+				wp_register_script( 'moPopUps', MOV_URL . 'includes/js/moDefaultPopUp.js', array(), MOV_VERSION, false );
+				wp_localize_script(
+					'moPopUps',
+					'moPopUps',
+					array()
+				);
+			}
+			if ( $allow_reprint_if_done ) {
+				global $wp_scripts;
+				if ( $wp_scripts instanceof \WP_Scripts && is_array( $wp_scripts->done ) ) {
+					$wp_scripts->done = array_values( array_diff( $wp_scripts->done, array( 'moPopUps' ) ) );
+				}
+			}
+			wp_print_scripts( 'moPopUps' );
+		}
+
+		/**
 		 * This function is used to add the scripts to the template
 		 * with the appropriate scripts. These scripts are required
 		 * for the popup to work. Scripts are not added if the form is in
 		 * preview mode.
 		 */
 		private function getRequiredScripts() {
-			do_action( 'mo_include_js' );
-			wp_register_script( 'moPopUps', MOV_URL . 'includes/js/moDefaultPopUp.js', array( 'jquery' ), MOV_VERSION, false );
-			wp_localize_script(
-				'moPopUps',
-				'moPopUps',
-				array()
-			);
-			wp_print_scripts( 'moPopUps' );
+			$this->print_default_popup_scripts();
 		}
 		/**
 		 * This function is used to load the required script for the catchy template.
@@ -370,6 +366,10 @@ if ( ! class_exists( 'DefaultPopup' ) ) {
 
 			// Print script immediately since this is called during HTML output.
 			wp_print_scripts( $script_handle );
+
+			// miniorange_site_otp_validation_form() may discard nested output buffers before echo; script output from
+			// parse()/getRequiredScripts() is then lost. Re-print so mo_otp_verification_resend and mo_validation_goback exist.
+			$this->print_default_popup_scripts( true );
 		}
 		/**
 		 * This function is used to add the required input fields to the main otp form.

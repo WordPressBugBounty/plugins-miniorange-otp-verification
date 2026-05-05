@@ -1374,6 +1374,7 @@ jQuery(document).ready(function () {
                 type: "POST",
             data: {
                 action: "mo_dismiss_notice",
+                security: moadminsettings.security,
             },
             crossDomain: !0,
             dataType: "json",
@@ -1391,6 +1392,7 @@ jQuery(document).ready(function () {
                 type: "POST",
             data: {
                 action: "mo_dismiss_sms_notice",
+                security: moadminsettings.security,
             },
             crossDomain: !0,
             dataType: "json",

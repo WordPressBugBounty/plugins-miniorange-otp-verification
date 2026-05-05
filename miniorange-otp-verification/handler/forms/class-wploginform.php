@@ -40,6 +40,14 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		use Instance;
 
 		/**
+		 * Plaintext marker for the admin password-login hint; replaced with HTML after the popup template is built
+		 * so nested wp_kses passes inside template parsers do not strip links.
+		 *
+		 * @var string
+		 */
+		const MO_OTP_ADMIN_PW_HINT_PLACEHOLDER = '[[MO_OTP_WP_LOGIN_PASSWORD_HINT]]';
+
+		/**
 		 * Enable disable saving of phone numbers after verification
 		 *
 		 * @var string
@@ -205,53 +213,174 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			$this->redirect_to_page     = get_mo_option( 'login_custom_redirect' );
 
 			add_filter( 'authenticate', array( $this, 'mo_handle_mo_wp_login' ), 99, 3 );
-
-			add_action( 'wp_ajax_mo-admin-check', array( $this, 'mo_is_admin_check' ) );
-			add_action( 'wp_ajax_nopriv_mo-admin-check', array( $this, 'mo_is_admin_check' ) );
+			add_filter( 'wp_login_errors', array( $this, 'mo_login_form_notice_no_phone_require_password' ), 10, 2 );
+			add_action( 'template_redirect', array( $this, 'mo_wc_queue_no_phone_notice_from_query_arg' ), 5 );
+			add_action( 'login_form', array( $this, 'mo_print_force_phone_enrollment_hidden_field' ) );
+			add_action( 'woocommerce_login_form', array( $this, 'mo_print_force_phone_enrollment_hidden_field' ), 5 );
+			add_action( 'wp_body_open', array( $this, 'mo_output_no_phone_enrollment_notice_wp_body_open' ), 5 );
+			add_filter( 'mo_otp_validation_popup_message', array( $this, 'mo_filter_login_otp_popup_message' ), 10, 5 );
+			add_filter( 'mo_otp_validation_popup_html_after_kses', array( $this, 'mo_replace_admin_password_hint_after_final_kses' ), 10, 5 );
 
 			if ( class_exists( 'UM' ) ) {
 				add_filter( 'wp_authenticate_user', array( $this, 'mo_get_and_return_user' ), 99, 2 );
 				add_filter( 'um_custom_authenticate_error_codes', array( $this, 'mo_get_um_form_errors' ), 99, 1 );
+				add_action( 'um_before_login_fields', array( $this, 'mo_print_um_no_phone_flash_notice' ), 5 );
+				add_action( 'um_before_login_fields', array( $this, 'mo_print_force_phone_enrollment_hidden_field' ), 15 );
 			}
 			$this->mo_route_data();
 		}
 
 		/**
-		 * Function check if the user loggin in is admin.
+		 * Append a password-login link for administrator accounts when OTP-only login and bypass are enabled.
+		 * The link is only shown after a real login attempt has identified the user (no public username oracle).
+		 *
+		 * @param string $message      Popup message HTML.
+		 * @param string $user_login   Username from the flow.
+		 * @param string $user_email   Email from the flow.
+		 * @param string $phone_number Phone from the flow.
+		 * @param string $otp_type     Verification type.
+		 * @return string
 		 */
-		public function mo_is_admin_check() {
-			// Security: Use hardcoded nonce action 'form_nonce' and key 'security' instead of variables.
-			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
-				wp_send_json(
-					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ),
-						MoConstants::ERROR_JSON_TYPE
-					)
-				);
+		public function mo_filter_login_otp_popup_message( $message, $user_login, $user_email, $phone_number, $otp_type ) {
+			if ( ! $this->by_pass_admin || ! $this->skip_password_check || $this->skip_pass_fallback || ! $this->is_form_enabled() ) {
+				return $message;
 			}
-			$username = MoUtility::sanitize_check( 'username', $_POST );
-
-			$user = is_email( $username ) ? get_user_by( 'email', $username ) : get_user_by( 'login', $username );
-
-			if ( ! $user && $this->allow_login_through_phone && MoUtility::validate_phone_number( $username ) ) {
-				$user = $this->mo_get_user_from_phone_number( $username );
+			$current = MoPHPSessions::get_session_var( 'current_form_name' );
+			if ( $current !== $this->form_name ) {
+				return $message;
 			}
-
-			if ( ! $user ) {
-				wp_send_json(
-					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::INVALID_USERNAME ),
-						MoConstants::ERROR_JSON_TYPE
-					)
-				);
+			$user = $this->mo_resolve_user_for_admin_login_hint( $user_login, $user_email, $phone_number );
+			if ( ! $user instanceof WP_User || ! in_array( 'administrator', $user->roles, true ) ) {
+				return $message;
 			}
-
-			$is_admin = user_can( $user, 'manage_options' );
-			$type     = $is_admin ? MoConstants::SUCCESS_JSON_TYPE : MoConstants::ERROR_JSON_TYPE;
-			$message  = $is_admin ? __( 'Admin user', 'miniorange-otp-verification' ) : __( 'Not an admin user', 'miniorange-otp-verification' );
-
-			wp_send_json( MoUtility::create_json( $message, $type ) );
+			// Placeholder survives until final output; link HTML is added in mo_replace_admin_password_hint_after_final_kses() after wp_kses.
+			return $message . "\n\n" . self::MO_OTP_ADMIN_PW_HINT_PLACEHOLDER;
 		}
+
+
+		/**
+		 * Replace placeholder with trusted HTML after the last wp_kses on the popup (avoids KSES stripping &lt;a&gt;).
+		 *
+		 * @param string $html           Full popup HTML (already passed through wp_kses).
+		 * @param string $user_login     Username from the flow.
+		 * @param string $user_email     Email.
+		 * @param string $phone_number   Phone.
+		 * @param string $otp_type       Verification type.
+		 * @return string
+		 */
+		public function mo_replace_admin_password_hint_after_final_kses( $html, $user_login, $user_email, $phone_number, $otp_type ) {
+			if ( strpos( $html, self::MO_OTP_ADMIN_PW_HINT_PLACEHOLDER ) === false ) {
+				return $html;
+			}
+			if ( ! $this->by_pass_admin || ! $this->skip_password_check || $this->skip_pass_fallback || ! $this->is_form_enabled() ) {
+				return str_replace( self::MO_OTP_ADMIN_PW_HINT_PLACEHOLDER, '', $html );
+			}
+			$current = MoPHPSessions::get_session_var( 'current_form_name' );
+			if ( $current !== $this->form_name ) {
+				return str_replace( self::MO_OTP_ADMIN_PW_HINT_PLACEHOLDER, '', $html );
+			}
+			$user = $this->mo_resolve_user_for_admin_login_hint( $user_login, $user_email, $phone_number );
+			if ( ! $user instanceof WP_User || ! in_array( 'administrator', $user->roles, true ) ) {
+				return str_replace( self::MO_OTP_ADMIN_PW_HINT_PLACEHOLDER, '', $html );
+			}
+			$url       = $this->mo_get_wp_login_password_mode_url();
+			$link_text = esc_html__( 'click here', 'miniorange-otp-verification' );
+			// Trusted fragment only; not run through wp_kses again (esc_url / translated link text are safe).
+			$hint_html = '<p class="mo-otp-admin-password-hint" style="margin-top:1em;">' . sprintf(
+				/* translators: %s: link to open password login */
+				__( 'If you are having trouble logging in with OTP, %s to sign in with your password instead.', 'miniorange-otp-verification' ),
+				'<a href="' . esc_url( $url ) . '">' . $link_text . '</a>'
+			) . '</p>';
+			return str_replace( self::MO_OTP_ADMIN_PW_HINT_PLACEHOLDER, $hint_html, $html );
+		}
+
+
+		/**
+		 * Resolve WP_User for optional admin-only hint text (same session as login flow).
+		 *
+		 * @param string $user_login   Login identifier.
+		 * @param string $user_email   Email.
+		 * @param string $phone_number Phone.
+		 * @return WP_User|null
+		 */
+		private function mo_resolve_user_for_admin_login_hint( $user_login, $user_email, $phone_number ) {
+			if ( $user_login && 'ajax_phone' !== $user_login ) {
+				$user = is_email( $user_login ) ? get_user_by( 'email', $user_login ) : get_user_by( 'login', $user_login );
+				if ( $user instanceof WP_User ) {
+					return $user;
+				}
+			}
+			$session_user = MoPHPSessions::get_session_var( 'login_user_mo' );
+			if ( $session_user ) {
+				$user = is_email( $session_user ) ? get_user_by( 'email', $session_user ) : get_user_by( 'login', $session_user );
+				if ( $user instanceof WP_User ) {
+					return $user;
+				}
+			}
+			if ( $user_email ) {
+				$user = get_user_by( 'email', $user_email );
+				if ( $user instanceof WP_User ) {
+					return $user;
+				}
+			}
+			if ( $phone_number && $this->allow_login_through_phone ) {
+				$user = $this->mo_get_user_from_phone_number( $phone_number );
+				if ( $user instanceof WP_User ) {
+					return $user;
+				}
+			}
+			return null;
+		}
+
+
+		/**
+		 * Login URL that opens the password field (handled by loginform.js via mo_pw_login=1).
+		 *
+		 * @return string
+		 */
+		private function mo_get_wp_login_password_mode_url() {
+			$redirect_raw = MoUtility::get_current_page_parameter_value( 'redirect_to', '' );
+			// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only redirect_to for URL building; value passed through wp_validate_redirect below.
+			if ( MoUtility::is_blank( $redirect_raw ) && isset( $_GET['redirect_to'] ) ) {
+				$redirect_raw = sanitize_text_field( wp_unslash( $_GET['redirect_to'] ) );
+			}
+			// phpcs:enable WordPress.Security.NonceVerification.Recommended
+			if ( MoUtility::is_blank( $redirect_raw ) ) {
+				$session_redirect = MoPHPSessions::get_session_var( 'redirect_to' );
+				if ( ! MoUtility::is_blank( $session_redirect ) ) {
+					$redirect_raw = $session_redirect;
+				}
+			}
+			$redirect_to = $redirect_raw ? wp_validate_redirect( $redirect_raw, false ) : false;
+			// Never send users back to wp-login.php after a successful login (avoids redirect loop).
+			if ( ! $redirect_to || $this->mo_is_redirect_target_login_url( $redirect_to ) ) {
+				$redirect_to = admin_url();
+			}
+			$args = array( 'mo_pw_login' => '1' );
+			if ( $redirect_to ) {
+				$args['redirect_to'] = $redirect_to;
+			}
+			return add_query_arg( $args, wp_login_url() );
+		}
+
+
+		/**
+		 * True if URL points at wp-login.php (invalid as post-login destination).
+		 *
+		 * @param string $url Validated URL.
+		 * @return bool
+		 */
+		private function mo_is_redirect_target_login_url( $url ) {
+			if ( MoUtility::is_blank( $url ) ) {
+				return true;
+			}
+			$path = wp_parse_url( $url, PHP_URL_PATH );
+			if ( ! is_string( $path ) ) {
+				return false;
+			}
+			return ( false !== strpos( $path, 'wp-login.php' ) );
+		}
+
 
 		/**
 		 * Function to handle login errors on UM invalid form
@@ -319,20 +448,21 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 */
 		public function miniorange_register_login_script() {
 			wp_register_script( 'mologin', MOV_URL . 'includes/js/loginform.js', array( 'jquery' ), MOV_VERSION, true );
+			$otp_btn_text  = ! MoUtility::is_blank( $this->login_with_otp_button_text ) ? $this->login_with_otp_button_text : __( 'Login with OTP', 'miniorange-otp-verification' );
+			$pass_btn_text = ! MoUtility::is_blank( $this->login_with_pass_button_text ) ? $this->login_with_pass_button_text : __( 'Login with Password', 'miniorange-otp-verification' );
+
 			wp_localize_script(
 				'mologin',
 				'movarlogin',
 				array(
-					'userLabel'           => ( $this->allow_login_through_phone && $this->get_verification_type() === VerificationType::PHONE ) ? $this->user_label : null,
-					'skipPwdCheck'        => $this->skip_password_check,
-					'skipPwdFallback'     => $this->skip_pass_fallback,
-					'loginOTPButtonText'  => $this->login_with_otp_button_text,
-					'loginPassButtonText' => $this->login_with_pass_button_text,
-					'loginPassButtonCSS'  => $this->login_with_pass_button_css,
-					'isAdminAction'       => 'mo-admin-check',
-					'nonce'               => wp_create_nonce( $this->nonce ),
-					'byPassAdmin'         => $this->by_pass_admin,
-					'siteURL'             => admin_url( 'admin-ajax.php' ),
+					'userLabel'             => ( $this->allow_login_through_phone && $this->get_verification_type() === VerificationType::PHONE ) ? $this->user_label : null,
+					'skipPwdCheck'          => $this->skip_password_check,
+					'skipPwdFallback'       => $this->skip_pass_fallback,
+					'phoneOnlyIdentifiers'  => $this->mo_is_login_phone_identifier_only_mode(),
+					'phoneOnlyLoginMessage' => __( 'Please log in using your registered phone number only.', 'miniorange-otp-verification' ),
+					'loginOTPButtonText'    => $otp_btn_text,
+					'loginPassButtonText'   => $pass_btn_text,
+					'loginPassButtonCSS'    => $this->login_with_pass_button_css,
 				)
 			);
 			wp_enqueue_script( 'mologin' );
@@ -374,9 +504,116 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 * @return bool
 		 */
 		private function mo_by_pass_login( $user, $skip_otp_process ) {
-			$user_meta = get_userdata( $user->data->ID );
-			$user_role = $user_meta->roles;
-			return ( in_array( 'administrator', $user_role, true ) && $this->by_pass_admin ) || $skip_otp_process || $this->mo_delay_otp_process( $user->data->ID );
+			// User hit "no phone for OTP" for this account: password must continue into OTP/phone enrollment, not plain login.
+			if ( $this->mo_pending_phone_enrollment_blocks_password_bypass( $user ) ) {
+				return false;
+			}
+			if ( $skip_otp_process || $this->mo_delay_otp_process( $user->data->ID ) ) {
+				return true;
+			}
+			if (
+				$this->by_pass_admin
+				&& $this->skip_password_check
+				&& ! $this->skip_pass_fallback
+				&& 'password' === $this->mo_get_wp_login_intent()
+			) {
+				$user_meta = get_userdata( $user->data->ID );
+				$user_role = $user_meta->roles;
+				return in_array( 'administrator', $user_role, true );
+			}
+			return false;
+		}
+
+		/**
+		 * True when this login must go through phone OTP enrollment instead of password-only bypass.
+		 * Set when we redirect after OTP-without-phone; cleared when the user has a stored phone or OTP session resets.
+		 *
+		 * @param WP_User $user Current user.
+		 * @return bool
+		 */
+		private function mo_pending_phone_enrollment_blocks_password_bypass( $user ) {
+			if ( ! ( $user instanceof WP_User ) ) {
+				return false;
+			}
+			if ( ! $this->mo_post_has_force_phone_enrollment_marker() ) {
+				return false;
+			}
+			if ( ! $this->skip_password_check ) {
+				return false;
+			}
+			if ( VerificationType::PHONE !== $this->get_verification_type() || ! $this->mo_save_phone_numbers() ) {
+				return false;
+			}
+			$pending = MoPHPSessions::get_session_var( 'mo_wp_login_pending_phone_enrollment_uid' );
+			if ( MoUtility::is_blank( $pending ) || (string) $user->ID !== (string) $pending ) {
+				return false;
+			}
+			$stored_phone = get_user_meta( $user->data->ID, $this->get_phone_key_details(), true );
+			$stored_phone = MoUtility::process_phone_number( $stored_phone );
+			return MoUtility::is_blank( $stored_phone );
+		}
+
+		/**
+		 * Hidden field mo_force_phone_enrollment_after_password is only present after our no-phone redirect (?mo_otp_no_phone=1).
+		 *
+		 * @return bool
+		 */
+		private function mo_post_has_force_phone_enrollment_marker() {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Hidden marker from same-page GET (?mo_otp_no_phone=1); core/WC login nonces still apply to the form.
+			return isset( $_POST['mo_force_phone_enrollment_after_password'] ) && '1' === sanitize_text_field( wp_unslash( $_POST['mo_force_phone_enrollment_after_password'] ) );
+		}
+
+		/**
+		 * Print hidden input when the login page was loaded from our no-phone redirect so the next POST can prove enrollment is required.
+		 *
+		 * @return void
+		 */
+		public function mo_print_force_phone_enrollment_hidden_field() {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Non-secret UX flag from our own redirect (?mo_otp_no_phone=1); sanitized below.
+			if ( ! isset( $_GET['mo_otp_no_phone'] ) || '1' !== sanitize_text_field( wp_unslash( $_GET['mo_otp_no_phone'] ) ) ) {
+				return;
+			}
+			echo '<input type="hidden" name="mo_force_phone_enrollment_after_password" value="1" />';
+		}
+
+		/**
+		 * If the user uses a normal password login (no hidden marker), drop stale pending-enrollment so we do not force phone registration.
+		 *
+		 * @param WP_User $user Resolved user.
+		 * @return void
+		 */
+		private function mo_drop_phone_enrollment_pending_without_submitted_marker( $user ) {
+			if ( ! ( $user instanceof WP_User ) ) {
+				return;
+			}
+			$pending = MoPHPSessions::get_session_var( 'mo_wp_login_pending_phone_enrollment_uid' );
+			if ( MoUtility::is_blank( $pending ) || (string) $user->ID !== (string) $pending ) {
+				return;
+			}
+			if ( $this->mo_post_has_force_phone_enrollment_marker() ) {
+				return;
+			}
+			MoPHPSessions::unset_session( 'mo_wp_login_pending_phone_enrollment_uid' );
+		}
+
+		/**
+		 * Clear enrollment-pending flag if the user already has a phone (e.g. added elsewhere).
+		 *
+		 * @param WP_User|WP_Error $user User or error.
+		 * @return void
+		 */
+		private function mo_clear_pending_phone_enrollment_if_user_has_phone( $user ) {
+			if ( ! ( $user instanceof WP_User ) ) {
+				return;
+			}
+			$pending = MoPHPSessions::get_session_var( 'mo_wp_login_pending_phone_enrollment_uid' );
+			if ( MoUtility::is_blank( $pending ) || (string) $user->ID !== (string) $pending ) {
+				return;
+			}
+			$stored = MoUtility::process_phone_number( get_user_meta( $user->ID, $this->get_phone_key_details(), true ) );
+			if ( ! MoUtility::is_blank( $stored ) ) {
+				MoPHPSessions::unset_session( 'mo_wp_login_pending_phone_enrollment_uid' );
+			}
 		}
 
 		/**
@@ -388,6 +625,16 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		private function mo_handle_wp_login_create_user_action( $post_data ) {
 			if ( ! SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->get_verification_type() ) ) {
 				return;
+			}
+
+			// First-time phone bind must follow authenticate-time password verification (prevents account takeover).
+			if ( (string) MoPHPSessions::get_session_var( 'mo_wp_login_enrollment_ownership_ok' ) !== '1' ) {
+				$this->unset_otp_session_variables();
+				wp_die(
+					esc_html__( 'Phone registration could not be completed. Please sign in again and enter your account password before verifying your phone number.', 'miniorange-otp-verification' ),
+					esc_html__( 'Login error', 'miniorange-otp-verification' ),
+					array( 'response' => 403 )
+				);
 			}
 
 			/**
@@ -423,14 +670,15 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		/**
 		 * The function is called to login the user
 		 *
-		 * @param array $user_log - the username of the user logging in.
-		 * @param array $extra_data - Extra dada stored in the session during sending the OTP.
+		 * @param string      $user_log - the username of the user logging in.
+		 * @param string|null $extra_data - Extra data stored in the session during sending the OTP.
+		 * @param string|null $phone_number - Phone number captured in OTP flow.
 		 */
 		private function login_wp_user( $user_log, $extra_data = null, $phone_number = null ) {
 			$user = is_email( $user_log ) ? get_user_by( 'email', $user_log ) : get_user_by( 'login', $user_log );
 			if ( ! $user && $this->mo_allow_login_through_phone() ) {
 				$user = $this->mo_get_user_from_phone_number( $phone_number );
-			}	
+			}
 			if ( $user ) {
 				wp_set_auth_cookie( $user->data->ID, true );
 				if ( $this->delay_otp && $this->delay_otp_interval > 0 ) {
@@ -457,6 +705,334 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 
 
 		/**
+		 * User-visible message when login must use password before first-time phone registration.
+		 *
+		 * @return string
+		 */
+		private function mo_get_no_phone_enrollment_message() {
+			return __( 'Please sign in with your password first to continue securely.', 'miniorange-otp-verification' );
+		}
+
+		/**
+		 * On the GET request after redirect (?mo_otp_no_phone=1), re-queue the WooCommerce notice if needed.
+		 *
+		 * Session notices added during the POST can fail to persist (guest WC session cookie timing, exit before save).
+		 * Store Notices / block banners read the same PHP queue as native login errors.
+		 *
+		 * @return void
+		 */
+		public function mo_wc_queue_no_phone_notice_from_query_arg() {
+			if ( is_admin() ) {
+				return;
+			}
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Non-secret flag from our own redirect; sanitized below.
+			if ( ! isset( $_GET['mo_otp_no_phone'] ) || '1' !== sanitize_text_field( wp_unslash( $_GET['mo_otp_no_phone'] ) ) ) {
+				return;
+			}
+			if ( ! function_exists( 'wc_add_notice' ) || ! did_action( 'woocommerce_init' ) ) {
+				return;
+			}
+
+			$on_wc_notice_surface = ( function_exists( 'is_account_page' ) && is_account_page() )
+				|| ( function_exists( 'is_checkout' ) && is_checkout() );
+
+			if ( ! $on_wc_notice_surface ) {
+				$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+				$req_path    = '' !== $request_uri ? strtok( $request_uri, '?' ) : '';
+				$here        = is_string( $req_path ) && '' !== $req_path ? home_url( $req_path ) : '';
+				if ( MoUtility::is_blank( $here ) || ! $this->mo_url_is_woocommerce_notice_context( $here ) ) {
+					return;
+				}
+			}
+
+			$msg = $this->mo_get_no_phone_enrollment_message();
+			if ( function_exists( 'wc_has_notice' ) && wc_has_notice( $msg, 'error' ) ) {
+				return;
+			}
+			wc_add_notice( $msg, 'error' );
+		}
+
+		/**
+		 * Show notice after redirect when user must use password before first-time phone registration.
+		 *
+		 * @param WP_Error $errors      Login errors object.
+		 * @param string   $redirect_to Redirect destination (unused).
+		 * @return WP_Error
+		 */
+		public function mo_login_form_notice_no_phone_require_password( $errors, $redirect_to ) {
+			unset( $redirect_to );
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Non-secret flag from our own redirect; sanitized below.
+			if ( ! isset( $_GET['mo_otp_no_phone'] ) || '1' !== sanitize_text_field( wp_unslash( $_GET['mo_otp_no_phone'] ) ) ) {
+				return $errors;
+			}
+			if ( ! ( $errors instanceof WP_Error ) ) {
+				$errors = new WP_Error();
+			}
+			$errors->add(
+				'mo_otp_no_phone',
+				$this->mo_get_no_phone_enrollment_message(),
+				''
+			);
+			return $errors;
+		}
+
+		/**
+		 * Print queued notice at top of body for generic theme/login shortcode pages (not WC session, not UM field hook).
+		 *
+		 * @return void
+		 */
+		public function mo_output_no_phone_enrollment_notice_wp_body_open() {
+			if ( is_admin() ) {
+				return;
+			}
+			if ( function_exists( 'is_login' ) && is_login() ) {
+				return;
+			}
+			if ( function_exists( 'um_is_core_page' ) && um_is_core_page( 'login' ) ) {
+				return;
+			}
+			$msg = MoPHPSessions::get_session_var( 'mo_otp_no_phone_generic_flash' );
+			if ( MoUtility::is_blank( $msg ) ) {
+				return;
+			}
+			MoPHPSessions::unset_session( 'mo_otp_no_phone_generic_flash' );
+			echo '<div class="mo-otp-no-phone-notice" style="box-sizing:border-box;width:100%;max-width:42em;margin:0 auto 1em;padding:12px 16px;border-left:4px solid #c00;background:#fff5f5;" role="alert">' .
+				esc_html( $msg ) .
+				'</div>';
+		}
+
+		/**
+		 * Print notice above Ultimate Member login fields (session set before redirect).
+		 *
+		 * @return void
+		 */
+		public function mo_print_um_no_phone_flash_notice() {
+			$msg = MoPHPSessions::get_session_var( 'mo_otp_no_phone_um_flash' );
+			if ( MoUtility::is_blank( $msg ) ) {
+				return;
+			}
+			MoPHPSessions::unset_session( 'mo_otp_no_phone_um_flash' );
+			echo '<div class="um-field um-field-error mo-otp-no-phone-notice" style="width:100%;margin-bottom:1em;padding:12px;border-left:4px solid #c00;background:#fff5f5;">' .
+				esc_html( $msg ) .
+				'</div>';
+		}
+
+		/**
+		 * Whether the URL targets WooCommerce My Account or Checkout (session notices appear where WC prints notices).
+		 *
+		 * @param string $url Absolute URL.
+		 * @return bool
+		 */
+		private function mo_url_is_woocommerce_notice_context( $url ) {
+			if ( ! function_exists( 'wc_get_page_permalink' ) ) {
+				return false;
+			}
+			$url_clean = untrailingslashit( strtok( $url, '?' ) );
+			$my        = wc_get_page_permalink( 'myaccount' );
+			if ( ! MoUtility::is_blank( $my ) && 0 === strpos( $url_clean, untrailingslashit( strtok( $my, '?' ) ) ) ) {
+				return true;
+			}
+			if ( function_exists( 'wc_get_checkout_url' ) ) {
+				$checkout = wc_get_checkout_url();
+				if ( ! MoUtility::is_blank( $checkout ) && 0 === strpos( $url_clean, untrailingslashit( strtok( $checkout, '?' ) ) ) ) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		/**
+		 * Whether URL is the Ultimate Member core login page.
+		 *
+		 * @param string $url Absolute URL.
+		 * @return bool
+		 */
+		private function mo_url_is_um_login_page( $url ) {
+			if ( ! function_exists( 'um_get_core_page' ) ) {
+				return false;
+			}
+			$login = um_get_core_page( 'login' );
+			if ( MoUtility::is_blank( $login ) ) {
+				return false;
+			}
+			return untrailingslashit( strtok( $url, '?' ) ) === untrailingslashit( strtok( $login, '?' ) );
+		}
+
+		/**
+		 * Whether URL is wp-login.php (core handles messages via wp_login_errors + GET).
+		 *
+		 * @param string $url Absolute URL.
+		 * @return bool
+		 */
+		private function mo_url_is_wp_login_page( $url ) {
+			$path = wp_parse_url( $url, PHP_URL_PATH );
+			return is_string( $path ) && false !== strpos( $path, 'wp-login.php' );
+		}
+
+		/**
+		 * Queue WC / UM / generic flash notice so it appears next to native form messages, not in the footer.
+		 *
+		 * @param string $base_url Redirect target without mo_* query args.
+		 * @param string $message  Message text.
+		 * @return void
+		 */
+		private function mo_queue_phone_enrollment_notice_for_destination( $base_url, $message ) {
+			if ( $this->mo_url_is_wp_login_page( $base_url ) ) {
+				return;
+			}
+
+			// Prefer detecting WooCommerce login from the same POST as wp_signon (URL matching can fail on host/scheme/case).
+			$wc_login_nonce = isset( $_POST['woocommerce-login-nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['woocommerce-login-nonce'] ) ) : '';
+			$from_wc_login  = '' !== $wc_login_nonce && wp_verify_nonce( $wc_login_nonce, 'woocommerce-login' );
+
+			if ( function_exists( 'wc_add_notice' ) && did_action( 'woocommerce_init' )
+				&& ( $from_wc_login || $this->mo_url_is_woocommerce_notice_context( $base_url ) ) ) {
+				wc_add_notice( $message, 'error' );
+				return;
+			}
+			if ( $this->mo_url_is_um_login_page( $base_url ) ) {
+				MoPHPSessions::add_session_var( 'mo_otp_no_phone_um_flash', $message );
+				return;
+			}
+			MoPHPSessions::add_session_var( 'mo_otp_no_phone_generic_flash', $message );
+		}
+
+		/**
+		 * Detect which login UI submitted the request (used when Referer is missing).
+		 *
+		 * @return string wp_login|woocommerce|ultimate_member|unknown
+		 */
+		private function mo_detect_login_form_submission_context() {
+			$wc_login_nonce = isset( $_POST['woocommerce-login-nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['woocommerce-login-nonce'] ) ) : '';
+			if ( '' !== $wc_login_nonce && wp_verify_nonce( $wc_login_nonce, 'woocommerce-login' ) ) {
+				return 'woocommerce';
+			}
+			foreach ( array_keys( $_POST ) as $pk ) {
+				if ( is_string( $pk ) && preg_match( '/^username-\d+$/', $pk ) ) {
+					return 'ultimate_member';
+				}
+			}
+			if ( isset( $_POST['log'], $_POST['pwd'] ) && isset( $_POST['wp-submit'] ) ) {
+				return 'wp_login';
+			}
+			return 'unknown';
+		}
+
+		/**
+		 * Resolve the login screen URL to send the user back to (same as the form they used), with safe fallbacks.
+		 *
+		 * @param string $after_login_redirect Sanitized redirect_to target after successful login.
+		 * @return string Absolute URL without mo_pw_login / mo_otp_no_phone (caller adds them).
+		 */
+		private function mo_get_phone_enrollment_redirect_target_url( $after_login_redirect ) {
+			$wp_login_base = wp_login_url( $after_login_redirect );
+
+			$referer  = isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '';
+			$from_ref = false;
+			if ( ! MoUtility::is_blank( $referer ) ) {
+				$validated = wp_validate_redirect( $referer, false );
+				if ( false !== $validated && ! MoUtility::is_blank( $validated ) ) {
+					$path = wp_parse_url( $validated, PHP_URL_PATH );
+					if ( is_string( $path ) && false !== strpos( $path, 'wp-login.php' ) ) {
+						return $wp_login_base;
+					}
+					$from_ref = remove_query_arg( array( 'mo_pw_login', 'mo_otp_no_phone' ), $validated );
+				}
+			}
+			if ( false !== $from_ref && ! MoUtility::is_blank( $from_ref ) ) {
+				return untrailingslashit( $from_ref );
+			}
+
+			$ctx = $this->mo_detect_login_form_submission_context();
+			if ( 'woocommerce' === $ctx && function_exists( 'wc_get_page_permalink' ) ) {
+				$my = wc_get_page_permalink( 'myaccount' );
+				if ( ! MoUtility::is_blank( $my ) ) {
+					return untrailingslashit( $my );
+				}
+			}
+			if ( 'ultimate_member' === $ctx ) {
+				if ( function_exists( 'um_get_core_page' ) ) {
+					$um_login = um_get_core_page( 'login' );
+					if ( ! MoUtility::is_blank( $um_login ) ) {
+						return untrailingslashit( $um_login );
+					}
+				}
+				if ( ! MoUtility::is_blank( $referer ) ) {
+					$v = wp_validate_redirect( $referer, false );
+					if ( false !== $v && ! MoUtility::is_blank( $v ) ) {
+						return untrailingslashit( remove_query_arg( array( 'mo_pw_login', 'mo_otp_no_phone' ), $v ) );
+					}
+				}
+			}
+
+			return $wp_login_base;
+		}
+
+		/**
+		 * Redirect to the same login screen the user came from (Referer / WooCommerce / UM), with password field visible.
+		 * Stores session {@see mo_pending_phone_enrollment_blocks_password_bypass} so the next password login for this user cannot skip OTP enrollment.
+		 *
+		 * @param int $user_id WordPress user ID when known (required for pending-enrollment tracking).
+		 * @return void
+		 */
+		private function mo_redirect_to_login_with_password_for_phone_enrollment( $user_id = 0 ) {
+			$redirect_to = '';
+			// phpcs:disable WordPress.Security.NonceVerification.Recommended -- redirect_to is sanitized with sanitize_url and validated via wp_validate_redirect in target URL builder.
+			if ( isset( $_REQUEST['redirect_to'] ) ) {
+				$redirect_to = sanitize_url( wp_unslash( $_REQUEST['redirect_to'] ) );
+			}
+			// phpcs:enable WordPress.Security.NonceVerification.Recommended
+			if ( $user_id > 0 ) {
+				MoPHPSessions::add_session_var( 'mo_wp_login_pending_phone_enrollment_uid', (string) (int) $user_id );
+			}
+			$base = $this->mo_get_phone_enrollment_redirect_target_url( $redirect_to );
+			$this->mo_queue_phone_enrollment_notice_for_destination( $base, $this->mo_get_no_phone_enrollment_message() );
+			$url = add_query_arg(
+				array(
+					'mo_pw_login'     => '1',
+					'mo_otp_no_phone' => '1',
+				),
+				$base
+			);
+			wp_safe_redirect( $url );
+			exit;
+		}
+
+		/**
+		 * Require account password before allowing “add phone on first login” enrollment in phone-OTP / passwordless mode.
+		 * Prevents unauthenticated takeover by binding an attacker-controlled number to a victim account (username oracle + OTP).
+		 *
+		 * Filter `mo_wp_login_require_password_for_first_phone_bind` (default true) can disable this for custom integrations
+		 * (not recommended on public sites).
+		 *
+		 * @param WP_User     $user     Resolved user.
+		 * @param string|null $password Submitted password.
+		 * @return WP_Error|null Return WP_Error to block login, null to continue.
+		 */
+		private function mo_enforce_password_before_phone_enrollment( $user, $password ) {
+			if ( ! apply_filters( 'mo_wp_login_require_password_for_first_phone_bind', true, $user ) ) {
+				return null;
+			}
+			if ( ! ( $user instanceof WP_User ) || VerificationType::PHONE !== $this->get_verification_type() ) {
+				return null;
+			}
+			$stored_phone = get_user_meta( $user->data->ID, $this->get_phone_key_details(), true );
+			$stored_phone = MoUtility::process_phone_number( $stored_phone );
+			if ( ! MoUtility::is_blank( $stored_phone ) ) {
+				MoPHPSessions::unset_session( 'mo_wp_login_enrollment_ownership_ok' );
+				return null;
+			}
+			if ( ! $this->mo_save_phone_numbers() ) {
+				return null;
+			}
+			if ( MoUtility::is_blank( $password ) || ! wp_check_password( $password, $user->user_pass, $user->ID ) ) {
+				$this->mo_redirect_to_login_with_password_for_phone_enrollment( $user->ID );
+			}
+			MoPHPSessions::add_session_var( 'mo_wp_login_enrollment_ownership_ok', '1' );
+			return null;
+		}
+
+		/**
 		 * The function hooks into the authenticate hook of WordPress to
 		 * start the OTP Verification process.
 		 *
@@ -467,13 +1043,15 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 * @throws ReflectionException .
 		 */
 		public function mo_handle_mo_wp_login( $user, $username, $password ) {
-
 			if ( ! MoUtility::is_blank( $username ) ) {
 				$user = $this->mo_get_user( $username, $password );
 
 				if ( is_wp_error( $user ) ) {
 					return $user;
 				}
+
+				$this->mo_drop_phone_enrollment_pending_without_submitted_marker( $user );
+				$this->mo_clear_pending_phone_enrollment_if_user_has_phone( $user );
 
 				if ( class_exists( 'UM' ) ) {
 					$user_id = $user->ID;
@@ -496,6 +1074,11 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 
 				if ( $this->mo_by_pass_login( $user, $skip_otp_process ) ) {
 					return $user;
+				}
+
+				$enrollment_gate = $this->mo_enforce_password_before_phone_enrollment( $user, $password );
+				if ( is_wp_error( $enrollment_gate ) ) {
+					return $enrollment_gate;
 				}
 
 				apply_filters( 'mo_master_otp_send_user', $user );
@@ -535,6 +1118,39 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		}
 
 		/**
+		 * True when phone-login is on, verification is phone, "Login with only OTP" is enabled,
+		 * and "Allow users to login with Username and Password" is unchecked � i.e. OTP flow must use a phone identifier.
+		 * Password-based login (non-empty password) uses normal username/email/phone resolution.
+		 *
+		 * @param string|null $password Password submitted with the login form.
+		 * @return bool
+		 */
+		private function mo_require_phone_identifier_for_login( $password ) {
+			if ( ! $this->mo_is_login_phone_identifier_only_mode() ) {
+				return false;
+			}
+			return MoUtility::is_blank( $password );
+		}
+
+		/**
+		 * Shared condition for phone-only identifier mode (does not depend on submitted password).
+		 *
+		 * @return bool
+		 */
+		private function mo_is_login_phone_identifier_only_mode() {
+			if ( ! $this->allow_login_through_phone || VerificationType::PHONE !== $this->get_verification_type() ) {
+				return false;
+			}
+			if ( ! $this->skip_password_check ) {
+				return false;
+			}
+			if ( $this->skip_pass_fallback ) {
+				return false;
+			}
+			return true;
+		}
+
+		/**
 		 * This functions checks if user has enabled phone number as a valid username and fetches the user
 		 * associated with the phone number. Checks if the skip Password is enabled with feedback to handle
 		 * OTP login and normal login.
@@ -544,6 +1160,23 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 * @return WP_Error|WP_User
 		 */
 		private function mo_get_user( $username, $password = null ) {
+			if ( $this->mo_require_phone_identifier_for_login( $password ) ) {
+				if ( MoUtility::is_blank( $username ) ) {
+					return new WP_Error( 'INVALID_USERNAME', MoMessages::showMessage( MoMessages::INVALID_USERNAME ) );
+				}
+				if ( is_email( $username ) || ! MoUtility::validate_phone_number( $username ) ) {
+					return new WP_Error(
+						'PHONE_ONLY_LOGIN',
+						__( 'Please log in using your registered phone number only.', 'miniorange-otp-verification' )
+					);
+				}
+				$user = $this->mo_get_user_from_phone_number( $username );
+				if ( $user && ! $this->mo_is_login_with_otp( $user->roles, $password ) ) {
+					$user = wp_authenticate_username_password( null, $user->data->user_login, $password );
+				}
+				return $user ? $user : new WP_Error( 'INVALID_USERNAME', MoMessages::showMessage( MoMessages::INVALID_USERNAME ) );
+			}
+
 			$user = is_email( $username ) ? get_user_by( 'email', $username ) : get_user_by( 'login', $username );
 			if ( ! $user && $this->allow_login_through_phone && MoUtility::validate_phone_number( $username ) ) {
 				$user = $this->mo_get_user_from_phone_number( $username );
@@ -804,7 +1437,15 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 * a fresh process of OTP verification.
 		 */
 		public function unset_otp_session_variables() {
-			SessionUtils::unset_session( array( $this->tx_session_id, $this->form_session_var, $this->form_session_var2 ) );
+			SessionUtils::unset_session(
+				array(
+					'mo_wp_login_enrollment_ownership_ok',
+					'mo_wp_login_pending_phone_enrollment_uid',
+					$this->tx_session_id,
+					$this->form_session_var,
+					$this->form_session_var2,
+				)
+			);
 		}
 
 
@@ -826,6 +1467,21 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 
 
 		/**
+		 * Login intent when "OTP + username/password fallback" mode is enabled (from posted hidden field).
+		 * Prevents browser-autofilled passwords from skipping OTP when the user chose "Login with OTP".
+		 *
+		 * @return string 'otp'|'password'|''
+		 */
+		private function mo_get_wp_login_intent() {
+			$intent_raw = filter_input( INPUT_POST, 'mo_wp_login_intent', FILTER_UNSAFE_RAW );
+			if ( ! is_string( $intent_raw ) || '' === $intent_raw ) {
+				return '';
+			}
+			$intent = sanitize_text_field( wp_unslash( $intent_raw ) );
+			return in_array( $intent, array( 'otp', 'password' ), true ) ? $intent : '';
+		}
+
+		/**
 		 * Checks if user has initiated login with OTP.
 		 *
 		 * @param array  $user_roles  to check the user roles.
@@ -833,17 +1489,31 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 * @return bool TRUE or FALSE
 		 */
 		private function mo_is_login_with_otp( $user_roles = array(), $password = null ) {
-			if ( in_array( 'administrator', $user_roles, true ) && $this->by_pass_admin ) {
-				return false;
+			// OTP-only layout: explicit password-login mode (link from OTP popup) must verify password.
+			if ( $this->skip_password_check && ! $this->skip_pass_fallback ) {
+				$intent = $this->mo_get_wp_login_intent();
+				if ( 'password' === $intent ) {
+					return false;
+				}
+			}
+
+			if ( $this->skip_password_check && $this->skip_pass_fallback ) {
+				$intent = $this->mo_get_wp_login_intent();
+				if ( 'otp' === $intent ) {
+					return true;
+				}
+				if ( 'password' === $intent ) {
+					return false;
+				}
 			}
 
 			if ( $this->skip_password_check && $this->skip_pass_fallback && isset( $password ) && ! empty( $password ) ) {
 				return false;
 			} elseif ( $this->skip_password_check && $this->skip_pass_fallback && ( ! isset( $password ) || empty( $password ) ) ) {
 				return true;
-			} elseif ( $this->skip_password_check && ! $this->skip_pass_fallback && isset( $password ) && ! empty( $password ) ) {
+			} elseif ( $this->skip_password_check && ! $this->skip_pass_fallback && 'password' !== $this->mo_get_wp_login_intent() && isset( $password ) && ! empty( $password ) ) {
 				return true;
-			} elseif ( $this->skip_password_check && ! $this->skip_pass_fallback && ( ! isset( $password ) || empty( $password ) ) ) {
+			} elseif ( $this->skip_password_check && ! $this->skip_pass_fallback && 'password' !== $this->mo_get_wp_login_intent() && ( ! isset( $password ) || empty( $password ) ) ) {
 				return true;
 			}
 			return false;
@@ -917,6 +1587,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			update_mo_option( 'wp_login_bypass_admin', $this->by_pass_admin );
 			update_mo_option( 'wp_login_key', $this->phone_key );
 			update_mo_option( 'wp_login_allow_phone_login', $this->allow_login_through_phone );
+			update_mo_option( 'wp_login_phone_only', false );
 			update_mo_option( 'wp_login_restrict_duplicates', $this->restrict_duplicates );
 			update_mo_option( 'wp_login_skip_password', $this->skip_password_check && $this->is_form_enabled );
 			update_mo_option( 'wp_login_skip_password_fallback', $this->skip_pass_fallback );

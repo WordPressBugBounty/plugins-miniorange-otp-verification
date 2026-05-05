@@ -278,6 +278,11 @@ if ( ! class_exists( 'MoUtility' ) ) {
 					'hidden' => array(),
 				),
 				'br'             => array(),
+				'p'              => array(
+					'class' => true,
+					'style' => true,
+					'id'    => true,
+				),
 				'i'              => array(),
 				'u'              => array(),
 				'span'           => array(
@@ -289,13 +294,13 @@ if ( ! class_exists( 'MoUtility' ) ) {
 					'hidden' => array(),
 				),
 				'a'              => array(
-					'href'    => array(),
-					'target'  => array(),
-					'rel'     => array(),
-					'title'   => array(),
-					'hidden'  => array(),
-					'class'   => array(),
-					'onclick' => array(),
+					'href'    => true,
+					'target'  => true,
+					'rel'     => true,
+					'title'   => true,
+					'hidden'  => true,
+					'class'   => true,
+					'onclick' => true,
 				),
 				'svg'            => array(
 					'class'   => array(),
@@ -347,6 +352,28 @@ if ( ! class_exists( 'MoUtility' ) ) {
 				),
 			);
 			return $allowed_tags;
+		}
+
+		/**
+		 * KSES allowlist for rendered OTP popup HTML: popup chrome (forms, svg) plus post-like tags
+		 * in {{MESSAGE}} so links and paragraphs (e.g. admin password hint) survive both inner and outer wp_kses passes.
+		 *
+		 * @return array
+		 */
+		public static function mo_popup_html_kses_allowed() {
+			$popup = self::mo_allow_popup_tags();
+			if ( ! function_exists( 'wp_kses_allowed_html' ) ) {
+				return $popup;
+			}
+			$post = wp_kses_allowed_html( 'post' );
+			foreach ( $post as $tag => $post_attrs ) {
+				if ( ! isset( $popup[ $tag ] ) ) {
+					$popup[ $tag ] = $post_attrs;
+					continue;
+				}
+				$popup[ $tag ] = array_merge( (array) $post_attrs, (array) $popup[ $tag ] );
+			}
+			return $popup;
 		}
 
 		/**

@@ -1,11 +1,15 @@
 <?php
 /**
- * Load admin view for Default WordPress Registration Form.
+ * Handles the OTP verification logic for Default WordPress Registration Form.
  *
- * @package miniorange-otp-verification/handler
+ * @package miniorange-otp-verification/handler/forms
  */
 
 namespace OTP\Handler\Forms;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
 
 use OTP\Helper\FormSessionVars;
 use OTP\Helper\MoMessages;
@@ -18,7 +22,7 @@ use OTP\Objects\IFormHandler;
 use OTP\Objects\VerificationType;
 use OTP\Traits\Instance;
 use ReflectionException;
-use \WP_Error;
+use WP_Error;
 
 /**
  * This is the Default WordPress Registration Form class. This class handles all the
@@ -46,7 +50,7 @@ if ( ! class_exists( 'DefaultWordPressRegistrationForm' ) ) {
 			$this->type_phone_tag          = 'mo_wp_default_phone_enable';
 			$this->type_email_tag          = 'mo_wp_default_email_enable';
 			$this->type_both_tag           = 'mo_wp_default_both_enable';
-			$this->form_name               = mo_( 'WordPress Default / TML Registration Form' );
+			$this->form_name               = 'WordPress Default / TML Registration Form';
 			$this->is_form_enabled         = get_mo_option( 'wp_default_enable' );
 			$this->form_documents          = MoFormDocs::WP_DEFAULT_FORM_LINK;
 			parent::__construct();
@@ -77,7 +81,7 @@ if ( ! class_exists( 'DefaultWordPressRegistrationForm' ) ) {
 		 * SMS Verification has been enabled by the admin for Default Registration
 		 * form.
 		 */
-		private function isPhoneVerificationEnabled() {
+		private function is_phone_verification_enabled() {
 			$otp_type = $this->get_verification_type();
 			return VerificationType::PHONE === $otp_type || VerificationType::BOTH === $otp_type;
 		}
@@ -96,7 +100,7 @@ if ( ! class_exists( 'DefaultWordPressRegistrationForm' ) ) {
 			if ( ! $this->disable_auto_activate ) {
 				if ( in_array( 'registered', $errors->get_error_codes(), true ) ) {
 					$errors->remove( 'registered' );
-					$errors->add( 'registered', mo_( 'Registration Complete.' ), 'message' );
+					$errors->add( 'registered', __( 'Registration Complete.', 'miniorange-otp-verification' ), 'message' );
 				}
 			}
 			return $errors;
@@ -108,20 +112,33 @@ if ( ! class_exists( 'DefaultWordPressRegistrationForm' ) ) {
 		 * phone number for SMS Verification. This is called only when the otp type is phone or both.
 		 */
 		public function miniorange_site_register_form() {
-			if ( isset( $_GET['action'] ) && 'register' === $_GET['action'] ) { // phpcs:ignore -- false positive.
-				echo '<input type="hidden" name="register_nonce" value="register_nonce"/>';
-				if ( $this->isPhoneVerificationEnabled() ) {
-					echo '<label for="phone_number_mo">' . esc_html( mo_( 'Phone Number' ) ) . '<br />
+			// Core only fires register_form on wp-login.php registration; output nonce every time so POST always includes it.
+			echo '<input type="hidden" name="register_nonce" value="' . esc_attr( wp_create_nonce( 'register_nonce' ) ) . '" />';
+			if ( $this->is_phone_verification_enabled() ) {
+				echo '<label for="phone_number_mo">' . esc_html( __( 'Phone Number', 'miniorange-otp-verification' ) ) . '<br />
 					<input type="text" name="phone_number_mo" id="phone_number_mo" class="input" value="" style=""/></label>';
-				}
-				if ( ! $this->disable_auto_activate ) {
-					echo '<label for="password_mo">' . esc_html( mo_( 'Password' ) ) . '<br />
-					<input type="password" name="password_mo" id="password_mo" class="input" value="" style=""/></label>';
-					echo '<label for="confirm_password_mo">' . esc_html( mo_( 'Confirm Password' ) ) . '<br />
-					<input type="password" name="confirm_password_mo" id="confirm_password_mo" class="input" value="" style=""/></label>';
-					echo '<script>window.onload=function(){ document.getElementById("reg_passmail").remove(); }</script>';
-				}
 			}
+			if ( ! $this->disable_auto_activate ) {
+				echo '<label for="password_mo">' . esc_html( __( 'Password', 'miniorange-otp-verification' ) ) . '<br />
+					<input type="password" name="password_mo" id="password_mo" class="input" value="" style=""/></label>';
+				echo '<label for="confirm_password_mo">' . esc_html( __( 'Confirm Password', 'miniorange-otp-verification' ) ) . '<br />
+					<input type="password" name="confirm_password_mo" id="confirm_password_mo" class="input" value="" style=""/></label>';
+				echo '<script>window.onload=function(){ document.getElementById("reg_passmail").remove(); }</script>';
+			}
+		}
+
+		/**
+		 * Verifies the registration form nonce (do not use sanitize_key � it can break wp_verify_nonce()).
+		 *
+		 * @return bool
+		 */
+		private function verify_register_submission_nonce() {
+			$nonce = filter_input( INPUT_POST, 'register_nonce', FILTER_UNSAFE_RAW );
+			if ( ! is_string( $nonce ) || '' === $nonce ) {
+				return false;
+			}
+			$nonce = sanitize_text_field( wp_unslash( $nonce ) );
+			return (bool) wp_verify_nonce( $nonce, 'register_nonce' );
 		}
 
 		/**
@@ -133,13 +150,18 @@ if ( ! class_exists( 'DefaultWordPressRegistrationForm' ) ) {
 		 */
 		public function miniorange_registration_save( $user_id ) {
 
-			$data         = MoUtility::mo_sanitize_array( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
+			if ( ! $this->verify_register_submission_nonce() ) {
+				return;
+			}
+			$raw_post     = filter_input_array( INPUT_POST, FILTER_UNSAFE_RAW );
+			$raw_post     = is_array( $raw_post ) ? $raw_post : array();
+			$data         = MoUtility::mo_sanitize_array( $raw_post );
 			$phone_number = MoPHPSessions::get_session_var( 'phone_number_mo' );
 			if ( $phone_number ) {
 				add_user_meta( $user_id, $this->phone_key, $phone_number );
 			}
 			if ( ! $this->disable_auto_activate ) {
-				wp_set_password( isset( $data['password_mo'] ) ? sanitize_text_field( wp_unslash( $data['password_mo'] ) ) : '', $user_id );
+				wp_set_password( isset( $data['password_mo'] ) ? wp_unslash( $data['password_mo'] ) : '', $user_id );
 				update_user_option( $user_id, 'default_password_nag', false, true );
 			}
 		}
@@ -157,21 +179,44 @@ if ( ! class_exists( 'DefaultWordPressRegistrationForm' ) ) {
 		 */
 		public function miniorange_site_registration_errors( WP_Error $errors, $sanitized_user_login, $user_email ) {
 
-			$data         = MoUtility::mo_sanitize_array( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
-			$phone_number = isset( $data['phone_number_mo'] ) ? sanitize_text_field( $data['phone_number_mo'] ) : null;
-			$password     = isset( $data['password_mo'] ) ? sanitize_text_field( $data['password_mo'] ) : null;
-			$confirm_pass = isset( $data['confirm_password_mo'] ) ? sanitize_text_field( $data['confirm_password_mo'] ) : null;
-			$this->checkIfPhoneNumberUnique( $errors, $phone_number );
-			$this->validatePasswords( $errors, $password, $confirm_pass );
+			if ( ! $this->verify_register_submission_nonce() ) {
+				MoPHPSessions::unset_session( 'mo_reg_otp_just_verified' );
+				$errors->add(
+					'invalid_nonce',
+					__( 'Security check failed. Please try again.', 'miniorange-otp-verification' )
+				);
+				return $errors;
+			}
+
+			if ( $errors->has_errors() ) {
+				MoPHPSessions::unset_session( 'mo_reg_otp_just_verified' );
+				return $errors;
+			}
+
+			$raw_post     = filter_input_array( INPUT_POST, FILTER_UNSAFE_RAW );
+			$raw_post     = is_array( $raw_post ) ? $raw_post : array();
+			$data         = MoUtility::mo_sanitize_array( $raw_post );
+			$phone_number = isset( $data['phone_number_mo'] ) ? sanitize_text_field( wp_unslash( $data['phone_number_mo'] ) ) : null;
+			$password     = isset( $data['password_mo'] ) ? sanitize_text_field( wp_unslash( $data['password_mo'] ) ) : null;
+			$confirm_pass = isset( $data['confirm_password_mo'] ) ? sanitize_text_field( wp_unslash( $data['confirm_password_mo'] ) ) : null;
+			$this->check_if_phone_number_unique( $errors, $phone_number );
+			$this->validate_passwords( $errors, $password, $confirm_pass );
 
 			if ( ! empty( $errors->errors ) ) {
+				MoPHPSessions::unset_session( 'mo_reg_otp_just_verified' );
 				return $errors;
 			}
 			if ( ! $this->otp_type ) {
 				return $errors;
 			}
 
-			return $this->startOTPTransaction( $sanitized_user_login, $user_email, $errors, $phone_number, $data );
+			$verified_flag = MoPHPSessions::get_session_var( 'mo_reg_otp_just_verified' );
+			if ( ! MoUtility::is_blank( $verified_flag ) && $verified_flag === $this->form_session_var ) {
+				MoPHPSessions::unset_session( 'mo_reg_otp_just_verified' );
+				return $errors;
+			}
+
+			return $this->start_otp_transaction( $sanitized_user_login, $user_email, $errors, $phone_number, $data );
 		}
 
 		/**
@@ -183,7 +228,7 @@ if ( ! class_exists( 'DefaultWordPressRegistrationForm' ) ) {
 		 * @param string   $password New password set by user.
 		 * @param string   $confirm_pass Confirm the new password.
 		 */
-		private function validatePasswords( WP_Error &$error, $password, $confirm_pass ) {
+		private function validate_passwords( WP_Error &$error, $password, $confirm_pass ) {
 			if ( $this->disable_auto_activate ) {
 				return;
 			}
@@ -199,14 +244,14 @@ if ( ! class_exists( 'DefaultWordPressRegistrationForm' ) ) {
 		 * @param WP_Error $errors      - registration error.
 		 * @param string   $phone_number - phone number entered by the user.
 		 */
-		private function checkIfPhoneNumberUnique( WP_Error &$errors, $phone_number ) {
+		private function check_if_phone_number_unique( WP_Error &$errors, $phone_number ) {
 			if ( strcasecmp( $this->otp_type, $this->type_email_tag ) === 0 ) {
 				return;
 			}
 
 			if ( MoUtility::is_blank( $phone_number ) || ! MoUtility::validate_phone_number( $phone_number ) ) {
 				$errors->add( 'invalid_phone', MoMessages::showMessage( MoMessages::ENTER_PHONE_DEFAULT ) );
-			} elseif ( $this->restrict_duplicates && $this->isPhoneNumberAlreadyInUse( trim( $phone_number ), $this->phone_key ) ) {
+			} elseif ( $this->restrict_duplicates && $this->is_phone_number_already_in_use( trim( $phone_number ), $this->phone_key ) ) {
 				$errors->add( 'invalid_phone', MoMessages::showMessage( MoMessages::PHONE_EXISTS ) );
 			}
 		}
@@ -220,11 +265,17 @@ if ( ! class_exists( 'DefaultWordPressRegistrationForm' ) ) {
 		 * }
 		 */
 		public function get_email_phone_data() {
-			$data  = MoUtility::mo_sanitize_array( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No need for nonce verification as the function is called on third party plugin hook.
+			if ( ! isset( $_POST['mopopup_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['mopopup_wpnonce'] ) ), 'mo_popup_options' ) ) {
+				return array(
+					'email' => '',
+					'phone' => '',
+				);
+			}
+			$data  = MoUtility::mo_sanitize_array( $_POST );
 			$phone = isset( $data['phone_number_mo'] ) ? $data['phone_number_mo'] : null;
 			$email = isset( $data['user_email'] ) ? $data['user_email'] : null;
 			return array(
-				'email' => sanitize_email( $email ?? '' ),
+				'email' => sanitize_email( wp_unslash( $email ?? '' ) ),
 				'phone' => MoUtility::process_phone_number( $phone ?? '' ),
 			);
 		}
@@ -241,8 +292,8 @@ if ( ! class_exists( 'DefaultWordPressRegistrationForm' ) ) {
 		 * @return WP_Error
 		 * @throws ReflectionException In case of failures, an exception is thrown.
 		 */
-		private function startOTPTransaction( $sanitized_user_login, $user_email, $errors, $phone_number, $data ) {
-			if ( ! MoUtility::is_blank( array_filter( $errors->errors ) ) || ! isset( $data['register_nonce'] ) ) {
+		private function start_otp_transaction( $sanitized_user_login, $user_email, $errors, $phone_number, $data ) {
+			if ( ! MoUtility::is_blank( array_filter( $errors->errors ) ) ) {
 				return $errors;
 			}
 
@@ -250,7 +301,7 @@ if ( ! class_exists( 'DefaultWordPressRegistrationForm' ) ) {
 			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
 				$this->send_challenge( $sanitized_user_login, $user_email, $errors, $phone_number, VerificationType::PHONE, null, null, null, $this->form_session_var );
 			} elseif ( strcasecmp( $this->otp_type, $this->type_both_tag ) === 0 ) {
-				$this->send_challenge( $sanitized_user_login, $user_email, $errors, $phone_number, VerificationType::BOTH,  null, null, null, $this->form_session_var );
+				$this->send_challenge( $sanitized_user_login, $user_email, $errors, $phone_number, VerificationType::BOTH, null, null, null, $this->form_session_var );
 			} else {
 				$this->send_challenge( $sanitized_user_login, $user_email, $errors, $phone_number, VerificationType::EMAIL, null, null, null, $this->form_session_var );
 			}
@@ -293,6 +344,7 @@ if ( ! class_exists( 'DefaultWordPressRegistrationForm' ) ) {
 		 * @param string $otp_type the verification type.
 		 */
 		public function handle_post_verification( $redirect_to, $user_login, $user_email, $password, $phone_number, $extra_data, $otp_type ) {
+			MoPHPSessions::add_session_var( 'mo_reg_otp_just_verified', $this->form_session_var );
 			$this->unset_otp_session_variables();
 		}
 
@@ -303,7 +355,7 @@ if ( ! class_exists( 'DefaultWordPressRegistrationForm' ) ) {
 		 * @param string $key - meta_key to search for.
 		 * @return bool
 		 */
-		private function isPhoneNumberAlreadyInUse( $phone, $key ) {
+		private function is_phone_number_already_in_use( $phone, $key ) {
 			global $wpdb;
 			$phone   = MoUtility::process_phone_number( $phone );
 			$results = $wpdb->get_row( $wpdb->prepare( "SELECT `user_id` FROM `{$wpdb->prefix}usermeta` WHERE `meta_key` = %s AND `meta_value` =  %s", array( $key, $phone ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.DirectQuery, Direct database call without caching detected -- DB Direct Query is necessary here.
@@ -328,7 +380,7 @@ if ( ! class_exists( 'DefaultWordPressRegistrationForm' ) ) {
 		 * @return array
 		 */
 		public function get_phone_number_selector( $selector ) {
-			if ( $this->is_form_enabled() && $this->isPhoneVerificationEnabled() ) {
+			if ( $this->is_form_enabled() && $this->is_phone_verification_enabled() ) {
 				array_push( $selector, $this->phone_form_id );
 			}
 			return $selector;
@@ -338,13 +390,14 @@ if ( ! class_exists( 'DefaultWordPressRegistrationForm' ) ) {
 		 * Handles saving all the Default WordPress Registration Form related options by the admin.
 		 */
 		public function handle_form_options() {
-			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option() ) ) {
+			if ( ! MoUtility::are_form_options_being_saved( $this->get_form_option(), 'wp_default_enable' ) ) {
 				return;
 			}
 
 			$this->is_form_enabled       = $this->sanitize_form_post( 'wp_default_enable' );
 			$this->otp_type              = $this->sanitize_form_post( 'wp_default_enable_type' );
-			$this->restrict_duplicates   = $this->sanitize_form_post( 'wp_reg_restrict_duplicates' );
+			$this->restrict_duplicates   = $this->sanitize_form_post( 'wp_reg_restrict_duplicates_phone' )
+				|| $this->sanitize_form_post( 'wp_reg_restrict_duplicates_both' );
 			$this->disable_auto_activate = $this->sanitize_form_post( 'wp_reg_auto_activate' ) ? false : true;
 
 			update_mo_option( 'wp_default_enable', $this->is_form_enabled );

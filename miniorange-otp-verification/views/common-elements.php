@@ -129,7 +129,6 @@ function extra_post_data() {
 			'miniorange-validate-otp-choice-form',
 			'submit',
 			'mo_customer_validation_otp_choice',
-			'register_nonce',
 			'timestamp',
 			'log',
 		),
@@ -200,14 +199,56 @@ function miniorange_site_otp_validation_form( $user_login, $user_email, $phone_n
 	if ( ! headers_sent() ) {
 		header( 'Content-Type: text/html; charset=utf-8' );
 	}
+	/**
+	 * Filter OTP popup message (e.g. WordPress login admin password fallback link).
+	 *
+	 * @param string $message      Message HTML/text.
+	 * @param string $user_login   Username.
+	 * @param string $user_email   Email.
+	 * @param string $phone_number Phone.
+	 * @param string $otp_type     Verification type.
+	 */
+	$message               = apply_filters( 'mo_otp_validation_popup_message', $message, $user_login, $user_email, $phone_number, $otp_type );
 	$error_popup_handler   = ErrorPopup::instance();
 	$default_popup_handler = DefaultPopup::instance();
 	$html_content          = MoUtility::is_blank( $user_email ) && MoUtility::is_blank( $phone_number ) ?
 					apply_filters( 'mo_template_build', '', $error_popup_handler->get_template_key(), $message, $otp_type, $from_both )
 					: apply_filters( 'mo_template_build', '', $default_popup_handler->get_template_key(), $message, $otp_type, $from_both );
-	$html_content          = mo_allow_otp_scripts_only( $html_content );
+	/**
+	 * Filter full popup HTML after build (e.g. inject markup that must not pass through nested template wp_kses).
+	 *
+	 * @param string $html           Full HTML.
+	 * @param string $user_login     Username.
+	 * @param string $user_email     Email.
+	 * @param string $phone_number   Phone.
+	 * @param string $otp_type       Verification type.
+	 */
+	$html_content = apply_filters( 'mo_otp_validation_popup_html', $html_content, $user_login, $user_email, $phone_number, $otp_type );
+	$html_content = mo_allow_otp_scripts_only( $html_content );
 
-	echo wp_kses( htmlspecialchars_decode( $html_content ), MoUtility::mo_allow_popup_tags() );
+	$decoded = htmlspecialchars_decode( $html_content );
+	$decoded = wp_kses( $decoded, MoUtility::mo_popup_html_kses_allowed() );
+	/**
+	 * Filter popup HTML after the final wp_kses (e.g. inject trusted link markup that must not be stripped by KSES).
+	 *
+	 * @param string $html           Sanitized HTML.
+	 * @param string $user_login     Username.
+	 * @param string $user_email     Email.
+	 * @param string $phone_number   Phone.
+	 * @param string $otp_type       Verification type.
+	 */
+	$decoded = apply_filters( 'mo_otp_validation_popup_html_after_kses', $decoded, $user_login, $user_email, $phone_number, $otp_type );
+
+	/*
+	 * This handler outputs a full standalone OTP popup document. Nested output buffering (ob_get_level > 0)
+	 * often uses a callback that re-sanitizes HTML on flush and can strip <a href="http..."> added after wp_kses.
+	 * Drop buffers so our markup is sent directly to the client.
+	 */
+	while ( ob_get_level() > 0 ) {
+		ob_end_clean();
+	}
+	// Re-apply same allowlist as above so PHPCS sees an explicit escape; trusted fragments from mo_otp_validation_popup_html_after_kses must stay in this set.
+	echo wp_kses( $decoded, MoUtility::mo_popup_html_kses_allowed() );
 	$default_popup_handler->getCatchyRequiredScripts();
 	exit();
 }
@@ -266,7 +307,7 @@ function miniorange_verification_user_choice( $user_login, $user_email, $phone_n
 	}
 	$user_choice_popup = UserChoicePopup::instance();
 	$htmlcontent       = apply_filters( 'mo_template_build', '', $user_choice_popup->get_template_key(), $message, $otp_type, true );
-	echo wp_kses( htmlspecialchars_decode( $htmlcontent ), MoUtility::mo_allow_popup_tags() );
+	echo wp_kses( htmlspecialchars_decode( $htmlcontent ), MoUtility::mo_popup_html_kses_allowed() );
 	exit();
 }
 
@@ -288,7 +329,7 @@ function mo_external_phone_validation_form( $go_back_url, $user_email, $message 
 	$htmlcontent     = apply_filters( 'mo_template_build', '', $external_pop_up->get_template_key(), $message, null, false );
 
 	wp_print_scripts( 'jquery' );
-	echo wp_kses( htmlspecialchars_decode( $htmlcontent ), MoUtility::mo_allow_popup_tags() );
+	echo wp_kses( htmlspecialchars_decode( $htmlcontent ), MoUtility::mo_popup_html_kses_allowed() );
 	exit();
 }
 

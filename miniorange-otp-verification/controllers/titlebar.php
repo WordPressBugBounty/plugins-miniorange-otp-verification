@@ -75,6 +75,7 @@ $license_plan                = get_mo_option( 'customer_license_plan' );
 $remaining_total_txn         = $remaining_email + $remaining_sms;
 $active_class                = $remaining_total_txn < MoConstants::LOW_TRANSACTION_THRESHOLD ? 'mo-active-notice-bar' : '';
 $mo_transactions             = null;
+$now_ts                      = time();
 
 // Compute transactions display text.
 if ( $is_logged_in ) {
@@ -102,13 +103,12 @@ if ( $is_logged_in ) {
 }
 
 $hidden               = is_null( $mo_transactions ) ? 'hidden' : '';
-$is_sms_notice_closed = get_mo_option( 'mo_hide_sms_notice' );
-$show_sms_notice      = ( 'mo_hide_sms_notice' !== $is_sms_notice_closed );
+$sms_notice_dismissed = get_mo_option( 'mo_hide_sms_notice' );
+$show_sms_notice      = ! ( is_numeric( $sms_notice_dismissed ) && ( $now_ts - (int) $sms_notice_dismissed ) < ( 7 * DAY_IN_SECONDS ) );
 
 // Country restriction addon reminder variables.
 $sc_last_dismissed = get_mo_option( 'mo_selected_country_modal_dismissed_ts' );
 $sc_enabled        = get_mo_option( 'select_country_type', 'mo_sc_code_' );
-$now_ts            = time();
 
 // Show reminder only if the Selected Country addon folder is present.
 $sc_addon_dir      = trailingslashit( MOV_ADDON_DIR ) . 'countrycode';

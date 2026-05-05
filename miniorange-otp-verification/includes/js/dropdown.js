@@ -14,9 +14,34 @@ jQuery(document).ready(function () {
         return;
     }
 
-    // A time delay for forms which append fields to the page using javascript.
-    // Our script needs to run after theirs
-    setTimeout(function () {
+    function moDestroyIntlTelForCf7() {
+        if (typeof window.intlTelInput !== 'function') {
+            return;
+        }
+        for (let i = 0; i < selectors.length; i++) {
+            $mo(selectors[i]).each(function () {
+                try {
+                    if (typeof window.intlTelInput.getInstance === 'function') {
+                        const iti = window.intlTelInput.getInstance(this);
+                        if (iti && typeof iti.destroy === 'function') {
+                            iti.destroy();
+                        }
+                    }
+                } catch (e) {
+                    /* silently ignore */
+                }
+                const $tel = $mo(this);
+                const $next = $tel.next('input[name="country_code"]');
+                if ($next.length) {
+                    $next.remove();
+                }
+            });
+        }
+    }
+
+    let moCf7DropdownTimer = null;
+
+    function moRunIntlTelInit() {
         for (let i = 0; i < selectors.length; i++) {
             let selector = selectors[i];
             var allowed = Array.isArray(modropdownvars.onlyCountries)
@@ -53,7 +78,12 @@ jQuery(document).ready(function () {
                     let mo_code_length = selected_country_data.dialCode.length + 1;
                     let restrictedPositions = Array.from({ length: mo_code_length }, (_, index) => index + 1);
 
-                    $mo(selector).on('countrychange', function () {
+                    var $telForIti = $input.find(".iti__tel-input").first();
+                    if (!$telForIti.length && $input.is("input")) {
+                        $telForIti = $input;
+                    }
+
+                    var moOtpCountryChangeHandler = function () {
                         let selected_country_data = mocountrycode.getSelectedCountryData();
 
                         if (typeof selected_country_data.dialCode !== "undefined") {
@@ -61,7 +91,13 @@ jQuery(document).ready(function () {
                             let mo_code_length = selected_country_data.dialCode.length + 1;
                             restrictedPositions = Array.from({ length: mo_code_length }, (_, index) => index + 1);
                         }
-                    });
+                    };
+
+                    if ($telForIti.length) {
+                        $telForIti.on("countrychange", moOtpCountryChangeHandler);
+                    } else {
+                        $mo(selector).on("countrychange", moOtpCountryChangeHandler);
+                    }
 
                     // Track all direct input changes on the field.
                     $input.on('input', function () {
@@ -90,7 +126,13 @@ jQuery(document).ready(function () {
 
                     // This is to handle WC Block Checkout forms css
                     if (selector !== "#shipping-phone" && selector !== "#billing-phone") {
-                        $mo(selector).css("cssText", "padding-left: 48px !important;font-size:14px;");
+                        let $telInput = $mo(this).find(".iti__tel-input").first();
+                        if (!$telInput.length && $mo(this).is("input")) {
+                            $telInput = $mo(this);
+                        }
+                        if ($telInput.length) {
+                            $telInput.css("cssText", "padding-left: 48px !important;font-size:14px;");
+                        }
                     } else {
                         // Hide the label for the checkout phone field (billing phone).
                         // Classic checkout:
@@ -112,5 +154,21 @@ jQuery(document).ready(function () {
 
         $mo(".intl-tel-input, .iti").css({ "width": "100%" });
         $mo(".intl-tel-input input[type='tel'], .iti .iti__tel-input").css({ "width": "100%" });
-    }, 200);
+    }
+
+    setTimeout(moRunIntlTelInit, 200);
+
+    $mo(document).on(
+        'wpcf7mailsent wpcf7invalid wpcf7spam wpcf7mailfailed wpcf7reset',
+        function () {
+            moDestroyIntlTelForCf7();
+            if (moCf7DropdownTimer) {
+                clearTimeout(moCf7DropdownTimer);
+            }
+            moCf7DropdownTimer = setTimeout(function () {
+                moCf7DropdownTimer = null;
+                moRunIntlTelInit();
+            }, 200);
+        }
+    );
 });

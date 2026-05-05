@@ -111,11 +111,11 @@ if ( ! class_exists( 'UserChoicePopup' ) ) {
 			$template = str_replace( '{{REQUIRED_FORMS_SCRIPTS}}', $required_scripts, $template );
 			$template = str_replace( '{{HEADER}}', __( 'Validate OTP (One Time Passcode)', 'miniorange-otp-verification' ), $template );
 			$template = str_replace( '{{GO_BACK}}', 'X', $template );
-			$template = str_replace( '{{MESSAGE}}', wp_kses( $message, array( 'i' => array(), 'em' => array(), 'strong' => array(), 'b' => array(), 'br' => array() ) ), $template );
+			$template = str_replace( '{{MESSAGE}}', wp_kses_post( $message ), $template );
 			$template = str_replace( '{{BUTTON_TEXT}}', __( 'Send OTP', 'miniorange-otp-verification' ), $template );
 			$template = str_replace( '{{REQUIRED_FIELDS}}', $extra_form_fields, $template );
 			$template = str_replace( '{{EXTRA_POST_DATA}}', $extra_post_data, $template );
-			return wp_kses( $template, MoUtility::mo_allow_popup_tags() );
+			return wp_kses( $template, MoUtility::mo_popup_html_kses_allowed() );
 		}
 
 		/**

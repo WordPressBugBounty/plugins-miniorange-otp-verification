@@ -25,16 +25,22 @@ document.addEventListener("DOMContentLoaded", function() {
             msgEl.style.display = "block";
         }
     });
-    var $mo = jQuery;
-    $mo('.close').on('click', function() {
-        mo_validation_goback();
+    document.querySelectorAll(".close").forEach(function (el) {
+        el.addEventListener("click", function () {
+            mo_validation_goback();
+        });
     });
-    $mo('.mo-resend').on('click', function() {
-        mo_otp_verification_resend();
+    document.querySelectorAll(".mo-resend").forEach(function (el) {
+        el.addEventListener("click", function () {
+            mo_otp_verification_resend();
+        });
     });
-    $mo('#mo_sec_otp_submit_button').on('click', function() {
-        mo_select_goback();
-    });
+    var secOtpBtn = document.querySelector("#mo_sec_otp_submit_button");
+    if (secOtpBtn) {
+        secOtpBtn.addEventListener("click", function () {
+            mo_select_goback();
+        });
+    }
     const otpInputs = document.querySelectorAll(".mo_customer_validation-textbox.mo-new-ui-validation-textbox");
     // Create regex pattern to remove anything other than alphanumeric characters
     let inputPattern;

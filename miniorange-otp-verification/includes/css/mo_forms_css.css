@@ -73,3 +73,261 @@
 .iti .iti__tel-input {
 	width: 100%;
 }
+
+.iti__a11y-text,
+div.wpforms-container-full .iti__a11y-text,
+div.wpforms-container .iti__a11y-text,
+div.wpforms-container-full .wpforms-form .iti__a11y-text,
+div.wpforms-container .wpforms-form .iti__a11y-text {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	overflow: hidden !important;
+	clip: rect(1px, 1px, 1px, 1px) !important;
+	white-space: nowrap !important;
+}
+
+div.wpforms-container-full .iti__flag-box .iti__flag,
+div.wpforms-container-full .iti .iti__flag,
+div.wpforms-container .iti__flag-box .iti__flag,
+div.wpforms-container .iti .iti__flag,
+div.wpforms-container-full .wpforms-form .iti__flag-box .iti__flag,
+div.wpforms-container-full .wpforms-form .iti .iti__flag,
+div.wpforms-container .wpforms-form .iti__flag-box .iti__flag,
+div.wpforms-container .wpforms-form .iti .iti__flag,
+.wpforms-container-full .wpforms-form .iti__flag-box .iti__flag,
+.wpforms-container-full .wpforms-form .iti .iti__flag,
+.wpforms-container .wpforms-form .iti__flag-box .iti__flag,
+.wpforms-container .wpforms-form .iti .iti__flag {
+	background-color: transparent !important;
+	background-image: var(--iti-path-flags-1x) !important;
+	background-repeat: no-repeat !important;
+	background-size: var(--iti-flag-sprite-width) var(--iti-flag-sprite-height) !important;
+	background-position: var(--iti-flag-offset, 0) 0 !important;
+	width: var(--iti-flag-width) !important;
+	height: var(--iti-flag-height) !important;
+}
+
+div.wpforms-container-full .wpforms-form .iti,
+div.wpforms-container .wpforms-form .iti,
+.wpforms-container-full .wpforms-form .iti,
+.wpforms-container .wpforms-form .iti,
+div.wpforms-container-full .iti,
+div.wpforms-container .iti {
+	--iti-arrow-height: 6px !important;
+	--iti-arrow-width: 10px !important;
+	--iti-triangle-border: calc(var(--iti-arrow-width) / 2) !important;
+	--iti-arrow-padding: 8px !important;
+	position: relative !important;
+	display: inline-block !important;
+	width: 100% !important;
+	max-width: 100% !important;
+	vertical-align: baseline !important;
+}
+
+div.wpforms-container-full .wpforms-form .iti__country-container,
+div.wpforms-container .wpforms-form .iti__country-container,
+.wpforms-container-full .wpforms-form .iti__country-container,
+.wpforms-container .wpforms-form .iti__country-container,
+div.wpforms-container-full .iti__country-container,
+div.wpforms-container .iti__country-container {
+	position: absolute !important;
+	top: 0 !important;
+	bottom: 0 !important;
+	left: 0 !important;
+	right: auto !important;
+	padding: var(--iti-border-width) !important;
+	display: block !important;
+}
+
+[dir="rtl"] div.wpforms-container-full .wpforms-form .iti__country-container,
+[dir="rtl"] div.wpforms-container .wpforms-form .iti__country-container,
+[dir="rtl"] .wpforms-container-full .wpforms-form .iti__country-container,
+[dir="rtl"] .wpforms-container .wpforms-form .iti__country-container,
+[dir="rtl"] div.wpforms-container-full .iti__country-container,
+[dir="rtl"] div.wpforms-container .iti__country-container {
+	left: auto !important;
+	right: 0 !important;
+}
+
+div.wpforms-container-full .wpforms-form .iti__selected-country,
+div.wpforms-container .wpforms-form .iti__selected-country,
+.wpforms-container-full .wpforms-form .iti__selected-country,
+.wpforms-container .wpforms-form .iti__selected-country {
+	position: relative !important;
+	display: flex !important;
+	flex-direction: row !important;
+	flex-wrap: nowrap !important;
+	align-items: center !important;
+	width: auto !important;
+	height: 100% !important;
+	overflow: visible !important;
+	z-index: 1 !important;
+}
+
+div.wpforms-container-full .wpforms-form .iti__flag-box,
+div.wpforms-container .wpforms-form .iti__flag-box,
+.wpforms-container-full .wpforms-form .iti__flag-box,
+.wpforms-container .wpforms-form .iti__flag-box {
+	display: flex !important;
+	align-items: center !important;
+	flex-shrink: 0 !important;
+	width: auto !important;
+	height: auto !important;
+	position: relative !important;
+}
+
+div.wpforms-container-full .wpforms-form .iti__selected-country .iti__flag-box,
+div.wpforms-container .wpforms-form .iti__selected-country .iti__flag-box,
+.wpforms-container-full .wpforms-form .iti__selected-country .iti__flag-box,
+.wpforms-container .wpforms-form .iti__selected-country .iti__flag-box,
+div.wpforms-container-full .iti__selected-country .iti__flag-box,
+div.wpforms-container .iti__selected-country .iti__flag-box {
+	transform: scale(1.22) !important;
+	transform-origin: left center;
+}
+
+[dir="rtl"] div.wpforms-container-full .wpforms-form .iti__selected-country .iti__flag-box,
+[dir="rtl"] div.wpforms-container .wpforms-form .iti__selected-country .iti__flag-box,
+[dir="rtl"] .wpforms-container-full .wpforms-form .iti__selected-country .iti__flag-box,
+[dir="rtl"] .wpforms-container .wpforms-form .iti__selected-country .iti__flag-box,
+[dir="rtl"] div.wpforms-container-full .iti__selected-country .iti__flag-box,
+[dir="rtl"] div.wpforms-container .iti__selected-country .iti__flag-box {
+	transform-origin: right center;
+}
+
+div.wpforms-container-full .wpforms-form .iti__selected-country .iti__country-name,
+div.wpforms-container-full .wpforms-form .iti__selected-country .iti__selected-dial-code,
+div.wpforms-container-full .wpforms-form .iti__selected-country .iti__dial-code,
+div.wpforms-container .wpforms-form .iti__selected-country .iti__country-name,
+div.wpforms-container .wpforms-form .iti__selected-country .iti__selected-dial-code,
+div.wpforms-container .wpforms-form .iti__selected-country .iti__dial-code,
+.wpforms-container-full .wpforms-form .iti__selected-country .iti__country-name,
+.wpforms-container-full .wpforms-form .iti__selected-country .iti__selected-dial-code,
+.wpforms-container-full .wpforms-form .iti__selected-country .iti__dial-code,
+.wpforms-container .wpforms-form .iti__selected-country .iti__country-name,
+.wpforms-container .wpforms-form .iti__selected-country .iti__selected-dial-code,
+.wpforms-container .wpforms-form .iti__selected-country .iti__dial-code,
+div.wpforms-container .iti__selected-country .iti__country-name,
+div.wpforms-container .iti__selected-country .iti__selected-dial-code,
+div.wpforms-container .iti__selected-country .iti__dial-code,
+div.wpforms-container-full .iti__selected-country .iti__country-name,
+div.wpforms-container-full .iti__selected-country .iti__selected-dial-code,
+div.wpforms-container-full .iti__selected-country .iti__dial-code {
+	display: none !important;
+}
+
+div.wpforms-container-full .wpforms-form .iti__selected-country-primary,
+div.wpforms-container .wpforms-form .iti__selected-country-primary,
+.wpforms-container-full .wpforms-form .iti__selected-country-primary,
+.wpforms-container .wpforms-form .iti__selected-country-primary {
+	display: flex !important;
+	flex-direction: row !important;
+	flex-wrap: nowrap !important;
+	align-items: center !important;
+	white-space: nowrap !important;
+	width: auto !important;
+	max-width: none !important;
+	height: auto !important;
+}
+
+div.wpforms-container-full .wpforms-form .iti__arrow,
+div.wpforms-container .wpforms-form .iti__arrow,
+.wpforms-container-full .wpforms-form .iti__arrow,
+.wpforms-container .wpforms-form .iti__arrow,
+div.wpforms-container-full .iti__arrow,
+div.wpforms-container .iti__arrow {
+	display: block !important;
+	flex-shrink: 0 !important;
+	box-sizing: border-box !important;
+	width: 0 !important;
+	height: 0 !important;
+	margin-left: var(--iti-arrow-padding) !important;
+	margin-right: 0 !important;
+	border-left: var(--iti-triangle-border) solid transparent !important;
+	border-right: var(--iti-triangle-border) solid transparent !important;
+	border-top: var(--iti-arrow-height) solid var(--iti-arrow-color) !important;
+}
+
+[dir="rtl"] div.wpforms-container-full .wpforms-form .iti__arrow,
+[dir="rtl"] div.wpforms-container .wpforms-form .iti__arrow,
+[dir="rtl"] .wpforms-container-full .wpforms-form .iti__arrow,
+[dir="rtl"] .wpforms-container .wpforms-form .iti__arrow,
+[dir="rtl"] div.wpforms-container-full .iti__arrow,
+[dir="rtl"] div.wpforms-container .iti__arrow {
+	margin-left: 0 !important;
+	margin-right: var(--iti-arrow-padding) !important;
+}
+
+div.wpforms-container-full .wpforms-form .iti__arrow.iti__arrow--up,
+div.wpforms-container .wpforms-form .iti__arrow.iti__arrow--up,
+.wpforms-container-full .wpforms-form .iti__arrow.iti__arrow--up,
+.wpforms-container .wpforms-form .iti__arrow.iti__arrow--up,
+div.wpforms-container-full .iti__arrow.iti__arrow--up,
+div.wpforms-container .iti__arrow.iti__arrow--up {
+	border-top: none !important;
+	border-bottom: var(--iti-arrow-height) solid var(--iti-arrow-color) !important;
+}
+
+div.wpforms-container-full .wpforms-form .iti input.iti__tel-input,
+div.wpforms-container-full .wpforms-form .iti input.iti__tel-input[type="tel"],
+div.wpforms-container-full .wpforms-form .iti input.iti__tel-input[type="text"],
+div.wpforms-container .wpforms-form .iti input.iti__tel-input,
+div.wpforms-container .wpforms-form .iti input.iti__tel-input[type="tel"],
+div.wpforms-container .wpforms-form .iti input.iti__tel-input[type="text"],
+.wpforms-container-full .wpforms-form .iti input.iti__tel-input,
+.wpforms-container-full .wpforms-form .iti input.iti__tel-input[type="tel"],
+.wpforms-container-full .wpforms-form .iti input.iti__tel-input[type="text"],
+.wpforms-container .wpforms-form .iti input.iti__tel-input,
+.wpforms-container .wpforms-form .iti input.iti__tel-input[type="tel"],
+.wpforms-container .wpforms-form .iti input.iti__tel-input[type="text"],
+div.wpforms-container-full .iti input.iti__tel-input,
+div.wpforms-container-full .iti input.iti__tel-input[type="tel"],
+div.wpforms-container-full .iti input.iti__tel-input[type="text"],
+div.wpforms-container .iti input.iti__tel-input,
+div.wpforms-container .iti input.iti__tel-input[type="tel"],
+div.wpforms-container .iti input.iti__tel-input[type="text"] {
+	width: 100% !important;
+	display: block !important;
+	position: relative !important;
+	z-index: 0 !important;
+	margin: 0 !important;
+	border-style: solid !important;
+	border-color: var(--iti-border-color, #ccc) !important;
+	border-width: var(--iti-border-width, 1px) !important;
+	border-radius: 2px !important;
+	background-color: #fff !important;
+	background-image: none !important;
+}
+
+.iti__country-list .iti__country {
+	display: flex !important;
+	flex-direction: row !important;
+	flex-wrap: nowrap !important;
+	align-items: center !important;
+}
+
+.iti__country-list .iti__country-name,
+.iti__country-list .iti__dial-code {
+	white-space: nowrap !important;
+	word-break: normal !important;
+	overflow-wrap: normal !important;
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+
+	div.wpforms-container-full .iti__flag-box .iti__flag,
+	div.wpforms-container-full .iti .iti__flag,
+	div.wpforms-container .iti__flag-box .iti__flag,
+	div.wpforms-container .iti .iti__flag,
+	div.wpforms-container-full .wpforms-form .iti__flag-box .iti__flag,
+	div.wpforms-container-full .wpforms-form .iti .iti__flag,
+	div.wpforms-container .wpforms-form .iti__flag-box .iti__flag,
+	div.wpforms-container .wpforms-form .iti .iti__flag,
+	.wpforms-container-full .wpforms-form .iti__flag-box .iti__flag,
+	.wpforms-container-full .wpforms-form .iti .iti__flag,
+	.wpforms-container .wpforms-form .iti__flag-box .iti__flag,
+	.wpforms-container .wpforms-form .iti .iti__flag {
+		background-image: var(--iti-path-flags-2x) !important;
+	}
+}

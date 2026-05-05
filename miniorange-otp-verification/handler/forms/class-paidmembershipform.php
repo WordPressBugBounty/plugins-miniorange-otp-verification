@@ -114,7 +114,15 @@ if ( ! class_exists( 'OTP\Handler\Forms\PaidMembershipForm' ) ) {
 			}
 
 			if ( ! isset( $_POST['mo_pmpro_save_phone_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['mo_pmpro_save_phone_nonce'] ) ), 'mo_pmpro_save_phone' ) ) {
-				return $continue_registration;
+				if ( ! $this->is_form_enabled ) {
+					return $continue_registration;
+				}
+				global $pmpro_msg, $pmpro_msgt, $pmpro_requirebilling;
+				$message              = MoMessages::showMessage( MoMessages::NONCE_FAILED );
+				$pmpro_msgt           = 'pmpro_error';
+				$pmpro_requirebilling = false;
+				$pmpro_msg            = apply_filters( 'pmpro_set_message', $message, $pmpro_msgt );
+				return false;
 			}
 
 			if ( $this->get_verification_type() === VerificationType::PHONE && ! $this->validate_phone( $_POST ) ) {

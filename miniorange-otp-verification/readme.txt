@@ -5,7 +5,7 @@ Tags: OTP, OTP Login, SMS Notifications, Phone Verification, Email Verification
 Requires at least: 3.5
 Tested up to: 6.9
 Requires PHP: 5.3.0
-Stable tag: 5.4.9
+Stable tag: 5.5.0
 License: Expat
 License URI: https://plugins.miniorange.com/mit-license
 OTP Verification via Email/SMS/WhatsApp,SMS Notifications for WooCommerce,OTP Login with Phone,PasswordLess Login.Custom Gateway for OTP Verification
@@ -211,6 +211,11 @@ Please mail us at **otpsupport@xecurify.com/info@xecurify.com**. You can also su
 8. OTP Verification Plugin Settings
 
 == Changelog ==
+= 5.5.0 =
+* Login forms fixes.
+* Wp forms, Contact form7 and paid membership pro form bug fixes.
+* Reintroduced Wordpress default registration form for OTP verification.
+* Other minor security fixes.
 = 5.4.9 =
 * Spam preventer addon improvements and bug fixes.
 * Added unblock user feature in the spam preventer addon.
@@ -298,6 +303,11 @@ For older changelog entries, please see the [additional changelog.txt file](http
 
 
 == Upgrade Notice ==
+= 5.5.0 =
+* Login forms fixes.
+* Wp forms, Contact form7 and paid membership pro form bug fixes.
+* Reintroduced Wordpress default registration form for OTP verification.
+* Other minor security fixes.
 = 5.4.9 =
 * Spam preventer addon improvements and bug fixes.
 * Added unblock user feature in the spam preventer addon.

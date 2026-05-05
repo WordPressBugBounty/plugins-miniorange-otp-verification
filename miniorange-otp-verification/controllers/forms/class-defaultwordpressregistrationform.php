@@ -2,13 +2,15 @@
 /**
  * Loads admin view for DefaultWordPressRegistrationForm.
  *
- * @package miniorange-otp-verification/controller/
+ * @package miniorange-otp-verification/controllers/forms
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
+
 use OTP\Handler\Forms\DefaultWordPressRegistrationForm;
+use OTP\Helper\MoUtility;
 
 $handler                  = DefaultWordPressRegistrationForm::instance();
 $default_registration     = (bool) $handler->is_form_enabled() ? 'checked' : '';
@@ -21,5 +23,10 @@ $wpreg_both_type          = $handler->get_both_html_tag();
 $form_name                = $handler->get_form_name();
 $auto_activate_users      = $handler->disable_auto_activation() ? '' : 'checked';
 
-require_once MOV_DIR . 'views/forms/modefaultwordpressregistrationform.php';
-get_plugin_form_link( $handler->get_form_documents() );
+$view_file_path = MOV_DIR . 'views/forms/modefaultwordpressregistrationform.php';
+if ( MoUtility::mo_require_file( $view_file_path, MOV_DIR ) ) {
+	require $view_file_path;
+}
+if ( function_exists( 'get_plugin_form_link' ) ) {
+	get_plugin_form_link( $handler->get_form_documents() );
+}

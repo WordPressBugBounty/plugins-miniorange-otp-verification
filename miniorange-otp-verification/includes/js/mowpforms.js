@@ -2,6 +2,22 @@ if (typeof $mo === 'undefined') {
     let $mo = jQuery;
 }
 
+function mo_wpforms_get_field_value(formId, otpType) {
+    let sel = '#wpforms-' + formId + '-field_' + mowpforms.formDetails[formId][otpType + 'key'];
+    let $el = $mo(sel);
+    if (!$el.length) {
+        return '';
+    }
+    if ($el.is('input, select, textarea')) {
+        return $el.val() || '';
+    }
+    let $input = $el.find('input[type="tel"], input[type="email"], input[type="text"]').first();
+    if ($input.length) {
+        return $input.val() || '';
+    }
+    return '';
+}
+
 $mo(document).ready(function () {
     $mo("div.wpforms-container").each(function () {
         //fetch the form id for the form
@@ -11,23 +27,14 @@ $mo(document).ready(function () {
                 addButtonAndFieldsWpForms(formId, otpType);
                 bindSendOTPButtonWpForms(formId, otpType);
                 bindVerifyButtonWpForms(formId, otpType);
-                is_already_verified_wpforms(formId, otpType);
             });
         }
     });
 });
 
-//already validated and page refreshes, keep the tick mark
-function is_already_verified_wpforms(formId, otpType) {
-    if (mowpforms.validated[otpType]) {
-        $mo("#mo_send_otp_" + otpType + formId).val('✔').attr('disabled', true);
-        $mo("#mo_send_otp_" + otpType + formId).attr('style', 'background:green !important;width:100%;padding: 12px 5px;color: #ffffff;');
-    }
-}
-
 function addButtonAndFieldsWpForms(formid, otpType) {
-    // CSS to align button and fields
-    let containerCSS = 'style="margin:0px;"';
+    // Space above/below the Send OTP block to match WPForms field gaps (avoid flush to phone input).
+    let containerCSS = 'style="margin-top:24px;margin-bottom:24px;margin-left:0;margin-right:0;"';
     let buttonCSS = 'style="margin:0px;"';
 
     // messagebox template
@@ -74,17 +81,18 @@ function addButtonAndFieldsWpForms(formid, otpType) {
         '</div>';
 
     let html = sendOTPButton + messageBox + verifyField + verifyOTPButton;
-    let fieldID = mowpforms.otpType;
+    let fieldSelector = '#wpforms-' + formid + '-field_' + mowpforms.formDetails[formid][otpType + 'key'];
 
-    $mo(html).insertAfter('#wpforms-' + formid + '-field_' + mowpforms.formDetails[formid][otpType + 'key']);
-    $mo(fieldID).css('width', '60%');
+    $mo(html).insertAfter(fieldSelector);
+    let $field = $mo(fieldSelector);
+    $field.find('.iti').css({ width: '100%', maxWidth: '100%' });
 }
 
 function bindSendOTPButtonWpForms(formId, otpType) {
     let img = "<div class='moloader'></div>"; // image HTML templates
 
     $mo('#mo_send_otp_' + otpType + formId).click(function () {
-        let userInput = $mo('#wpforms-' + formId + '-field_' + mowpforms.formDetails[formId][otpType + 'key']).val();
+        let userInput = mo_wpforms_get_field_value(formId, otpType);
         
         $mo("#mo_message" + otpType + formId).empty();
         $mo("#mo_message" + otpType + formId).append(img);
@@ -140,7 +148,7 @@ function bindVerifyButtonWpForms(formId, otpType) {
         }
         
         let otpToken = $mo('#mo_verify_otp_' + otpType + formId).val();
-        let userInput = $mo('#wpforms-' + formId + '-field_' + mowpforms.formDetails[formId][otpType + 'key']).val();
+        let userInput = mo_wpforms_get_field_value(formId, otpType);
         
         $mo("#mo_message" + otpType + formId).empty();
         $mo("#mo_message" + otpType + formId).append(img);
@@ -162,14 +170,24 @@ function bindVerifyButtonWpForms(formId, otpType) {
             success: function (response) {
                 $mo("#mo_message" + otpType + formId).empty();
                 if (response.result === "success") {
-                    //if otp was sent successfully
                     if (typeof window !== 'undefined') {
                         delete window.verifyOTPmessage;
                     }
-                    $mo("#mo_message" + otpType + formId).hide();
                     $mo("#mo_verify-container" + otpType + formId + ",#wpforms-submit-container" + otpType + formId).hide();
-                    $mo("#mo_send_otp_" + otpType + formId).val('✔').attr('disabled', true);
-                    $mo("#mo_send_otp_" + otpType + formId).attr('style', 'background:green !important;width:auto;margin:0;padding: 7px 5px;margin-top: 1px;color: #ffffff;');
+                    $mo("#mo_send_otp_" + otpType + formId).closest(".wpforms-submit-container").hide();
+                    let successText = (typeof mowpforms.otpVerifiedMessage !== "undefined" && mowpforms.otpVerifiedMessage)
+                        ? mowpforms.otpVerifiedMessage
+                        : "OTP Verification successful.";
+                    $mo("#mo_message" + otpType + formId).empty().text(successText).show().css({
+                        "background-color": "#dbfff7",
+                        "color": "#008f6e",
+                        "font-size": "16px",
+                        "padding": "12px 16px",
+                        "border-radius": "10px",
+                        "margin-top": "16px",
+                        "width": "100%",
+                        "box-sizing": "border-box"
+                    });
                 } else {
                     // if otp wasn't sent successfully
                     $mo("#mo_message" + otpType + formId).empty();

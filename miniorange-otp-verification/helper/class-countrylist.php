@@ -668,7 +668,7 @@ if ( ! class_exists( 'CountryList' ) ) {
 				'name'        => 'Germany (Deutschland)',
 				'alphacode'   => 'de',
 				'countryCode' => '+49',
-				'minLength'   => 11,
+				'minLength'   => 10,
 				'maxLength'   => 12,
 				'prefixes'    => array( '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ),
 			),

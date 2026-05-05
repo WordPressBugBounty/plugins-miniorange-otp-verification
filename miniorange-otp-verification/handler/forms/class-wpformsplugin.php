@@ -90,6 +90,9 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 		 * Function to register script and localize variables and add the script to the frontend
 		 */
 		public function mo_enqueue_wpforms() {
+			if ( ! wp_doing_ajax() && ! is_admin() ) {
+				$this->unset_otp_session_variables();
+			}
 			wp_register_script( 'mowpforms', MOV_URL . 'includes/js/mowpforms.js', array( 'jquery' ), MOV_VERSION, true );
 			wp_localize_script(
 				'mowpforms',
@@ -99,7 +102,6 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 					'otpType'          => $this->ajax_processing_fields(),
 					'formDetails'      => $this->form_details,
 					'buttontext'       => $this->button_text,
-					'validated'        => $this->get_session_details(),
 					'imgURL'           => MOV_LOADER_URL,
 					'fieldText'        => $this->enter_otp_text,
 					'verifyButtonText' => $this->verify_button_text,
@@ -107,21 +109,12 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 					'nonceKey'         => wp_create_nonce( $this->nonce_key ),
 					'vnonce'           => wp_create_nonce( $this->nonce ),
 					'formNonce'        => wp_create_nonce( 'mo_wpforms_form_submition_nonce' ),
-					'gaction'          => $this->generate_otp_action,
-					'vaction'          => $this->validate_otp_action,
+					'gaction'            => $this->generate_otp_action,
+					'vaction'            => $this->validate_otp_action,
+					'otpVerifiedMessage' => __( 'OTP Verification successful.', 'miniorange-otp-verification' ),
 				)
 			);
 			wp_enqueue_script( 'mowpforms' );
-		}
-
-		/**
-		 * Get session details.
-		 */
-		private function get_session_details() {
-			return array(
-				VerificationType::EMAIL => SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, VerificationType::EMAIL ),
-				VerificationType::PHONE => SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, VerificationType::PHONE ),
-			);
 		}
 
 		/**

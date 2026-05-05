@@ -1056,6 +1056,25 @@
                 }
                 return;
             }
+
+            // If verification success/failure text is now shown, stop resend timer so
+            // it cannot overwrite this message with old OTP-sent cooldown content.
+            const liveText = mospNormalizeMessageText($display.text() || '');
+            if (!isBlocked && liveText) {
+                const liveBaseText = liveText.replace(/\s*you can send the next otp after\s+\d{1,2}:\d{2}\.?/gi, '').trim();
+                const hasOutcomeMessage = mospIsOtpVerificationOutcomeMessage(liveBaseText) || mospIsNegativeOtpFeedbackMessage(liveBaseText);
+                const isOtpSentCopy = mospMessageMatchesOtpSentResendTimerAllowlist(liveBaseText);
+                if (hasOutcomeMessage && !isOtpSentCopy) {
+                    clearInterval(timerFunction);
+                    $display.data('mo-osp-timer-active', false);
+                    $display.data('mo-osp-timer-added', false);
+                    const activeIndex = activeTimers.indexOf(timerFunction);
+                    if (activeIndex > -1) {
+                        activeTimers.splice(activeIndex, 1);
+                    }
+                    return;
+                }
+            }
             
             timer--;
             
@@ -1189,6 +1208,25 @@
             return false;
         }
         return /\b(mismatch|invalid|incorrect|failed|failure|unsuccessful|wrong\s+(?:otp|code|number)|expired|verification\s+failed|not\s+verified|unable\s+to|could\s+not|must\s+enter|please\s+enter|is\s+required|are\s+required|\berror\b|exceeded\s+the\s+limit|try\s+again)\b/i.test(t);
+    }
+
+    /**
+     * OTP verification outcome copy (success/failure). If this appears while resend timer
+     * is running, timer must stop and preserve this message.
+     */
+    function mospIsOtpVerificationOutcomeMessage(text) {
+        if (!text || typeof text !== 'string') {
+            return false;
+        }
+        const t = mospNormalizeMessageText(text).toLowerCase();
+        if (!t) {
+            return false;
+        }
+        if (t === 'success' || t === 'otp verified' || t === 'otp verification successful') {
+            return true;
+        }
+        return /\b(otp|one time passcode|verification\s+code|code)\b.*\b(verified|validated|successful|successfully)\b/.test(t) ||
+               /\b(verified|validated|successful|successfully)\b.*\b(otp|one time passcode|verification\s+code|code)\b/.test(t);
     }
 
     /**
