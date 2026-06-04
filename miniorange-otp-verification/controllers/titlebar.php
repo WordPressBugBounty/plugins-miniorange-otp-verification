@@ -106,23 +106,26 @@ $hidden               = is_null( $mo_transactions ) ? 'hidden' : '';
 $sms_notice_dismissed = get_mo_option( 'mo_hide_sms_notice' );
 $show_sms_notice      = ! ( is_numeric( $sms_notice_dismissed ) && ( $now_ts - (int) $sms_notice_dismissed ) < ( 7 * DAY_IN_SECONDS ) );
 
-// Country restriction addon reminder variables.
-$sc_last_dismissed = get_mo_option( 'mo_selected_country_modal_dismissed_ts' );
-$sc_enabled        = get_mo_option( 'select_country_type', 'mo_sc_code_' );
-
-// Show reminder only if the Selected Country addon folder is present.
-$sc_addon_dir      = trailingslashit( MOV_ADDON_DIR ) . 'countrycode';
-$sc_addon_present  = is_dir( $sc_addon_dir );
-$should_show_sc    = $sc_addon_present && ( ! $sc_enabled ) && ( empty( $sc_last_dismissed ) || ( (int) $now_ts - (int) $sc_last_dismissed ) > ( 3 * DAY_IN_SECONDS ) );
+// Country restriction addon reminder is disabled — let users enable it on their own.
+$should_show_sc = false;
+$addon_sc_url   = '';
 
 $curr_page           = MoUtility::get_current_page_parameter_value( 'page', '' );
 $addon               = MoUtility::get_current_page_parameter_value( 'addon', '' );
-$addon_settings_page = ( 'addon' === $curr_page && 'selectedcountrycode' === $addon );
+$addon_settings_page = ( 'addon' === $curr_page && 'otp_spam_preventer' === $addon );
 $req_url             = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
-$addon_sc_url        = add_query_arg(
+
+// Spam Preventer addon reminder variables.
+$sp_last_dismissed = get_mo_option( 'mo_spam_preventer_modal_dismissed_ts' );
+$sp_addon_dir      = trailingslashit( MOV_ADDON_DIR ) . 'otpspampreventer';
+$sp_addon_present  = is_dir( $sp_addon_dir );
+$sp_settings       = $sp_addon_present ? get_mo_option( 'mo_osp_settings' ) : null;
+$sp_enabled        = is_array( $sp_settings ) && ! empty( $sp_settings['enabled'] );
+$should_show_sp    = $sp_addon_present && ! $sp_enabled && ( empty( $sp_last_dismissed ) || ( (int) $now_ts - (int) $sp_last_dismissed ) > ( 3 * DAY_IN_SECONDS ) );
+$addon_sp_url      = add_query_arg(
 	array(
 		'page'  => 'addon',
-		'addon' => 'selectedcountrycode',
+		'addon' => 'otp_spam_preventer',
 	),
 	$req_url
 );

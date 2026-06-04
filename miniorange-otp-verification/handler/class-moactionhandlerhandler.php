@@ -52,6 +52,7 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 			add_action( 'wp_ajax_mo_modal_action', array( $this, 'mo_transaction_modal_action' ) );
 			add_action( 'wp_ajax_mo_selected_country_modal_dismiss', array( $this, 'mo_selected_country_modal_dismiss' ) );
 			add_action( 'wp_ajax_mo_transaction_logs_modal_dismiss', array( $this, 'mo_transaction_logs_modal_dismiss' ) );
+			add_action( 'wp_ajax_mo_spam_preventer_modal_dismiss', array( $this, 'mo_spam_preventer_modal_dismiss' ) );
 			add_action( 'wp_ajax_miniorange_get_message_value', array( $this, 'get_message_value' ) );
 			add_action( 'wp_ajax_mo_check_transactions_ajax', array( $this, 'mo_check_transactions_ajax' ) );
 		}
@@ -510,6 +511,19 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 				wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 			}
 			update_mo_option( 'mo_transaction_logs_modal_dismissed_ts', time() );
+			wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::SETTINGS_SAVED ), MoConstants::SUCCESS_JSON_TYPE ) );
+		}
+
+		/**
+		 * Store Spam Preventer modal dismissed timestamp so it can be shown again after 3 days.
+		 *
+		 * @return void
+		 */
+		public function mo_spam_preventer_modal_dismiss() {
+			if ( ! current_user_can( 'manage_options' ) || ! check_ajax_referer( 'mo_admin_actions', 'security', false ) ) {
+				wp_die( esc_attr( MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
+			}
+			update_mo_option( 'mo_spam_preventer_modal_dismissed_ts', time() );
 			wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::SETTINGS_SAVED ), MoConstants::SUCCESS_JSON_TYPE ) );
 		}
 

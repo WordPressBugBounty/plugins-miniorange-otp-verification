@@ -165,9 +165,12 @@ if ( ! class_exists( 'MoOtpSpamAjax' ) ) {
 				);
 			}
 
-			$settings = array();
+			$settings = $this->storage->mosp_get_settings();
 
-			$settings['enabled']       = true;
+			if ( isset( $_POST['enabled'] ) ) {
+				$settings['enabled'] = ( 1 === absint( $_POST['enabled'] ) );
+			}
+
 			$settings['cooldown_time'] = isset( $_POST['cooldown_time'] ) ? absint( $_POST['cooldown_time'] ) : 60;
 
 			$max_attempts             = isset( $_POST['max_attempts'] ) ? absint( $_POST['max_attempts'] ) : 3;

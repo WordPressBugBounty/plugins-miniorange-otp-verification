@@ -223,5 +223,6 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	delete_site_option( 'mo_sc_code_select_country_type' );
 	delete_site_option( 'mo_selected_country_modal_dismissed_ts' );
 	delete_site_option( 'mo_transaction_logs_modal_dismissed_ts' );
+	delete_site_option( 'mo_spam_preventer_modal_dismissed_ts' );
 	delete_site_option( 'mo_report_logs_modal_dismissed_ts' );
 	delete_site_option( 'mo_customer_validation_reporting_table_migration_completed' );

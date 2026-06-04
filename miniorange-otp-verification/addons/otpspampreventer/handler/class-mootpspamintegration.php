@@ -56,6 +56,10 @@ if ( ! class_exists( 'MoOtpSpamIntegration' ) ) {
 			$this->storage = MoOtpSpamStorage::instance();
 			$this->handler = MoOtpSpamPreventerHandler::instance();
 
+			if ( ! $this->mosp_is_addon_enabled() ) {
+				return;
+			}
+
 			$this->init_essential_hooks();
 
 			add_action( 'wp_enqueue_scripts', array( $this, 'mosp_enqueue_frontend_scripts' ) );

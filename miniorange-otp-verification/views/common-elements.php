@@ -674,6 +674,55 @@ function show_low_transaction_alert( $remaining_sms, $remaining_email, $transact
 }
 
 /**
+ * Shows the modal box to promote Spam Preventer addon
+ *
+ * @param string $addon_url URL to the Spam Preventer addon settings page.
+ * @return void
+ */
+function show_spam_preventer_addon_alert( $addon_url ) {
+
+	echo ' <div id="mo_spam_preventer_modal">
+			 <div class="mo_customer_validation-modal-backdrop "></div>';
+			wp_nonce_field( 'mo_admin_actions' );
+
+			echo '  <div id="popup-modal" class="mo-popup-modal">
+				 <div class="mo-popup-modal-wrapper">
+					<div class="mo-popup-header-wrapper" style="border-bottom: 1px groove ;">
+						<div class="mo-popup-icon-wrapper">
+							<svg class="h-mo-7 w-mo-7 text-blue-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.007v.008H12v-.008zM12 3.75a8.25 8.25 0 100 16.5 8.25 8.25 0 000-16.5z" />
+							</svg>
+						</div>
+
+						<div class="mo-popup-text-wrapper">
+							' . esc_html__( 'Enable Spam Preventer Addon', 'miniorange-otp-verification' ) . '
+						</div>
+
+						<button type="button" id="mo_close_spam_preventer_cross" class="mo-popup-close-button" data-modal-hide="staticModal">
+							<svg class="w-mo-6 h-mo-6" fill="currentColor" viewBox="0 0 20 20">
+								<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+							</svg>
+						</button>
+					</div>
+
+					<div class="px-mo-5 ">
+						<div class="py-mo-2 rounded-lg">
+							<div class="p-mo-4 text-sm font-semibold rounded-lg bg-blue-50" role="alert">
+							' . wp_kses( __( 'Enable <b>Spam Preventer Addon</b> to protect your forms from OTP request spamming based on phone number, email, IP address, and browser fingerprint.', 'miniorange-otp-verification' ), MoUtility::mo_allow_html_array() ) . '
+						</div>
+						</div>
+					</div>
+
+					<div class="mo-popup-footer-wrapper" style="border-top: 1px groove ; display:flex; gap: 8px; justify-content: space-between; align-items: center;">
+						<a href="' . esc_url( $addon_url ) . '" class="w-full mo-button primary mx-mo-1" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Enable Addon', 'miniorange-otp-verification' ) . '</a>
+						<button type="button" id="mo_remind_later_spam_preventer_button" class="w-full mo-button secondary mx-mo-1">' . esc_html__( 'Remind me later', 'miniorange-otp-verification' ) . '</button>
+					</div>
+				 </div>
+			  </div>
+		 </div>';
+}
+
+/**
  * Shows the modal box to promote Country restriction addon
  *
  * @param string $addon_url URL to the Country restriction addon settings page.

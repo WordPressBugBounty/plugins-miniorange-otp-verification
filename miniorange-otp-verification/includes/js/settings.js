@@ -73,6 +73,33 @@ jQuery(document).ready(function () {
         dismissSelectedCountryModal();
     });
 
+    // Helper to hide spam preventer modal and notify server.
+    function dismissSpamPreventerModal() {
+        $mo("#mo_spam_preventer_modal").hide();
+        $mo.ajax({
+            url: moadminsettings.ajaxUrl,
+            type: "POST",
+            data: {
+                action: "mo_spam_preventer_modal_dismiss",
+                security: moadminsettings.security
+            },
+            crossDomain: true,
+            dataType: "json",
+            success: function (data) {},
+            error: function (o, e, n) {}
+        });
+    }
+
+    // Spam Preventer modal close and cross handlers.
+    $mo(document).on('click', '#mo_remind_later_spam_preventer_button, #mo_close_spam_preventer_cross', function () {
+        dismissSpamPreventerModal();
+    });
+
+    // Also close modal immediately on Enable Addon click.
+    $mo(document).on('click', '#mo_spam_preventer_modal a.mo-button.primary', function () {
+        dismissSpamPreventerModal();
+    });
+
         $mo("#test_whatsapp_otp").click(function(){
             $mo("#whatsapp_test_pop_up").show();
         });

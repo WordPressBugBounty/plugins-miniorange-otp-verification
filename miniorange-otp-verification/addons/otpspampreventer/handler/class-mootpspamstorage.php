@@ -155,7 +155,7 @@ if ( ! class_exists( 'MoOtpSpamStorage' ) ) {
 			}
 
 			$defaults = array(
-				'enabled'       => true,
+				'enabled'       => false,
 				'cooldown_time' => 60,
 				'max_attempts'  => 3,
 				'block_time'    => 900,

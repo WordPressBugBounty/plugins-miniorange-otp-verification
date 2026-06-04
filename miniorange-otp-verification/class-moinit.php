@@ -44,6 +44,7 @@ use OTP\Helper\PopupTemplateChange;
 use OTP\Helper\MoReporting;
 use OTP\Helper\TransactionCost;
 use OTP\Helper\MoAutofill;
+use OTP\Helper\MoPHPSessions;
 
 if ( ! class_exists( 'MoInit' ) ) {
 	/**
@@ -59,6 +60,7 @@ if ( ! class_exists( 'MoInit' ) ) {
 		 * Constructor
 		 */
 		private function __construct() {
+			MoPHPSessions::bootstrap();
 			mo_initialize_forms();
 			$this->initialize_hooks();
 			$this->initialize_globals();

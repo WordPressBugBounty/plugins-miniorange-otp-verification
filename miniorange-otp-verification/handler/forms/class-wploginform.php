@@ -1164,13 +1164,11 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 				if ( MoUtility::is_blank( $username ) ) {
 					return new WP_Error( 'INVALID_USERNAME', MoMessages::showMessage( MoMessages::INVALID_USERNAME ) );
 				}
-				if ( is_email( $username ) || ! MoUtility::validate_phone_number( $username ) ) {
-					return new WP_Error(
-						'PHONE_ONLY_LOGIN',
-						__( 'Please log in using your registered phone number only.', 'miniorange-otp-verification' )
-					);
+				if ( MoUtility::validate_phone_number( $username ) ) {
+					$user = $this->mo_get_user_from_phone_number( $username );
+				} else {
+					$user = is_email( $username ) ? get_user_by( 'email', $username ) : get_user_by( 'login', $username );
 				}
-				$user = $this->mo_get_user_from_phone_number( $username );
 				if ( $user && ! $this->mo_is_login_with_otp( $user->roles, $password ) ) {
 					$user = wp_authenticate_username_password( null, $user->data->user_login, $password );
 				}

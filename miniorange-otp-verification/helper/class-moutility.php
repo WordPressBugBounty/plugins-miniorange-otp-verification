@@ -941,10 +941,8 @@ if ( ! class_exists( 'MoUtility' ) ) {
 				return;
 			}
 
-			// Ensure session is started before any operations (for SESSION type).
-			if ( defined( 'MOV_SESSION_TYPE' ) && 'SESSION' === MOV_SESSION_TYPE ) {
-				MoPHPSessions::check_session();
-			}
+			MoPHPSessions::bootstrap();
+			MoPHPSessions::check_session();
 
 			$reflect = new ReflectionClass( FormSessionVars::class );
 			foreach ( $reflect->getConstants() as $key => $value ) {

@@ -61,9 +61,9 @@ if ( isset( $show_sms_notice ) && $show_sms_notice ) {
 		  </div>';
 }
 
-// Selected Country Add-on reminder.
-if ( isset( $should_show_sc ) && $should_show_sc && $is_logged_in && $is_activated && ! $addon_settings_page ) {
-	show_selected_country_addon_alert( $addon_sc_url );
+// Spam Preventer addon reminder.
+if ( isset( $should_show_sp ) && $should_show_sp && $is_logged_in && $is_activated && ! $addon_settings_page ) {
+	show_spam_preventer_addon_alert( $addon_sp_url );
 	return;
 }
 // Transaction Logs reminder.
