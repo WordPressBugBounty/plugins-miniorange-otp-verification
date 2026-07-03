@@ -225,7 +225,7 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 				);
 			}
 			$data = MoUtility::mo_sanitize_array( wp_unslash( $_POST ) );
-			$otp_type = MoUtility::sanitize_check( 'otpType', $data );
+			$otp_type = MoUtility::sanitize_check( 'otptype', $data );
 			if ( VerificationType::EMAIL === $otp_type ) {
 				$data['user_phone'] = '';
 			} elseif ( VerificationType::PHONE === $otp_type ) {
@@ -380,9 +380,9 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 		 */
 		private function check_integrity_and_validate_otp( $data ) {
 			$this->check_integrity( $data );
-			$this->validate_challenge( sanitize_text_field( $data['otpType'] ), null, sanitize_text_field( $data['otp_token'] ) );
-			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $data['otpType'] ) ) {
-				MoPHPSessions::add_session_var( 'is_otp_verified_' . $data['otpType'], true );
+			$this->validate_challenge( sanitize_text_field( $data['otptype'] ), null, sanitize_text_field( $data['otp_token'] ) );
+			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $data['otptype'] ) ) {
+				MoPHPSessions::add_session_var( 'is_otp_verified_' . $data['otptype'], true );
 				wp_send_json(
 					MoUtility::create_json(
 						MoConstants::SUCCESS_JSON_TYPE,
@@ -405,7 +405,7 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 		 * @param array $data - post data submitted on validate OTP button.
 		 */
 		private function check_integrity( $data ) {
-			if ( VerificationType::PHONE === $data['otpType'] ) {
+			if ( VerificationType::PHONE === $data['otptype'] ) {
 				$phone = MoUtility::process_phone_number( sanitize_text_field( $data['user_phone'] ) );
 				if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
 					wp_send_json(
@@ -416,7 +416,7 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 					);
 				}
 			}
-			if ( VerificationType::EMAIL === $data['otpType'] ) {
+			if ( VerificationType::EMAIL === $data['otptype'] ) {
 				if ( ! SessionUtils::is_email_verified_match( $this->form_session_var, sanitize_email( $data['user_email'] ) ) ) {
 					wp_send_json(
 						MoUtility::create_json(

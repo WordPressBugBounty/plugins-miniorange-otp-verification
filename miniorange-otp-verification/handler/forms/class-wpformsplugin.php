@@ -136,7 +136,7 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 			$post_data = MoUtility::mo_sanitize_array( $_POST );
 			MoUtility::initialize_transaction( $this->form_session_var );
 
-			if ( isset( $post_data['otpType'] ) && 'mo_wpform_' . $post_data['otpType'] . '_enable' === $this->type_phone_tag ) {
+			if ( isset( $post_data['otptype'] ) && 'mo_wpform_' . $post_data['otptype'] . '_enable' === $this->type_phone_tag ) {
 				$this->process_phone_and_send_otp( $post_data );
 			} else {
 				$this->process_email_and_send_otp( $post_data );
@@ -225,9 +225,9 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 		private function check_integrity_and_validate_otp( $data ) {
 
 			$this->check_integrity( $data );
-			$this->validate_challenge( $data['otpType'], null, $data['otp_token'] );
+			$this->validate_challenge( $data['otptype'], null, $data['otp_token'] );
 
-			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $data['otpType'] ) ) {
+			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $data['otptype'] ) ) {
 				wp_send_json(
 					MoUtility::create_json(
 						MoConstants::SUCCESS_JSON_TYPE,
@@ -250,7 +250,7 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 		 * @param array $data - this is the get / post data from the ajax call containing email or phone.
 		 */
 		private function check_integrity( $data ) {
-			if ( 'phone' === $data['otpType'] ) {
+			if ( 'phone' === $data['otptype'] ) {
 				$phone = MoUtility::process_phone_number( $data['user_phone'] );
 				if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
 					wp_send_json(

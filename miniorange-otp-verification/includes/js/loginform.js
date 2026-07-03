@@ -209,43 +209,25 @@ jQuery(document).ready(function () {
 
     if (movarlogin.phoneOnlyIdentifiers && movarlogin.phoneOnlyLoginMessage) {
         $mo('#loginform').on('submit', function (e) {
-            var user = ($mo('#user_login').val() || '').trim();
             var pass = ($mo('#user_pass').val() || '').trim();
             var passRowVisible = $mo("#loginform label[for='user_pass']").parent().is(':visible');
-            if (moLooksLikeEmailLoginIdentifier(user)) {
-                e.preventDefault();
-                alert(movarlogin.phoneOnlyLoginMessage);
-                return false;
-            }
             if (passRowVisible && pass.length > 0) {
                 return true;
             }
         });
         $mo('.woocommerce-form-login').on('submit', function (e) {
             var $form = $mo(this);
-            var user = ($mo('#username', $form).val() || '').trim();
             var pass = ($mo('#password', $form).val() || '').trim();
             var passVisible = $mo('label[for="password"]', $form).parent().is(':visible')
                 || ($mo('#password', $form).length && $mo('#password', $form).closest('.woocommerce-form-row, p').is(':visible'));
-            if (moLooksLikeEmailLoginIdentifier(user)) {
-                e.preventDefault();
-                alert(movarlogin.phoneOnlyLoginMessage);
-                return false;
-            }
             if (passVisible && pass.length > 0) {
                 return true;
             }
         });
         $mo('.um-login form').on('submit', function (e) {
             var $form = $mo(this);
-            var user = ($mo('input[name^="username"]', $form).first().val() || '').trim();
             var pass = ($mo('input[name^="user_password"]', $form).first().val() || '').trim();
             var passVisible = $mo('.um-field-password', $form).is(':visible');
-            if (moLooksLikeEmailLoginIdentifier(user)) {
-                e.preventDefault();
-                alert(movarlogin.phoneOnlyLoginMessage);
-                return false;
-            }
             if (passVisible && pass.length > 0) {
                 return true;
             }

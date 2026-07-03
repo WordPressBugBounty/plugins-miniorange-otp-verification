@@ -220,9 +220,9 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		private function check_integrity_and_validate_otp( $data ) {
 
 			$this->check_integrity( $data );
-			$this->validate_challenge( sanitize_text_field( $data['otpType'] ), null, sanitize_text_field( $data['otp_token'] ) );
+			$this->validate_challenge( sanitize_text_field( $data['otptype'] ), null, sanitize_text_field( $data['otp_token'] ) );
 
-			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, sanitize_text_field( $data['otpType'] ) ) ) {
+			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, sanitize_text_field( $data['otptype'] ) ) ) {
 				wp_send_json(
 					MoUtility::create_json(
 						MoConstants::SUCCESS_JSON_TYPE,
@@ -249,7 +249,7 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		 * @param array $data - this is the get / post data from the ajax call containing email or phone.
 		 */
 		private function check_integrity( $data ) {
-			if ( 'phone' === $data['otpType'] ) {
+			if ( 'phone' === $data['otptype'] ) {
 				$phone = MoUtility::process_phone_number( sanitize_text_field( $data['user_phone'] ) );
 				if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
 					wp_send_json(

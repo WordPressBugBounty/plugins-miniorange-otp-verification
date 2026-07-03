@@ -511,15 +511,16 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			if ( $skip_otp_process || $this->mo_delay_otp_process( $user->data->ID ) ) {
 				return true;
 			}
-			if (
-				$this->by_pass_admin
-				&& $this->skip_password_check
-				&& ! $this->skip_pass_fallback
-				&& 'password' === $this->mo_get_wp_login_intent()
-			) {
+			if ( $this->by_pass_admin ) {
 				$user_meta = get_userdata( $user->data->ID );
-				$user_role = $user_meta->roles;
-				return in_array( 'administrator', $user_role, true );
+				if ( in_array( 'administrator', $user_meta->roles, true ) ) {
+					// OTP-only mode: admin must use the password-intent link from the OTP popup.
+					if ( $this->skip_password_check && ! $this->skip_pass_fallback ) {
+						return 'password' === $this->mo_get_wp_login_intent();
+					}
+					// 2FA mode: password already verified — bypass OTP for admins.
+					return true;
+				}
 			}
 			return false;
 		}
@@ -1257,6 +1258,9 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			}
 
 			if ( ! $this->mo_save_phone_numbers() ) {
+				if ( ! empty( $this->form_name ) ) {
+					MoPHPSessions::add_session_var( 'current_form_name', $this->form_name );
+				}
 				miniorange_site_otp_validation_form(
 					null,
 					null,

@@ -53,6 +53,10 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		public static function mo_sanitize_array( $data ) {
 			$sanitized_data = array();
 			foreach ( $data as $key => $value ) {
+				$key = sanitize_key( $key );
+				if ( empty( $key ) ) {
+					continue;
+				}
 				if ( is_array( $value ) ) {
 					$sanitized_data[ $key ] = self::mo_sanitize_array( $value );
 				} else {
@@ -529,7 +533,8 @@ if ( ! class_exists( 'MoUtility' ) ) {
 
 			foreach ( $countriesavail as $key => $value ) {
 				if ( 'All Countries' !== $value['name'] ) {
-					if ( strpos( $phone, $value['countryCode'] ) !== false ) {
+					$country_code = isset( $value['countryCode'] ) ? $value['countryCode'] : ( isset( $value['countrycode'] ) ? $value['countrycode'] : null );
+					if ( $country_code && strpos( $phone, $country_code ) !== false ) {
 						return false;
 					}
 				}

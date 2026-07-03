@@ -17,7 +17,7 @@ $mo(window).on("load", function () {
  * @param pointerNumber int value
  */
 function startTour(pointerNumber) {
-    if (!moTour.tourData) return;
+    if (!moTour.tourData || !moTour.tourData.length) return;
 
     if (Object.keys(moTour.currentPage).length > 1) return;
 
@@ -30,6 +30,12 @@ function startTour(pointerNumber) {
  */
 function createCard(pointerNumber) {
     let tourElement = moTour.tourData[pointerNumber];
+
+    if (!tourElement) {
+        resetTour();
+        tourComplete();
+        return;
+    }
 
     if (
         !$mo("#" + tourElement.targetE).is(":visible") &&

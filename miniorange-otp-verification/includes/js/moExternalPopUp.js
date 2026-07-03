@@ -34,15 +34,23 @@ jQuery(document).ready(function(){
             return false; // Prevent AJAX call
         }
         
-        // Validate phone number format (basic check - should start with +)
+        // If phone lacks a country code, prepend the default if one is configured
         var phonePattern = /^\+/;
         if (!phonePattern.test(e.trim())) {
-            $mo("#mo_message").empty();
-            $mo("#mo_message").text('Please enter a valid phone number starting with + (e.g., +1XXXXXXXXXX).');
-            $mo("#mo_message").css("background-color","#eda58e");
-            $mo("#mo_message").show();
-            $mo("input[name=mo_phone_number]").focus();
-            return false; // Prevent AJAX call
+            var defaultCode = (typeof moExternalPopUps !== 'undefined' && moExternalPopUps.default_country_code)
+                ? moExternalPopUps.default_country_code
+                : '';
+            if (defaultCode) {
+                e = defaultCode + e.trim();
+                $mo("input[name=mo_phone_number]").val(e);
+            } else {
+                $mo("#mo_message").empty();
+                $mo("#mo_message").text('Please enter a valid phone number starting with + (e.g., +1XXXXXXXXXX).');
+                $mo("#mo_message").css("background-color","#eda58e");
+                $mo("#mo_message").show();
+                $mo("input[name=mo_phone_number]").focus();
+                return false;
+            }
         }
         
         $mo("#mo_message").empty();

@@ -101,7 +101,11 @@ if ( ! class_exists( 'FluentForm' ) ) {
 		 * @param String $form - form values.
 		 */
 		public function check_form_submit( $insert_data, $data, $form ) {
-			$form_id = null === $form['form_id'] ? $form['attributes']['id'] : $form['form_id'];
+			if ( is_array( $form ) ) {
+				$form_id = isset( $form['form_id'] ) ? $form['form_id'] : ( $form['id'] ?? null );
+			} else {
+				$form_id = $form->id ?? null;
+			}
 			if ( ! array_key_exists( $form_id, $this->form_details ) ) {
 				return;
 			}
@@ -190,7 +194,7 @@ if ( ! class_exists( 'FluentForm' ) ) {
 			}
 			$post_data = MoUtility::mo_sanitize_array( $_POST );
 			MoUtility::initialize_transaction( $this->form_session_var );
-			if ( $post_data['otpType'] === $this->type_phone_tag ) {
+			if ( $post_data['otptype'] === $this->type_phone_tag ) {
 				$this->process_phone_and_send_otp( $post_data );
 			} else {
 				$this->process_email_and_send_otp( $post_data );

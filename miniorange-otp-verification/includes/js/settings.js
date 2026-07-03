@@ -1195,27 +1195,73 @@ jQuery(document).ready(function () {
             });
     });
 
+    function moMakeWhatsappLink( id, extraClass, textContent ) {
+        var a = document.createElement( 'a' );
+        a.id        = id;
+        a.className = 'mo-whatsapp-links' + ( extraClass ? ' ' + extraClass : '' );
+        a.href      = moadminsettings.whatsapp_tab;
+        a.target    = '_blank';
+        a.rel       = 'noopener noreferrer';
+        a.textContent = textContent;
+        return a;
+    }
+
     let whatsapp_settings;
     if (!moadminsettings.whatsapp_file) {
-        whatsapp_settings = '<div id="mo_free_whatsapp_html" class="mo-whatsapp-links mo_whatsapp_marketing">[ <a id="mo_whatsapp_not_enabled" href="' + moadminsettings.whatsapp_tab + '" target="_blank">' + moadminsettings.whatsapp_disabled_text + ' </a>\
-                                    <span class="tooltip mo_whatsapp_tooltip">\
-                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">\
-											<g id="d4a43e0162b45f718f49244b403ea8f4">\
-												<g id="4ea4c3dca364b4cff4fba75ac98abb38">\
-													<g id="2413972edc07f152c2356073861cb269">\
-														<path id="2deabe5f8681ff270d3f37797985a977" d="M20.8007 20.5644H3.19925C2.94954 20.5644 2.73449 20.3887 2.68487 20.144L0.194867 7.94109C0.153118 7.73681 0.236091 7.52728 0.406503 7.40702C0.576651 7.28649 0.801941 7.27862 0.980492 7.38627L7.69847 11.4354L11.5297 3.72677C11.6177 3.54979 11.7978 3.43688 11.9955 3.43531C12.1817 3.43452 12.3749 3.54323 12.466 3.71889L16.4244 11.3598L23.0197 7.38654C23.1985 7.27888 23.4233 7.28702 23.5937 7.40728C23.7641 7.52754 23.8471 7.73707 23.8056 7.94136L21.3156 20.1443C21.2652 20.3887 21.0501 20.5644 20.8007 20.5644Z" fill="orange"></path>\
-													</g>\
+        var waDiv  = document.createElement( 'div' );
+        waDiv.id        = 'mo_free_whatsapp_html';
+        waDiv.className = 'mo-whatsapp-links mo_whatsapp_marketing';
+        var waLink = moMakeWhatsappLink( 'mo_whatsapp_not_enabled', '', moadminsettings.whatsapp_disabled_text + ' ' );
+        waDiv.appendChild( document.createTextNode( '[ ' ) );
+        waDiv.appendChild( waLink );
+
+        var tooltipSpan = document.createElement( 'span' );
+        tooltipSpan.className = 'tooltip mo_whatsapp_tooltip';
+        tooltipSpan.innerHTML = '\
+                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none">\
+										<g id="d4a43e0162b45f718f49244b403ea8f4">\
+											<g id="4ea4c3dca364b4cff4fba75ac98abb38">\
+												<g id="2413972edc07f152c2356073861cb269">\
+													<path id="2deabe5f8681ff270d3f37797985a977" d="M20.8007 20.5644H3.19925C2.94954 20.5644 2.73449 20.3887 2.68487 20.144L0.194867 7.94109C0.153118 7.73681 0.236091 7.52728 0.406503 7.40702C0.576651 7.28649 0.801941 7.27862 0.980492 7.38627L7.69847 11.4354L11.5297 3.72677C11.6177 3.54979 11.7978 3.43688 11.9955 3.43531C12.1817 3.43452 12.3749 3.54323 12.466 3.71889L16.4244 11.3598L23.0197 7.38654C23.1985 7.27888 23.4233 7.28702 23.5937 7.40728C23.7641 7.52754 23.8471 7.73707 23.8056 7.94136L21.3156 20.1443C21.2652 20.3887 21.0501 20.5644 20.8007 20.5644Z" fill="orange"></path>\
 												</g>\
 											</g>\
-										</svg>\
-                                        <span class="tooltiptext prem_form_tooltip" style="transform:translateY(-7%);">\
-                                            <span class="header prem_form_header"><b>WhatsApp + Twilio Gateway Plan Feature</b></span>\
-                                            <span class="body">To use OTPs over WhatsApp, upgrade to the WhatsApp + Twilio Gateway Plan.<br>Check <a class="font-semibold text-yellow-500" href=" ' + moadminsettings.pricing_plan_url + '" target="_blank">Licensing Tab</a> to learn more.</span>\
-                                        </span>\&nbsp]</div>';
+										</g>\
+									</svg>';
+
+        var tooltipText = document.createElement( 'span' );
+        tooltipText.className = 'tooltiptext prem_form_tooltip';
+        tooltipText.setAttribute( 'style', 'transform:translateY(-7%);' );
+
+        var tooltipHeader = document.createElement( 'span' );
+        tooltipHeader.className = 'header prem_form_header';
+        tooltipHeader.innerHTML = '<b>WhatsApp + Twilio Gateway Plan Feature</b>';
+
+        var tooltipBody = document.createElement( 'span' );
+        tooltipBody.className = 'body';
+
+        var pricingLink = document.createElement( 'a' );
+        pricingLink.className = 'font-semibold text-yellow-500';
+        pricingLink.href      = moadminsettings.pricing_plan_url || '';
+        pricingLink.target    = '_blank';
+        pricingLink.textContent = 'Licensing Tab';
+
+        tooltipBody.appendChild( document.createTextNode( 'To use OTPs over WhatsApp, upgrade to the WhatsApp + Twilio Gateway Plan.' ) );
+        tooltipBody.appendChild( document.createElement( 'br' ) );
+        tooltipBody.appendChild( document.createTextNode( 'Check ' ) );
+        tooltipBody.appendChild( pricingLink );
+        tooltipBody.appendChild( document.createTextNode( ' to learn more.' ) );
+
+        tooltipText.appendChild( tooltipHeader );
+        tooltipText.appendChild( tooltipBody );
+        tooltipSpan.appendChild( tooltipText );
+        waDiv.appendChild( tooltipSpan );
+        waDiv.appendChild( document.createTextNode( ' ]' ) );
+
+        whatsapp_settings = waDiv;
     } else  if( moadminsettings.iswhatsappenable ){
         whatsapp_settings = '<span  id="mo_whatsapp_enabled" class="addon-table-list-status mo-whatsapp-links">[ '+ moadminsettings.whatsapp_enabled_text +' ]</span>';
     } else {
-        whatsapp_settings = '<a id="mo_whatsapp_not_enabled" class="mo-whatsapp-links" href="' + moadminsettings.whatsapp_tab + '" target="_blank">[ ' + moadminsettings.whatsapp_disabled_text + ' ]</a>';
+        whatsapp_settings = moMakeWhatsappLink( 'mo_whatsapp_not_enabled', '', '[ ' + moadminsettings.whatsapp_disabled_text + ' ]' );
     }
 
     //Exceptional forms:

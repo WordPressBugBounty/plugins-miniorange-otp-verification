@@ -103,13 +103,13 @@ if ( ! class_exists( 'MOVisualTour' ) ) {
 		public function enqueue_visual_tour_script() {
 			wp_register_script( 'tourScript', MOV_URL . 'includes/js/visualTour.js?version=' . MOV_VERSION, array( 'jquery' ), MOV_VERSION, false );
 			$page        = MoUtility::get_current_page_parameter_value( 'page', '' );
-			$path        = ! empty( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
-			$query_str   = wp_parse_url( $path, PHP_URL_QUERY );
-			$current_get = array();
-			if ( $query_str ) {
-				parse_str( $query_str, $query_params );
-				$current_get = MoUtility::mo_sanitize_array( $query_params );
-				unset( $query_params );
+			$allowed_keys = array( 'page', 'form', 'subpage', 'addon' );
+			$current_get  = array();
+			foreach ( $allowed_keys as $param ) {
+				$val = MoUtility::get_current_page_parameter_value( $param, '' );
+				if ( '' !== $val ) {
+					$current_get[ $param ] = $val;
+				}
 			}
 			wp_localize_script(
 				'tourScript',

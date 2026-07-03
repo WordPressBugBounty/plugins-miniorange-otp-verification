@@ -16,6 +16,7 @@ use OTP\Objects\Template;
 use OTP\Traits\Instance;
 use OTP\Helper\MoUtility;
 use OTP\Helper\MoPHPSessions;
+use OTP\Helper\CountryList;
 
 /**
  * This is the External Popup class. This class handles all the
@@ -256,10 +257,11 @@ if ( ! class_exists( 'ExternalPopup' ) ) {
 					'moExternalPopUps',
 					'moExternalPopUps',
 					array(
-						'secure_site_url' => esc_url( admin_url( 'admin-ajax.php' ) ),
-						'resend_otp_text' => esc_js( $resend_label ),
-						'home_url'        => esc_url( home_url() ),
-						'login_page_url'  => esc_url( $current_url ),
+						'secure_site_url'      => esc_url( admin_url( 'admin-ajax.php' ) ),
+						'resend_otp_text'      => esc_js( $resend_label ),
+						'home_url'             => esc_url( home_url() ),
+						'login_page_url'       => esc_url( $current_url ),
+						'default_country_code' => esc_js( (string) CountryList::get_default_countrycode() ),
 					)
 				);
 				wp_print_scripts( 'moExternalPopUps' );

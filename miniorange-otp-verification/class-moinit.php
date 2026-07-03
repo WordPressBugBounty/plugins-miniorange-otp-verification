@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use OTP\API\MoAbilitiesApi;
 use OTP\Handler\EmailVerificationLogic;
 use OTP\Handler\FormActionHandler;
 use OTP\Handler\MoActionHandlerHandler;
@@ -158,6 +159,7 @@ if ( ! class_exists( 'MoInit' ) ) {
 			ExternalPopup::instance();
 			UserChoicePopup::instance();
 			MoRegistrationHandler::instance();
+			MoAbilitiesApi::instance();
 		}
 
 		/**

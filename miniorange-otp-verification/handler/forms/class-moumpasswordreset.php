@@ -364,8 +364,22 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 			if ( ! isset( $_POST['security'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'form_nonce' ) ) {
 				return;
 			}
-			$user    = MoUtility::sanitize_check( 'username_b', $_POST );
-			$user    = $this->get_user( trim( $user ) );
+
+			$otp_ver_type = $this->get_verification_type();
+			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var )
+				|| ! SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otp_ver_type ) ) {
+				return;
+			}
+
+			$posted_username  = MoUtility::sanitize_check( 'username_b', $_POST );
+			$session_username = SessionUtils::get_user_submitted( $this->form_session_var );
+			if ( MoUtility::is_blank( $session_username ) || $session_username !== trim( $posted_username ) ) {
+				return;
+			}
+
+			$this->unset_otp_session_variables();
+
+			$user    = $this->get_user( trim( $posted_username ) );
 			$pwd_obj = $this->get_um_pwd_obj();
 						um_fetch_user( $user->ID );
 			$this->get_um_user_obj()->password_reset();

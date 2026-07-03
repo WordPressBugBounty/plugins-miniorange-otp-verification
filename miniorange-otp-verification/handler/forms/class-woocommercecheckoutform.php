@@ -577,7 +577,7 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 			if ( empty( $otp_token ) && isset( $data['order_verify'] ) ) {
 				$otp_token = $data['order_verify'];
 			}
-			$this->validate_challenge( $data['otpType'], null, $otp_token );
+			$this->validate_challenge( $data['otptype'], null, $otp_token );
 		}
 
 		/**
@@ -586,7 +586,7 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 		 * @param array $data - this is the get / post data from the ajax call containing email or phone.
 		 */
 		private function checkIntegrity( $data ) {
-			if ( 'phone' === $data['otpType'] ) {
+			if ( 'phone' === $data['otptype'] ) {
 				if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, MoUtility::process_phone_number( $data['user_phone'] ) ) ) {
 					wp_send_json(
 						MoUtility::create_json(
