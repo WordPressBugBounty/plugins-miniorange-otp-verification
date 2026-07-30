@@ -241,7 +241,7 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 		 */
 		public function get_otp_sent_message() {
 			$send_msg = get_mo_option( 'success_phone_message', 'mo_otp_' );
-			return $send_msg ? $send_msg : MoMessages::showMessage( MoMessages::OTP_SENT_PHONE );
+			return $send_msg ? MoUtility::restrict_links_to_site_domain( $send_msg ) : MoMessages::showMessage( MoMessages::OTP_SENT_PHONE );
 		}
 
 
@@ -252,7 +252,7 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 		 */
 		public function get_otp_sent_failed_message() {
 			$failed_msg = get_mo_option( 'error_phone_message', 'mo_otp_' );
-			$failed_msg = $failed_msg ? $failed_msg : MoMessages::showMessage( MoMessages::ERROR_OTP_PHONE );
+			$failed_msg = $failed_msg ? MoUtility::restrict_links_to_site_domain( $failed_msg ) : MoMessages::showMessage( MoMessages::ERROR_OTP_PHONE );
 
 			$failed_msg = apply_filters( 'mo_get_otp_sent_failed_message', $failed_msg );
 
@@ -268,7 +268,7 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 		 */
 		public function get_otp_invalid_format_message() {
 			$invalid_msg = get_mo_option( 'invalid_phone_message', 'mo_otp_' );
-			return $invalid_msg ? $invalid_msg : MoMessages::showMessage( MoMessages::ERROR_PHONE_FORMAT );
+			return $invalid_msg ? MoUtility::restrict_links_to_site_domain( $invalid_msg ) : MoMessages::showMessage( MoMessages::ERROR_PHONE_FORMAT );
 		}
 
 
@@ -293,7 +293,7 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 		 */
 		public function get_is_blocked_message() {
 			$blocked_msg = get_mo_option( 'blocked_phone_message', 'mo_otp_' );
-			return $blocked_msg ? $blocked_msg : MoMessages::showMessage( MoMessages::ERROR_PHONE_BLOCKED );
+			return $blocked_msg ? MoUtility::restrict_links_to_site_domain( $blocked_msg ) : MoMessages::showMessage( MoMessages::ERROR_PHONE_BLOCKED );
 		}
 	}
 }

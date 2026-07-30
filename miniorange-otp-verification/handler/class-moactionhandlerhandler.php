@@ -259,23 +259,37 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 				'ERROR_PHONE_BLOCKED',
 				'INVALID_OTP',
 			);
-			update_mo_option( 'success_email_message', stripslashes( MoUtility::sanitize_check( 'new_msg_list_OTP_SENT_EMAIL', $post ) ), 'mo_otp_' );
-			update_mo_option( 'success_phone_message', stripslashes( MoUtility::sanitize_check( 'new_msg_list_OTP_SENT_PHONE', $post ) ), 'mo_otp_' );
-			update_mo_option( 'error_phone_message', stripslashes( MoUtility::sanitize_check( 'new_msg_list_ERROR_OTP_PHONE', $post ) ), 'mo_otp_' );
-			update_mo_option( 'error_email_message', stripslashes( MoUtility::sanitize_check( 'new_msg_list_ERROR_OTP_EMAIL', $post ) ), 'mo_otp_' );
-			update_mo_option( 'invalid_phone_message', stripslashes( MoUtility::sanitize_check( 'new_msg_list_ERROR_PHONE_FORMAT', $post ) ), 'mo_otp_' );
-			update_mo_option( 'invalid_email_message', stripslashes( MoUtility::sanitize_check( 'new_msg_list_ERROR_EMAIL_FORMAT', $post ) ), 'mo_otp_' );
-			update_mo_option( 'invalid_message', stripslashes( MoUtility::sanitize_check( 'new_msg_list_INVALID_OTP', $post ) ), 'mo_otp_' );
-			update_mo_option( 'blocked_email_message', stripslashes( MoUtility::sanitize_check( 'new_msg_list_ERROR_EMAIL_BLOCKED', $post ) ), 'mo_otp_' );
-			update_mo_option( 'blocked_phone_message', stripslashes( MoUtility::sanitize_check( 'new_msg_list_ERROR_PHONE_BLOCKED', $post ) ), 'mo_otp_' );
+			$external_link_removed = false;
+			$save_message = function ( $option_key, $post_key ) use ( $post, &$external_link_removed ) {
+				$value     = stripslashes( MoUtility::sanitize_check( $post_key, $post ) );
+				$sanitized = MoUtility::restrict_links_to_site_domain( $value );
+				if ( $sanitized !== $value ) {
+					$external_link_removed = true;
+				}
+				update_mo_option( $option_key, $sanitized, 'mo_otp_' );
+			};
+
+			$save_message( 'success_email_message', 'new_msg_list_OTP_SENT_EMAIL' );
+			$save_message( 'success_phone_message', 'new_msg_list_OTP_SENT_PHONE' );
+			$save_message( 'error_phone_message', 'new_msg_list_ERROR_OTP_PHONE' );
+			$save_message( 'error_email_message', 'new_msg_list_ERROR_OTP_EMAIL' );
+			$save_message( 'invalid_phone_message', 'new_msg_list_ERROR_PHONE_FORMAT' );
+			$save_message( 'invalid_email_message', 'new_msg_list_ERROR_EMAIL_FORMAT' );
+			$save_message( 'invalid_message', 'new_msg_list_INVALID_OTP' );
+			$save_message( 'blocked_email_message', 'new_msg_list_ERROR_EMAIL_BLOCKED' );
+			$save_message( 'blocked_phone_message', 'new_msg_list_ERROR_PHONE_BLOCKED' );
 			$msg_array = MoMessages::get_original_message_list();
 			foreach ( $msg_array as $key => $value ) {
 				if ( ! isset( $imp_msg[ $key ] ) ) {
-						update_mo_option( $key, stripslashes( MoUtility::sanitize_check( 'new_msg_list_' . $key, $post ) ), 'mo_otp_' );
+						$save_message( $key, 'new_msg_list_' . $key );
 				}
 			}
 
-			do_action( 'mo_registration_show_message', MoMessages::showMessage( MoMessages::MSG_TEMPLATE_SAVED ), 'SUCCESS' );
+			$saved_message = MoMessages::showMessage( MoMessages::MSG_TEMPLATE_SAVED );
+			if ( $external_link_removed ) {
+				$saved_message .= ' ' . esc_html__( 'Note: links to domains other than this site were removed from one or more messages.', 'miniorange-otp-verification' );
+			}
+			do_action( 'mo_registration_show_message', $saved_message, 'SUCCESS' );
 		}
 
 		/**

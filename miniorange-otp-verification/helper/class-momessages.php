@@ -106,7 +106,7 @@ if ( ! class_exists( 'MoMessages' ) ) {
 
 					self::EMAIL_EXISTS                  => __( 'Email is already in use. Please use another email.', 'miniorange-otp-verification' ),
 
-					self::INVALID_USERNAME              => __( 'Please enter a valid username or email.', 'miniorange-otp-verification' ),
+					self::INVALID_USERNAME              => __( 'Please enter a valid username, email or phone number.', 'miniorange-otp-verification' ),
 
 					self::INVALID_PHONE                 => __( 'Please enter a valid phone number', 'miniorange-otp-verification' ),
 
@@ -564,7 +564,7 @@ if ( ! class_exists( 'MoMessages' ) ) {
 
 					self::WPFORM_FIELD_ERROR            => __( 'Please check if you have provided all the required information for WP Forms.', 'miniorange-otp-verification' ),
 
-					self::INVALID_USERNAME              => __( 'Please enter a valid username or email.', 'miniorange-otp-verification' ),
+					self::INVALID_USERNAME              => __( 'Please enter a valid username, email or phone number.', 'miniorange-otp-verification' ),
 
 					self::UM_LOGIN_CHOOSE               => __( 'Please choose a verification method for Ultimate Member Login form.', 'miniorange-otp-verification' ),
 
@@ -763,7 +763,7 @@ if ( ! class_exists( 'MoMessages' ) ) {
 			foreach ( $messages as $key => $value ) {
 				$changed_template = get_mo_option( sanitize_key( $key ), 'mo_otp_' );
 				if ( $changed_template ) {
-					$messages[ $key ] = str_replace( $value, $changed_template, $messages[ $key ] );
+					$messages[ $key ] = str_replace( $value, MoUtility::restrict_links_to_site_domain( $changed_template ), $messages[ $key ] );
 				}
 			}
 			return $messages;

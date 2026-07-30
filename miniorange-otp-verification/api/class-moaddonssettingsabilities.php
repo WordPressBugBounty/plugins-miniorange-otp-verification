@@ -80,7 +80,7 @@ class MoAddonsSettingsAbilities {
 	 * @return void
 	 */
 	public static function register_get_general_settings() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/get-general-settings',
 			array(
 				'label'               => 'Get General Settings',
@@ -141,7 +141,7 @@ class MoAddonsSettingsAbilities {
 	 * @return void
 	 */
 	public static function register_update_general_settings() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/update-general-settings',
 			array(
 				'label'               => 'Update General Settings',
@@ -235,7 +235,7 @@ class MoAddonsSettingsAbilities {
 	 * @return void
 	 */
 	public static function register_get_country_restrictions() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/get-country-restrictions',
 			array(
 				'label'               => 'Get Country Restrictions',
@@ -303,7 +303,7 @@ class MoAddonsSettingsAbilities {
 	 * @return void
 	 */
 	public static function register_update_country_restrictions() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/update-country-restrictions',
 			array(
 				'label'               => 'Update Country Restrictions',
@@ -401,7 +401,7 @@ class MoAddonsSettingsAbilities {
 	 * @return void
 	 */
 	public static function register_get_rate_limit_settings() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/get-rate-limit-settings',
 			array(
 				'label'               => 'Get Rate Limit Settings',
@@ -475,7 +475,7 @@ class MoAddonsSettingsAbilities {
 	 * @return void
 	 */
 	public static function register_update_rate_limit_settings() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/update-rate-limit-settings',
 			array(
 				'label'               => 'Update Rate Limit Settings',
@@ -572,7 +572,7 @@ class MoAddonsSettingsAbilities {
 	 * @return void
 	 */
 	public static function register_get_sms_notifications_settings() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/get-sms-notifications-settings',
 			array(
 				'label'               => 'Get SMS Notification Settings',
@@ -636,7 +636,7 @@ class MoAddonsSettingsAbilities {
 	 * @return void
 	 */
 	public static function register_update_sms_notifications_settings() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/update-sms-notifications-settings',
 			array(
 				'label'               => 'Update SMS Notification Settings',
@@ -684,7 +684,7 @@ class MoAddonsSettingsAbilities {
 					}
 
 					if ( isset( $input['template'] ) ) {
-						update_option( $prefix . '_template', sanitize_textarea_field( $input['template'] ) );
+						update_option( $prefix . '_template', MoAbilitiesConstants::sanitize_textarea( $input['template'] ) );
 						$updated[] = $event . '.template → updated';
 					}
 
@@ -721,7 +721,7 @@ class MoAddonsSettingsAbilities {
 	 * @return void
 	 */
 	public static function register_list_available_addons() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/list-available-addons',
 			array(
 				'label'               => 'List Available Addons',
@@ -795,7 +795,7 @@ class MoAddonsSettingsAbilities {
 	 * @return void
 	 */
 	public static function register_get_transaction_cost_estimate() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/get-transaction-cost-estimate',
 			array(
 				'label'               => 'Get Transaction Cost Estimate',
@@ -857,7 +857,7 @@ class MoAddonsSettingsAbilities {
 	 * @return void
 	 */
 	public static function register_get_form_field_mappings() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/get-form-field-mappings',
 			array(
 				'label'               => 'Get Form Field Mappings',

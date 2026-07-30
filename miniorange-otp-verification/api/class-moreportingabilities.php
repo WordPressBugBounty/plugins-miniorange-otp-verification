@@ -49,7 +49,7 @@ class MoReportingAbilities {
 	 * @return void
 	 */
 	public static function register_enable_transaction_logging() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/enable-transaction-logging',
 			array(
 				'label'               => 'Enable Transaction Logging',
@@ -110,7 +110,7 @@ class MoReportingAbilities {
 	 * @return void
 	 */
 	public static function register_get_transaction_logs() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/get-transaction-logs',
 			array(
 				'label'               => 'Get Transaction Logs',
@@ -196,7 +196,7 @@ class MoReportingAbilities {
 	 * @return void
 	 */
 	public static function register_export_transaction_logs() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/export-transaction-logs',
 			array(
 				'label'               => 'Export Transaction Logs',
@@ -307,7 +307,7 @@ class MoReportingAbilities {
 	 * @return void
 	 */
 	public static function register_clear_transaction_logs() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/clear-transaction-logs',
 			array(
 				'label'               => 'Clear Transaction Logs',

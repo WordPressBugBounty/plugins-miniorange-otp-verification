@@ -149,7 +149,7 @@ if ( ! class_exists( 'WooCommerceAdminOrderstatusNotification' ) ) {
 
 			$customer_id = $order_details->get_customer_id();
 			$userdetails = $customer_id ? get_userdata( $customer_id ) : null;
-			$site_name   = get_bloginfo();
+			$site_name   = MoWcAddOnUtility::get_sms_safe_site_name();
 			$username    = ( $userdetails && ! is_wp_error( $userdetails ) ) ? $userdetails->user_login : '';
 
 			// Secure deserialization using WordPress's maybe_unserialize() function.

@@ -51,7 +51,7 @@ class MoOtpSettingsAbilities {
 	 * @return void
 	 */
 	public static function register_get_settings() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/get-settings',
 			array(
 				'label'               => 'Get OTP Settings',
@@ -148,7 +148,7 @@ class MoOtpSettingsAbilities {
 	 * @return void
 	 */
 	public static function register_get_transactions_remaining() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/get-transactions-remaining',
 			array(
 				'label'               => 'Get Remaining Transactions',
@@ -209,7 +209,7 @@ class MoOtpSettingsAbilities {
 	 * @return void
 	 */
 	public static function register_update_otp_settings() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/update-otp-settings',
 			array(
 				'label'               => 'Update OTP Settings',
@@ -307,7 +307,7 @@ class MoOtpSettingsAbilities {
 	 * @return void
 	 */
 	public static function register_manage_blocklist() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/manage-blocklist',
 			array(
 				'label'               => 'Manage OTP Block List',

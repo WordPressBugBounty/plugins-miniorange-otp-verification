@@ -108,11 +108,6 @@ if ( ! class_exists( 'OTP\Handler\Forms\PaidMembershipForm' ) ) {
 				return $continue_registration;
 			}
 
-			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->get_verification_type() ) ) {
-				$this->unset_otp_session_variables();
-				return $continue_registration;
-			}
-
 			if ( ! isset( $_POST['mo_pmpro_save_phone_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['mo_pmpro_save_phone_nonce'] ) ), 'mo_pmpro_save_phone' ) ) {
 				if ( ! $this->is_form_enabled ) {
 					return $continue_registration;
@@ -123,6 +118,16 @@ if ( ! class_exists( 'OTP\Handler\Forms\PaidMembershipForm' ) ) {
 				$pmpro_requirebilling = false;
 				$pmpro_msg            = apply_filters( 'pmpro_set_message', $message, $pmpro_msgt );
 				return false;
+			}
+
+			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->get_verification_type() ) ) {
+				$verified_contact_matches = $this->otp_type === $this->type_phone_tag
+					? SessionUtils::is_phone_verified_match( $this->form_session_var, isset( $_POST['phone_paidmembership'] ) ? MoUtility::process_phone_number( trim( sanitize_text_field( wp_unslash( $_POST['phone_paidmembership'] ) ) ) ) : '' )
+					: SessionUtils::is_email_verified_match( $this->form_session_var, isset( $_POST['bemail'] ) ? sanitize_email( wp_unslash( $_POST['bemail'] ) ) : '' );
+				if ( $verified_contact_matches ) {
+					$this->unset_otp_session_variables();
+					return $continue_registration;
+				}
 			}
 
 			if ( $this->get_verification_type() === VerificationType::PHONE && ! $this->validate_phone( $_POST ) ) {

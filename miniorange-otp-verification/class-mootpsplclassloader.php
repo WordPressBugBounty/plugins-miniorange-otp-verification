@@ -97,9 +97,13 @@ if ( ! class_exists( 'MoOTPSplClassLoader' ) ) {
 				$file_name1      = str_replace( 'otp', MOV_NAME, $file_name );
 
 				if ( null !== $this->include_path ) {
-					require_once $this->include_path . DIRECTORY_SEPARATOR . $file_name1;
+					$full_path = $this->include_path . DIRECTORY_SEPARATOR . $file_name1;
 				} else {
-					require_once $file_name1;
+					$full_path = $file_name1;
+				}
+
+				if ( is_file( $full_path ) && is_readable( $full_path ) ) {
+					require_once $full_path;
 				}
 			}
 		}

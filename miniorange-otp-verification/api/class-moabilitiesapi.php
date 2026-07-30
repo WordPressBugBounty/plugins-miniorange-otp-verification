@@ -74,7 +74,7 @@ if ( ! class_exists( 'OTP\API\MoAbilitiesApi' ) ) {
 		 * @return void
 		 */
 		public static function register_category() {
-			wp_register_ability_category(
+			MoAbilitiesConstants::register_ability_category(
 				'mo-otp',
 				array(
 					'label'       => 'OTP Verification',

@@ -159,15 +159,34 @@ if ( ! class_exists( 'BuddyPressRegistrationForm' ) ) {
 		}
 
 		/**
-		 * Checks if the OTP Verification is completed and there were no errors.
-		 * Returns TRUE or FALSE indicating if OTP Verification was a success.
+		 * Checks if the OTP Verification is completed for the email/phone submitted with THIS
+		 * signup attempt, not merely that a VALIDATED flag exists somewhere in the session.
+		 * A VALIDATED flag left over from OTP-verifying a different email/phone (e.g. an earlier,
+		 * abandoned submission in the same browser session) must not be accepted as proof of
+		 * verification for a newly submitted, unverified contact.
+		 *
+		 * @param string $email        email submitted with the current signup attempt.
+		 * @param string $phone_number phone number submitted with the current signup attempt.
+		 * @return bool
 		 */
-		private function check_if_verification_is_complete() {
-			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->get_verification_type() ) ) {
-				$this->unset_otp_session_variables();
-				return true;
+		private function check_if_verification_is_complete( $email = '', $phone_number = '' ) {
+			$otp_type = $this->get_verification_type();
+			if ( ! SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otp_type ) ) {
+				return false;
 			}
-			return false;
+
+			if ( ( VerificationType::PHONE === $otp_type || VerificationType::BOTH === $otp_type )
+				&& ! SessionUtils::is_phone_verified_match( $this->form_session_var, MoUtility::process_phone_number( $phone_number ) ) ) {
+				return false;
+			}
+
+			if ( ( VerificationType::EMAIL === $otp_type || VerificationType::BOTH === $otp_type )
+				&& ! SessionUtils::is_email_verified_match( $this->form_session_var, $email ) ) {
+				return false;
+			}
+
+			$this->unset_otp_session_variables();
+			return true;
 		}
 
 		/**
@@ -217,7 +236,11 @@ if ( ! class_exists( 'BuddyPressRegistrationForm' ) ) {
 		 * @return array
 		 */
 		public function miniorange_bp_user_registration( $usermeta ) {
-			if ( $this->check_if_verification_is_complete() ) {
+			$reg1            = $this->mo_bbp_get_phone_field_id();
+			$submitted_email = isset( $_POST['signup_email'] ) ? sanitize_email( wp_unslash( $_POST['signup_email'] ) ) : '';
+			$submitted_phone = isset( $_POST[ 'field_' . $reg1 ] ) ? sanitize_text_field( wp_unslash( $_POST[ 'field_' . $reg1 ] ) ) : '';
+
+			if ( $this->check_if_verification_is_complete( $submitted_email, $submitted_phone ) ) {
 				return $usermeta;
 			}
 			MoUtility::initialize_transaction( $this->form_session_var );
@@ -241,8 +264,6 @@ if ( ! class_exists( 'BuddyPressRegistrationForm' ) ) {
 					$extra_data[ sanitize_key( $key ) ] = sanitize_text_field( wp_unslash( $value ) );
 				}
 			}
-
-			$reg1 = $this->mo_bbp_get_phone_field_id();
 
 			if ( isset( $_POST[ 'field_' . $reg1 ] ) ) {
 				$phone_number = sanitize_text_field( wp_unslash( $_POST[ 'field_' . $reg1 ] ) );

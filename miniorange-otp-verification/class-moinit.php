@@ -374,8 +374,6 @@ if ( ! class_exists( 'MoInit' ) ) {
 			new MoDisplayMessages( $content, $type );
 		}
 
-
-
 		/**
 		 * Function tells where to look for translations.
 		 * <b>PLEASE NOTE:</b> Dont be clever and try to replace the Text domain 'miniorange-otp-verification'

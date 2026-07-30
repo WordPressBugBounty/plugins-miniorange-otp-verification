@@ -188,7 +188,9 @@ if ( ! class_exists( 'UltimateMemberRegistrationForm' ) ) {
 		public function miniorange_um2_user_registration( $user_role, $args ) {
 
 			$otpver_type = $this->get_verification_type();
-			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otpver_type ) ) {
+			$args        = $this->extract_args( $args );
+			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otpver_type )
+				&& $this->is_verified_contact_match( $args, $otpver_type ) ) {
 				$this->unset_otp_session_variables();
 				return $user_role;
 			} elseif ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) && $this->is_ajax_form ) {
@@ -200,7 +202,6 @@ if ( ! class_exists( 'UltimateMemberRegistrationForm' ) ) {
 				);
 			} else {
 				MoUtility::initialize_transaction( $this->form_session_var );
-				$args = $this->extract_args( $args );
 				$this->start_otp_transaction(
 					$args['user_login'],
 					$args['user_email'],
@@ -211,6 +212,29 @@ if ( ! class_exists( 'UltimateMemberRegistrationForm' ) ) {
 				);
 			}
 			return $user_role;
+		}
+
+		/**
+		 * Confirms that the email or phone submitted with the current registration
+		 * request is the same contact that actually received and validated the OTP
+		 * in this session. This prevents a VALIDATED flag obtained for one contact
+		 * (e.g. from an earlier, separate registration attempt in the same browser
+		 * session) from being reused to skip OTP verification for a different
+		 * registration submission.
+		 *
+		 * @param array  $args - normalized registration args (user_email, phone_key).
+		 * @param string $otpver_type - otp verification type.
+		 * @return bool
+		 */
+		private function is_verified_contact_match( $args, $otpver_type ) {
+			if ( VerificationType::PHONE === $otpver_type ) {
+				return SessionUtils::is_phone_verified_match( $this->form_session_var, MoUtility::process_phone_number( $args[ $this->phone_key ] ) );
+			}
+			if ( VerificationType::EMAIL === $otpver_type ) {
+				return SessionUtils::is_email_verified_match( $this->form_session_var, $args['user_email'] );
+			}
+			return SessionUtils::is_email_verified_match( $this->form_session_var, $args['user_email'] )
+				|| SessionUtils::is_phone_verified_match( $this->form_session_var, MoUtility::process_phone_number( $args[ $this->phone_key ] ) );
 		}
 
 		/**

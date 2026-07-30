@@ -149,6 +149,33 @@ jQuery(document).ready(function () {
         $mo("#ov_settings_button").trigger('click');
     });
 
+    // Custom OTP messages are shown to every user during verification, so any link in them
+    // must point back to this site - block saving a message that links off-site.
+    $mo("#mo_otp_verification_messages").on('submit', function(e) {
+        let offSiteField = null;
+        // Matches a quoted (single or double) href value, or a bare unquoted one
+        // (e.g. href=http://evil.com), which is valid HTML.
+        const hrefRegex = /href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/gi;
+        $mo(this).find('textarea[name^="new_msg_list_"]').each(function() {
+            const value = $mo(this).val();
+            let match;
+            while ((match = hrefRegex.exec(value)) !== null) {
+                const url = match[1] !== undefined ? match[1] : (match[2] !== undefined ? match[2] : match[3]);
+                const link = document.createElement('a');
+                link.href = url;
+                if (link.host && link.host !== window.location.host) {
+                    offSiteField = $mo(this);
+                    return false;
+                }
+            }
+        });
+        if (offSiteField) {
+            e.preventDefault();
+            offSiteField.focus();
+            alert('Links in OTP messages must point to this site (' + window.location.host + '). Please remove or fix the link before saving.');
+        }
+    });
+
     $mo("input[name='check_btn']").click(function(){
         $mo("#mo_ln_form").submit();
     });

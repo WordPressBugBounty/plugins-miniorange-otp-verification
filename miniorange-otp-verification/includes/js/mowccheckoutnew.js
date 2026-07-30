@@ -363,7 +363,7 @@ jQuery(document).ready(function () {
                             user_email: sendEmail,
                             action: mowcnewcheckout.gaction,
                             security: mowcnewcheckout.nonce,
-                            otpType: mowcnewcheckout.otpType
+                            otptype: mowcnewcheckout.otpType
                         },
                         crossDomain: true,
                         dataType: "json",
@@ -443,9 +443,9 @@ jQuery(document).ready(function () {
                     data: { 
                         user_phone: sendPhone, 
                         user_email: sendEmail, 
-                        action: mowcnewcheckout.gaction, 
-                        security: mowcnewcheckout.nonce, 
-                        otpType: mowcnewcheckout.otpType 
+                        action: mowcnewcheckout.gaction,
+                        security: mowcnewcheckout.nonce,
+                        otptype: mowcnewcheckout.otpType
                     },
                     crossDomain: true,
                     dataType: "json",
@@ -504,8 +504,8 @@ jQuery(document).ready(function () {
                         user_email: sendEmail, 
                         action: mowcnewcheckout.vaction, 
                         security: mowcnewcheckout.nonce, 
-                        otpType: mowcnewcheckout.otpType, 
-                        otp_token: otp_token 
+                        otptype: mowcnewcheckout.otpType,
+                        otp_token: otp_token
                     },
                     crossDomain: true,
                     dataType: "json",
@@ -571,8 +571,8 @@ jQuery(document).ready(function () {
                 user_email: sendEmail, 
                 action: mowcnewcheckout.vaction, 
                 security: mowcnewcheckout.nonce, 
-                otpType: mowcnewcheckout.otpType, 
-                otp_token: fieldstring 
+                otptype: mowcnewcheckout.otpType,
+                otp_token: fieldstring
             },
             crossDomain: true,
             dataType: "json",   

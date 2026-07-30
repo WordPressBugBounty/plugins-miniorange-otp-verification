@@ -97,5 +97,27 @@ if ( ! class_exists( 'MoWcAddOnUtility' ) ) {
 
 			MoUtility::is_addon_activated();
 		}
+
+		/**
+		 * Returns a site name that is safe to embed in an SMS template. Strips characters
+		 * that the SMS gateway's template validation rejects (e.g. periods/digit patterns
+		 * that look like URLs or version numbers, non-ASCII characters), collapses
+		 * whitespace, and caps the length so it doesn't blow out the SMS body.
+		 *
+		 * @return string
+		 */
+		public static function get_sms_safe_site_name() {
+			$site_name = html_entity_decode( get_bloginfo(), ENT_QUOTES, 'UTF-8' );
+			$site_name = remove_accents( $site_name );
+			$site_name = preg_replace( '/[^\x20-\x7E]/', '', $site_name );
+			$site_name = str_replace( '.', '-', $site_name );
+			$site_name = trim( preg_replace( '/\s+/', ' ', $site_name ) );
+
+			if ( strlen( $site_name ) > 30 ) {
+				$site_name = trim( substr( $site_name, 0, 30 ) );
+			}
+
+			return $site_name;
+		}
 	}
 }

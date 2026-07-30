@@ -47,7 +47,7 @@ class MoDiagnosticsAbilities {
 	 * @return void
 	 */
 	public static function register_list_premium_forms() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/list-premium-forms',
 			array(
 				'label'               => 'List Premium Forms',
@@ -116,7 +116,7 @@ class MoDiagnosticsAbilities {
 	 * @return void
 	 */
 	public static function register_run_diagnostics() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/run-diagnostics',
 			array(
 				'label'               => 'Run Diagnostics',

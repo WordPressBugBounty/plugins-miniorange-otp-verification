@@ -217,7 +217,7 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 		 */
 		public function get_otp_sent_message() {
 			$sent_msg = get_mo_option( 'success_email_message', 'mo_otp_' );
-			return $sent_msg ? $sent_msg : MoMessages::showMessage( MoMessages::OTP_SENT_EMAIL );
+			return $sent_msg ? MoUtility::restrict_links_to_site_domain( $sent_msg ) : MoMessages::showMessage( MoMessages::OTP_SENT_EMAIL );
 		}
 
 		/**
@@ -227,7 +227,7 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 		 */
 		public function get_otp_sent_failed_message() {
 			$failed_msg = get_mo_option( 'error_email_message', 'mo_otp_' );
-			return $failed_msg ? $failed_msg : MoMessages::showMessage( MoMessages::ERROR_OTP_EMAIL );
+			return $failed_msg ? MoUtility::restrict_links_to_site_domain( $failed_msg ) : MoMessages::showMessage( MoMessages::ERROR_OTP_EMAIL );
 		}
 
 		/**
@@ -265,7 +265,7 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 		 */
 		public function get_is_blocked_message() {
 			$blocked_emails = get_mo_option( 'blocked_email_message', 'mo_otp_' );
-			return $blocked_emails ? $blocked_emails : MoMessages::showMessage( MoMessages::ERROR_EMAIL_BLOCKED );
+			return $blocked_emails ? MoUtility::restrict_links_to_site_domain( $blocked_emails ) : MoMessages::showMessage( MoMessages::ERROR_EMAIL_BLOCKED );
 		}
 
 		/**
@@ -276,7 +276,7 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 		 */
 		public function get_otp_invalid_format_message() {
 			$message = get_mo_option( 'invalid_email_message', 'mo_otp_' );
-			return $message ? $message : MoMessages::showMessage( MoMessages::ERROR_EMAIL_FORMAT );
+			return $message ? MoUtility::restrict_links_to_site_domain( $message ) : MoMessages::showMessage( MoMessages::ERROR_EMAIL_FORMAT );
 		}
 	}
 }

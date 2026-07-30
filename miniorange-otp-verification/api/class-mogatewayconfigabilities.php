@@ -54,7 +54,7 @@ class MoGatewayConfigAbilities {
 	 * @return void
 	 */
 	public static function register_get_gateway_config() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/get-gateway-config',
 			array(
 				'label'               => 'Get Gateway Config',
@@ -118,7 +118,7 @@ class MoGatewayConfigAbilities {
 	 * @return void
 	 */
 	public static function register_configure_gateway() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/configure-gateway',
 			array(
 				'label'               => 'Configure Gateway',
@@ -175,7 +175,7 @@ class MoGatewayConfigAbilities {
 	 * @return void
 	 */
 	public static function register_get_whatsapp_settings() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/get-whatsapp-settings',
 			array(
 				'label'               => 'Get WhatsApp Settings',
@@ -223,7 +223,7 @@ class MoGatewayConfigAbilities {
 	 * @return void
 	 */
 	public static function register_update_whatsapp_settings() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/update-whatsapp-settings',
 			array(
 				'label'               => 'Update WhatsApp Settings',
@@ -279,7 +279,7 @@ class MoGatewayConfigAbilities {
 	 * @return void
 	 */
 	public static function register_get_email_templates() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/get-email-templates',
 			array(
 				'label'               => 'Get OTP Templates',
@@ -327,7 +327,7 @@ class MoGatewayConfigAbilities {
 	 * @return void
 	 */
 	public static function register_update_email_template() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/update-email-template',
 			array(
 				'label'               => 'Update OTP Templates',

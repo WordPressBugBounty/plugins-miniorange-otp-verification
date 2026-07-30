@@ -63,4 +63,59 @@ class MoAbilitiesConstants {
 			'message'          => 'This is a premium feature. Please upgrade your plan.',
 		);
 	}
+
+	/**
+	 * Registers an ability, but only when the WordPress Abilities API is available.
+	 *
+	 * The Abilities API (wp_register_ability()) ships with WordPress 6.9.0. This
+	 * plugin supports much older versions, so every ability registration is routed
+	 * through this guarded wrapper. On older versions the wp_abilities_api_init hook
+	 * never fires anyway, so this is purely defensive and keeps the plugin compatible
+	 * with its declared minimum supported WordPress version.
+	 *
+	 * @param string $ability_id The unique ability identifier (e.g. 'mo-otp/send-otp').
+	 * @param array  $args       The ability arguments passed to wp_register_ability().
+	 *
+	 * @return void
+	 */
+	public static function register_ability( $ability_id, array $args ) {
+		if ( function_exists( 'wp_register_ability' ) ) {
+			wp_register_ability( $ability_id, $args );
+		}
+	}
+
+	/**
+	 * Registers an ability category, but only when the WordPress Abilities API is available.
+	 *
+	 * wp_register_ability_category() ships with WordPress 6.9.0. See register_ability()
+	 * for why this is routed through a guarded wrapper.
+	 *
+	 * @param string $category_slug The unique category slug (e.g. 'mo-otp').
+	 * @param array  $args          The category arguments passed to wp_register_ability_category().
+	 *
+	 * @return void
+	 */
+	public static function register_ability_category( $category_slug, array $args ) {
+		if ( function_exists( 'wp_register_ability_category' ) ) {
+			wp_register_ability_category( $category_slug, $args );
+		}
+	}
+
+	/**
+	 * Sanitizes a multi-line string, falling back gracefully on older WordPress.
+	 *
+	 * sanitize_textarea_field() was introduced in WordPress 4.7.0. On earlier
+	 * versions this falls back to sanitize_text_field() so the plugin stays
+	 * compatible with its declared minimum supported WordPress version.
+	 *
+	 * @param string $value The raw string to sanitize.
+	 *
+	 * @return string The sanitized string.
+	 */
+	public static function sanitize_textarea( $value ) {
+		if ( function_exists( 'sanitize_textarea_field' ) ) {
+			return sanitize_textarea_field( $value );
+		}
+		return sanitize_text_field( $value );
+	}
 }

@@ -350,6 +350,9 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 			if ( isset( $args[ $this->verify_field_key ] ) || isset( $_POST[ $this->verify_field_key ] ) ) {
 				$mo_nonce = isset( $_POST['mo_um_account_profile_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_um_account_profile_nonce'] ) ) : '';
 				if ( empty( $mo_nonce ) || ! wp_verify_nonce( $mo_nonce, 'mo_um_account_profile_nonce' ) ) {
+					$form = $this->get_um_form_obj();
+					$form->add_error( $this->email_key, MoUtility::get_invalid_otp_method() );
+					$form->add_error( $this->phone_key, MoUtility::get_invalid_otp_method() );
 					return;
 				}
 			}

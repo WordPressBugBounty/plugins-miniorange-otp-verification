@@ -70,7 +70,7 @@ class MoCustomizationAbilities {
 	 * @return void
 	 */
 	public static function register_get_popup_templates() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/get-popup-templates',
 			array(
 				'label'               => 'Get Popup Templates',
@@ -124,7 +124,7 @@ class MoCustomizationAbilities {
 	 * @return void
 	 */
 	public static function register_update_popup_template() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/update-popup-template',
 			array(
 				'label'               => 'Update Popup Template',
@@ -208,7 +208,7 @@ class MoCustomizationAbilities {
 	 * @return void
 	 */
 	public static function register_get_custom_messages() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/get-custom-messages',
 			array(
 				'label'               => 'Get Custom Messages',
@@ -262,7 +262,7 @@ class MoCustomizationAbilities {
 	 * @return void
 	 */
 	public static function register_update_custom_messages() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/update-custom-messages',
 			array(
 				'label'               => 'Update Custom Messages',
@@ -307,7 +307,7 @@ class MoCustomizationAbilities {
 							delete_mo_option( sanitize_key( $key ), 'mo_otp_' );
 							$updated[] = $key . ' → reset to default';
 						} else {
-							update_mo_option( sanitize_key( $key ), sanitize_textarea_field( (string) $value ), 'mo_otp_' );
+							update_mo_option( sanitize_key( $key ), MoAbilitiesConstants::sanitize_textarea( (string) $value ), 'mo_otp_' );
 							$updated[] = $key . ' → updated';
 						}
 					}

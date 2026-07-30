@@ -281,16 +281,19 @@ if ( ! class_exists( 'WPFormsPlugin' ) ) {
 		 * @return array $errors
 		 */
 		public function validate_form( $errors, $form_data ) {
-			if ( ! isset( $_POST['mo_wpforms_nonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['mo_wpforms_nonce'] ) ), 'mo_wpforms_form_submition_nonce' ) ) {
-				return $errors;
-			}
-			$post_data = MoUtility::mo_sanitize_array( $_POST );
-
 			$id = $form_data['id'];
 			if ( ! array_key_exists( $id, $this->form_details ) ) {
 				return $errors;
 			}
 			$form_data = $this->form_details[ $id ];
+
+			if ( ! isset( $_POST['mo_wpforms_nonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['mo_wpforms_nonce'] ) ), 'mo_wpforms_form_submition_nonce' ) ) {
+				$field_id                   = $this->otp_type === $this->type_email_tag ? $form_data['emailkey'] : $form_data['phonekey'];
+				$errors[ $id ][ $field_id ] = MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE );
+				return $errors;
+			}
+			$post_data = MoUtility::mo_sanitize_array( $_POST );
+
 			if ( ! empty( $errors ) ) {
 				return $errors;
 			}

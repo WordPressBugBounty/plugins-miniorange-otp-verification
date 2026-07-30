@@ -321,7 +321,7 @@ if ( ! class_exists( 'MoReporting' ) ) {
 		 */
 		public function mo_start_reporting( $tx_id, $user_email, $phone_number, $otp_type, $message, $status ) {
 			global $wpdb;
-			$current_time = current_datetime()->format( 'Y-m-d H:i' );
+			$current_time = current_time( 'Y-m-d H:i' );
 			$otp_type     = strtoupper( $otp_type );
 			$form_name    = $this->get_form_name_from_session();
 			$db_name      = $wpdb->prefix . 'mo_reporting';
@@ -349,7 +349,7 @@ if ( ! class_exists( 'MoReporting' ) ) {
 		 */
 		public function mo_update_reporting( $tx_id, $status ) {
 			global $wpdb;
-			$current_time = current_datetime()->format( 'Y-m-d H:i' );
+			$current_time = current_time( 'Y-m-d H:i' );
 			$db_name      = $wpdb->prefix . 'mo_reporting';
 			$data         = array(
 				'status' => $status,

@@ -88,7 +88,11 @@ if ( ! class_exists( 'WooCommerceBilling' ) ) {
 			$value = $this->otp_type === $this->type_phone_tag ? MoUtility::process_phone_number( $value ) : $value;
 			$type  = $this->get_verification_type();
 
-			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $type ) ) {
+			$verified_contact_matches = $this->otp_type === $this->type_phone_tag
+				? SessionUtils::is_phone_verified_match( $this->form_session_var, $value )
+				: SessionUtils::is_email_verified_match( $this->form_session_var, $value );
+
+			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $type ) && $verified_contact_matches ) {
 				$this->unset_otp_session_variables();
 				return $value;
 			}
@@ -146,13 +150,17 @@ if ( ! class_exists( 'WooCommerceBilling' ) ) {
 		 */
 		public function get_email_phone_data() {
 			if ( ! isset( $_POST['mopopup_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['mopopup_wpnonce'] ) ), 'mo_popup_options' ) ) {
+				// Request could not be authenticated. Blanks would make the mismatch check skip itself,
+				// so return a value that can never equal the contact the OTP was sent to.
 				return array(
-					'email' => '',
-					'phone' => '',
+					'email' => 'mo_wcb_unverifiable_contact',
+					'phone' => 'mo_wcb_unverifiable_contact',
 				);
 			}
 			$email = isset( $_POST['billing_email'] ) ? sanitize_email( wp_unslash( $_POST['billing_email'] ) ) : '';
 			$phone = isset( $_POST['billing_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_phone'] ) ) : '';
+			// Match the normalisation applied to the value stored on OTP send, otherwise formatting alone fails the check.
+			$phone = $phone ? MoUtility::process_phone_number( $phone ) : '';
 			return array(
 				'email' => $email,
 				'phone' => $phone,

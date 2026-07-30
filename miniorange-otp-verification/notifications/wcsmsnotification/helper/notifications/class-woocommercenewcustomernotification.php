@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use OTP\Helper\MoMessages;
 use OTP\Notifications\WcSMSNotification\Helper\MoWcAddOnMessages;
+use OTP\Notifications\WcSMSNotification\Helper\MoWcAddOnUtility;
 use OTP\Helper\MoUtility;
 use OTP\Objects\SMSNotification;
 
@@ -133,7 +134,7 @@ if ( ! class_exists( 'WooCommerceNewCustomerNotification' ) ) {
 				return;
 			}
 
-			$site_name    = get_bloginfo();
+			$site_name    = MoWcAddOnUtility::get_sms_safe_site_name();
 			$username     = $userdata->user_login;
 			$phone_number = get_user_meta( $customer_id, 'billing_phone', true );
 

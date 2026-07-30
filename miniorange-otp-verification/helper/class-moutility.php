@@ -53,8 +53,8 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		public static function mo_sanitize_array( $data ) {
 			$sanitized_data = array();
 			foreach ( $data as $key => $value ) {
-				$key = sanitize_key( $key );
-				if ( empty( $key ) ) {
+				$key = is_scalar( $key ) ? preg_replace( '/[^A-Za-z0-9_\-]/', '', (string) $key ) : '';
+				if ( '' === $key ) {
 					continue;
 				}
 				if ( is_array( $value ) ) {
@@ -74,14 +74,13 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		public static function mo_allow_html_array() {
 			$allowed_tags = array(
 				'a'          => array(
-					'style'   => array(),
-					'class'   => array(),
-					'href'    => array(),
-					'rel'     => array(),
-					'title'   => array(),
-					'hidden'  => array(),
-					'target'  => array(),
-					'onclick' => array(),
+					'style'  => array(),
+					'class'  => array(),
+					'href'   => array(),
+					'rel'    => array(),
+					'title'  => array(),
+					'hidden' => array(),
+					'target' => array(),
 				),
 				'b'          => array(
 					'style' => array(),
@@ -378,6 +377,59 @@ if ( ! class_exists( 'MoUtility' ) ) {
 				$popup[ $tag ] = array_merge( (array) $post_attrs, (array) $popup[ $tag ] );
 			}
 			return $popup;
+		}
+
+		/**
+		 * Neutralizes any <a href="..."> in an admin-configured OTP message that points to a
+		 * domain other than this site's own domain, by rewriting the href to '#'. Relative URLs
+		 * and links back to this site are left untouched.
+		 * <br/><br/>
+		 * This is enforced at render time (not just at save time) because the message option can
+		 * be written directly to the database (e.g. via SQL injection elsewhere, or direct DB
+		 * access), bypassing every save-time check the plugin's own settings form performs.
+		 *
+		 * @param string $message the message HTML fetched from the option value.
+		 * @return string
+		 */
+		public static function restrict_links_to_site_domain( $message ) {
+			if ( ! is_string( $message ) || false === stripos( $message, 'href' ) ) {
+				return $message;
+			}
+			$home_url  = home_url();
+			$site_host = wp_parse_url( $home_url, PHP_URL_HOST );
+			if ( ! $site_host ) {
+				return $message;
+			}
+			$site_port = wp_parse_url( $home_url, PHP_URL_PORT );
+			// Matches a quoted (single or double) href value, or a bare unquoted one
+			// (e.g. href=http://evil.com), which is valid HTML.
+			return preg_replace_callback(
+				'/href\s*=\s*(?:"[^"]*"|\'[^\']*\'|[^\s"\'>]+)/i',
+				function ( $matches ) use ( $site_host, $site_port ) {
+					$attr = $matches[0];
+					if ( preg_match( '/^href\s*=\s*(["\'])(.*)\1$/is', $attr, $parts ) ) {
+						$quote = $parts[1];
+						$url   = $parts[2];
+					} else {
+						preg_match( '/^href\s*=\s*(.+)$/is', $attr, $parts );
+						$quote = '';
+						$url   = $parts[1];
+					}
+					$url_host = wp_parse_url( $url, PHP_URL_HOST );
+					if ( ! $url_host ) {
+						// Relative URL (no host) - always same-origin.
+						return $attr;
+					}
+					$url_port = wp_parse_url( $url, PHP_URL_PORT );
+					// Compare host and port together, not host alone - a different port on the
+					// same hostname (e.g. http://localhost:6969/) is still a different origin.
+					if ( strcasecmp( $url_host, $site_host ) !== 0 || (string) $url_port !== (string) $site_port ) {
+						return $quote ? 'href=' . $quote . '#' . $quote : 'href=#';
+					}
+					return $attr;
+				},
+				$message
+			);
 		}
 
 		/**
@@ -968,7 +1020,8 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		 * @return string
 		 */
 		public static function get_invalid_otp_method() {
-			return get_mo_option( 'invalid_message', 'mo_otp_' ) ? get_mo_option( 'invalid_message', 'mo_otp_' )
+			$invalid_msg = get_mo_option( 'invalid_message', 'mo_otp_' );
+			return $invalid_msg ? self::restrict_links_to_site_domain( $invalid_msg )
 			: MoMessages::showMessage( MoMessages::INVALID_OTP );
 		}
 

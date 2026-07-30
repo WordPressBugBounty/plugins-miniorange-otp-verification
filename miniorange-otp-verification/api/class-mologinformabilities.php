@@ -44,7 +44,7 @@ class MoLoginFormAbilities {
 	 * @return void
 	 */
 	public static function register_get_login_form_settings() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/get-login-form-settings',
 			array(
 				'label'               => 'Get Login Form Settings',
@@ -135,7 +135,7 @@ class MoLoginFormAbilities {
 	 * @return void
 	 */
 	public static function register_update_login_form_settings() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/update-login-form-settings',
 			array(
 				'label'               => 'Update Login Form Settings',
@@ -256,7 +256,7 @@ class MoLoginFormAbilities {
 					}
 
 					if ( isset( $input['password_button_css'] ) ) {
-						update_mo_option( 'wp_login_with_pass_button_css', sanitize_textarea_field( $input['password_button_css'] ) );
+						update_mo_option( 'wp_login_with_pass_button_css', MoAbilitiesConstants::sanitize_textarea( $input['password_button_css'] ) );
 						$updated[] = 'password_button_css → ' . $input['password_button_css'];
 					}
 

@@ -707,7 +707,7 @@ class MoFormManagementAbilities {
 	 * @return void
 	 */
 	public static function register_list_forms() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/list-forms',
 			array(
 				'label'               => 'List All Forms',
@@ -771,7 +771,7 @@ class MoFormManagementAbilities {
 	 * @return void
 	 */
 	public static function register_get_form_details() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/get-form-details',
 			array(
 				'label'               => 'Get Form Details',
@@ -953,7 +953,7 @@ class MoFormManagementAbilities {
 	 * @return void
 	 */
 	public static function register_update_form_settings() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/update-form-settings',
 			array(
 				'label'               => 'Update Form Settings',
@@ -1099,7 +1099,7 @@ class MoFormManagementAbilities {
 	 * @return void
 	 */
 	public static function register_enable_form() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/enable-form',
 			array(
 				'label'               => 'Enable Form',
@@ -1176,7 +1176,7 @@ class MoFormManagementAbilities {
 	 * @return void
 	 */
 	public static function register_disable_form() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/disable-form',
 			array(
 				'label'               => 'Disable Form',

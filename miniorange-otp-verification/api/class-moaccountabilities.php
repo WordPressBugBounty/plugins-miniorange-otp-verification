@@ -53,7 +53,7 @@ class MoAccountAbilities {
 	 * @return void
 	 */
 	public static function register_get_account_status() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/get-account-status',
 			array(
 				'label'               => 'Get Account Status',
@@ -119,7 +119,7 @@ class MoAccountAbilities {
 	 * @return void
 	 */
 	public static function register_register_account() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/register-account',
 			array(
 				'label'               => 'Register Account',
@@ -219,7 +219,7 @@ class MoAccountAbilities {
 	 * @return void
 	 */
 	public static function register_submit_support_query() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/submit-support-query',
 			array(
 				'label'               => 'Submit Support Query',
@@ -247,7 +247,7 @@ class MoAccountAbilities {
 				},
 				'execute_callback'    => function ( $input ) {
 					$email = sanitize_email( $input['email'] ?? '' );
-					$query = sanitize_textarea_field( $input['query'] ?? '' );
+					$query = MoAbilitiesConstants::sanitize_textarea( $input['query'] ?? '' );
 					$phone = sanitize_text_field( $input['phone'] ?? '' );
 
 					if ( empty( $email ) || empty( $query ) ) {
@@ -285,7 +285,7 @@ class MoAccountAbilities {
 	 * @return void
 	 */
 	public static function register_submit_feedback() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/submit-feedback',
 			array(
 				'label'               => 'Submit Feedback',
@@ -317,7 +317,7 @@ class MoAccountAbilities {
 					return current_user_can( 'manage_options' );
 				},
 				'execute_callback'    => function ( $input ) {
-					$feedback = sanitize_textarea_field( $input['feedback'] ?? '' );
+					$feedback = MoAbilitiesConstants::sanitize_textarea( $input['feedback'] ?? '' );
 					$rating   = isset( $input['rating'] ) ? absint( $input['rating'] ) : 0;
 					$email    = sanitize_email( $input['email'] ?? ( (string) get_mo_option( 'admin_email' ) ) );
 
@@ -357,7 +357,7 @@ class MoAccountAbilities {
 	 * @return void
 	 */
 	public static function register_resend_otp() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/resend-otp',
 			array(
 				'label'               => 'Resend OTP',

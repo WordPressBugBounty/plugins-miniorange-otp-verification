@@ -3,7 +3,7 @@
  * Plugin Name: miniOrange OTP Login, Verification and SMS Notifications
  * Plugin URI: http://miniorange.com
  * Description: Email & SMS OTP verification on 60+ forms, SMS notifications for WooCommerce, passwordless login, Login with phone, support for external OTP gateways.
- * Version: 5.5.2
+ * Version: 5.5.3
  * Author: miniOrange
  * Author URI: https://miniorange.com
  * Text Domain: miniorange-otp-verification

@@ -52,7 +52,7 @@ class MoOtpActionsAbilities {
 	 * @return void
 	 */
 	public static function register_send_otp() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/send-otp',
 			array(
 				'label'               => 'Send OTP',
@@ -166,7 +166,7 @@ class MoOtpActionsAbilities {
 	 * @return void
 	 */
 	public static function register_verify_otp() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/verify-otp',
 			array(
 				'label'               => 'Verify OTP',
@@ -244,7 +244,7 @@ class MoOtpActionsAbilities {
 	 * @return void
 	 */
 	public static function register_send_notification_sms() {
-		wp_register_ability(
+		MoAbilitiesConstants::register_ability(
 			'mo-otp/send-notification-sms',
 			array(
 				'label'               => 'Send Custom SMS Notification',
@@ -278,7 +278,7 @@ class MoOtpActionsAbilities {
 				},
 				'execute_callback'    => function ( $input ) {
 					$phone   = MoUtility::process_phone_number( sanitize_text_field( $input['phone'] ?? '' ) );
-					$message = sanitize_textarea_field( $input['message'] ?? '' );
+					$message = MoAbilitiesConstants::sanitize_textarea( $input['message'] ?? '' );
 
 					if ( empty( $phone ) || empty( $message ) ) {
 						return array(

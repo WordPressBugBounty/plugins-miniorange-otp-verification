@@ -136,7 +136,8 @@ if ( ! class_exists( 'MemberPressRegistrationForm' ) ) {
 				return $errors;
 			}
 
-			if ( $this->checkIf_verification_is_complete() ) {
+			$submitted_email = isset( $usermeta['user_email'] ) ? $usermeta['user_email'] : '';
+			if ( $this->checkIf_verification_is_complete( $submitted_email, $phone_number ) ) {
 				return $errors;
 			}
 			MoUtility::initialize_transaction( $this->form_session_var );
@@ -231,14 +232,22 @@ if ( ! class_exists( 'MemberPressRegistrationForm' ) ) {
 
 		/**
 		 * Checks if the OTP Verification is completed and there were no errors.
+		 * The submitted email/phone must also match the verified contact.
 		 * Returns TRUE or FALSE indicating if OTP Verification was a success.
 		 *
+		 * @param string $email        The email submitted in the current request.
+		 * @param string $phone_number The processed phone number submitted in the current request.
 		 * @return bool True if verification is complete, false otherwise.
 		 */
-		private function checkIf_verification_is_complete() {
+		private function checkIf_verification_is_complete( $email, $phone_number ) {
 			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->get_verification_type() ) ) {
-				$this->unset_otp_session_variables();
-				return true;
+				$otp_ver_type  = $this->get_verification_type();
+				$email_matches = VerificationType::PHONE !== $otp_ver_type && SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, VerificationType::EMAIL ) && SessionUtils::is_email_verified_match( $this->form_session_var, $email );
+				$phone_matches = VerificationType::EMAIL !== $otp_ver_type && SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, VerificationType::PHONE ) && SessionUtils::is_phone_verified_match( $this->form_session_var, $phone_number );
+				if ( $email_matches || $phone_matches ) {
+					$this->unset_otp_session_variables();
+					return true;
+				}
 			}
 			return false;
 		}

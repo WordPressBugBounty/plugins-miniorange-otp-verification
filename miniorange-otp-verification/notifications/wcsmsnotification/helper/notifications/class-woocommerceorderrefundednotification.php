@@ -116,7 +116,7 @@ if ( ! class_exists( 'WooCommerceOrderRefundedNotification' ) ) {
 			}
 			$this->set_notif_in_session( $this->page );
 			$userdetails  = get_userdata( $order_details->get_customer_id() );
-			$site_name    = get_bloginfo();
+			$site_name    = MoWcAddOnUtility::get_sms_safe_site_name();
 			$username     = MoUtility::is_blank( $userdetails ) ? '' : $userdetails->user_login;
 			$phone_number = MoWcAddOnUtility::get_customer_number_from_order( $order_details );
 			$date_obj     = $order_details->get_date_created();

@@ -786,8 +786,12 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			if ( is_admin() ) {
 				return;
 			}
-			if ( function_exists( 'is_login' ) && is_login() ) {
-				return;
+			// is_login() requires WordPress 6.1.0; the call is kept inside the
+			// function_exists() body so it is never invoked on older versions.
+			if ( function_exists( 'is_login' ) ) {
+				if ( is_login() ) {
+					return;
+				}
 			}
 			if ( function_exists( 'um_is_core_page' ) && um_is_core_page( 'login' ) ) {
 				return;
@@ -1102,8 +1106,11 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		private function startOTPVerificationProcess( $user, $username, $password ) {
 			$otp_type = $this->get_verification_type();
 
-			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otp_type )
-			|| SessionUtils::is_status_match( $this->form_session_var2, self::VALIDATED, $otp_type ) ) {
+			$form_session_owner  = SessionUtils::get_user_submitted( $this->form_session_var );
+			$form_session2_owner = SessionUtils::get_user_submitted( $this->form_session_var2 );
+
+			if ( ( $form_session_owner === $username && SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otp_type ) )
+			|| ( $form_session2_owner === $username && SessionUtils::is_status_match( $this->form_session_var2, self::VALIDATED, $otp_type ) ) ) {
 				return;
 			}
 
@@ -1168,7 +1175,10 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 				if ( MoUtility::validate_phone_number( $username ) ) {
 					$user = $this->mo_get_user_from_phone_number( $username );
 				} else {
-					$user = is_email( $username ) ? get_user_by( 'email', $username ) : get_user_by( 'login', $username );
+					$user = get_user_by( 'login', $username );
+					if ( ! $user && is_email( $username ) ) {
+						$user = get_user_by( 'email', $username );
+					}
 				}
 				if ( $user && ! $this->mo_is_login_with_otp( $user->roles, $password ) ) {
 					$user = wp_authenticate_username_password( null, $user->data->user_login, $password );
@@ -1176,7 +1186,10 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 				return $user ? $user : new WP_Error( 'INVALID_USERNAME', MoMessages::showMessage( MoMessages::INVALID_USERNAME ) );
 			}
 
-			$user = is_email( $username ) ? get_user_by( 'email', $username ) : get_user_by( 'login', $username );
+			$user = get_user_by( 'login', $username );
+			if ( ! $user && is_email( $username ) ) {
+				$user = get_user_by( 'email', $username );
+			}
 			if ( ! $user && $this->allow_login_through_phone && MoUtility::validate_phone_number( $username ) ) {
 				$user = $this->mo_get_user_from_phone_number( $username );
 			}
@@ -1271,6 +1284,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 				);
 			} else {
 				MoUtility::initialize_transaction( $this->form_session_var );
+				SessionUtils::add_user_in_session( $this->form_session_var, $username );
 				$this->send_challenge(
 					null,
 					$user->data->user_login,
@@ -1302,6 +1316,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 */
 		private function mo_fetch_phone_and_start_verification( $username, $password, $phone_number ) {
 			MoUtility::initialize_transaction( $this->form_session_var2 );
+			SessionUtils::add_user_in_session( $this->form_session_var2, $username );
 			$redirect_raw = MoUtility::get_current_page_parameter_value( 'redirect_to', '' );
 			$redirect_to  = wp_validate_redirect( $redirect_raw, MoUtility::current_page_url() );
 			$this->send_challenge( $username, null, null, $phone_number, VerificationType::PHONE, $password, $redirect_to, false, $this->form_session_var );
@@ -1318,6 +1333,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 */
 		private function mo_start_email_verification( $username, $email, $password ) {
 			MoUtility::initialize_transaction( $this->form_session_var2 );
+			SessionUtils::add_user_in_session( $this->form_session_var2, $username );
 			$redirect_raw = MoUtility::get_current_page_parameter_value( 'redirect_to', '' );
 			$redirect_to  = wp_validate_redirect( $redirect_raw, MoUtility::current_page_url() );
 			$this->send_challenge( $username, $email, null, null, VerificationType::EMAIL, $password, $redirect_to, false, $this->form_session_var );
@@ -1332,6 +1348,10 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		private function mo_handle_wp_login_ajax_send_otp( $post_data ) {
 			$user_phone = $post_data['user_phone'];
 			MoUtility::initialize_transaction( $this->form_session_var );
+			$bound_username = MoPHPSessions::get_session_var( 'login_user_mo' );
+			if ( ! MoUtility::is_blank( $bound_username ) ) {
+				SessionUtils::add_user_in_session( $this->form_session_var, $bound_username );
+			}
 			if ( $this->restrict_duplicates() && ! MoUtility::is_blank( $this->mo_get_user_from_phone_number( $user_phone ) ) ) {
 				wp_send_json(
 					MoUtility::create_json(

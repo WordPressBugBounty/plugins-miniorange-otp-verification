@@ -43,7 +43,11 @@ function mo_osp_uninstall_cleanup() {
 
 	wp_clear_scheduled_hook( 'mo_osp_cleanup_expired' );
 
-	wp_cache_flush_group( 'mo_osp' );
+	// wp_cache_flush_group() requires WordPress 6.1.0; the specific cache key was
+	// already deleted above, so on older versions there is nothing more to flush.
+	if ( function_exists( 'wp_cache_flush_group' ) ) {
+		wp_cache_flush_group( 'mo_osp' );
+	}
 }
 
 mo_osp_uninstall_cleanup();
