@@ -91,7 +91,7 @@ function bindSendOTPButtonUserRegFrom(formId, otpType) {
             data: { 
                 user_email: userInput, 
                 user_phone: userInput, 
-                otpType: otpType, 
+                otptype: otpType, 
                 security: userreg.gnonce, 
                 action: userreg.gaction 
             },
@@ -157,7 +157,7 @@ function bindVerifyButtonUserRegFrom(formId, otpType) {
                 user_email: userInput, 
                 user_phone: userInput, 
                 otp_token: otpToken, 
-                otpType: otpType, 
+                otptype: otpType, 
                 security: userreg.vnonce, 
                 action: userreg.vaction 
             },

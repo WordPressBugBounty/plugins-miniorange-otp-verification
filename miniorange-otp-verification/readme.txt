@@ -5,7 +5,7 @@ Tags: OTP, OTP Login, SMS Notifications, Phone Verification, Email Verification
 Requires at least: 4.7.0
 Tested up to: 7.0
 Requires PHP: 5.3.0
-Stable tag: 5.5.3
+Stable tag: 5.5.4
 License: Expat
 License URI: https://plugins.miniorange.com/mit-license
 OTP Verification via Email/SMS/WhatsApp,SMS Notifications for WooCommerce,OTP Login with Phone,PasswordLess Login.Custom Gateway for OTP Verification
@@ -211,6 +211,8 @@ Please mail us at **otpsupport@xecurify.com/info@xecurify.com**. You can also su
 8. OTP Verification Plugin Settings
 
 == Changelog ==
+= 5.5.4 =
+Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes. 
 = 5.5.3 =
 * woocommerce notification bug fixes.
 * Everest, gravity, ninja, formidable forms bug fixes.
@@ -313,6 +315,8 @@ For older changelog entries, please see the [additional changelog.txt file](http
 
 
 == Upgrade Notice ==
+= 5.5.4 =
+Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
 = 5.5.3 =
 * woocommerce notification bug fixes.
 * Everest, gravity, ninja, formidable forms bug fixes.

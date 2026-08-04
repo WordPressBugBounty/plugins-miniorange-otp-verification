@@ -53,7 +53,7 @@ function sendOTPFluentConvForm(formId, keyValue) {
             type: "POST",
             data: { 
                 user_value: userInput, 
-                otpType: otpType, 
+                otptype: otpType, 
                 security: mofluentconv.nonce, 
                 action: mofluentconv.gaction 
             },
@@ -110,7 +110,7 @@ function validateOTPFluentConvForm(formId, keyValue) {
             data: { 
                 user_value: userInput, 
                 otp_token: otpInput, 
-                otpType: otpType, 
+                otptype: otpType, 
                 security: mofluentconv.nonce, 
                 action: mofluentconv.vaction 
             },

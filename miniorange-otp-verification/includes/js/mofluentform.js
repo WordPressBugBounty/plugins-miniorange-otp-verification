@@ -39,7 +39,7 @@ function sendOTPFluentForm(formId, keyValue) {
             type: "POST",
             data: { 
                 user_value: userInput, 
-                otpType: otpType, 
+                otptype: otpType, 
                 security: mofluent.gnonce, 
                 action: mofluent.gaction 
             },

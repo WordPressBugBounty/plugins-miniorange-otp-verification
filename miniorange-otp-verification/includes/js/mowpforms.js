@@ -104,7 +104,7 @@ function bindSendOTPButtonWpForms(formId, otpType) {
             data: {
                 user_email: userInput,
                 user_phone: userInput,
-                otpType: otpType,
+                otptype: otpType,
                 security: mowpforms.gnonce,
                 action: mowpforms.gaction,
             },
@@ -161,7 +161,7 @@ function bindVerifyButtonWpForms(formId, otpType) {
                 user_email: userInput,
                 user_phone: userInput,
                 otp_token: otpToken,
-                otpType: otpType,
+                otptype: otpType,
                 security: mowpforms.vnonce,
                 action: mowpforms.vaction,
             },

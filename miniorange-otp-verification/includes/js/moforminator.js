@@ -61,7 +61,7 @@ function bindSendOTPButtonForminator(formId, otpType) {
             data: { 
                 user_email: userInput, 
                 user_phone: userInput, 
-                otpType: otpType, 
+                otptype: otpType, 
                 security: moforminator.gnonce, 
                 action: moforminator.gaction 
             },
@@ -110,7 +110,7 @@ function bindVerifyButtonForminator(formId, otpType) {
                 user_email: userInput, 
                 user_phone: userInput, 
                 otp_token: otpInput, 
-                otpType: otpType, 
+                otptype: otpType, 
                 security: moforminator.vnonce, 
                 action: moforminator.vaction 
             },

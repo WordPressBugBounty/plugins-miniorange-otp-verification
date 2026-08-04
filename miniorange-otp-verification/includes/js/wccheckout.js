@@ -95,7 +95,7 @@ jQuery(document).ready(function () {
             data: {
                 user_email: userEmail,
                 user_phone: userPhone,
-                otpType: mowccheckout.otpType,
+                otptype: mowccheckout.otpType,
                 otp_token: fieldstring,
                 security: mowccheckout.nonce,
             },
