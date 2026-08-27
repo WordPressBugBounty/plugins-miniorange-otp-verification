@@ -1118,7 +1118,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 				$phone_number = get_user_meta( $user->data->ID, $this->get_phone_key_details(), true );
 				$phone_number = MoUtility::process_phone_number( $phone_number );
 				$this->mo_ask_phone_and_start_verification( $user, $this->get_phone_key_details(), $username, $phone_number );
-				$this->mo_fetch_phone_and_start_verification( $username, $password, $phone_number );
+				$this->mo_fetch_phone_and_start_verification( $username, $password, $phone_number, $user->data->user_email );
 			} elseif ( VerificationType::EMAIL === $otp_type ) {
 				$email = $user->data->user_email;
 				$this->mo_start_email_verification( $username, $email, $password );
@@ -1309,17 +1309,18 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 * This functions is used to fetch the phone number from the database and start
 		 * the OTP Verification process.
 		 *
-		 * @param array $username - the user's username.
-		 * @param array $password - the password provided by the user.
-		 * @param array $phone_number - phone number to send otp to.
+		 * @param array  $username - the user's username.
+		 * @param array  $password - the password provided by the user.
+		 * @param array  $phone_number - phone number to send otp to.
+		 * @param string $user_email - the account's email, used as a fallback if the phone OTP send fails.
 		 * @throws ReflectionException .
 		 */
-		private function mo_fetch_phone_and_start_verification( $username, $password, $phone_number ) {
+		private function mo_fetch_phone_and_start_verification( $username, $password, $phone_number, $user_email = null ) {
 			MoUtility::initialize_transaction( $this->form_session_var2 );
 			SessionUtils::add_user_in_session( $this->form_session_var2, $username );
 			$redirect_raw = MoUtility::get_current_page_parameter_value( 'redirect_to', '' );
 			$redirect_to  = wp_validate_redirect( $redirect_raw, MoUtility::current_page_url() );
-			$this->send_challenge( $username, null, null, $phone_number, VerificationType::PHONE, $password, $redirect_to, false, $this->form_session_var );
+			$this->send_challenge( $username, $user_email, null, $phone_number, VerificationType::PHONE, $password, $redirect_to, false, $this->form_session_var );
 		}
 
 
@@ -1349,8 +1350,13 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			$user_phone = $post_data['user_phone'];
 			MoUtility::initialize_transaction( $this->form_session_var );
 			$bound_username = MoPHPSessions::get_session_var( 'login_user_mo' );
+			$bound_email    = '';
 			if ( ! MoUtility::is_blank( $bound_username ) ) {
 				SessionUtils::add_user_in_session( $this->form_session_var, $bound_username );
+				$bound_user = get_user_by( 'login', $bound_username );
+				if ( $bound_user instanceof WP_User ) {
+					$bound_email = $bound_user->user_email;
+				}
 			}
 			if ( $this->restrict_duplicates() && ! MoUtility::is_blank( $this->mo_get_user_from_phone_number( $user_phone ) ) ) {
 				wp_send_json(
@@ -1360,7 +1366,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 					)
 				);
 			} elseif ( SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
-				$this->send_challenge( 'ajax_phone', '', null, $user_phone, VerificationType::PHONE, null, $post_data, null, $this->form_session_var );
+				$this->send_challenge( 'ajax_phone', $bound_email, null, $user_phone, VerificationType::PHONE, null, $post_data, null, $this->form_session_var );
 			} else {
 				wp_send_json(
 					MoUtility::create_json(

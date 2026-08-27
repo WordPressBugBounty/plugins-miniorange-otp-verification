@@ -18,10 +18,44 @@ echo '<div id="generalSettingsSubTabContainer" class="mo-subpage-container ' . e
 			<input type="hidden" name="option" value="mo_general_settings" />';
 
 			wp_nonce_field( $nonce );
+
+	$test_mode_caption = sprintf(
+		/* translators: 1: opening bold tag, 2: closing bold tag. */
+		__( 'Test Mode lets you test your OTP setup without sending a real OTP or using any credits. %1$sWith Fail Mode off (Success Mode)%2$s, any code you enter is accepted, so you can check the success flow. %1$sWith Fail Mode on%2$s, every code is rejected, so you can check the error message. For testing only — keep both toggles off on a live site.', 'miniorange-otp-verification' ),
+		'<b>',
+		'</b>'
+	);
+
 	echo '	<div class="mo-header">
 				<p class="mo-heading flex-1">' . esc_html( __( 'General Settings', 'miniorange-otp-verification' ) ) . '</p>
 				<input type="submit" name="save" id="save" ' . esc_attr( $disabled ) . '
 							class="mo-button inverted" value="' . esc_attr( __( 'Save Settings', 'miniorange-otp-verification' ) ) . '">
+			</div>
+			<div id="otpTestMode">
+				<div class="border-b flex flex-col gap-mo-6 px-mo-4">
+					<div class="w-full flex m-mo-4">
+						<div class="flex-1">
+							<h5 class="mo-title">' . esc_html__( 'OTP Test Mode', 'miniorange-otp-verification' ) . '</h5>
+							<p class="mo-caption mt-mo-2 mr-mo-32">' . wp_kses( $test_mode_caption, array( 'b' => array() ) ) . '</p>
+						</div>
+						<div class="flex-1">
+							<div class="flex my-mo-2 items-center">
+								<label class="mo-switch">
+									<input type="checkbox" ' . esc_attr( $disabled ) . ' name="mo_test_mode" id="mo_test_mode" value="1" ' . esc_attr( $test_mode ) . ' />
+									<span class="mo-slider round"></span>
+								</label>
+								<span class="ml-mo-4">' . esc_html__( 'Enable Test Mode', 'miniorange-otp-verification' ) . '</span>
+							</div>
+							<div class="flex my-mo-2 items-center">
+								<label class="mo-switch">
+									<input type="checkbox" ' . esc_attr( $disabled ) . ' name="mo_fail_mode" id="mo_fail_mode" value="1" ' . esc_attr( $fail_mode ) . ' />
+									<span class="mo-slider round"></span>
+								</label>
+								<span id="mo_fail_mode_status" class="ml-mo-4 font-semibold"></span>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 			<div class="border-b flex flex-col gap-mo-6 px-mo-4">
 				<div class="w-full flex m-mo-4">
@@ -46,6 +80,33 @@ echo '<div id="generalSettingsSubTabContainer" class="mo-subpage-container ' . e
 									id="dropdownEnable"
 									value="1"' . esc_attr( mo_esc_string( $show_dropdown_on_form, 'attr' ) ) . ' />
 							' . esc_html( __( 'Show a country code dropdown on the phone field.', 'miniorange-otp-verification' ) ) . '
+						</div>
+					</div>
+				</div>
+			</div>';
+
+	echo '	<div id="phoneEmailFallback">
+				<div class="border-b flex flex-col gap-mo-6 px-mo-4">
+					<div class="w-full flex m-mo-4">
+						<div class="flex-1">
+							<h5 class="mo-title">' . esc_html__( 'Email Fallback for Phone OTP', 'miniorange-otp-verification' ) . '</h5>
+							<p class="mo-caption mt-mo-2">' . esc_html__( 'If sending the OTP by phone fails, send it to an email address instead.', 'miniorange-otp-verification' ) . '</p>
+							<p class="mo-caption mt-mo-2" style="margin-top: 40px;">' . esc_html__( 'Note: To use Email Fallback, make sure you enter the name or ID of the email field from the form above. Otherwise, the fallback will not be able to identify the email address to use.', 'miniorange-otp-verification' ) . '</p>
+						</div>
+						<div class="flex-1">
+							<div class="my-mo-4">
+								<input  type="checkbox" ' . esc_attr( mo_esc_string( $disabled, 'attr' ) ) . '
+										name="mo_phone_fallback_to_email"
+										id="moPhoneFallbackToEmail"
+										value="1"' . esc_attr( mo_esc_string( $mo_phone_fallback_to_email, 'attr' ) ) . ' />
+								' . esc_html( __( 'Offer Email as a fallback if SMS fails', 'miniorange-otp-verification' ) ) . '
+							</div>
+							<div id="mo_phone_fallback_email_field_ids_settings" class="w-[95%] py-mo-4 pr-mo-4">
+								<div class="mo-input-wrapper">
+									<label class="mo-input-label">' . esc_html( __( 'Email Field Name(s) or ID(s)', 'miniorange-otp-verification' ) ) . '</label>
+									<textarea name="mo_phone_fallback_email_field_ids" placeholder="' . esc_attr( __( 'Enter semicolon-separated field names or IDs that hold an email address on your forms. Eg. billing_email;your-email ', 'miniorange-otp-verification' ) ) . '" rows="3" maxlength="400" class="mo-textarea" >' . esc_attr( mo_esc_string( $mo_phone_fallback_email_field_ids, 'attr' ) ) . '</textarea>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>

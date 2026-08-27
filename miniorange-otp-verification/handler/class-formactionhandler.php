@@ -100,7 +100,15 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 		 */
 		private function handleResendOTP( $otp_type, $from_both ) {
 
-			$user_email       = MoPHPSessions::get_session_var( 'user_email' );
+			$user_email = MoPHPSessions::get_session_var( 'user_email' );
+			if ( empty( $user_email ) && VerificationType::EMAIL === $otp_type && ! empty( $_POST['mo_fallback_email'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				$candidate = sanitize_email( wp_unslash( $_POST['mo_fallback_email'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				if ( is_email( $candidate ) ) {
+					$user_email = $candidate;
+					MoPHPSessions::add_session_var( 'user_email', $user_email );
+					add_filter( 'is_ajax_form', '__return_true' );
+				}
+			}
 			$user_login       = sanitize_user( MoPHPSessions::get_session_var( 'user_login' ), true );
 			$phone_number     = MoUtility::process_phone_number( MoPHPSessions::get_session_var( 'phone_number_mo' ) );
 			$extra_data       = MoPHPSessions::get_session_var( 'extra_data' );
@@ -241,17 +249,29 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 				// Sanitize only the specific request var instead of the entire $_REQUEST superglobal.
 				$token = MoUtility::sanitize_check( $request_var, $_REQUEST );
 			}
-			$token = empty( $token ) ? $otp : $token;
-			$tx_id = SessionUtils::get_transaction_id( $otp_type );
+			$token         = empty( $token ) ? $otp : $token;
+			$tx_id         = SessionUtils::get_transaction_id( $otp_type );
+			$validate_type = $otp_type;
+			if ( empty( $tx_id ) && VerificationType::PHONE === $otp_type ) {
+				$email_tx_id = SessionUtils::get_transaction_id( VerificationType::EMAIL );
+				if ( ! empty( $email_tx_id ) ) {
+					$tx_id         = $email_tx_id;
+					$validate_type = VerificationType::EMAIL;
+				}
+			}
 			$tx_id = esc_attr( $tx_id );
 			if ( ! empty( $tx_id ) ) {
 				$gateway           = GatewayFunctions::instance();
-				$content           = $gateway->mo_validate_otp_token( $tx_id, $token, $otp_type );
+				$content           = $gateway->mo_validate_otp_token( $tx_id, $token, $validate_type );
 				$validation_status = 'SUCCESS' === $content['status'] ? 'OTP_VERIFIED' : 'VERIFICATION_FAILED';
 				apply_filters( 'mo_update_reporting', $tx_id, $validation_status );
 				switch ( $content['status'] ) {
 					case 'SUCCESS':
 						$this->onValidationSuccess( $user_login, $user_email, $password, $phone_number, $extra_data, $otp_type );
+						if ( VerificationType::EMAIL === $otp_type && MoPHPSessions::get_session_var( 'mo_phone_fallback_active' ) ) {
+							SessionUtils::add_status( $form_session_var, 'VALIDATED', VerificationType::PHONE );
+							MoPHPSessions::add_session_var( 'mo_phone_fallback_active', false );
+						}
 						break;
 					default:
 						$this->onValidationFailed( $user_login, $user_email, $phone_number, $otp_type );

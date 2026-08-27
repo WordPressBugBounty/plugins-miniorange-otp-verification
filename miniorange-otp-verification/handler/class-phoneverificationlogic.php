@@ -18,6 +18,7 @@ use OTP\Helper\MoUtility;
 use OTP\Helper\SessionUtils;
 use OTP\Objects\FormSessionData;
 use OTP\Objects\VerificationLogic;
+use OTP\Objects\VerificationType;
 use OTP\Traits\Instance;
 use OTP\LicenseLibrary\Mo_License_Service;
 use OTP\Helper\MoPHPSessions;
@@ -144,19 +145,106 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 			$gateway           = GatewayFunctions::instance();
 			$verification_type = 'SMS';
 			if ( ! $gateway->is_mg() && ! get_mo_option( 'custome_gateway_type' ) ) {
-				$this->handle_otp_sent_failed( $user_login, $user_email, $phone_number, $otp_type, $from_both, array() );
+				$this->offer_email_fallback( $user_login, $user_email, $phone_number, $otp_type, $from_both, array() );
 				return;
 			}
 
 			$content = $gateway->mo_send_otp_token( $verification_type, '', $phone_number );
+			if ( ! is_array( $content ) || ! isset( $content['status'] ) ) {
+				$this->offer_email_fallback( $user_login, $user_email, $phone_number, $otp_type, $from_both, array() );
+				return;
+			}
 			switch ( $content['status'] ) {
 				case 'SUCCESS':
 					$this->handle_otp_sent( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content );
 					break;
 				default:
-					$this->handle_otp_sent_failed( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content );
+					$this->offer_email_fallback( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content );
 					break;
 			}
+		}
+
+		/**
+		 * Called whenever sending the phone OTP has failed. If email fallback is enabled and a
+		 * trustworthy email address can be found for this request, the OTP is sent there
+		 * automatically; otherwise the normal phone failure message is shown, unchanged.
+		 *
+		 * @param string $user_login   Username of the user.
+		 * @param string $user_email   Email of the user, if already known for this request.
+		 * @param string $phone_number Phone number of the user.
+		 * @param string $otp_type     Email or SMS verification.
+		 * @param string $from_both    Whether user enabled from both.
+		 * @param array  $content      JSON decoded response from the failed phone send, if any.
+		 */
+		private function offer_email_fallback( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content ) {
+			if ( ! get_mo_option( 'mo_phone_fallback_to_email' ) ) {
+				$this->handle_otp_sent_failed( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content );
+				return;
+			}
+
+			$fallback_email   = $user_email;
+			$field_ids        = array_filter( array_map( 'trim', explode( ';', (string) get_mo_option( 'mo_phone_fallback_email_field_ids' ) ) ) );
+			$field_configured = ! empty( $field_ids );
+
+			if ( empty( $fallback_email ) ) {
+				foreach ( $field_ids as $field_id ) {
+					if ( ! empty( $_POST[ $field_id ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+						$candidate = sanitize_email( wp_unslash( $_POST[ $field_id ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+						if ( is_email( $candidate ) ) {
+							$fallback_email = $candidate;
+							break;
+						}
+					}
+				}
+			}
+
+			if ( empty( $fallback_email ) && is_user_logged_in() ) {
+				$fallback_email = wp_get_current_user()->user_email;
+			}
+
+			if ( is_email( $fallback_email ) && EmailVerificationLogic::instance()->is_blocked( $fallback_email, $phone_number ) ) {
+				$fallback_email = '';
+			}
+
+			if ( ! is_email( $fallback_email ) ) {
+				if ( $this->is_ajax_form() && $field_configured ) {
+					MoPHPSessions::add_session_var( 'mo_phone_fallback_active', true );
+					wp_send_json(
+						array(
+							'message'         => esc_html__( 'There was an error sending the OTP over phone. Trying to send it via email instead.', 'miniorange-otp-verification' ),
+							'result'          => MoConstants::ERROR_JSON_TYPE,
+							'needsEmailField' => true,
+							'defaultMessage'  => str_replace( '##phone##', esc_html( $phone_number ), $this->get_otp_sent_failed_message() ),
+						)
+					);
+					return;
+				}
+				$this->handle_otp_sent_failed( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content );
+				return;
+			}
+
+			$gateway       = GatewayFunctions::instance();
+			$email_content = $gateway->mo_send_otp_token( 'EMAIL', $fallback_email, '' );
+			if ( is_array( $email_content ) && isset( $email_content['status'] ) && 'SUCCESS' === $email_content['status'] ) {
+				if ( ! empty( $email_content['txId'] ) ) {
+					SessionUtils::set_email_transaction_id( sanitize_text_field( wp_unslash( $email_content['txId'] ) ) );
+				}
+				$message = sprintf(
+					/* translators: %s masked email address the OTP was sent to */
+					esc_html__( 'There was an error sending the OTP over phone. We have sent the OTP to %s instead, you can verify using that.', 'miniorange-otp-verification' ),
+					esc_html( MoUtility::mo_mask_email( $fallback_email ) )
+				);
+				if ( $this->is_ajax_form() ) {
+					wp_send_json( MoUtility::create_json( $message, MoConstants::SUCCESS_JSON_TYPE ) );
+				} else {
+					SessionUtils::add_email_verified( MoPHPSessions::get_session_var( 'form_session_var' ), $fallback_email );
+					MoPHPSessions::add_session_var( 'mo_phone_fallback_active', true );
+					miniorange_site_otp_validation_form( $user_login, $fallback_email, $phone_number, $message, VerificationType::EMAIL, $from_both );
+				}
+				return;
+			}
+
+			EmailVerificationLogic::instance()->handle_otp_sent_failed( $user_login, $fallback_email, $phone_number, VerificationType::EMAIL, $from_both, $email_content );
 		}
 
 

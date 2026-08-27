@@ -313,6 +313,26 @@ function miniorange_verification_user_choice( $user_login, $user_email, $phone_n
 
 
 /**
+ * Registers and localizes the shared phone-OTP email fallback script. Called both from
+ * the normal wp_enqueue_scripts hook (objects\class-formhandler.php) and directly from
+ * standalone popup templates that echo a full document and exit() before that hook
+ * would otherwise fire.
+ */
+function mo_register_email_fallback_script() {
+	wp_register_script( 'mo-email-fallback', MOV_URL . 'includes/js/mo-email-fallback.js', array( 'jquery' ), MOV_VERSION, true );
+	wp_localize_script(
+		'mo-email-fallback',
+		'moEmailFallback',
+		array(
+			'fallbackEmailFields'    => array_values( array_filter( array_map( 'trim', explode( ';', (string) get_mo_option( 'mo_phone_fallback_email_field_ids' ) ) ) ) ),
+			'nonce'                  => wp_create_nonce( 'mo_popup_options' ),
+			'phoneFailedPrefix'      => esc_html__( 'There was an error sending the OTP over phone.', 'miniorange-otp-verification' ),
+			'pleaseFillEmailMessage' => esc_html__( 'There was an error sending the OTP over phone. Please fill in the Email field to receive your code.', 'miniorange-otp-verification' ),
+		)
+	);
+}
+
+/**
  * Display the popup where user has to enter his phone number and then
  * validate the OTP sent to it. This phone number is later stored in the
  *
@@ -329,6 +349,8 @@ function mo_external_phone_validation_form( $go_back_url, $user_email, $message 
 	$htmlcontent     = apply_filters( 'mo_template_build', '', $external_pop_up->get_template_key(), $message, null, false );
 
 	wp_print_scripts( 'jquery' );
+	mo_register_email_fallback_script();
+	wp_print_scripts( 'mo-email-fallback' );
 	echo wp_kses( htmlspecialchars_decode( $htmlcontent ), MoUtility::mo_popup_html_kses_allowed() );
 	exit();
 }

@@ -76,6 +76,7 @@ if ( ! class_exists( 'MoInit' ) ) {
 		private function initialize_hooks() {
 			add_action( 'plugins_loaded', array( $this, 'otp_load_textdomain' ), 1 );
 			add_action( 'admin_menu', array( $this, 'miniorange_customer_validation_menu' ) );
+			add_action( 'admin_notices', array( $this, 'mo_test_mode_admin_notice' ) );
 			add_action( 'admin_enqueue_scripts', array( $this, 'mo_registration_plugin_settings_style' ) );
 			add_action( 'admin_enqueue_scripts', array( $this, 'mo_registration_plugin_settings_script' ) );
 			add_action( 'wp_enqueue_scripts', array( $this, 'mo_registration_plugin_frontend_scripts' ), 99 );
@@ -241,6 +242,38 @@ if ( ! class_exists( 'MoInit' ) ) {
 		}
 
 		/**
+		 * Renders a persistent warning banner on all plugin admin pages while
+		 * OTP Test Mode is active. In Test Mode every OTP validation is bypassed
+		 * (see MiniOrangeGateway::mo_validate_otp_token()), so admins need a clear,
+		 * always-visible indicator that verification is not actually protecting the
+		 * site. The banner is intentionally not dismissible so it cannot be hidden
+		 * while the bypass is in effect.
+		 *
+		 * @return void
+		 */
+		public function mo_test_mode_admin_notice() {
+			$package_data = json_decode( initialize_package_json() );
+			$test_mode_on = (bool) $package_data->testmode || (bool) get_mo_option( 'test_mode' );
+
+			if ( ! $test_mode_on ) {
+				return;
+			}
+
+			// check_current_page() returns true when we are NOT on a plugin page.
+			if ( $this->check_current_page() ) {
+				return;
+			}
+
+			$fail_mode_on = (bool) $package_data->failmode || (bool) get_mo_option( 'fail_mode' );
+
+			$message = $fail_mode_on
+				? esc_html__( 'OTP Test Mode is ACTIVE — OTP verification is bypassed and every code is rejected (Fail Mode). Turn Test Mode off on a live site.', 'miniorange-otp-verification' )
+				: esc_html__( 'OTP Test Mode is ACTIVE — OTP verification is bypassed and every code is accepted (Success Mode). Turn Test Mode off on a live site.', 'miniorange-otp-verification' );
+
+			echo '<div class="notice notice-warning"><p>' . esc_html( $message ) . '</p></div>';
+		}
+
+		/**
 		 * This function is called to append our CSS file
 		 * in the backend and frontend. Uses the admin_enqueue_scripts
 		 * and enqueue_scripts WordPress hook.
@@ -282,16 +315,18 @@ if ( ! class_exists( 'MoInit' ) ) {
 				'mo_customer_validation_admin_settings_script',
 				'moadminsettings',
 				array(
-					'iswhatsappenable'       => $whatsapp_enabled,
-					'whatsapp_tab'           => $whatsapp_tab_url,
-					'whatsapp_file'          => $whatsapp_file,
-					'whatsapp_enabled_text'  => esc_html__( 'OTP Over WhatsApp Enabled', 'miniorange-otp-verification' ),
-					'whatsapp_disabled_text' => esc_html__( 'Enable OTP Over WhatsApp?', 'miniorange-otp-verification' ),
-					'form_is_not_found'      => MoMessages::showMessage( MoMessages::FORM_IS_NOT_FOUND ),
-					'ajaxUrl'                => admin_url( 'admin-ajax.php' ),
-					'security'               => wp_create_nonce( 'mo_admin_actions' ),
-					'mo_twilio_setupguide'   => MoConstants::MO_TWILIO_SETUP_GUIDE,
-					'mo_gateway_setupguide'  => MoConstants::MO_GATEWAY_SETUP_GUIDE,
+					'iswhatsappenable'         => $whatsapp_enabled,
+					'whatsapp_tab'             => $whatsapp_tab_url,
+					'whatsapp_file'            => $whatsapp_file,
+					'whatsapp_enabled_text'    => esc_html__( 'OTP Over WhatsApp Enabled', 'miniorange-otp-verification' ),
+					'whatsapp_disabled_text'   => esc_html__( 'Enable OTP Over WhatsApp?', 'miniorange-otp-verification' ),
+					'fail_mode_active_text'    => esc_html__( 'Fail Mode is activated', 'miniorange-otp-verification' ),
+					'success_mode_active_text' => esc_html__( 'Success Mode is activated', 'miniorange-otp-verification' ),
+					'form_is_not_found'        => MoMessages::showMessage( MoMessages::FORM_IS_NOT_FOUND ),
+					'ajaxUrl'                  => admin_url( 'admin-ajax.php' ),
+					'security'                 => wp_create_nonce( 'mo_admin_actions' ),
+					'mo_twilio_setupguide'     => MoConstants::MO_TWILIO_SETUP_GUIDE,
+					'mo_gateway_setupguide'    => MoConstants::MO_GATEWAY_SETUP_GUIDE,
 
 				)
 			);
@@ -381,6 +416,7 @@ if ( ! class_exists( 'MoInit' ) ) {
 		 * tools can read it and use it for automatic translation.
 		 */
 		public function otp_load_textdomain() {
+			// phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound -- Loaded intentionally to support translations bundled in the plugin's /lang directory.
 			load_plugin_textdomain( 'miniorange-otp-verification', false, dirname( plugin_basename( __FILE__ ) ) . '/lang/' );
 		}
 

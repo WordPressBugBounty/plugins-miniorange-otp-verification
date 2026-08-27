@@ -3,9 +3,9 @@ Contributors: cyberlord92, geniuszealot
 Donate link: https://miniorange.com/
 Tags: OTP, OTP Login, SMS Notifications, Phone Verification, Email Verification
 Requires at least: 4.7.0
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 5.3.0
-Stable tag: 5.5.4
+Stable tag: 5.5.5
 License: Expat
 License URI: https://plugins.miniorange.com/mit-license
 OTP Verification via Email/SMS/WhatsApp,SMS Notifications for WooCommerce,OTP Login with Phone,PasswordLess Login.Custom Gateway for OTP Verification
@@ -36,8 +36,11 @@ Enjoy *10 free email and SMS OTPs* upon installation to experience the plugin's 
 * Passwordless Login using OTP Verification
 * Country code dropdown
 * Customize OTP length and validity
+* Masked phone number and email address on the frontend for user privacy
 * Block specific email domains and phone numbers
 * OTP pop-up customization (available on limited login, registration, and checkout forms)
+* Translation ready — compatible with WPML & PolyLang for multilingual sites
+* AI-Ready — WordPress Abilities API integration to send/verify OTPs and manage plugin settings via AI agents & MCP-compatible tools
 
 == PREMIUM FEATURES AVAILABLE ON UPGRADE ==
 * [OTP Over WhatsApp](https://plugins.miniorange.com/login-with-whatsapp-as-two-factor)
@@ -58,6 +61,17 @@ Enjoy *10 free email and SMS OTPs* upon installation to experience the plugin's 
 * [WooCommerce Frontend Manager Form (WCFM)](https://plugins.miniorange.com/otp-verification-for-woocommerce-frontend-manager-form)
 * [Houzez — Real Estate Theme](https://plugins.miniorange.com/setup-otp-verification-for-houzez-registration-form)
 * Login using phone number Addon
+* Autofill OTP on Phone (auto-read OTP from SMS)
+* Numeric or Alphanumeric OTP Format
+* OTP Verification on Selected WooCommerce Product Category
+* Geolocation/IP based Country Code Dropdown
+* WordPress Registration SMS Notification to Admin & User
+* Master OTP for admin/testing verification
+* Back-Up SMS Gateway (automatic failover)
+* WooCommerce Low Stock & Out of Stock Notifications
+* miniOrange SMTP support for Email OTP
+* Globally Banned Phone Number (block numbers across your account)
+* Import/Export plugin configuration and settings
 * Customize specific SMS and Email templates
 
 
@@ -78,6 +92,16 @@ Check the list of a few of our supported SMS gateways here : **[SMS Gateways](ht
 In our OTP Plugin, you can enable OTP Verification via WhatsApp as well as send custom messages & order notifications on WhatsApp.
 Enables order status notifications, new account sms notifications, and many more on WhatsApp.
 Contact us at **otpsupport@xecurify.com/info@xecurify.com** to know more.
+
+= AI-READY: WORDPRESS ABILITIES API & MCP INTEGRATION =
+The OTP Verification plugin integrates with the **WordPress Abilities API**, exposing plugin actions as AI-ready abilities that can be invoked by AI agents and MCP-compatible tools.
+This lets you automate and manage OTP Verification using natural language through your AI assistant, including:
+* Send, verify and resend OTPs programmatically
+* Enable/disable and configure supported forms
+* Configure SMS/Email gateways and WhatsApp settings
+* View transaction reports, logs and remaining transactions
+* Manage blocklists, country restrictions and rate-limit/spam settings
+* Manage account, run diagnostics and update OTP settings
 
 == FREE AND PREMIUM OTP VERIFICATION ADDONS SUPPORTED ==
 Follow the link to check free and premium addons supported in the OTP Verification plugin : [OTP Verification Addons Supported](https://plugins.miniorange.com/wordpress-otp-verification#addons-section)
@@ -112,7 +136,7 @@ Follow the link to check free and premium addons supported in the OTP Verificati
 > + [ARMember Registration Form](https://plugins.miniorange.com/armember-registration-form-otp-verification-wordpress)
 > + [Profile Builder Registration Form](https://plugins.miniorange.com/otp-verification-for-profile-builder-registration-form)
 > + [Simplr Registration Form](https://www.youtube.com/watch?v=TKzmBmc2nQc)
-> + [BuddyPress registration Form](http://plugins.miniorange.com/configure-one-time-password-verification-buddypress-registration-form/)
+> + [BuddyPress / BuddyBoss Registration Form](http://plugins.miniorange.com/configure-one-time-password-verification-buddypress-registration-form/)
 > + [RegistrationMagic / User Registration Form Builder](https://plugins.miniorange.com/otp-verification-for-custom-user-registration-form-builder-registration-magic)
 > + [Users Ultra Registration form](https://plugins.miniorange.com/otp-verification-for-user-ultra-registration-form)
 > + [User Profiles Made Easy Registration Form](https://plugins.miniorange.com/otp-verification-for-userprofile-made-easy-registration-form)
@@ -146,6 +170,12 @@ Follow the link to check free and premium addons supported in the OTP Verificati
 > + [JetFormBuilder by Crocoblock](https://plugins.miniorange.com/jetformbuilder-crocoblock-setup-for-otp-verification)
 > + [Everest Contact Form](https://plugins.miniorange.com/otp-verification-for-everest-contact-form-wordpress-otp)
 > + [Fluent Form](https://plugins.miniorange.com/wordpress-fluent-form-with-otp-verification)
+> + [Fluent Conversational Form](https://plugins.miniorange.com/wordpress-fluent-form-with-otp-verification)
+> + [Forminator Form](https://plugins.miniorange.com/otp-verification-forms)
+> + [Dokan Registration Form](https://plugins.miniorange.com/dokan-notification-vendor-notification-otp-verification-plugin)
+> + [WooCommerce Account Details Form](https://plugins.miniorange.com/otp-verification-woocommerce-billing-address-update-form/)
+> + [miniOrange Login/Register with Phone Form](https://plugins.miniorange.com/how-to-configure-register-using-only-phone-addon)
+> + [Easy Registration Forms](https://plugins.miniorange.com/otp-verification-forms)
 > + [Houzez Theme Registration](https://plugins.miniorange.com/setup-otp-verification-for-houzez-registration-form)
 > + [Jet Engine](https://plugins.miniorange.com/otp-verification-for-jet-engine-form-wordpress)
 > + [miniOrange Social Login](https://plugins.miniorange.com/enable-otp-verification-with-social-login)
@@ -211,6 +241,11 @@ Please mail us at **otpsupport@xecurify.com/info@xecurify.com**. You can also su
 8. OTP Verification Plugin Settings
 
 == Changelog ==
+= 5.5.5 =
+* WordPress 7.1 compatibility.
+* Added Email as a fallback for OTP delivery when SMS sending fails, supported across all integrated forms.
+* Added Test Mode toggle in General Settings to test OTP flows without sending real OTPs or consuming credits.
+
 = 5.5.4 =
 Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes. 
 = 5.5.3 =
@@ -315,6 +350,11 @@ For older changelog entries, please see the [additional changelog.txt file](http
 
 
 == Upgrade Notice ==
+= 5.5.5 =
+* WordPress 7.1 compatibility.
+* Added Email as a fallback for OTP delivery when SMS sending fails, supported across all integrated forms.
+* Added Test Mode toggle in General Settings to test OTP flows without sending real OTPs or consuming credits.
+
 = 5.5.4 =
 Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
 = 5.5.3 =

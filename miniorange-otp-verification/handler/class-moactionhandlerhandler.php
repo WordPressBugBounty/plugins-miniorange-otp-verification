@@ -304,14 +304,25 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 			$tab_details = TabDetails::instance();
 
 			$form_settings_tab = $tab_details->tab_details[ Tabs::FORMS ];
-			if ( MoUtility::sanitize_check( 'page', $get_data ) !== $form_settings_tab->menu_slug
-			&& sanitize_text_field( $post_data['error_message'] ) ) {
+			if ( MoUtility::sanitize_check( 'page', $get_data ) !== $form_settings_tab->menu_slug ) {
+				return;
+			}
+			$error_message = isset( $post_data['error_message'] ) ? sanitize_text_field( $post_data['error_message'] ) : '';
+
+			if ( ! MoUtility::is_blank( $error_message ) ) {
 				do_action(
 					'mo_registration_show_message',
-					MoMessages::showMessage( sanitize_text_field( $post_data['error_message'] ) ),
+					MoMessages::showMessage( $error_message ),
 					'ERROR'
 				);
+				return;
 			}
+
+			do_action(
+				'mo_registration_show_message',
+				MoMessages::showMessage( MoMessages::SETTINGS_SAVED ),
+				'SUCCESS'
+			);
 		}
 
 		/**
@@ -420,6 +431,10 @@ if ( ! class_exists( 'MoActionHandlerHandler' ) ) {
 			update_mo_option( 'show_remaining_trans', MoUtility::sanitize_check( 'mo_show_remaining_trans', $posted ) );
 			update_mo_option( 'show_dropdown_on_form', MoUtility::sanitize_check( 'show_dropdown_on_form', $posted ) );
 			update_mo_option( 'globally_banned_phone', MoUtility::sanitize_check( 'mo_globally_banned_phone', $posted ) );
+			update_mo_option( 'test_mode', MoUtility::sanitize_check( 'mo_test_mode', $posted ) );
+			update_mo_option( 'fail_mode', MoUtility::sanitize_check( 'mo_fail_mode', $posted ) );
+			update_mo_option( 'mo_phone_fallback_to_email', MoUtility::sanitize_check( 'mo_phone_fallback_to_email', $posted ) );
+			update_mo_option( 'mo_phone_fallback_email_field_ids', MoUtility::sanitize_check( 'mo_phone_fallback_email_field_ids', $posted ) );
 
 			do_action( 'mo_registration_show_message', MoMessages::showMessage( MoMessages::EXTRA_SETTINGS_SAVED ), 'SUCCESS' );
 		}

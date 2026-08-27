@@ -11,6 +11,13 @@ jQuery.fn.toggleDiv = function () {
 jQuery(document).ready(function () {
 
     window.$mo = window.jQuery;
+
+    /* Keep the OTP Test Mode / Fail Mode toggles in sync on the General Settings tab. */
+    if (document.getElementById("mo_fail_mode")) {
+        moUpdateFailModeStatus();
+        $mo("#mo_test_mode, #mo_fail_mode").on("change", moUpdateFailModeStatus);
+    }
+
     /*adding code for custom message ajax call*/
     $mo('.mo_custom_message_enable').change(function(o) {
         if(o.target.defaultValue === 'Template2') {
@@ -1957,4 +1964,43 @@ function moDisablePremiumFormElements() {
             });
         }, 100);
     });
+}
+
+/*
+ * Keeps the OTP Test Mode / Fail Mode toggles in sync on the General Settings tab.
+ * Fail Mode only affects verification while Test Mode is ON (see MO_FAIL_MODE usage
+ * in class-miniorangegateway.php), so its toggle and status text are greyed out and
+ * cleared whenever Test Mode is off.
+ */
+function moUpdateFailModeStatus() {
+    var testCb = document.getElementById("mo_test_mode");
+    var failCb = document.getElementById("mo_fail_mode");
+    var statusEl = document.getElementById("mo_fail_mode_status");
+    if (!failCb || !statusEl) { return; }
+
+    // The whole form may be locked server-side (e.g. invalid license); respect that.
+    var formLocked = testCb ? testCb.disabled : false;
+    var testModeOn = testCb ? testCb.checked : false;
+    var failWrapper = failCb.closest(".mo-switch");
+
+    if (!formLocked) {
+        failCb.disabled = !testModeOn;
+    }
+    if (failWrapper) {
+        failWrapper.style.opacity = testModeOn ? "" : "0.5";
+    }
+
+    if (!testModeOn) {
+        statusEl.textContent = "";
+        statusEl.style.color = "";
+        return;
+    }
+
+    if (failCb.checked) {
+        statusEl.textContent = moadminsettings.fail_mode_active_text;
+        statusEl.style.color = "#dc2626";
+    } else {
+        statusEl.textContent = moadminsettings.success_mode_active_text;
+        statusEl.style.color = "#16a34a";
+    }
 }

@@ -295,6 +295,7 @@ if ( ! class_exists( 'FormHandler' ) ) {
 				add_action( 'wp_enqueue_scripts', array( $this, 'mo_autofill_script_load' ) );
 			}
 			add_action( 'wp_enqueue_scripts', array( $this, 'mo_otp_alphanumeric_script' ) );
+			add_action( 'wp_enqueue_scripts', array( $this, 'mo_email_fallback_script' ) );
 
 			$handler_list = FormList::instance();
 			$handler_list->add( $this->get_form_key(), $this );
@@ -328,6 +329,14 @@ if ( ! class_exists( 'FormHandler' ) ) {
 				)
 			);
 			wp_enqueue_script( 'mootpalphanumeric' );
+		}
+
+		/**
+		 * This function registers the js file for the phone-OTP email fallback.
+		 */
+		public function mo_email_fallback_script() {
+			mo_register_email_fallback_script();
+			wp_enqueue_script( 'mo-email-fallback' );
 		}
 
 		/**

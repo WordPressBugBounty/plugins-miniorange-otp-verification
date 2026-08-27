@@ -51,8 +51,8 @@ define( 'MOV_ICON_GIF', MOV_URL . 'includes/images/mo_icon.gif' );
 define( 'MO_CUSTOM_FORM', MOV_URL . 'includes/js/customForm.js?version=' . MOV_VERSION );
 define( 'MOV_ADDON_DIR', MOV_DIR . 'addons/' );
 define( 'MOV_USE_POLYLANG', true );
-define( 'MO_TEST_MODE', $package_data->testmode );
-define( 'MO_FAIL_MODE', $package_data->failmode );
+define( 'MO_TEST_MODE', (bool) $package_data->testmode || (bool) get_mo_option( 'test_mode' ) );
+define( 'MO_FAIL_MODE', (bool) $package_data->failmode || (bool) get_mo_option( 'fail_mode' ) );
 define( 'MOV_SESSION_TYPE', $package_data->session );
 define( 'MOV_MAIL_LOGO', MOV_URL . 'includes/images/mo_support_icon.png' );
 define( 'MOV_OFFERS_LOGO', MOV_URL . 'includes/images/mo_sale_icon.png' );
@@ -246,7 +246,7 @@ function get_mo_class( $obj ) {
 /**
  * To check if package.json file can be found through WP site URL or not.
  * BuildScript.php updates the package.json file content in the below function instead of package.json to be used further in autoload.php
- * example package.json string ["name"=>"miniorange-otp-verification","version"=>"5.5.4","type"=>"MiniOrangeGateway","testMode"=>false,"failMode"=>false,"hostname"=>"https:\/\/login.xecurify.com","dCustomerKey"=>"16555","dApiKey"=>"fFd2XcvTGDemZvbw1bcUesNJWEqKbbUq","sslVerify"=>true,"session"=>"AUTO"]
+ * example package.json string ["name"=>"miniorange-otp-verification","version"=>"5.5.5","type"=>"MiniOrangeGateway","testMode"=>false,"failMode"=>false,"hostname"=>"https:\/\/login.xecurify.com","dCustomerKey"=>"16555","dApiKey"=>"fFd2XcvTGDemZvbw1bcUesNJWEqKbbUq","sslVerify"=>true,"session"=>"AUTO"]
  *
  * @return string
  */
@@ -254,7 +254,7 @@ function initialize_package_json() {
 	$package = wp_json_encode(
 		array(
 			'name'         => 'miniorange-otp-verification',
-			'version'      => '5.5.4',
+			'version'      => '5.5.5',
 			'type'         => 'MiniOrangeGateway',
 			'testmode'     => false,
 			'failmode'     => false,
