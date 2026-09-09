@@ -1033,21 +1033,15 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 		 * @return string
 		 */
 		public function mosp_get_client_ip() {
-			$ip_candidates = $this->get_ip_candidates();
+			$remote_addr = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 
-			if ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
-				$remote_addr = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
-				if ( filter_var( $remote_addr, FILTER_VALIDATE_IP ) &&
-					! filter_var( $remote_addr, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
-					if ( $this->storage->mosp_is_whitelisted( $remote_addr, 'ip' ) ) {
-						return $remote_addr;
-					}
-				}
+			if ( filter_var( $remote_addr, FILTER_VALIDATE_IP ) &&
+				! filter_var( $remote_addr, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) &&
+				$this->storage->mosp_is_whitelisted( $remote_addr, 'ip' ) ) {
+				return $remote_addr;
 			}
 
-			$validated_ip = $this->validate_ip_security( $ip_candidates );
-
-			return $validated_ip;
+			return $this->validate_ip_security( $this->get_ip_candidates(), $remote_addr );
 		}
 
 		/**
@@ -1195,29 +1189,28 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 		/**
 		 * Validate IP security and select most trustworthy.
 		 *
-		 * @param array $candidates Array of IP candidates.
+		 * Client-supplied headers are only ever used when the connection is confirmed
+		 * to originate from a trusted reverse proxy (see detect_proxy_environment());
+		 * otherwise the raw REMOTE_ADDR is authoritative, even when it is a private or
+		 * loopback address (the normal case behind any proxy WordPress itself sees).
+		 * Never fall back to the first candidate header — that value is attacker
+		 * controlled and was the root cause of the rate-limit bypass in WPSEC-445.
+		 *
+		 * @param array  $candidates  Array of IP candidates from headers.
+		 * @param string $remote_addr Raw REMOTE_ADDR for this request.
 		 * @return string Most trustworthy IP address.
 		 */
-		private function validate_ip_security( $candidates ) {
-			if ( empty( $candidates ) ) {
-				return '';
-			}
-
-			usort(
-				$candidates,
-				function ( $a, $b ) {
-					return $a['priority'] - $b['priority'];
-				}
-			);
-
-			$remote_addr     = $this->get_remote_addr_ip( $candidates );
+		private function validate_ip_security( $candidates, $remote_addr ) {
 			$proxy_detection = $this->detect_proxy_environment();
 
-			if ( ! $proxy_detection['behind_proxy'] ) {
-				return $remote_addr ? $remote_addr : '';
-			}
-
 			if ( $proxy_detection['trusted_proxy'] ) {
+				usort(
+					$candidates,
+					function ( $a, $b ) {
+						return $a['priority'] - $b['priority'];
+					}
+				);
+
 				foreach ( $candidates as $candidate ) {
 					if ( 'HTTP_CF_CONNECTING_IP' === $candidate['source'] && ! $candidate['spoofable'] ) {
 						return $candidate['ip'];
@@ -1230,22 +1223,7 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 				}
 			}
 
-			return $remote_addr ? $remote_addr : $candidates[0]['ip'];
-		}
-
-		/**
-		 * Get REMOTE_ADDR IP from candidates.
-		 *
-		 * @param array $candidates IP candidates.
-		 * @return string|null REMOTE_ADDR IP or null.
-		 */
-		private function get_remote_addr_ip( $candidates ) {
-			foreach ( $candidates as $candidate ) {
-				if ( 'REMOTE_ADDR' === $candidate['source'] ) {
-					return $candidate['ip'];
-				}
-			}
-			return null;
+			return filter_var( $remote_addr, FILTER_VALIDATE_IP ) ? $remote_addr : '';
 		}
 
 		/**

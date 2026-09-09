@@ -209,36 +209,17 @@ if ( ! class_exists( 'MoSecurityHelper' ) ) {
 		}
 
 		/**
-		 * Get client IP address with comprehensive header checking.
+		 * Get client IP address.
 		 *
 		 * This is the centralized IP detection method used across all helpers.
+		 * Client-supplied proxy headers (X-Forwarded-For, CF-Connecting-IP, etc.) are
+		 * never trusted here — REMOTE_ADDR is the only value WordPress itself derives
+		 * from the actual TCP connection, so it is the only value that cannot be
+		 * spoofed by the request itself (WPSEC-445).
 		 *
 		 * @return string Client IP address.
 		 */
 		public static function mosp_get_client_ip() {
-			$ip_headers = array(
-				'HTTP_CF_CONNECTING_IP',     // Cloudflare.
-				'HTTP_CLIENT_IP',            // Proxy.
-				'HTTP_X_FORWARDED_FOR',      // Load balancer/proxy.
-				'HTTP_X_FORWARDED',          // Proxy.
-				'HTTP_X_CLUSTER_CLIENT_IP',  // Cluster.
-				'HTTP_FORWARDED_FOR',        // Proxy.
-				'HTTP_FORWARDED',            // Proxy.
-				'REMOTE_ADDR',                // Standard.
-			);
-
-			foreach ( $ip_headers as $header ) {
-				if ( ! empty( $_SERVER[ $header ] ) ) {
-					$ip = sanitize_text_field( wp_unslash( $_SERVER[ $header ] ) );
-					if ( strpos( $ip, ',' ) !== false ) {
-						$ip = trim( explode( ',', $ip )[0] );
-					}
-					if ( filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
-						return $ip;
-					}
-				}
-			}
-
 			return isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
 		}
 

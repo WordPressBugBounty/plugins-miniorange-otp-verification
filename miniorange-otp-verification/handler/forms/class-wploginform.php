@@ -514,8 +514,8 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			if ( $this->by_pass_admin ) {
 				$user_meta = get_userdata( $user->data->ID );
 				if ( in_array( 'administrator', $user_meta->roles, true ) ) {
-					// OTP-only mode: admin must use the password-intent link from the OTP popup.
-					if ( $this->skip_password_check && ! $this->skip_pass_fallback ) {
+					// OTP-only mode (with or without password fallback): admin must use the password-intent link from the OTP popup, since no password has been verified yet.
+					if ( $this->skip_password_check ) {
 						return 'password' === $this->mo_get_wp_login_intent();
 					}
 					// 2FA mode: password already verified — bypass OTP for admins.

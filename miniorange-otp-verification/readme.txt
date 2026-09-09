@@ -5,7 +5,7 @@ Tags: OTP, OTP Login, SMS Notifications, Phone Verification, Email Verification
 Requires at least: 4.7.0
 Tested up to: 7.1
 Requires PHP: 5.3.0
-Stable tag: 5.5.5
+Stable tag: 5.5.6
 License: Expat
 License URI: https://plugins.miniorange.com/mit-license
 OTP Verification via Email/SMS/WhatsApp,SMS Notifications for WooCommerce,OTP Login with Phone,PasswordLess Login.Custom Gateway for OTP Verification
@@ -241,6 +241,11 @@ Please mail us at **otpsupport@xecurify.com/info@xecurify.com**. You can also su
 8. OTP Verification Plugin Settings
 
 == Changelog ==
+
+= 5.5.6 =
+* Security fix: hardened the WordPress login form's administrator OTP-bypass flow so it always requires a verified password or OTP before issuing a session, in every "Login with only OTP" configuration.
+* Security fix: the OTP Spam Prevention addon no longer trusts client-supplied IP headers (X-Forwarded-For, CF-Connecting-IP, etc.) for rate-limiting; the real connection IP is used unless a trusted reverse proxy is explicitly configured.
+
 = 5.5.5 =
 * WordPress 7.1 compatibility.
 * Added Email as a fallback for OTP delivery when SMS sending fails, supported across all integrated forms.
@@ -350,6 +355,10 @@ For older changelog entries, please see the [additional changelog.txt file](http
 
 
 == Upgrade Notice ==
+
+= 5.5.6 =
+* Security fix: hardened administrator OTP-bypass login flow and OTP Spam Prevention rate-limiting. Upgrade recommended for all sites using "Login with only OTP" or the OTP Spam Prevention addon.
+
 = 5.5.5 =
 * WordPress 7.1 compatibility.
 * Added Email as a fallback for OTP delivery when SMS sending fails, supported across all integrated forms.
