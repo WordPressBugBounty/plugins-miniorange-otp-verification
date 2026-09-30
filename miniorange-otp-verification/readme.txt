@@ -5,48 +5,76 @@ Tags: OTP, OTP Login, SMS Notifications, Phone Verification, Email Verification
 Requires at least: 4.7.0
 Tested up to: 7.1
 Requires PHP: 5.3.0
-Stable tag: 5.5.6
+Stable tag: 5.5.7
 License: Expat
 License URI: https://plugins.miniorange.com/mit-license
-OTP Verification via Email/SMS/WhatsApp,SMS Notifications for WooCommerce,OTP Login with Phone,PasswordLess Login.Custom Gateway for OTP Verification
+
+
+OTP via SMS, Email/WhatsApp. WooCommerce SMS Notifications, Phone OTP Login, Passwordless Login, 10 Free SMS/Email Transactions, Custom SMS Gateway.
+
 
 == Description ==
 
-[Features](https://plugins.miniorange.com/wordpress-otp-verification) | [Setup Guide](https://plugins.miniorange.com/step-by-step-guide-for-wordpress-otp-verification) | [Documentation](https://plugins.miniorange.com/otp-verification-forms) | [Contact Us](https://www.miniorange.com/contact)
 
-The [WordPress OTP Verification](https://plugins.miniorange.com/wordpress-otp-verification) plugin verifies users' *email IDs and mobile numbers* through an *OTP (One-Time Password)* sent during *registration, login, and contact form submissions*. This ensures that only genuine users can sign up while preventing fake registrations and duplicate accounts. 
+
+
+The [WordPress OTP Verification](https://plugins.miniorange.com/wordpress-otp-verification) plugin verifies users' *email IDs and mobile numbers* through an *OTP (One-Time Password)* sent via SMS, email or WhatsApp during *registration, login, and contact form submissions*. This ensures that only genuine users can sign up while preventing fake registrations, spam sign-ups and duplicate accounts.
+
+
+Add *mobile number verification*, *phone number login*, *passwordless OTP login*, *WhatsApp OTP* and *WooCommerce SMS notifications* to your site, with support for WooCommerce (classic and block checkout), Elementor Pro, Contact Form 7, WPForms, Gravity Forms, Ultimate Member, BuddyPress and 30+ other forms.
+
+
+**Note:** **Enjoy 10 free email and SMS OTPs upon installation to experience the plugin's functionality.**
+
+
+Quick Links
+
+
+[Official Website](https://plugins.miniorange.com/wordpress-otp-verification) | [Setup Guide](https://plugins.miniorange.com/step-by-step-guide-for-wordpress-otp-verification) | [Documentation](https://plugins.miniorange.com/otp-verification-forms) | [Contact Us](https://plugins.miniorange.com/wordpress-otp-verification#contact-form)
+
+
+= Popular use cases =
+* Verify mobile numbers and email addresses at registration using SMS OTP or Email OTP
+* Login with phone number and OTP — passwordless login for WordPress and WooCommerce
+* WooCommerce checkout OTP verification on classic and block checkout
+* Send WooCommerce order status SMS and WhatsApp notifications to buyers, sellers, admins and vendors
+* Reset passwords using OTP instead of email links for WooCommerce and Ultimate Member
+* Stop fake registrations, spam sign-ups and duplicate accounts by blocking email domains and phone numbers and limiting OTP requests
+* Use Twilio, Msg91, Plivo, AWS SNS, ClickSend, Clickatell or any custom SMS gateway
+
 
 *Watch this video to learn more about the OTP Verification plugin and its capabilities:*
 
 [youtube https://youtu.be/BcvzJV9OxQE]
 
-Enjoy *10 free email and SMS OTPs* upon installation to experience the plugin's functionality.
 
-== FEATURES OF ONE-TIME PASSWORD PLUGIN ==
-* [OTP Verification On 30+ forms](https://plugins.miniorange.com/otp-verification-forms)
+== FEATURES OF OTP VERIFICATION & ONE-TIME PASSWORD LOGIN PLUGIN ==
+* [OTP Verification on 30+ forms including WooCommerce, Elementor Pro, Contact Form 7, WPForms & Gravity Forms](https://plugins.miniorange.com/otp-verification-forms)
 * [miniOrange SMS gateway support](https://plugins.miniorange.com/supported-sms-email-gateways)
-* [Login with Phone Number](https://plugins.miniorange.com/woocommerce-login-form-with-otp-verification-for-wordpress)
+* [Login with Phone Number using OTP](https://plugins.miniorange.com/woocommerce-login-form-with-otp-verification-for-wordpress)
 * [Register with Phone Number](https://plugins.miniorange.com/how-to-configure-register-using-only-phone-addon)
-* [SMS Notifications for WooCommerce Order Status](https://plugins.miniorange.com/how-to-configure-woocommerece-sms-notification)
-* [OTP Spam Preventor/Limit OTP Addon](https://plugins.miniorange.com/how-to-configure-limit-otp-request-addon)
-* [Allow OTP for selected countries](https://plugins.miniorange.com/otp-verification-for-selected-countries) 
+* [WooCommerce SMS Notifications for Order Status Updates](https://plugins.miniorange.com/how-to-configure-woocommerece-sms-notification)
+* [OTP Spam Preventer/Limit OTP Addon](https://plugins.miniorange.com/how-to-configure-limit-otp-request-addon)
+* [Allow OTP for selected countries](https://plugins.miniorange.com/otp-verification-for-selected-countries)
 * [Ultimate Member SMS Notification](https://plugins.miniorange.com/ultimate-member-notification-otp-verification-plugin)
-* [Ultimate Member Password Reset](https://plugins.miniorange.com/ultimate-member-password-reset-otp-verification) 
+* [Ultimate Member Password Reset](https://plugins.miniorange.com/ultimate-member-password-reset-otp-verification)
 * Detailed Transaction Reports and Logs
 * Passwordless Login using OTP Verification
-* Country code dropdown
+* Country code dropdown and phone number validation
 * Customize OTP length and validity
 * Masked phone number and email address on the frontend for user privacy
-* Block specific email domains and phone numbers
+* Block specific email domains and phone numbers to stop fake registrations and spam sign-ups
 * OTP pop-up customization (available on limited login, registration, and checkout forms)
-* Translation ready — compatible with WPML & PolyLang for multilingual sites
+* Test Mode to test OTP flows without sending real OTPs or consuming credits
+* Translation-ready — compatible with WPML & PolyLang for multilingual sites
 * AI-Ready — WordPress Abilities API integration to send/verify OTPs and manage plugin settings via AI agents & MCP-compatible tools
 
+
 == PREMIUM FEATURES AVAILABLE ON UPGRADE ==
-* [OTP Over WhatsApp](https://plugins.miniorange.com/login-with-whatsapp-as-two-factor)
+* [WhatsApp OTP Verification / OTP Over WhatsApp](https://plugins.miniorange.com/login-with-whatsapp-as-two-factor)
 * [Both Email and Phone Verification](https://plugins.miniorange.com/login-with-whatsapp-as-two-factor)
 * [Custom SMS & Email Gateways](https://plugins.miniorange.com/supported-sms-email-gateways)
-* [Register Using phone number Addon](https://plugins.miniorange.com/how-to-configure-register-using-only-phone-addon)
+* [Register Using Phone Number Addon](https://plugins.miniorange.com/how-to-configure-register-using-only-phone-addon)
 * [WCFM Vendor SMS Notifications](https://plugins.miniorange.com/wcfm-notification-vendor-notification-otp-verification-plugin)
 * [Dokan Vendor SMS Notifications](https://plugins.miniorange.com/dokan-notification-vendor-notification-otp-verification-plugin)
 * [Elementor Pro Forms](https://plugins.miniorange.com/otp-verification-for-elementor-pro-form)
@@ -67,7 +95,7 @@ Enjoy *10 free email and SMS OTPs* upon installation to experience the plugin's 
 * Geolocation/IP based Country Code Dropdown
 * WordPress Registration SMS Notification to Admin & User
 * Master OTP for admin/testing verification
-* Back-Up SMS Gateway (automatic failover)
+* Backup SMS Gateway (automatic failover)
 * WooCommerce Low Stock & Out of Stock Notifications
 * miniOrange SMTP support for Email OTP
 * Globally Banned Phone Number (block numbers across your account)
@@ -76,7 +104,7 @@ Enjoy *10 free email and SMS OTPs* upon installation to experience the plugin's 
 
 
 = THIRD PARTY CUSTOM SMS GATEWAY FOR OTP Verification and SMS Notifications =
-In the OTP Verification Plugin, you can use **your third-party gateway** for sending the SMS/Email & SMS Notifications.
+In the OTP Verification Plugin, you can use **your third-party SMS gateway** for sending the SMS/Email OTP & SMS Notifications.
 You can also use the **miniOrange gateway** to perform OTP verification over Phone/SMS and Email or to send SMS notifications. We support OTP Verification worldwide.
 **Some of the well-known Gateways supported for OTP and SMS (OTP):**
 — [Twilio](https://www.twilio.com/)
@@ -86,34 +114,37 @@ You can also use the **miniOrange gateway** to perform OTP verification over Pho
 — [Plivo](https://www.plivo.com/)
 — [AWS SNS](https://aws.amazon.com/sns/)
 — [Msg91](https://msg91.com/)
-Check the list of a few of our supported SMS gateways here : **[SMS Gateways](https://plugins.miniorange.com/supported-sms-email-gateways)**
+Check the list of a few of our supported SMS gateways here: **[SMS Gateways](https://plugins.miniorange.com/supported-sms-email-gateways)**
+
 
 = WHATSAPP OTP VERIFICATION & NOTIFICATIONS =
 In our OTP Plugin, you can enable OTP Verification via WhatsApp as well as send custom messages & order notifications on WhatsApp.
-Enables order status notifications, new account sms notifications, and many more on WhatsApp.
+Enables WooCommerce order status notifications, new account SMS notifications, and many more on WhatsApp.
 Contact us at **otpsupport@xecurify.com/info@xecurify.com** to know more.
 
 = AI-READY: WORDPRESS ABILITIES API & MCP INTEGRATION =
 The OTP Verification plugin integrates with the **WordPress Abilities API**, exposing plugin actions as AI-ready abilities that can be invoked by AI agents and MCP-compatible tools.
 This lets you automate and manage OTP Verification using natural language through your AI assistant, including:
-* Send, verify and resend OTPs programmatically
+* Send, verify, and resend OTPs programmatically
 * Enable/disable and configure supported forms
 * Configure SMS/Email gateways and WhatsApp settings
-* View transaction reports, logs and remaining transactions
-* Manage blocklists, country restrictions and rate-limit/spam settings
-* Manage account, run diagnostics and update OTP settings
+* View transaction reports, logs, and remaining transactions
+* Manage blocklists, country restrictions, and rate-limit/spam settings
+* Manage account, run diagnostics, and update OTP settings
+
 
 == FREE AND PREMIUM OTP VERIFICATION ADDONS SUPPORTED ==
 Follow the link to check free and premium addons supported in the OTP Verification plugin : [OTP Verification Addons Supported](https://plugins.miniorange.com/wordpress-otp-verification#addons-section)
 >+ **Login with Phone Number:**The login with Phone add-on allows users to log in using a phone number only.
->+ **WooCommerce SMS Notifications:**Allows your site to send automated [WooCommerce order notifications and WooCommerce sms notifications](https://plugins.miniorange.com/how-to-configure-woocommerece-sms-notification) to buyers, sellers, and admins. Buyer and seller both can get SMS notifications after an order is placed or when the order status changes. 
->+ **Passwordless Login:**With Passwordless login, users would be able to log in using their Username and OTP. 
+>+ **WooCommerce SMS Notifications:**Allows your site to send automated [WooCommerce order notifications and WooCommerce sms notifications](https://plugins.miniorange.com/how-to-configure-woocommerece-sms-notification) to buyers, sellers, and admins. Both buyers and sellers can get SMS notifications after an order is placed or when the order status changes.
+>+ **Passwordless Login:**With Passwordless login, users would be able to log in using their Username and OTP.
 >+ [**Register Using Phone Number Only:**](https://plugins.miniorange.com/how-to-configure-register-using-only-phone-addon): Users can register on your WordPress site using only a Phone Number and OTP instead of an Email address or Username.
->+ [**WooCommerce Password Reset:**](https://plugins.miniorange.com/how-to-configure-woocommerce-password-reset-addon)Addon replaces the existing WooCommerce Password reset functionality with OTP Verification. Allow users to reset their password using OTP Verification instead of email links.
->+ **Ultimate Member SMS Notifications**Allows your site to send automated Ultimate Member notifications to admins and users. 
->+ **Ultimate Member Password Reset:**Add-on that replaces the existing Ultimate Member Password reset functionality with OTP Verification. Allow users to reset their passwords using OTP Verification instead of email links.
->+ **Country Restriction Addon:**Add-on allows OTP Verification to be enabled for a selected list of countries only. OTP Verification for any other country outside the selected list will be blocked by the addon.
+>+ [**WooCommerce Password Reset:**](https://plugins.miniorange.com/how-to-configure-woocommerce-password-reset-addon)Addon replaces the existing WooCommerce Password reset functionality with OTP Verification. Allows users to reset their password using OTP Verification instead of email links.
+>+ **Ultimate Member SMS Notifications**Allows your site to send automated Ultimate Member notifications to admins and users.
+>+ **Ultimate Member Password Reset:**Add-on that replaces the existing Ultimate Member Password reset functionality with OTP Verification. Allows users to reset their passwords using OTP Verification instead of email links.
+>+ **Country Restriction Add-on:**Add-on allows OTP Verification to be enabled for a selected list of countries only. OTP Verification for any other country outside the selected list will be blocked by the add-on.
 >+ **OTP Over Phone Call:**Add-on allows OTP Verification over a Phone Call instead of SMS. The code will be received via a phone call to the customer.
+
 
 == Updated List Of Supported Forms ==
 [Supported WordPress Forms](https://plugins.miniorange.com/otp-verification-forms)
@@ -200,7 +231,7 @@ Customized solutions and Support options are available. Email us at **otpsupport
 == Installation ==
 = From your WordPress dashboard =
 1. Visit `Plugins > Add New`
-2. Search for `OTP verification`. Find and install `OTP verification`
+2. Search for `OTP verification`. Find and install `OTP Verification`
 3. Activate the plugin from your Plugins page
 
 = From WordPress.org =
@@ -210,22 +241,30 @@ Customized solutions and Support options are available. Email us at **otpsupport
 
 == Frequently Asked Questions ==
 
-= Why am I required to register? =
-Our simple and easy registration of the OTP Verification Plugin saves you the time of configuring WordPress email settings. You don't need to configure your own SMS or Email gateway; our SMTP gateway is used for sending OTP.
 
-= Can I use my SMS gateway? =
-Yes! We support 100+ SMS gateways in our OTP Verification Plugin. You can choose any of our plan that supports the custom SMS gateway feature. You can refer to [How do I use my gateway with the OTP Verification plugin?](https://faq.miniorange.com/knowledgebase/use-own-gateway-plugin/) guide as well. Or reach out to us at **otpsupport@xecurify.com** for guidance regarding the best and cost-effective plan for your needs.
+= Is the OTP verification plugin free? How many free OTPs do I get? =
+The plugin is free to install and includes 10 free email and SMS OTPs upon installation, so you can try the OTP verification. Premium features such as WhatsApp OTP and custom SMS & email gateways are available on upgrade.
 
-= How to Set Up the WordPress miniOrange OTP Plugin? =
-Please refer to the [Step-by-step Plugin guide](https://plugins.miniorange.com/step-by-step-guide-for-wordpress-otp-verification) to configure the plugin. Or else reach out to us @**otpsupport@xecurify** for support.
 
-= I want support for other forms. What should I do? =
-To get support for custom forms or a plugin-designed form, please email us at **otpsupport@xecurify.com/info@xecurify.com** with a Form Name & Form Link. You can also submit your query from the OTP Verification plugin's settings page.
+= How to add OTP verification to WordPress registration and login forms? =
+Install and activate the plugin, then enable OTP verification for your registration, login, checkout or contact form from the plugin's form settings. When a user submits the form, an OTP is sent by Email/SMS to the email address/mobile number provided, and the user gets registered/logs in once the OTP is verified. Please refer to the [Step-by-step Plugin guide](https://plugins.miniorange.com/step-by-step-guide-for-wordpress-otp-verification) for details.
 
-= Can you add customized features for me? =
-Yes! To get support for any customized features, please email us at **otpsupport@xecurify.com** or submit your query from the OTP Verification plugin.
-= What countries does the plugin supports for OTP delivery? =
-The plugin supports OTP delivery via SMS , WhatsApp and call in all the regions. You can submit your query from the OTP Verification plugin's settings page incase you face any issues with OTP delivery.
+
+= Which forms does the OTP verification plugin support? =
+The plugin supports OTP verification on 30+ forms, including the WordPress default login and registration forms, WooCommerce login, registration, checkout, and billing address forms, Elementor Pro, Contact Form 7, WPForms, Gravity Forms, Ninja Forms, Ultimate Member, BuddyPress, Formidable, and Fluent Forms. Check the [full list of supported forms](https://plugins.miniorange.com/otp-verification-forms).
+
+
+= Does the plugin support Email OTP verification? =
+Yes. You can verify users' email addresses with an OTP during registration, login, and contact form submissions. On the premium plans, miniOrange SMTP is supported for Email OTP, and Email can also be used as a fallback for OTP delivery when SMS sending fails.
+
+
+= How do I stop fake registrations and spam sign-ups? =
+Enable OTP verification on your registration form so that only users with a valid email address or mobile number can sign up. You can also block specific email domains and phone numbers, allow OTP for selected countries only, and use the OTP Spam Preventer/Limit OTP add-on to limit OTP requests.
+
+
+= What countries does the plugin support for OTP delivery? =
+The plugin supports OTP delivery via SMS, WhatsApp, and call in all regions. You can submit your query from the OTP Verification plugin's settings page in case you face any issues with OTP delivery.
+
 
 = For any other query/problem/request =
 Please mail us at **otpsupport@xecurify.com/info@xecurify.com**. You can also submit your query from the OTP Verification plugin's settings page.
@@ -236,11 +275,16 @@ Please mail us at **otpsupport@xecurify.com/info@xecurify.com**. You can also su
 3. Email Verification via OTP
 4. Mobile Number Verification via OTP (Login with Phone)
 5. WooCommerce SMS Notification settings
-6. WooCommerce SMS Notification specific setting
+6. WooCommerce SMS Notification specific settings
 7. WooCommerce SMS Customized SMS
 8. OTP Verification Plugin Settings
 
 == Changelog ==
+= 5.5.7 =
+* Added Export Configuration for OTP Verification settings.
+* Added Debug Logs under Troubleshooting for diagnosing OTP delivery issues.
+* Added error codes for OTP verification failures, with a reference table under Troubleshooting to look them up.
+* Readme changes.
 
 = 5.5.6 =
 * Security fix: hardened the WordPress login form's administrator OTP-bypass flow so it always requires a verified password or OTP before issuing a session, in every "Login with only OTP" configuration.
@@ -252,22 +296,23 @@ Please mail us at **otpsupport@xecurify.com/info@xecurify.com**. You can also su
 * Added Test Mode toggle in General Settings to test OTP flows without sending real OTPs or consuming credits.
 
 = 5.5.4 =
-Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes. 
+Fluent, Forminator, WooCommerce checkout, User registration, WP form bug fixes in Our OTP plugin
+
 = 5.5.3 =
-* woocommerce notification bug fixes.
-* Everest, gravity, ninja, formidable forms bug fixes.
-* Other fixes and improvements.
+* WooCommerce notification bug fixes in our OTP plugin
+* Everest, Gravity, Ninja, and Formidable Forms bug fixes in our OTP plugin
+* Other fixes and improvements in our OTP plugin
 = 5.5.2 =
-* Introdcing abilites.
-* Login form fixes and security fixes.
+* Introducing abilities in our OTP plugin
+* Login form fixes and security fixes in our OTP plugin
 = 5.5.1 =
-* Session-transient related bug fixes.
-* Spam preventor addon bug fixes.
+* Session-transient related bug fixes in our OTP plugin
+* Spam preventer add-on bug fixes in our OTP plugin
 = 5.5.0 =
-* Login forms fixes.
-* Wp forms, Contact form7 and paid membership pro form bug fixes.
-* Reintroduced Wordpress default registration form for OTP verification.
-* Other minor security fixes.
+* Login form fixes in our OTP plugin
+* WPForms, Contact Form 7, and Paid Memberships Pro form bug fixes in our OTP plugin
+* Reintroduced WordPress default registration form for OTP verification.
+* Other minor security fixes in our OTP plugin
 = 5.4.9 =
 * Spam preventer addon improvements and bug fixes.
 * Added unblock user feature in the spam preventer addon.
@@ -276,40 +321,40 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
 * Reintroduced Paid Memberships Pro form for OTP verification.
 = 5.4.8 =
 * miniOrange WordPress OTP Verification
-* Spam preventor addon Bug Fixes.
+* Spam preventer add-on bug fixes in our OTP plugin
 = 5.4.7 =
 * miniOrange WordPress OTP Verification
-* OTP spam preventer addon release.
+* OTP spam preventer add-on release in our OTP plugin
 = 5.4.6 =
 * miniOrange WordPress OTP Verification
-* Country Restriction addon release.
-* Contact form-7 bug fixes.
+* Country Restriction add-on release in our OTP plugin
+* Contact Form 7 bug fixes in our OTP plugin
 = 5.4.5 =
 * miniOrange WordPress OTP Verification
-* bug fixes of mismatch error
-* bug fixes of classic checkout.
-* Readme updates
+* Bug fixes for mismatch error
+* Bug fixes for classic checkout in our OTP plugin
+* Readme updates in our OTP plugin
 = 5.4.4 =
 * miniOrange WordPress OTP Verification
-* WC Block Checkout Form issue fix
-* Login Form issue fix
-* Formidable Form issue fix
+* WC Block Checkout Form issue fix in our OTP plugin
+* Login Form issue fix in our OTP plugin
+* Formidable Form issue fix in our OTP plugin
 * WordPress beta compatibility
 * Addons issue fix
 = 5.4.3 =
 * miniOrange WordPress OTP Verification
-* Security fixes updates
+* Security fixes and updates in our OTP plugin
 = 5.4.2 =
 * miniOrange WordPress OTP Verification
 * Readme updates
 = 5.4.1 =
 * miniOrange WordPress OTP Verification
-* Bug fixes of Ninja Forms
+* Bug fixes for Ninja Forms
 * Minor updates
 = 5.4.0 =
 * miniOrange WordPress OTP Verification
  * Released transaction logs feature in free plugin
- * Released selected country addon in free plugin
+ * Released selected country add-on in free plugin
  * Minor bug fixes
 = 5.3.8 =
 * miniOrange WordPress OTP Verification
@@ -355,6 +400,11 @@ For older changelog entries, please see the [additional changelog.txt file](http
 
 
 == Upgrade Notice ==
+= 5.5.7 =
+* Added Export Configuration for OTP Verification settings.
+* Added Debug Logs under Troubleshooting for diagnosing OTP delivery issues.
+* Added error codes for OTP verification failures, with a reference table under Troubleshooting to look them up.
+* Readme changes.
 
 = 5.5.6 =
 * Security fix: hardened administrator OTP-bypass login flow and OTP Spam Prevention rate-limiting. Upgrade recommended for all sites using "Login with only OTP" or the OTP Spam Prevention addon.
@@ -365,21 +415,21 @@ For older changelog entries, please see the [additional changelog.txt file](http
 * Added Test Mode toggle in General Settings to test OTP flows without sending real OTPs or consuming credits.
 
 = 5.5.4 =
-Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
+Fluent, Forminator, WooCommerce checkout, User registration, WP form bug fixes.
 = 5.5.3 =
-* woocommerce notification bug fixes.
-* Everest, gravity, ninja, formidable forms bug fixes.
+* WooCommerce notification bug fixes.
+* Everest, Gravity, Ninja, formidable forms bug fixes.
 * Other fixes and improvements.
 = 5.5.2 =
-* Introdcing abilites.
+* Introducing abilities.
 * Login form fixes and security fixes.
 = 5.5.1 =
 * Session-transient related bug fixes.
-* Spam preventor addon bug fixes.
+* Spam preventer add-on bug fixes.
 = 5.5.0 =
-* Login forms fixes.
-* Wp forms, Contact form7 and paid membership pro form bug fixes.
-* Reintroduced Wordpress default registration form for OTP verification.
+* Login form fixes.
+* WPForms, Contact Form 7, and Paid Memberships Pro form bug fixes.
+* Reintroduced WordPress default registration form for OTP verification.
 * Other minor security fixes.
 = 5.4.9 =
 * Spam preventer addon improvements and bug fixes.
@@ -389,18 +439,18 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
 * Reintroduced Paid Memberships Pro form for OTP verification.
 = 5.4.8 =
 * miniOrange WordPress OTP Verification
-* Spam preventor addon Bug Fixes.
+* Spam preventer add-on bug fixes.
 = 5.4.7 =
 * miniOrange WordPress OTP Verification
-* OTP spam preventer addon release.
+* OTP spam preventer add-on release.
 = 5.4.6 =
 * miniOrange WordPress OTP Verification
-* Country Restriction addon release.
-* Contact form-7 bug fixes.
+* Country Restriction add-on release.
+* Contact Form 7 bug fixes.
 = 5.4.5 =
 * miniOrange WordPress OTP Verification
-* bug fixes of mismatch error
-* bug fixes of classic checkout form
+* Bug fixes for mismatch error
+* Bug fixes for the classic checkout form
 * Readme updates
 = 5.4.4 =
 * miniOrange WordPress OTP Verification
@@ -411,18 +461,18 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
 * Addons issue fix
 = 5.4.3 =
 * miniOrange WordPress OTP Verification
-* Security fixes updates
+* Security fixes and updates
 = 5.4.2 =
 * miniOrange WordPress OTP Verification
  * Readme updates
 = 5.4.1 =
 * miniOrange WordPress OTP Verification
- * Bug fixes of Ninja Forms
+ * Bug fixes for Ninja Forms
  * Minor updates
 = 5.4.0 =
 * miniOrange WordPress OTP Verification
  * Released transaction logs feature in free plugin
- * Released selected country addon in free plugin
+ * Released selected country add-on in free plugin
  * Minor bug fixes
 = 5.3.8 =
 * miniOrange WordPress OTP Verification
@@ -472,17 +522,17 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
 * miniOrange WordPress OTP Verification
  * Released Limit OTP Addon to enhance security and prevent spamming attacks
  * WooCommerce Login form: Redirection fixes
- * Fluent form: Hidden attribute issue
+ * Fluent Form: Hidden attribute issue
 = 5.2.6 =
 * miniOrange WordPress OTP Verification
  * Bug fixes — Gravity Forms
  * CSS issue fixes in Elementor Pro Form
 = 5.2.5 =
 * Introduced JetFormBuilder & WS Pro Contact Form
- * Released:Transaction report feature
- * WC Block Checkout:OTP with Popup,OTP for guest users & selective payment method
- * Improvements:Edit messages,Popup design tab,Gravity Form 
- * Bug fixes:WC login & Ninja form
+ * Released: Transaction report feature
+ * WC Block Checkout: OTP with Popup, OTP for guest users & selective payment method
+ * Improvements: Edit messages, Popup design tab, Gravity Form
+ * Bug fixes: WC login & Ninja Form
 = 5.2.4 =
 * Added an option to edit the text and CSS of the buttons in the Login Form
  * Minor Fixes - Login forms and Houzez Form
@@ -523,7 +573,7 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
  * Added options in Contact us for the queries form
  * Added WhatsApp Notification Functionality test feature
  * Added option to reset the OTP pop-up to the default
- * Buddypress Form — Minor Fix
+ * BuddyPress Form — Minor Fix
  * Updated Licensing Page
 = 5.0.5 =
 * WordPress OTP Verification
@@ -560,10 +610,7 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
  * Compatibility with WordPress 6.3
  * Readme updates
 = 4.2.0 =
-* OTP on Fluent & Tutor LMS Form
- * Updated:Notice for SMS Delivery Rules & Contact Form 7
- * Added View & Low Transactions Alert,Custom redirect option in WooCommerce/Ultimate Member/WordPress Login form
- * Fixes:MemberPress Checkout,Ultimate Membership,MemberPress Registration Form
+* OTP on Fluent & Tutor LMS Form, SMS delivery notices for Contact Form 7, transaction alerts, and fixes for MemberPress & Ultimate Membership forms.
 = 4.1.1 =
 * OTP Verification
  * WordPress 6.2 compatibility
@@ -576,7 +623,7 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
 = 4.0.0 =
 * OTP Verification
  * Code Improvements according to WPCS
- * Ninja form bug fix
+ * Ninja Form bug fix
  * Registration magic form bug fix
  
 = 3.9.3 =
@@ -602,7 +649,7 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
 * OTP Verification
  * Introduced OTP Audit/Reporting
  * Updated OTP with Firebase Contact Form
- * Introduced Limit OTP addon in Enterprise plan
+ * Introduced Limit OTP add-on in Enterprise plan
 = 3.8.6 =
 * OTP Verification
  * WooCommerce notification fix
@@ -676,7 +723,7 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
 = 3.7.3 =
 * Introduced miniOrange SMS Gateway monthly plan.
  * Introduced OTP over Call — Twilio SMS Gateway
- * Introduced Bulk SMS addon.
+ * Introduced Bulk SMS add-on.
  * Introduced WhatsApp UI.
  * Added OTP Verification on Eduma Theme Login & Registration
  * Added option for Demo.
@@ -693,8 +740,8 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
 * OTP Verification
  * Added Admin Notice
 = 3.7 =
-* Introduced:Alphanumeric OTP,SMS Test Configuration & OTP for Selected countries,Social Login,WC Password Reset 
- * Fixes:Contact Form 7,Ultimate Member Profile,Account & WordPress Login,Registration Magic,WC Checkout Forms
+* Introduced: Alphanumeric OTP, SMS Test Configuration & OTP for Selected countries, Social Login, WC Password Reset
+ * Fixes: Contact Form 7, Ultimate Member Profile, Account & WordPress Login,Registration Magic, WC Checkout Forms
  * Compatibility:WooCommerce 5.1.0, WordPress 5.7 & WPML
 = 3.6.3 =
 * Added Error/Success message handling in the Custom Messages Addon
@@ -716,10 +763,10 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
  * Removed password tag from Ultimate Member and WooCommerce Addons.
  * Form Fixes
 = 3.6 =
-* Custom Form Improvements, Form Fixes & New Addons
- * Added improvements in the Custom Form Feature for OTP verification.
- * Added Login with Phone number Only add-on.
- * Added feature to check SMS / Email transactions for OTP Verification.
+* Custom Form Improvements, Form Fixes & New Add-ons
+ * Added improvements to the Custom Form Feature for OTP verification.
+ * Added Login with Phone Number Only add-on.
+ * Added a feature to check SMS / Email transactions for OTP Verification.
  * Bug fixes for WooCommerce and other forms.
 = 3.5 =
 * OTP Verification: UI Changes, Custom Form & Twilio Plan
@@ -727,7 +774,7 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
  * Added new Twilio Plan.
  * Added compatibility with forms.
  * Bug fixes for WooCommerce and other forms.
- * Addon fixes.
+ * Add-on fixes.
  * Premium addon improvements.
  
 = 3.4.3 =
@@ -770,7 +817,7 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
  * Fix for WooCommerce billing form
 = 3.2.63 =
 * OTP Verification: WooCommerce Improvements
- * Updated the compatibility with the WooCommerce social login form
+ * Updated compatibility with the WooCommerce social login form
  * Fix for WooCommerce checkout form
 = 3.2.62 =
 * OTP Verification: Contact Form 7 fix
@@ -780,7 +827,7 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
 * Merged Ultimate Member and Default Login form
  * Updates: MemberPress, WooCommerce Registration, Contact Form 7 Forms
  * Added support for Formidable Form, Visual Form Builder, WC Billing
- * Fixes:WC Registration, User Ultra Form, Caldera Form, FormCraft form, Translation for WPML
+ * Fixes: WC Registration, User Ultra Form, Caldera Form, FormCraft form, Translation for WPML
 = 3.2.50 =
 * OTP Verification: Fix for PHP version 5.5 and below
 = 3.2.49 =
@@ -790,9 +837,7 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
  * WooCommerce Notification & Custom SMS AddOn fixes
  * Added "Let User Choose" option for MemberPress
 = 3.2.48 =
- * Fixes:WC Checkout,MemberPress Form
- * OTP for FormMaker,UM Profile, Account page,Login Page,WC Product Vendor Registration Form
- * Added options:Ajax form verification option & New user notification for UM,Email+OTP/Phone+OTP for Default Login Form,Ultimate Member password reset via OTP
+* OTP fixes for WC Checkout & MemberPress Form; added FormMaker, UM Profile, Account, Login Page & WC Vendor Registration Form support, plus Ajax verification and UM password reset via OTP.
 = 3.2.47 =
 * Fixes: WC for custom payment types & Checkout Form, Gravity Form, Popup Templates
  * OTP for MemberPress, Paid Membership, Reales7 Pro, MultiSite, WC Vendor registration Forms
@@ -812,11 +857,11 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
 = 3.2.40 =
 * OTP Verification: Bug fixes
 = 3.2.39 =
-* Fixes:Formcraft Premium,Ninja,Gravity,Registration Magic Forms,Customized blocked email & phone messages
+* Fixes: Formcraft Premium, Ninja, Gravity, Registration Magic Forms, Customized blocked email & phone messages
 * SMS OTP for Profile Builder Form
 * Added option to modify OTP popups & customize WC Verification Button Text
 * OTP for WP Forms & Caldera Forms
-* Compatibility:WordPress 4.9
+* Compatibility: WordPress 4.9
 = 3.2.38 =
 * OTP Verification: Fixes
  * WooCommerce Registration Fixes — Existing Phone Number
@@ -833,15 +878,12 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
 * OTP Verification: Fixes
  * Added support for DocDirect Theme
  * Bug Fixes for the default registration page.
- * Bug fixes for Country Code DropDown.
+ * Bug fixes for Country Code Dropdown.
  * Bug fixes for Ninja Forms.
  * Bug fixes for WooCommerce Checkout Form
  * Translation Fixes
 = 3.2.34 =
-* Fixes & enhancement of WC Checkout Form
-* OTP for WP eMember,FormCraft,WordPress Comment Form
-* Added:Country Dropdown in phone field,admins setup OTP length & validity,Unique phone number registration WordPress & WC registration
-* Translation Support:PolyLang Plugin,WordPress Standand
+* OTP fixes & enhancements for WC Checkout, WP eMember, FormCraft & WordPress Comment Form; added country dropdown, OTP length/validity settings & Polylang translation support.
 = 3.2.33 =
 * OTP Verification: Image Fixes
 = 3.2.32 =
@@ -855,8 +897,8 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
 = 3.2.1 =
 * OTP Verification: Bug Fixes
 = 3.2.0 =
-* Added:Option to log in using phone number,support for Hindi Language,hooks & filters in the plugin to allow developers to be able to extend the plugin functionality,Option to allow admin to block email domains & phone numbers.
-* Fixes:Session-related bug fixes,resend OTP
+* Added: Option to log in using phone number,support for Hindi Language,hooks & filters in the plugin to allow developers to be able to extend the plugin functionality, Option to allow admin to block email domains & phone numbers.
+* Fixes: Session-related bug fixes, resend OTP
 = 3.1.9 =
 * OTP Verification: Fixes
  * Fixed an issue where you were not able to see the validate OTP field after users entered an invalid OTP.
@@ -912,10 +954,10 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
  * Added option to customize the invalid phone number message.
  
 = 3.0 =
- * Fixes OTP Verification for Registration Magic Form,WooCommerce Checkout Form,User Profile Made Easy Form
+ * Fixes OTP Verification for Registration Magic Form, WooCommerce Checkout Form, User Profile Made Easy Form
  * Fixes related to a session when more than 1 form was enabled
  * Added Phone Number validation for BuddyPress
- * 500 error fix when OTP Verification was enabled for Woocommerce Social Login
+ * 500 error fix when OTP Verification was enabled for WooCommerce Social Login
 = 2.8.4 =
 * OTP Verification: Bug Fix for Profile Builder Registration Form
 = 2.8.3 =
@@ -928,7 +970,7 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
 * OTP Verification: Added SMS Verification for the default form
  * Added support for Theme My Login Form
  * Bug fixes for Ninja Form
- * UI fixes for Woocommerce Registration Form
+ * UI fixes for WooCommerce Registration Form
 = 2.7.5 =
 * OTP Verification: Fixed issue with the support form
 = 2.7.4 =
@@ -936,17 +978,17 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
 = 2.7.3 =
 * OTP Verification: Contact Form 7 Major Bug Fix
 = 2.7.2 =
-* OTP Verification: Registration Magic Form bug Fixes
+* OTP Verification: Registration Magic Form Bug Fixes
 = 2.7.1 =
 * OTP Verification: Ultimate Member — Social Login Bug Fix
 * OTP Verification: Registration Magic Bug Fixes
 = 2.7 =
 * OTP Verification: Registration Bug Fix
 = 2.6 =
-* OTP Verification: Woocommerce Checkout Bug Fix
+* OTP Verification: WooCommerce Checkout Bug Fix
 = 2.5 =
 * Contact Form 7 Bug Fixes
-* Notification fixes for Woocommerce Social Login and Woocommerce Registration forms.
+* Notification fixes for WooCommerce Social Login and WooCommerce Registration forms.
 = 2.4 =
 * Bug Fixes
 = 2.3 =
@@ -1000,6 +1042,6 @@ Fluent, Forminator, Woocommerce checkout, User registration, WP form bug fixes.
 = 1.1.0 =
 * Added support for BuddyPress, Custom User Registration Form Builder [ RegistrationMagic ].
 * Added mobile number verification option for WooCommerce registration form.
-* Added the option to allow users to select verification method(Email/SMS) during registration.
+* Added the option to allow users to select a verification method(Email/SMS) during registration.
 = 1.0.0 =
 * First version of the plugin.

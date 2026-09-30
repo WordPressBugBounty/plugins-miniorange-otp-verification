@@ -1361,7 +1361,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			if ( $this->restrict_duplicates() && ! MoUtility::is_blank( $this->mo_get_user_from_phone_number( $user_phone ) ) ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::PHONE_EXISTS ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_ALREADY_EXISTS, MoMessages::showMessage( MoMessages::PHONE_EXISTS ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -1393,7 +1393,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			if ( strcmp( $phone, MoUtility::process_phone_number( $post_data['user_phone'] ) ) ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::PHONE_MISMATCH ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_MISMATCH, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -1415,7 +1415,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		public function handle_failed_verification( $user_login, $user_email, $phone_number, $otp_type ) {
 			if ( SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
 				SessionUtils::add_status( $this->form_session_var, self::VERIFICATION_FAILED, $otp_type );
-				wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::INVALID_OTP ), MoConstants::ERROR_JSON_TYPE ) );
+				wp_send_json( MoUtility::create_json( MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoMessages::showMessage( MoMessages::INVALID_OTP ) ), MoConstants::ERROR_JSON_TYPE ) );
 			}
 
 			if ( SessionUtils::is_otp_initialized( $this->form_session_var2 ) ) {
@@ -1423,7 +1423,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 					$user_login,
 					$user_email,
 					$phone_number,
-					MoMessages::showMessage( MoMessages::INVALID_OTP ),
+					MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoMessages::showMessage( MoMessages::INVALID_OTP ) ),
 					'phone',
 					false
 				);

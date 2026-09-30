@@ -275,7 +275,7 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -321,7 +321,7 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 			if ( $phone && $this->restrict_duplicates && $this->is_phone_number_already_in_use( $phone ) ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::PHONE_EXISTS ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_ALREADY_EXISTS, MoMessages::showMessage( MoMessages::PHONE_EXISTS ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -382,7 +382,7 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
 				if ( function_exists( 'wc_add_notice' ) ) {
-					wc_add_notice( MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ), MoConstants::ERROR_JSON_TYPE );
+					wc_add_notice( MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ) ), MoConstants::ERROR_JSON_TYPE );
 				}
 				return true;
 			}
@@ -541,7 +541,7 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -559,7 +559,7 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -590,7 +590,7 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 				if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, MoUtility::process_phone_number( $data['user_phone'] ) ) ) {
 					wp_send_json(
 						MoUtility::create_json(
-							MoMessages::showMessage( MoMessages::PHONE_MISMATCH ),
+							MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_MISMATCH, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) ),
 							MoConstants::ERROR_JSON_TYPE
 						)
 					);
@@ -598,7 +598,7 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 			} elseif ( ! SessionUtils::is_email_verified_match( $this->form_session_var, $data['user_email'] ) ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_EMAIL_MISMATCH, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -632,7 +632,7 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 			$otp_type = strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ? 'phone' : 'email';
 			if ( ! SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otp_type ) ) {
 				if ( function_exists( 'wc_add_notice' ) ) {
-					wc_add_notice( MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ), MoConstants::ERROR_JSON_TYPE );
+					wc_add_notice( MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ) ), MoConstants::ERROR_JSON_TYPE );
 				}
 				return;
 			}
@@ -650,7 +650,7 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 			$wc_nonce = isset( $_POST['woocommerce-process-checkout-nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['woocommerce-process-checkout-nonce'] ) ) : '';
 			if ( empty( $wc_nonce ) || ! wp_verify_nonce( $wc_nonce, 'woocommerce-process_checkout' ) ) {
 				if ( function_exists( 'wc_add_notice' ) ) {
-					wc_add_notice( MoMessages::showMessage( MoMessages::INVALID_OP ), MoConstants::ERROR_JSON_TYPE );
+					wc_add_notice( MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::INVALID_OP ) ), MoConstants::ERROR_JSON_TYPE );
 				}
 				return;
 			}
@@ -717,7 +717,7 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 			$phone = MoUtility::process_phone_number( $phone );
 			if ( strcasecmp( MoPHPSessions::get_session_var( 'phone_number_mo' ), $phone ) !== 0 ) {
 				if ( function_exists( 'wc_add_notice' ) ) {
-					wc_add_notice( MoMessages::showMessage( MoMessages::PHONE_MISMATCH ), MoConstants::ERROR_JSON_TYPE );
+					wc_add_notice( MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_MISMATCH, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) ), MoConstants::ERROR_JSON_TYPE );
 				}
 				return true;
 			}
@@ -734,7 +734,7 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 		private function processEmail( $billing_email ) {
 			if ( strcasecmp( MoPHPSessions::get_session_var( 'user_email' ), $billing_email ) !== 0 ) {
 				if ( function_exists( 'wc_add_notice' ) ) {
-					wc_add_notice( MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ), MoConstants::ERROR_JSON_TYPE );
+					wc_add_notice( MoUtility::append_otp_error_code( MoConstants::OTP_ERR_EMAIL_MISMATCH, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) ), MoConstants::ERROR_JSON_TYPE );
 				}
 				return true;
 			}
@@ -756,12 +756,12 @@ if ( ! class_exists( 'WooCommerceCheckOutForm' ) ) {
 			if ( $this->popup_enabled ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::INVALID_OTP ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoMessages::showMessage( MoMessages::INVALID_OTP ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
 			} elseif ( function_exists( 'wc_add_notice' ) ) {
-					wc_add_notice( MoUtility::get_invalid_otp_method(), MoConstants::ERROR_JSON_TYPE );
+					wc_add_notice( MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoUtility::get_invalid_otp_method() ), MoConstants::ERROR_JSON_TYPE );
 			}
 		}
 

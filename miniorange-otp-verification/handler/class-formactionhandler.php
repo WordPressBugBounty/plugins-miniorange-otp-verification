@@ -311,7 +311,7 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 						null,
 						$user_email,
 						$phone_number,
-						MoMessages::showMessage( MoMessages::PHONE_MISMATCH ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_MISMATCH, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) ),
 						$otp_type,
 						false
 					);
@@ -331,7 +331,7 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 						null,
 						$user_email,
 						$phone_number,
-						MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_EMAIL_MISMATCH, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) ),
 						$otp_type,
 						false
 					);

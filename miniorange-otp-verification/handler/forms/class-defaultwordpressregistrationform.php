@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use OTP\Helper\FormSessionVars;
+use OTP\Helper\MoConstants;
 use OTP\Helper\MoMessages;
 use OTP\Helper\MoFormDocs;
 use OTP\Helper\MoPHPSessions;
@@ -252,7 +253,7 @@ if ( ! class_exists( 'DefaultWordPressRegistrationForm' ) ) {
 			if ( MoUtility::is_blank( $phone_number ) || ! MoUtility::validate_phone_number( $phone_number ) ) {
 				$errors->add( 'invalid_phone', MoMessages::showMessage( MoMessages::ENTER_PHONE_DEFAULT ) );
 			} elseif ( $this->restrict_duplicates && $this->is_phone_number_already_in_use( trim( $phone_number ), $this->phone_key ) ) {
-				$errors->add( 'invalid_phone', MoMessages::showMessage( MoMessages::PHONE_EXISTS ) );
+				$errors->add( 'invalid_phone', MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_ALREADY_EXISTS, MoMessages::showMessage( MoMessages::PHONE_EXISTS ) ) );
 			}
 		}
 
@@ -325,7 +326,7 @@ if ( ! class_exists( 'DefaultWordPressRegistrationForm' ) ) {
 				$user_login,
 				$user_email,
 				$phone_number,
-				MoUtility::get_invalid_otp_method(),
+				MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoUtility::get_invalid_otp_method() ),
 				$otp_ver_type,
 				$from_both
 			);

@@ -110,5 +110,19 @@ if ( ! class_exists( 'Tabs' ) ) {
 		 * @var string
 		 */
 		const CUSTOM_MSG = 'custom_message';
+
+		/**
+		 * Export Configuration tab identifier
+		 *
+		 * @var string
+		 */
+		const EXPORT_CONFIG = 'export_config';
+
+		/**
+		 * Troubleshooting tab identifier
+		 *
+		 * @var string
+		 */
+		const TROUBLESHOOTING = 'troubleshooting';
 	}
 }

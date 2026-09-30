@@ -93,5 +93,19 @@ if ( ! class_exists( 'SubTabs' ) ) {
 		 * @var string
 		 */
 		const MO_FORM_NOTIF = 'form_notification';
+
+		/**
+		 * Troubleshooting error codes subtab identifier
+		 *
+		 * @var string
+		 */
+		const MO_TROUBLESHOOTING_ERROR_CODES = 'troubleshooting_error_codes';
+
+		/**
+		 * Troubleshooting logs subtab identifier
+		 *
+		 * @var string
+		 */
+		const MO_TROUBLESHOOTING_LOGS = 'troubleshooting_logs';
 	}
 }

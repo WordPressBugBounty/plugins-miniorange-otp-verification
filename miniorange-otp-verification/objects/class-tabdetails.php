@@ -135,6 +135,28 @@ if ( ! class_exists( 'TabDetails' ) ) {
 					'MoAddOnsTab',
 					'background:orange'
 				),
+				Tabs::EXPORT_CONFIG => new PluginPageDetails(
+					'OTP Verification - Export Configuration',
+					'moexportconfig',
+					__( 'Export Configuration', 'miniorange-otp-verification' ),
+					__( 'Export Configuration', 'miniorange-otp-verification' ),
+					'M12 3a1 1 0 011 1v8.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L11 12.586V4a1 1 0 011-1zM4 17a1 1 0 011 1v1h14v-1a1 1 0 112 0v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1a1 1 0 011-1z',
+					$request_uri,
+					'export-config.php',
+					'MoExportConfig',
+					'background:#D8D8D8'
+				),
+				Tabs::TROUBLESHOOTING => new PluginPageDetails(
+					'OTP Verification - Troubleshooting',
+					'motroubleshooting',
+					__( 'Troubleshooting', 'miniorange-otp-verification' ),
+					__( 'Troubleshooting', 'miniorange-otp-verification' ),
+					'M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z',
+					$request_uri,
+					'motroubleshooting.php',
+					'MoTroubleshootingTab',
+					'background:#D8D8D8'
+				),
 				Tabs::ACCOUNT       => new PluginPageDetails(
 					'OTP Verification - Accounts',
 					'otpaccount',

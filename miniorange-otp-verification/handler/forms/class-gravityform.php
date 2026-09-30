@@ -45,6 +45,14 @@ if ( ! class_exists( 'GravityForm' ) ) {
 		public $button_css;
 
 		/**
+		 * Set when the submitted email/phone does not match the one the OTP was sent to
+		 * during the current submission, so the OTP field is not validated for it.
+		 *
+		 * @var bool $is_email_or_phone_mismatch
+		 */
+		private $is_email_or_phone_mismatch = false;
+
+		/**
 		 * Initializes values.
 		 */
 		protected function __construct() {
@@ -97,7 +105,7 @@ if ( ! class_exists( 'GravityForm' ) ) {
 			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::INVALID_OP ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::INVALID_OP ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -217,8 +225,12 @@ if ( ! class_exists( 'GravityForm' ) ) {
 				if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
 					return array(
 						'is_valid' => false,
-						'message'  => MoMessages::showMessage( MoMessages::PLEASE_VALIDATE ),
+						'message'  => MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::PLEASE_VALIDATE ) ),
 					);
+				} elseif ( $this->is_email_or_phone_mismatch ) {
+					// The email/phone field already failed for this submission - do not validate the OTP
+					// against a mismatched value, or the session gets marked as validated for the next submit.
+					return $error;
 				} elseif ( ! SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->get_verification_type() ) ) {
 					return $this->validate_otp( $error, $value );
 				} else {
@@ -248,14 +260,18 @@ if ( ! class_exists( 'GravityForm' ) ) {
 					if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->get_verification_type() ) ) {
 						$error = $this->validate_submitted_email_or_phone( $error['is_valid'], $value, $error );
 						if ( isset( $error['is_valid'] ) && ( false === $error['is_valid'] || null === $error['is_valid'] ) ) {
+							$this->is_email_or_phone_mismatch = true;
 							SessionUtils::add_status( $this->form_session_var, self::VERIFICATION_FAILED, $this->get_verification_type() );
 						}
 					} elseif ( SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
 						$error = $this->validate_submitted_email_or_phone( $error['is_valid'], $value, $error );
+						if ( isset( $error['is_valid'] ) && ( false === $error['is_valid'] || null === $error['is_valid'] ) ) {
+							$this->is_email_or_phone_mismatch = true;
+						}
 					} elseif ( true === $error['is_valid'] ) {
 						$error = array(
 							'is_valid' => false,
-							'message'  => MoMessages::showMessage( MoMessages::PLEASE_VALIDATE ),
+							'message'  => MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::PLEASE_VALIDATE ) ),
 						);
 					}
 				}
@@ -276,14 +292,14 @@ if ( ! class_exists( 'GravityForm' ) ) {
 			if ( MoUtility::is_blank( $value ) ) {
 				$error = array(
 					'is_valid' => null,
-					'message'  => MoUtility::get_invalid_otp_method(),
+					'message'  => MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoUtility::get_invalid_otp_method() ),
 				);
 			} else {
 				$this->validate_challenge( $otp_type, null, $value );
 				if ( ! SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otp_type ) ) {
 					$error = array(
 						'is_valid' => null,
-						'message'  => MoUtility::get_invalid_otp_method(),
+						'message'  => MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoUtility::get_invalid_otp_method() ),
 					);
 				}
 			}
@@ -305,14 +321,14 @@ if ( ! class_exists( 'GravityForm' ) ) {
 				if ( VerificationType::EMAIL === $otp_type && ! SessionUtils::is_email_verified_match( $this->form_session_var, $value ) ) {
 					return array(
 						'is_valid' => false,
-						'message'  => MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ),
+						'message'  => MoUtility::append_otp_error_code( MoConstants::OTP_ERR_EMAIL_MISMATCH, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) ),
 					);
 				} elseif ( VerificationType::PHONE === $otp_type ) {
 					$phone = MoUtility::process_phone_number( $value );
 					if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
 						return array(
 							'is_valid' => false,
-							'message'  => MoMessages::showMessage( MoMessages::PHONE_MISMATCH ),
+							'message'  => MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_MISMATCH, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) ),
 						);
 					}
 				}

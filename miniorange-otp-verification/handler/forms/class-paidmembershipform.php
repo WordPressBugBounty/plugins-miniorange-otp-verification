@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 use OTP\Helper\FormSessionVars;
+use OTP\Helper\MoConstants;
 use OTP\Helper\MoFormDocs;
 use OTP\Helper\MoUtility;
 use OTP\Helper\SessionUtils;
@@ -113,7 +114,7 @@ if ( ! class_exists( 'OTP\Handler\Forms\PaidMembershipForm' ) ) {
 					return $continue_registration;
 				}
 				global $pmpro_msg, $pmpro_msgt, $pmpro_requirebilling;
-				$message              = MoMessages::showMessage( MoMessages::NONCE_FAILED );
+				$message              = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::NONCE_FAILED ) );
 				$pmpro_msgt           = 'pmpro_error';
 				$pmpro_requirebilling = false;
 				$pmpro_msg            = apply_filters( 'pmpro_set_message', $message, $pmpro_msgt );
@@ -180,7 +181,7 @@ if ( ! class_exists( 'OTP\Handler\Forms\PaidMembershipForm' ) ) {
 					)
 				);
 				if ( $existing_user ) {
-					$message              = MoMessages::showMessage( MoMessages::PHONE_EXISTS );
+					$message              = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_ALREADY_EXISTS, MoMessages::showMessage( MoMessages::PHONE_EXISTS ) );
 					$pmpro_msgt           = 'pmpro_error';
 					$pmpro_requirebilling = false;
 					$pmpro_msg            = apply_filters( 'pmpro_set_message', $message, $pmpro_msgt );
@@ -231,7 +232,7 @@ if ( ! class_exists( 'OTP\Handler\Forms\PaidMembershipForm' ) ) {
 				$user_login,
 				$user_email,
 				$phone_number,
-				MoUtility::get_invalid_otp_method(),
+				MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoUtility::get_invalid_otp_method() ),
 				$otp_ver_type,
 				$from_both
 			);

@@ -63,9 +63,10 @@ if ( ! class_exists( 'VerificationLogic' ) ) {
 		 * @param string $otp_type      email or sms verification.
 		 * @param string $from_both     has user enabled from both.
 		 * @param array  $content       string the json decoded response from server.
+		 * @param string $error_code    Optional MoConstants::OTP_ERR_* override; defaults to the send-failed code for this channel.
 		 * @return void
 		 */
-		abstract public function handle_otp_sent_failed( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content );
+		abstract public function handle_otp_sent_failed( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content, $error_code = null );
 
 		/**
 		 * Get the success message to be shown to the user when OTP was sent

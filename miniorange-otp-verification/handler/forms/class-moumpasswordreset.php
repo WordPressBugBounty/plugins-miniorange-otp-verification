@@ -108,7 +108,7 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -130,7 +130,7 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 				} else {
 					wp_send_json(
 						MoUtility::create_json(
-							MoMessages::showMessage( MoMessages::USERNAME_NOT_EXIST ),
+							MoUtility::append_otp_error_code( MoConstants::OTP_ERR_USER_NOT_FOUND, MoMessages::showMessage( MoMessages::USERNAME_NOT_EXIST ) ),
 							MoConstants::ERROR_JSON_TYPE
 						)
 					);
@@ -203,7 +203,7 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::INVALID_OP ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::INVALID_OP ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -222,7 +222,7 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -254,7 +254,7 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 					if ( ! $user ) {
 						$form->add_error(
 							$this->field_key,
-							MoMessages::showMessage( MoMessages::USERNAME_NOT_EXIST )
+							MoUtility::append_otp_error_code( MoConstants::OTP_ERR_USER_NOT_FOUND, MoMessages::showMessage( MoMessages::USERNAME_NOT_EXIST ) )
 						);
 					} else {
 						$form->errors = null;
@@ -292,7 +292,7 @@ if ( ! class_exists( 'MoUMPasswordReset' ) ) {
 			} else {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::INVALID_OTP ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoMessages::showMessage( MoMessages::INVALID_OTP ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);

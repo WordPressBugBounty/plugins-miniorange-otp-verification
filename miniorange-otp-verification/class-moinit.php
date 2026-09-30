@@ -14,6 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 use OTP\API\MoAbilitiesApi;
 use OTP\Handler\EmailVerificationLogic;
 use OTP\Handler\FormActionHandler;
+use OTP\Handler\MoExportConfigHandler;
+use OTP\Handler\MoTroubleshootingHandler;
 use OTP\Handler\MoActionHandlerHandler;
 use OTP\Handler\MoRegistrationHandler;
 use OTP\Handler\PhoneVerificationLogic;
@@ -155,6 +157,8 @@ if ( ! class_exists( 'MoInit' ) ) {
 		private function initialize_handlers() {
 			FormActionHandler::instance();
 			MoActionHandlerHandler::instance();
+			MoExportConfigHandler::instance();
+			MoTroubleshootingHandler::instance();
 			DefaultPopup::instance();
 			ErrorPopup::instance();
 			ExternalPopup::instance();
@@ -219,6 +223,8 @@ if ( ! class_exists( 'MoInit' ) ) {
 				'otp-verification_page_addon',
 				'otp-verification_page_otpaccount',
 				'otp-verification_page_mootppricing',
+				'otp-verification_page_moexportconfig',
+				'otp-verification_page_motroubleshooting',
 			);
 
 			// Also check by page parameter for additional safety.
@@ -233,6 +239,8 @@ if ( ! class_exists( 'MoInit' ) ) {
 				'addon',
 				'otpaccount',
 				'mootppricing',
+				'moexportconfig',
+				'motroubleshooting',
 			);
 
 			// Only load scripts if we're on an OTP plugin page.

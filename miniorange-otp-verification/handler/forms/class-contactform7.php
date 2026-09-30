@@ -92,7 +92,7 @@ if ( ! class_exists( 'ContactForm7' ) ) {
 			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::INVALID_OP ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::INVALID_OP ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -172,7 +172,7 @@ if ( ! class_exists( 'ContactForm7' ) ) {
 				}
 				if ( empty( $result->get_invalid_fields() ) ) {
 					if ( ! $this->mo_process_otp_entered( $name, $posted_data ) ) {
-						$result->invalidate( $tag, MoUtility::get_invalid_otp_method() );
+						$result->invalidate( $tag, MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoUtility::get_invalid_otp_method() ) );
 					}
 				}
 			}
@@ -235,7 +235,7 @@ if ( ! class_exists( 'ContactForm7' ) ) {
 		 */
 		private function mo_process_email( &$result, $tag ) {
 			if ( ! SessionUtils::is_email_submitted_and_verified_match( $this->form_session_var ) ) {
-				$result->invalidate( $tag, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) );
+				$result->invalidate( $tag, MoUtility::append_otp_error_code( MoConstants::OTP_ERR_EMAIL_MISMATCH, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) ) );
 			}
 		}
 		/**
@@ -247,7 +247,7 @@ if ( ! class_exists( 'ContactForm7' ) ) {
 		 */
 		private function process_phone_number( &$result, $tag ) {
 			if ( ! SessionUtils::is_phone_submitted_and_verified_match( $this->form_session_var ) ) {
-				$result->invalidate( $tag, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) );
+				$result->invalidate( $tag, MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_MISMATCH, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) ) );
 			}
 		}
 
@@ -261,7 +261,7 @@ if ( ! class_exists( 'ContactForm7' ) ) {
 		 */
 		private function mo_check_if_verification_not_started( &$result, $tag ) {
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
-				$result->invalidate( $tag, MoMessages::showMessage( MoMessages::PLEASE_VALIDATE ) );
+				$result->invalidate( $tag, MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::PLEASE_VALIDATE ) ) );
 			}
 		}
 		/**
@@ -279,7 +279,7 @@ if ( ! class_exists( 'ContactForm7' ) ) {
 				if ( function_exists( 'wpcf7_get_message' ) ) {
 					$result->invalidate( $tag, wpcf7_get_message( 'invalid_required' ) );
 				} else {
-					$result->invalidate( $tag, MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ) );
+					$result->invalidate( $tag, MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ) ) );
 				}
 			}
 		}

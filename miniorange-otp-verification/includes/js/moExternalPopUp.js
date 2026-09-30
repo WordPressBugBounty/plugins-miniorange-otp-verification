@@ -238,11 +238,8 @@ jQuery(document).ready(function(){
     // Use event delegation to handle dynamically added elements
     $mo(document).on('input change keyup paste', 'input[name=mo_phone_number]', function() {
         // When user modifies phone number, ensure send_otp button is visible
-        // and hide validate_otp button if it was shown
         var $sendOtpBtn = $mo("#send_otp");
-        var $validateOtpBtn = $mo("#validate_otp");
-        var $validateOtpBox = $mo("#mo_validate_otp");
-        
+
         // Show send_otp button if it's hidden
         if ($sendOtpBtn.length > 0) {
             var isHidden = $sendOtpBtn.css('display') === 'none' || $sendOtpBtn.is(':hidden');
@@ -251,15 +248,7 @@ jQuery(document).ready(function(){
                 $sendOtpBtn.removeAttr('style').show().css("display", "");
             }
         }
-        
-        // Hide validate_otp button and OTP input box when phone number changes
-        if ($validateOtpBtn.length > 0 && $validateOtpBtn.is(':visible')) {
-            $validateOtpBtn.hide();
-        }
-        if ($validateOtpBox.length > 0 && $validateOtpBox.is(':visible')) {
-            $validateOtpBox.hide();
-        }
-        
+
         // Clear any error messages when user starts typing (optional - can be commented out if you want to keep error visible)
         // var phoneValue = $mo(this).val();
         // if (phoneValue && phoneValue.length > 0) {

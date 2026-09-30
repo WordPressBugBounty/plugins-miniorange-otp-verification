@@ -87,7 +87,7 @@ if ( ! class_exists( 'WcProfileForm' ) ) {
 		public function verify_otp_entered( $errors ) {
 
 			if ( ! isset( $_POST['save-account-details-nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['save-account-details-nonce'] ) ), 'save_account_details' ) ) {
-				$errors->add( 'billing_invalid_nonce_error', MoMessages::showMessage( MoMessages::INVALID_OP ) );
+				$errors->add( 'billing_invalid_nonce_error', MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::INVALID_OP ) ) );
 				return $errors;
 			}
 			$verificationkey = strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ? 'billing_phone' : 'account_email';
@@ -110,7 +110,7 @@ if ( ! class_exists( 'WcProfileForm' ) ) {
 		 */
 		private function check_if_otp_sent( $errors ) {
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
-				$errors->add( 'billing_user_need_to_verify_error', MoMessages::showMessage( MoMessages::PLEASE_VALIDATE ) );
+				$errors->add( 'billing_user_need_to_verify_error', MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::PLEASE_VALIDATE ) ) );
 				return $errors;
 			}
 		}
@@ -153,7 +153,7 @@ if ( ! class_exists( 'WcProfileForm' ) ) {
 					$this->unset_otp_session_variables();
 				}
 			} else {
-				$errors->add( 'billing_invalid_otp_error', MoMessages::showMessage( MoMessages::INVALID_OTP ) );
+				$errors->add( 'billing_invalid_otp_error', MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoMessages::showMessage( MoMessages::INVALID_OTP ) ) );
 				return $errors;
 			}
 		}
@@ -171,13 +171,13 @@ if ( ! class_exists( 'WcProfileForm' ) ) {
 				$phone = isset( $data['billing_phone'] ) ? ( wp_unslash( $data['billing_phone'] ) ) : '';
 				$phone = MoUtility::process_phone_number( $phone );
 				if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
-					$errors->add( 'billing_phone_mismatch_error', MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) );
+					$errors->add( 'billing_phone_mismatch_error', MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_MISMATCH, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) ) );
 					return $errors;
 				}
 			}
 			if ( $this->get_verification_type() === VerificationType::EMAIL ) {
 				if ( ! SessionUtils::is_email_verified_match( $this->form_session_var, isset( $data['account_email'] ) ? ( wp_unslash( $data['account_email'] ) ) : '' ) ) {
-					$errors->add( 'billing_email_mismatch_error', MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) );
+					$errors->add( 'billing_email_mismatch_error', MoUtility::append_otp_error_code( MoConstants::OTP_ERR_EMAIL_MISMATCH, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) ) );
 					return $errors;
 				}
 			}
@@ -229,10 +229,10 @@ if ( ! class_exists( 'WcProfileForm' ) ) {
 		public function start_otp_verification_process() {
 			// Security: Use hardcoded nonce action 'form_nonce' instead of variable.
 			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
-				wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ), MoConstants::ERROR_JSON_TYPE ) );
+				wp_send_json( MoUtility::create_json( MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ) ), MoConstants::ERROR_JSON_TYPE ) );
 			}
 			if ( ! is_user_logged_in() ) {
-				wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ), MoConstants::ERROR_JSON_TYPE ) );
+				wp_send_json( MoUtility::create_json( MoUtility::append_otp_error_code( MoConstants::OTP_ERR_USER_NOT_LOGGED_IN, MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ) ), MoConstants::ERROR_JSON_TYPE ) );
 			}
 			$data = MoUtility::mo_sanitize_array( $_POST );
 			MoUtility::initialize_transaction( $this->form_session_var );
@@ -291,7 +291,7 @@ if ( ! class_exists( 'WcProfileForm' ) ) {
 		 */
 		private function checkDuplicates( $value, $key ) {
 			if ( $this->restrict_duplicates && $this->isPhoneNumberAlreadyInUse( $value, $key ) ) {
-				$message = MoMessages::showMessage( MoMessages::PHONE_EXISTS );
+				$message = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_ALREADY_EXISTS, MoMessages::showMessage( MoMessages::PHONE_EXISTS ) );
 				wp_send_json( MoUtility::create_json( $message, MoConstants::ERROR_JSON_TYPE ) );
 			}
 		}

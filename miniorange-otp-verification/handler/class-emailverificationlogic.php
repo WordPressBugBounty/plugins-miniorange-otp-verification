@@ -44,7 +44,7 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 		public function handle_logic( $user_login, $user_email, $phone_number, $otp_type, $from_both ) {
 			$this->checkIfUserRegistered( $otp_type, $from_both );
 			$mle                     = MoUtility::mllc();
-			$license_expired_message = MoMessages::showMessage( MoMessages::ERROR_OTP_EMAIL );
+			$license_expired_message = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_EMAIL_LICENSE_BLOCKED, MoMessages::showMessage( MoMessages::ERROR_OTP_EMAIL ) );
 			if ( $mle['STATUS'] ) {
 				if ( $this->is_ajax_form() ) {
 					wp_send_json( MoUtility::create_json( $license_expired_message, MoConstants::ERROR_JSON_TYPE ) );
@@ -121,6 +121,7 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 		public function handle_not_matched( $user_email, $otp_type, $from_both ) {
 			$escaped_email = esc_html( $user_email );
 			$message       = str_replace( '##email##', $escaped_email, $this->get_otp_invalid_format_message() );
+			$message       = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_EMAIL, $message );
 			if ( $this->is_ajax_form() ) {
 				wp_send_json( MoUtility::create_json( $message, MoConstants::ERROR_JSON_TYPE ) );
 			} else {
@@ -199,9 +200,12 @@ if ( ! class_exists( 'EmailVerificationLogic' ) ) {
 		 * @param string $otp_type      Email or SMS verification.
 		 * @param string $from_both     Whether user enabled from both.
 		 * @param array  $content       JSON decoded response from server.
+		 * @param string $error_code    Optional MoConstants::OTP_ERR_* override; defaults to OTP_ERR_EMAIL_SEND_FAILED.
 		 */
-		public function handle_otp_sent_failed( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content ) {
-			$message = str_replace( '##email##', $user_email, $this->get_otp_sent_failed_message() );
+		public function handle_otp_sent_failed( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content, $error_code = null ) {
+			$message    = str_replace( '##email##', $user_email, $this->get_otp_sent_failed_message() );
+			$error_code = ( null !== $error_code ) ? $error_code : MoConstants::OTP_ERR_EMAIL_SEND_FAILED;
+			$message    = MoUtility::append_otp_error_code( $error_code, $message );
 
 			if ( $this->is_ajax_form() ) {
 				wp_send_json( MoUtility::create_json( $message, MoConstants::ERROR_JSON_TYPE ) );

@@ -53,7 +53,7 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 			$is_country_block        = MoUtility::check_for_selected_country_addon( $phone_number );
 			$message                 = MoMessages::showMessage( MoMessages::BLOCKED_COUNTRY );
 			$mle                     = MoUtility::mllc();
-			$license_expired_message = MoMessages::showMessage( MoMessages::ERROR_OTP_PHONE );
+			$license_expired_message = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_LICENSE_BLOCKED, MoMessages::showMessage( MoMessages::ERROR_OTP_PHONE ) );
 			if ( is_array( $mle ) && isset( $mle['STATUS'] ) && $mle['STATUS'] ) {
 				if ( $this->is_ajax_form() ) {
 					wp_send_json( MoUtility::create_json( $license_expired_message, MoConstants::ERROR_JSON_TYPE ) );
@@ -145,7 +145,7 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 			$gateway           = GatewayFunctions::instance();
 			$verification_type = 'SMS';
 			if ( ! $gateway->is_mg() && ! get_mo_option( 'custome_gateway_type' ) ) {
-				$this->offer_email_fallback( $user_login, $user_email, $phone_number, $otp_type, $from_both, array() );
+				$this->offer_email_fallback( $user_login, $user_email, $phone_number, $otp_type, $from_both, array(), MoConstants::OTP_ERR_PHONE_GATEWAY_NOT_CONFIGURED );
 				return;
 			}
 
@@ -175,10 +175,13 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 		 * @param string $otp_type     Email or SMS verification.
 		 * @param string $from_both    Whether user enabled from both.
 		 * @param array  $content      JSON decoded response from the failed phone send, if any.
+		 * @param string $error_code   Optional MoConstants::OTP_ERR_* override; defaults to OTP_ERR_PHONE_SEND_FAILED.
 		 */
-		private function offer_email_fallback( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content ) {
+		private function offer_email_fallback( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content, $error_code = null ) {
+			$error_code = ( null !== $error_code ) ? $error_code : MoConstants::OTP_ERR_PHONE_SEND_FAILED;
+
 			if ( ! get_mo_option( 'mo_phone_fallback_to_email' ) ) {
-				$this->handle_otp_sent_failed( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content );
+				$this->handle_otp_sent_failed( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content, $error_code );
 				return;
 			}
 
@@ -211,7 +214,7 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 					MoPHPSessions::add_session_var( 'mo_phone_fallback_active', true );
 					wp_send_json(
 						array(
-							'message'         => esc_html__( 'There was an error sending the OTP over phone. Trying to send it via email instead.', 'miniorange-otp-verification' ),
+							'message'         => MoUtility::append_otp_error_code( $error_code, esc_html__( 'There was an error sending the OTP over phone. Trying to send it via email instead.', 'miniorange-otp-verification' ) ),
 							'result'          => MoConstants::ERROR_JSON_TYPE,
 							'needsEmailField' => true,
 							'defaultMessage'  => str_replace( '##phone##', esc_html( $phone_number ), $this->get_otp_sent_failed_message() ),
@@ -219,7 +222,7 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 					);
 					return;
 				}
-				$this->handle_otp_sent_failed( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content );
+				$this->handle_otp_sent_failed( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content, $error_code );
 				return;
 			}
 
@@ -260,6 +263,7 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 		public function handle_not_matched( $phone_number, $otp_type, $from_both ) {
 			$escaped_phone = esc_html( $phone_number );
 			$message       = str_replace( '##phone##', $escaped_phone, $this->get_otp_invalid_format_message() );
+			$message       = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_PHONE, $message );
 			if ( $this->is_ajax_form() ) {
 				wp_send_json( MoUtility::create_json( $message, MoConstants::ERROR_JSON_TYPE ) );
 			} else {
@@ -279,10 +283,13 @@ if ( ! class_exists( 'PhoneVerificationLogic' ) ) {
 		 * @param string $otp_type email or sms verification.
 		 * @param string $from_both has user enabled from both.
 		 * @param array  $content string the json decoded response from server.
+		 * @param string $error_code Optional MoConstants::OTP_ERR_* override; defaults to OTP_ERR_PHONE_SEND_FAILED.
 		 */
-		public function handle_otp_sent_failed( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content ) {
+		public function handle_otp_sent_failed( $user_login, $user_email, $phone_number, $otp_type, $from_both, $content, $error_code = null ) {
 			$escaped_phone = esc_html( $phone_number );
 			$message       = str_replace( '##phone##', $escaped_phone, $this->get_otp_sent_failed_message() );
+			$error_code    = ( null !== $error_code ) ? $error_code : MoConstants::OTP_ERR_PHONE_SEND_FAILED;
+			$message       = MoUtility::append_otp_error_code( $error_code, $message );
 
 			if ( $this->is_ajax_form() ) {
 				wp_send_json( MoUtility::create_json( $message, MoConstants::ERROR_JSON_TYPE ) );

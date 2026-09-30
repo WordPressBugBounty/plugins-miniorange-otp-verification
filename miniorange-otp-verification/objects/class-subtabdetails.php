@@ -53,6 +53,14 @@ if ( ! class_exists( 'SubTabDetails' ) ) {
 		public $notification_sub_tab_details;
 
 		/**
+		 * Array of SubtabPageDetails Object detailing
+		 * all the page menu options.
+		 *
+		 * @var array
+		 */
+		public $troubleshooting_sub_tab_details;
+
+		/**
 		 * The parent menu slug
 		 *
 		 * @var string
@@ -150,9 +158,29 @@ if ( ! class_exists( 'SubTabDetails' ) ) {
 				),
 			);
 
+			$this->troubleshooting_sub_tab_details = array(
+				SubTabs::MO_TROUBLESHOOTING_ERROR_CODES => new SubtabPageDetails(
+					'OTP Verification - Error Codes',
+					__( 'Error Codes', 'miniorange-otp-verification' ),
+					__( 'Error Codes', 'miniorange-otp-verification' ),
+					'error-codes.php',
+					'errorCodesSubTab',
+					'background:#D8D8D8'
+				),
+				SubTabs::MO_TROUBLESHOOTING_LOGS        => new SubtabPageDetails(
+					'OTP Verification - Logs',
+					__( 'Logs', 'miniorange-otp-verification' ),
+					__( 'Logs', 'miniorange-otp-verification' ),
+					'troubleshooting-logs.php',
+					'logsSubTab',
+					'background:#D8D8D8'
+				),
+			);
+
 			$this->sub_tab_details = array(
-				'otpsettings'     => $this->settings_sub_tab_details,
-				'monotifications' => $this->notification_sub_tab_details,
+				'otpsettings'       => $this->settings_sub_tab_details,
+				'monotifications'   => $this->notification_sub_tab_details,
+				'motroubleshooting' => $this->troubleshooting_sub_tab_details,
 			);
 		}
 	}

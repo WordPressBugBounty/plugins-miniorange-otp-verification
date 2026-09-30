@@ -121,7 +121,7 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 			}
 			// Security: Use hardcoded nonce action 'form_nonce' instead of variable.
 			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
-				wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ), MoConstants::ERROR_JSON_TYPE ) );
+				wp_send_json( MoUtility::create_json( MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ) ), MoConstants::ERROR_JSON_TYPE ) );
 			}
 			$data = MoUtility::mo_sanitize_array( $_POST );
 			switch ( trim( sanitize_text_field( wp_unslash( $_GET['option'] ) ) ) ) {
@@ -177,7 +177,7 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 		 */
 		private function check_duplicates( $value, $key ) {
 			if ( $this->restrict_duplicates && $this->is_phone_number_already_in_use( $value, $key ) ) {
-				$message = MoMessages::showMessage( MoMessages::PHONE_EXISTS );
+				$message = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_ALREADY_EXISTS, MoMessages::showMessage( MoMessages::PHONE_EXISTS ) );
 				wp_send_json( MoUtility::create_json( $message, MoConstants::ERROR_JSON_TYPE ) );
 			}
 		}
@@ -216,8 +216,8 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 				$is_status_match = SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $verification_type );
 			}
 			if ( ! $is_status_match ) {
-				$form->add_error( $this->email_key, MoUtility::get_invalid_otp_method() );
-				$form->add_error( $this->phone_key, MoUtility::get_invalid_otp_method() );
+				$form->add_error( $this->email_key, MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoUtility::get_invalid_otp_method() ) );
+				$form->add_error( $this->phone_key, MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoUtility::get_invalid_otp_method() ) );
 			}
 			return $is_status_match;
 		}
@@ -351,8 +351,8 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 				$mo_nonce = isset( $_POST['mo_um_account_profile_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_um_account_profile_nonce'] ) ) : '';
 				if ( empty( $mo_nonce ) || ! wp_verify_nonce( $mo_nonce, 'mo_um_account_profile_nonce' ) ) {
 					$form = $this->get_um_form_obj();
-					$form->add_error( $this->email_key, MoUtility::get_invalid_otp_method() );
-					$form->add_error( $this->phone_key, MoUtility::get_invalid_otp_method() );
+					$form->add_error( $this->email_key, MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoUtility::get_invalid_otp_method() ) );
+					$form->add_error( $this->phone_key, MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoUtility::get_invalid_otp_method() ) );
 					return;
 				}
 			}
@@ -368,7 +368,7 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 				$form = $this->get_um_form_obj();
 				if ( $this->is_validation_required( $type ) && ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
 					$key = $this->is_profile_verification_enabled() && 'profile' === $mode ? $this->phone_key : $this->email_key;
-					$form->add_error( $key, MoMessages::showMessage( MoMessages::PLEASE_VALIDATE ) );
+					$form->add_error( $key, MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::PLEASE_VALIDATE ) ) );
 				} else {
 					$otp_validated = false;
 					if ( isset( $args[ $this->verify_field_key ] ) ) {
@@ -484,7 +484,7 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 				if ( 'account' !== $mode ) {
 					$phone = MoUtility::process_phone_number( $args[ $this->phone_key ] );
 					if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
-						$um_form->add_error( $this->phone_key, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) );
+						$um_form->add_error( $this->phone_key, MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_MISMATCH, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) ) );
 					}
 				}
 			}
@@ -492,7 +492,7 @@ if ( ! class_exists( 'UltimateMemberProfileForm' ) ) {
 			if ( $this->is_account_verification_enabled() && isset( $args[ $this->email_key ] ) ) {
 				if ( 'profile' !== $mode ) {
 					if ( ! SessionUtils::is_email_verified_match( $this->form_session_var, $args[ $this->email_key ] ) ) {
-						$um_form->add_error( $this->email_key, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) );
+						$um_form->add_error( $this->email_key, MoUtility::append_otp_error_code( MoConstants::OTP_ERR_EMAIL_MISMATCH, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) ) );
 					}
 				}
 			}

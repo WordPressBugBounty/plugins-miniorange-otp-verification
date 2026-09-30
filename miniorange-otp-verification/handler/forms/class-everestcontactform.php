@@ -128,7 +128,7 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( BaseMessages::INVALID_OTP ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( BaseMessages::INVALID_OTP ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -216,7 +216,7 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 			$nonce_key    = 'everest_forms_nonce';
 			$nonce_action = 'everest-forms_process_submit';
 			if ( isset( $_POST[ $nonce_key ] ) && ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST[ $nonce_key ] ) ), $nonce_action ) ) {
-				$errors[ $id ]['header'] = MoMessages::showMessage( BaseMessages::INVALID_OTP );
+				$errors[ $id ]['header'] = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( BaseMessages::INVALID_OTP ) );
 			}
 
 			$data = MoUtility::mo_sanitize_array( wp_unslash( $_POST ) );
@@ -254,7 +254,7 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 			$otp_ver_type = $this->get_verification_type();
 			$this->validate_challenge( $otp_ver_type, null, $data['everest_forms']['form_fields'][ $form_data['verifyKey'] ] );
 			if ( ! SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otp_ver_type ) ) {
-				$errors[ $id ]['header'] = MoUtility::get_invalid_otp_method();
+				$errors[ $id ]['header'] = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoUtility::get_invalid_otp_method() );
 			}
 			return $errors;
 		}
@@ -272,7 +272,7 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 				return $errors;
 			}
 			if ( ! ( SessionUtils::is_otp_initialized( $this->form_session_var ) ) ) {
-				$errors[ $id ]['header'] = MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE );
+				$errors[ $id ]['header'] = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ) );
 			}
 			return $errors;
 		}
@@ -288,7 +288,7 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 		private function process_email( $data, $errors, $form_data ) {
 			$id = isset( $data['everest_forms']['id'] ) ? $data['everest_forms']['id'] : '';
 			if ( ! SessionUtils::is_email_verified_match( $this->form_session_var, $data['everest_forms']['form_fields'][ $form_data['emailkey'] ] ) ) {
-				$errors[ $id ]['header'] = MoMessages::showMessage( MoMessages::EMAIL_MISMATCH );
+				$errors[ $id ]['header'] = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_EMAIL_MISMATCH, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) );
 			}
 			return $errors;
 		}
@@ -305,7 +305,7 @@ if ( ! class_exists( 'EverestContactForm' ) ) {
 			$id    = isset( $data['everest_forms']['id'] ) ? $data['everest_forms']['id'] : '';
 			$phone = MoUtility::process_phone_number( $data['everest_forms']['form_fields'][ $form_data['phonekey'] ] );
 			if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
-				$errors[ $id ]['header'] = MoMessages::showMessage( MoMessages::PHONE_MISMATCH );
+				$errors[ $id ]['header'] = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_MISMATCH, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) );
 			}
 			return $errors;
 		}

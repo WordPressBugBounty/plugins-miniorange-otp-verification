@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use OTP\Helper\FormSessionVars;
+use OTP\Helper\MoConstants;
 use OTP\Helper\MoFormDocs;
 use OTP\Helper\MoUtility;
 use OTP\Helper\SessionUtils;
@@ -205,7 +206,7 @@ if ( ! class_exists( 'BuddyPressRegistrationForm' ) ) {
 				$user_login,
 				$user_email,
 				$phone_number,
-				MoUtility::get_invalid_otp_method(),
+				MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoUtility::get_invalid_otp_method() ),
 				$otp_ver_type,
 				$from_both
 			);

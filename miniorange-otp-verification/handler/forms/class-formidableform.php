@@ -113,7 +113,7 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 		public function send_otp_frm_ajax() {
 			// Security: Use hardcoded nonce action 'form_nonce' instead of variable.
 			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
-				wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ), MoConstants::ERROR_JSON_TYPE ) );
+				wp_send_json( MoUtility::create_json( MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ) ), MoConstants::ERROR_JSON_TYPE ) );
 			}
 			$data = MoUtility::mo_sanitize_array( $_POST );
 			if ( $this->otp_type === $this->type_phone_tag ) {
@@ -226,7 +226,7 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 		 */
 		private function has_otp_been_sent( &$errors, $field ) {
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
-				$message = MoMessages::showMessage( BaseMessages::ENTER_VERIFY_CODE );
+				$message = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( BaseMessages::ENTER_VERIFY_CODE ) );
 				if ( $this->is_phone_verification_enabled() ) {
 					$errors[ 'field' . $this->getFieldId( 'phone_show', $field ) ] = $message;
 				} else {
@@ -250,10 +250,10 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 			if ( ! $this->check_phone_or_email_integrity( $this->field_value ) ) {
 				if ( $this->is_phone_verification_enabled() ) {
 					$errors[ 'field' . $this->getFieldId( 'phone_show', $field ) ]
-					= MoMessages::showMessage( BaseMessages::PHONE_MISMATCH );
+					= MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_MISMATCH, MoMessages::showMessage( BaseMessages::PHONE_MISMATCH ) );
 				} else {
 					$errors[ 'field' . $this->getFieldId( 'email_show', $field ) ]
-					= MoMessages::showMessage( BaseMessages::EMAIL_MISMATCH );
+					= MoUtility::append_otp_error_code( MoConstants::OTP_ERR_EMAIL_MISMATCH, MoMessages::showMessage( BaseMessages::EMAIL_MISMATCH ) );
 				}
 				return true;
 			}
@@ -276,7 +276,7 @@ if ( ! class_exists( 'FormidableForm' ) ) {
 				$this->unset_otp_session_variables();
 				return true;
 			} else {
-				$errors[ 'field' . $this->getFieldId( 'verify_show', $field ) ] = MoUtility::get_invalid_otp_method();
+				$errors[ 'field' . $this->getFieldId( 'verify_show', $field ) ] = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoUtility::get_invalid_otp_method() );
 				return false;
 			}
 		}

@@ -128,7 +128,7 @@ if ( ! class_exists( 'FluentForm' ) ) {
 			} else {
 				wp_send_json_error(
 					array(
-						'message' => MoMessages::showMessage( MoMessages::INVALID_OTP ),
+						'message' => MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoMessages::showMessage( MoMessages::INVALID_OTP ) ),
 					),
 					201
 				);
@@ -141,7 +141,7 @@ if ( ! class_exists( 'FluentForm' ) ) {
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
 				wp_send_json_error(
 					array(
-						'message' => MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ),
+						'message' => MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ) ),
 					),
 					201
 				);
@@ -163,7 +163,7 @@ if ( ! class_exists( 'FluentForm' ) ) {
 				if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
 					wp_send_json_error(
 						array(
-							'message' => MoMessages::showMessage( MoMessages::PHONE_MISMATCH ),
+							'message' => MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_MISMATCH, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) ),
 						),
 						201
 					);
@@ -171,7 +171,7 @@ if ( ! class_exists( 'FluentForm' ) ) {
 			} elseif ( ! SessionUtils::is_email_verified_match( $this->form_session_var, sanitize_email( $data[ $email_key ] ) ) ) {
 				wp_send_json_error(
 					array(
-						'message' => MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ),
+						'message' => MoUtility::append_otp_error_code( MoConstants::OTP_ERR_EMAIL_MISMATCH, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) ),
 					),
 					201
 				);
@@ -187,7 +187,7 @@ if ( ! class_exists( 'FluentForm' ) ) {
 			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json_error(
 					array(
-						'message' => MoMessages::showMessage( MoMessages::INVALID_OTP ),
+						'message' => MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::INVALID_OTP ) ),
 					),
 					400
 				);

@@ -119,7 +119,7 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 
 			// Security: Use hardcoded nonce action 'form_nonce' instead of variable.
 			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
-				wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ), MoConstants::ERROR_JSON_TYPE ) );
+				wp_send_json( MoUtility::create_json( MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ) ), MoConstants::ERROR_JSON_TYPE ) );
 			}
 			$data = MoUtility::mo_sanitize_array( $_POST );
 			switch ( trim( $option ) ) {
@@ -221,7 +221,7 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'woocommerce-register' ) ) {
 				$errors = new WP_Error(
 					'registration-error-invalid-nonce',
-					MoMessages::showMessage( MoMessages::INVALID_OP )
+					MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::INVALID_OP ) )
 				);
 				return $errors;
 			}
@@ -267,7 +267,7 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
 				$errors = new WP_Error(
 					'registration-error-need-validation',
-					MoMessages::showMessage( MoMessages::PLEASE_VALIDATE )
+					MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::PLEASE_VALIDATE ) )
 				);
 			}
 		}
@@ -299,7 +299,7 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 			if ( SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otpver_type ) ) {
 				$this->unset_otp_session_variables();
 			} else {
-				return new WP_Error( 'registration-error-invalid-otp', MoUtility::get_invalid_otp_method() );
+				return new WP_Error( 'registration-error-invalid-otp', MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoUtility::get_invalid_otp_method() ) );
 			}
 			return $errors;
 		}
@@ -315,12 +315,12 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 		private function checkIntegrity( $data, WP_Error $errors ) {
 			$phone_errors = new WP_Error(
 				'billing_phone_error',
-				MoMessages::showMessage( MoMessages::PHONE_MISMATCH )
+				MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_MISMATCH, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) )
 			);
 
 			$email_errors = new WP_Error(
 				'registration-error-invalid-email',
-				MoMessages::showMessage( MoMessages::EMAIL_MISMATCH )
+				MoUtility::append_otp_error_code( MoConstants::OTP_ERR_EMAIL_MISMATCH, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) )
 			);
 
 			if ( 0 === strcasecmp( $this->otp_type, $this->type_phone_tag ) ) {
@@ -487,7 +487,7 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 
 			$phone_exists_errors = new WP_Error(
 				'billing_phone_error',
-				MoMessages::showMessage( MoMessages::PHONE_EXISTS )
+				MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_ALREADY_EXISTS, MoMessages::showMessage( MoMessages::PHONE_EXISTS ) )
 			);
 
 			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
@@ -589,7 +589,7 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 					$user_login,
 					$user_email,
 					$phone_number,
-					MoUtility::get_invalid_otp_method(),
+					MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoUtility::get_invalid_otp_method() ),
 					$otpver_type,
 					$from_both
 				);

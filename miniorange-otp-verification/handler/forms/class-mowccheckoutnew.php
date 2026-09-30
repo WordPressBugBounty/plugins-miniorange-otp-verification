@@ -219,7 +219,7 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::INVALID_OP ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::INVALID_OP ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -252,7 +252,7 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 			if ( $this->is_phone_number_already_in_use( $get_data['user_phone'] ) && $this->restrict_duplicates ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::PHONE_EXISTS ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_ALREADY_EXISTS, MoMessages::showMessage( MoMessages::PHONE_EXISTS ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -363,7 +363,7 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::INVALID_OP ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::INVALID_OP ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -392,7 +392,7 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 			} else {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::INVALID_OTP ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoMessages::showMessage( MoMessages::INVALID_OTP ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -410,7 +410,7 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 				if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
 					wp_send_json(
 						MoUtility::create_json(
-							MoMessages::showMessage( MoMessages::PHONE_MISMATCH ),
+							MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_MISMATCH, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) ),
 							MoConstants::ERROR_JSON_TYPE
 						)
 					);
@@ -420,7 +420,7 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 				if ( ! SessionUtils::is_email_verified_match( $this->form_session_var, sanitize_email( $data['user_email'] ) ) ) {
 					wp_send_json(
 						MoUtility::create_json(
-							MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ),
+							MoUtility::append_otp_error_code( MoConstants::OTP_ERR_EMAIL_MISMATCH, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) ),
 							MoConstants::ERROR_JSON_TYPE
 						)
 					);
@@ -498,12 +498,12 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 		 */
 		public function process_phone_number( $data ) {
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) || ! MoPHPSessions::get_session_var( 'is_otp_verified_phone' ) ) {
-				$message = MoMessages::showMessage( MoMessages::ENTER_PHONE_VERIFY_CODE );
+				$message = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::ENTER_PHONE_VERIFY_CODE ) );
 				return $message;
 			}
 			$phone = MoUtility::process_phone_number( sanitize_text_field( $data['phone'] ) );
 			if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
-				$message = MoMessages::showMessage( MoMessages::PHONE_MISMATCH );
+				$message = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_MISMATCH, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) );
 				return $message;
 			}
 		}
@@ -516,11 +516,11 @@ if ( ! class_exists( 'MoWCCheckoutNew' ) ) {
 		 */
 		public function process_email( $data ) {
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) || ! MoPHPSessions::get_session_var( 'is_otp_verified_email' ) ) {
-				$message = MoMessages::showMessage( MoMessages::ENTER_EMAIL_VERIFY_CODE );
+				$message = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::ENTER_EMAIL_VERIFY_CODE ) );
 				return $message;
 			}
 			if ( ! SessionUtils::is_email_verified_match( $this->form_session_var, sanitize_email( $data['email'] ) ) ) {
-				$message = MoMessages::showMessage( MoMessages::EMAIL_MISMATCH );
+				$message = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_EMAIL_MISMATCH, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) );
 				return $message;
 			}
 		}

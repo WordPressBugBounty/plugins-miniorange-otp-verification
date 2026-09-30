@@ -89,7 +89,7 @@ if ( ! class_exists( 'NinjaFormAjaxForm' ) ) {
 			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 					wp_send_json(
 						MoUtility::create_json(
-							MoMessages::showMessage( MoMessages::INVALID_OP ),
+							MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::INVALID_OP ) ),
 							MoConstants::ERROR_JSON_TYPE
 						)
 					);
@@ -178,7 +178,7 @@ if ( ! class_exists( 'NinjaFormAjaxForm' ) ) {
 			$otp_type     = $this->get_verification_type();
 			$this->validate_challenge( $otp_type, null, $data['fields'][ $verify_field ]['value'] );
 			if ( ! SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otp_type ) ) {
-				$data['errors']['fields'][ $verify_field ] = MoUtility::get_invalid_otp_method();
+				$data['errors']['fields'][ $verify_field ] = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoUtility::get_invalid_otp_method() );
 			} else {
 				$this->unset_otp_session_variables();
 			}
@@ -201,9 +201,9 @@ if ( ! class_exists( 'NinjaFormAjaxForm' ) ) {
 			}
 
 			if ( strcasecmp( $this->otp_type, $this->type_email_tag ) === 0 ) {
-				$data['errors']['fields'][ $form_data['emailkey'] ] = MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE );
+				$data['errors']['fields'][ $form_data['emailkey'] ] = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ) );
 			} else {
-				$data['errors']['fields'][ $form_data['phonekey'] ] = MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE );
+				$data['errors']['fields'][ $form_data['phonekey'] ] = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ) );
 			}
 
 			return $data;
@@ -221,7 +221,7 @@ if ( ! class_exists( 'NinjaFormAjaxForm' ) ) {
 		private function mo_process_email( $form_data, $data ) {
 			$field_id = $form_data['emailkey'];
 			if ( ! SessionUtils::is_email_verified_match( $this->form_session_var, $data['fields'][ $field_id ]['value'] ) ) {
-				$data['errors']['fields'][ $field_id ] = MoMessages::showMessage( MoMessages::EMAIL_MISMATCH );
+				$data['errors']['fields'][ $field_id ] = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_EMAIL_MISMATCH, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) );
 			}
 			return $data;
 		}
@@ -239,7 +239,7 @@ if ( ! class_exists( 'NinjaFormAjaxForm' ) ) {
 			$field_id = $form_data['phonekey'];
 			$phone = MoUtility::process_phone_number( $data['fields'][ $field_id ]['value'] );
 			if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
-				$data['errors']['fields'][ $field_id ] = MoMessages::showMessage( MoMessages::PHONE_MISMATCH );
+				$data['errors']['fields'][ $field_id ] = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_MISMATCH, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) );
 			}
 			return $data;
 		}

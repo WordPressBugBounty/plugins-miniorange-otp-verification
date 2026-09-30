@@ -105,7 +105,7 @@ if ( ! class_exists( 'WooCommerceBilling' ) ) {
 				if ( $this->restrict_duplicates && $this->is_duplicate( $value, $type ) ) {
 					if ( function_exists( 'wc_add_notice' ) ) {
 							wc_add_notice(
-								MoMessages::showMessage( MoMessages::PHONE_EXISTS ),
+								MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_ALREADY_EXISTS, MoMessages::showMessage( MoMessages::PHONE_EXISTS ) ),
 								MoConstants::ERROR_JSON_TYPE
 							);
 					}
@@ -134,7 +134,7 @@ if ( ! class_exists( 'WooCommerceBilling' ) ) {
 				$user_login,
 				$user_email,
 				$phone_number,
-				MoUtility::get_invalid_otp_method(),
+				MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoUtility::get_invalid_otp_method() ),
 				$otp_ver_type,
 				$form_both
 			);

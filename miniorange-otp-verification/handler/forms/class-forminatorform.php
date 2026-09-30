@@ -134,9 +134,9 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		public function mo_validation_checks( $submit_errors, $form_id, $field_data_array = '' ) {
 			$mo_error = '';
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
-				$mo_error = MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE );
+				$mo_error = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ) );
 			} elseif ( ! SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $this->get_verification_type() ) ) {
-				$mo_error = MoMessages::showMessage( MoMessages::PLEASE_VALIDATE );
+				$mo_error = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::PLEASE_VALIDATE ) );
 			} else {
 				$field_id    = $this->form_details[ $form_id ][ $this->get_verification_type() . 'key' ];
 				$field_value = '';
@@ -151,10 +151,10 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 				if ( array_key_exists( $form_id, $this->form_details ) && $this->get_verification_type() === 'phone' ) {
 					$phone = MoUtility::process_phone_number( sanitize_text_field( $field_value ) );
 					if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
-						$mo_error = MoMessages::showMessage( MoMessages::PHONE_MISMATCH );
+						$mo_error = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_MISMATCH, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) );
 					}
 				} elseif ( ! SessionUtils::is_email_verified_match( $this->form_session_var, sanitize_email( wp_unslash( $field_value ) ) ) ) {
-					$mo_error = MoMessages::showMessage( MoMessages::EMAIL_MISMATCH );
+					$mo_error = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_EMAIL_MISMATCH, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) );
 				}
 			}
 
@@ -183,7 +183,7 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::INVALID_OP ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::INVALID_OP ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -201,7 +201,7 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -232,7 +232,7 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 			} else {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::INVALID_OTP ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoMessages::showMessage( MoMessages::INVALID_OTP ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -254,7 +254,7 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 				if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
 					wp_send_json(
 						MoUtility::create_json(
-							MoMessages::showMessage( MoMessages::PHONE_MISMATCH ),
+							MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_MISMATCH, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) ),
 							MoConstants::ERROR_JSON_TYPE
 						)
 					);
@@ -262,7 +262,7 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 			} elseif ( ! SessionUtils::is_email_verified_match( $this->form_session_var, sanitize_email( wp_unslash( $data['user_email'] ) ) ) ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_EMAIL_MISMATCH, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -319,7 +319,7 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -390,7 +390,7 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 			$otp_ver_type = $this->get_verification_type();
 			$this->validate_challenge( $otp_ver_type, null, $entry );
 			if ( ! SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otp_ver_type ) ) {
-				$entry = new WP_Error( 'INVALID_OTP', MoUtility::get_invalid_otp_method() );
+				$entry = new WP_Error( 'INVALID_OTP', MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoUtility::get_invalid_otp_method() ) );
 			}
 			return $entry;
 		}
@@ -406,7 +406,7 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		 */
 		private function check_if_otp_verification_started( $entry ) {
 			return SessionUtils::is_otp_initialized( $this->form_session_var ) ? $entry
-			: new WP_Error( 'ENTER_VERIFY_CODE', MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ) );
+			: new WP_Error( 'ENTER_VERIFY_CODE', MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ) ) );
 		}
 
 
@@ -416,7 +416,7 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		 */
 		private function process_email( $entry ) {
 			return SessionUtils::is_email_verified_match( $this->form_session_var, $entry ) ? $entry :
-			new WP_Error( 'EMAIL_MISMATCH', MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) );
+			new WP_Error( 'EMAIL_MISMATCH', MoUtility::append_otp_error_code( MoConstants::OTP_ERR_EMAIL_MISMATCH, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) ) );
 		}
 
 
@@ -427,7 +427,7 @@ if ( ! class_exists( 'ForminatorForm' ) ) {
 		private function process_phone( $entry ) {
 			$phone = MoUtility::process_phone_number( $entry );
 			return SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ? $entry :
-			new WP_Error( 'PHONE_MISMATCH', MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) );
+			new WP_Error( 'PHONE_MISMATCH', MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_MISMATCH, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) ) );
 		}
 
 		/**

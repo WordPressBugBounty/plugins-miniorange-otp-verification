@@ -110,7 +110,7 @@ if ( ! class_exists( 'UltimateMemberRegistrationForm' ) ) {
 			}
 			// Security: Use hardcoded nonce action 'form_nonce' instead of variable.
 			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
-				wp_send_json( MoUtility::create_json( MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ), MoConstants::ERROR_JSON_TYPE ) );
+				wp_send_json( MoUtility::create_json( MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ) ), MoConstants::ERROR_JSON_TYPE ) );
 			}
 
 			$data                  = MoUtility::mo_sanitize_array( wp_unslash( $_POST ) );
@@ -196,7 +196,7 @@ if ( ! class_exists( 'UltimateMemberRegistrationForm' ) ) {
 			} elseif ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) && $this->is_ajax_form ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::PLEASE_VALIDATE ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::PLEASE_VALIDATE ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -363,7 +363,7 @@ if ( ! class_exists( 'UltimateMemberRegistrationForm' ) ) {
 		 */
 		private function check_duplicates( $value, $key, $form = null ) {
 			if ( $this->restrict_duplicates && $this->is_phone_number_already_in_use( $value, $key ) ) {
-				$message = MoMessages::showMessage( MoMessages::PHONE_EXISTS );
+				$message = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_ALREADY_EXISTS, MoMessages::showMessage( MoMessages::PHONE_EXISTS ) );
 				if ( $this->is_ajax_form && SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
 					wp_send_json( MoUtility::create_json( $message, MoConstants::ERROR_JSON_TYPE ) );
 				} else {
@@ -388,13 +388,13 @@ if ( ! class_exists( 'UltimateMemberRegistrationForm' ) ) {
 
 			$otpver_type = $this->get_verification_type();
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
-				$form->add_error( $this->verify_field_meta_key, MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ) );
+				$form->add_error( $this->verify_field_meta_key, MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ) ) );
 				return;
 			}
 			$this->check_integrity( $form, $args, $otpver_type );
 			$this->validate_challenge( $otpver_type, null, sanitize_text_field( $value ) );
 			if ( ! SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otpver_type ) ) {
-				$form->add_error( $this->verify_field_meta_key, MoUtility::get_invalid_otp_method() );
+				$form->add_error( $this->verify_field_meta_key, MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoUtility::get_invalid_otp_method() ) );
 			}
 		}
 
@@ -452,11 +452,11 @@ if ( ! class_exists( 'UltimateMemberRegistrationForm' ) ) {
 			if ( strcasecmp( $this->otp_type, $this->type_phone_tag ) === 0 ) {
 				$phone = MoUtility::process_phone_number( $args[ $this->phone_key ] );
 				if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
-					$um_form->add_error( $this->verify_field_meta_key, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) );
+					$um_form->add_error( $this->verify_field_meta_key, MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_MISMATCH, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) ) );
 				}
 			} elseif ( strcasecmp( $this->otp_type, $this->type_email_tag ) === 0 ) {
 				if ( ! SessionUtils::is_email_verified_match( $this->form_session_var, $args['user_email'] ) ) {
-					$um_form->add_error( $this->verify_field_meta_key, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) );
+					$um_form->add_error( $this->verify_field_meta_key, MoUtility::append_otp_error_code( MoConstants::OTP_ERR_EMAIL_MISMATCH, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) ) );
 				}
 			}
 		}
@@ -545,7 +545,7 @@ if ( ! class_exists( 'UltimateMemberRegistrationForm' ) ) {
 					$user_login,
 					$user_email,
 					$phone_number,
-					MoUtility::get_invalid_otp_method(),
+					MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoUtility::get_invalid_otp_method() ),
 					$otpver_type,
 					$from_both
 				);

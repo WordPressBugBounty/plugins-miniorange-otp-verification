@@ -573,6 +573,22 @@ if ( ! class_exists( 'MoUtility' ) ) {
 				'result'  => $type,
 			);
 		}
+
+		/**
+		 * Prefixes a user-facing OTP failure message with its support error code.
+		 *
+		 * @param string $error_code One of MoConstants::OTP_ERR_* (WPOTPERR###).
+		 * @param string $message    Message to show before the contact-admin suffix.
+		 * @return string
+		 */
+		public static function append_otp_error_code( $error_code, $message = '' ) {
+			$raw      = is_string( $error_code ) ? $error_code : (string) $error_code;
+			$code_str = preg_match( '/^WPOTPERR\d+$/i', $raw ) ? strtoupper( $raw ) : 'WPOTPERR000';
+			$prefix   = esc_html__( 'Error Code:', 'miniorange-otp-verification' ) . ' ' . esc_html( $code_str ) . ' - ';
+			$suffix   = esc_html__( 'Please contact your Administrator with the above error code.', 'miniorange-otp-verification' );
+			$middle   = '' !== $message ? $message . ' ' : '';
+			return $prefix . $middle . $suffix;
+		}
 		/**
 		 * Check for Country Restriction Addon
 		 *

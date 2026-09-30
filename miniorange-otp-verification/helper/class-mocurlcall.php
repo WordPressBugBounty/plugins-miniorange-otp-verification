@@ -284,9 +284,12 @@ if ( ! class_exists( 'MocURLCall' ) ) {
 			);
 			$response = wp_remote_post( $url, $args );
 			if ( is_wp_error( $response ) ) {
+				MoLogger::log( 'API Error', $url, $json_string, $response->get_error_message() );
 				wp_die( wp_kses( MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ) . ": <br/> {$response->get_error_message()}", array( 'br' => array() ) ) );
 			}
-			return wp_remote_retrieve_body( $response );
+			$response_body = wp_remote_retrieve_body( $response );
+			MoLogger::log( 'API Call', $url, $json_string, $response_body );
+			return $response_body;
 		}
 
 		/**

@@ -119,7 +119,7 @@ if ( ! class_exists( 'MemberPressRegistrationForm' ) ) {
 			if ( empty( $mov_nonce ) || ! wp_verify_nonce( $mov_nonce, 'mo_register_nonce' ) ) {
 				return new WP_Error(
 					'registration-error-invalid-nonce',
-					MoMessages::showMessage( MoMessages::INVALID_OP )
+					MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::INVALID_OP ) )
 				);
 			}
 
@@ -289,7 +289,7 @@ if ( ! class_exists( 'MemberPressRegistrationForm' ) ) {
 				$user_login,
 				$user_email,
 				$phone_number,
-				MoUtility::get_invalid_otp_method(),
+				MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoUtility::get_invalid_otp_method() ),
 				$otpver_type,
 				$from_both
 			);

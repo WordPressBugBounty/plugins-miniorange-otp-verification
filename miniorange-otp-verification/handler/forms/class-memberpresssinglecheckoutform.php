@@ -91,7 +91,7 @@ if ( ! class_exists( 'MemberPressSingleCheckoutForm' ) ) {
 			if ( ! check_ajax_referer( 'form_nonce', 'security', false ) ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoMessages::showMessage( MoMessages::INVALID_OP ),
+						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::INVALID_OP ) ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
@@ -205,7 +205,7 @@ if ( ! class_exists( 'MemberPressSingleCheckoutForm' ) ) {
 			if ( empty( $mov_nonce ) || ! wp_verify_nonce( $mov_nonce, 'mov_mrp_validate' ) ) {
 				$errors = new WP_Error(
 					'registration-error-invalid-nonce',
-					MoMessages::showMessage( MoMessages::INVALID_OP )
+					MoUtility::append_otp_error_code( MoConstants::OTP_ERR_NONCE_FAILED, MoMessages::showMessage( MoMessages::INVALID_OP ) )
 				);
 				return $errors;
 			}
@@ -213,7 +213,7 @@ if ( ! class_exists( 'MemberPressSingleCheckoutForm' ) ) {
 			$is_phone = ( 0 === strcasecmp( $this->otp_type, $this->type_phone_tag ) );
 
 			if ( ! SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
-				$errors[ $is_phone ? $this->phone_key : 'user_email' ] = MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE );
+				$errors[ $is_phone ? $this->phone_key : 'user_email' ] = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_SESSION_INVALID, MoMessages::showMessage( MoMessages::ENTER_VERIFY_CODE ) );
 				return $errors;
 			}
 
@@ -227,10 +227,10 @@ if ( ! class_exists( 'MemberPressSingleCheckoutForm' ) ) {
 				$raw_phone = isset( $_POST[ $this->phone_key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $this->phone_key ] ) ) : '';
 				$phone     = MoUtility::process_phone_number( $raw_phone );
 				if ( ! SessionUtils::is_phone_verified_match( $this->form_session_var, $phone ) ) {
-					$errors[ $this->phone_key ] = MoMessages::showMessage( MoMessages::PHONE_MISMATCH );
+					$errors[ $this->phone_key ] = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_MISMATCH, MoMessages::showMessage( MoMessages::PHONE_MISMATCH ) );
 				}
 			} elseif ( ! SessionUtils::is_email_verified_match( $this->form_session_var, $email ) ) {
-					$errors['user_email'] = MoMessages::showMessage( MoMessages::EMAIL_MISMATCH );
+					$errors['user_email'] = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_EMAIL_MISMATCH, MoMessages::showMessage( MoMessages::EMAIL_MISMATCH ) );
 			}
 
 			if ( ! empty( $errors ) ) {
@@ -245,7 +245,7 @@ if ( ! class_exists( 'MemberPressSingleCheckoutForm' ) ) {
 			}
 
 			if ( ! SessionUtils::is_status_match( $this->form_session_var, self::VALIDATED, $otp_type ) ) {
-				$errors[ $is_phone ? $this->phone_key : 'user_email' ] = MoMessages::showMessage( MoMessages::INVALID_OTP );
+				$errors[ $is_phone ? $this->phone_key : 'user_email' ] = MoUtility::append_otp_error_code( MoConstants::OTP_ERR_INVALID_OTP, MoMessages::showMessage( MoMessages::INVALID_OTP ) );
 			}
 
 			return $errors;
