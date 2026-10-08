@@ -122,6 +122,10 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 */
 		private $time_stamp_meta_key = 'mov_last_verified_dttm';
 
+		private $delay_token_meta_key = 'mov_delay_otp_token';
+
+		const DELAY_OTP_COOKIE = 'mo_otp_delay_grace';
+
 		/**
 		 * Redirect page after Login.
 		 *
@@ -508,7 +512,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			if ( $this->mo_pending_phone_enrollment_blocks_password_bypass( $user ) ) {
 				return false;
 			}
-			if ( $skip_otp_process || $this->mo_delay_otp_process( $user->data->ID ) ) {
+			if ( $skip_otp_process ) {
 				return true;
 			}
 			if ( $this->by_pass_admin ) {
@@ -521,6 +525,9 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 					// 2FA mode: password already verified — bypass OTP for admins.
 					return true;
 				}
+			}
+			if ( $this->mo_delay_otp_process( $user->data->ID ) ) {
+				return true;
 			}
 			return false;
 		}
@@ -683,7 +690,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			if ( $user ) {
 				wp_set_auth_cookie( $user->data->ID, true );
 				if ( $this->delay_otp && $this->delay_otp_interval > 0 ) {
-					update_user_meta( $user->data->ID, $this->time_stamp_meta_key, time() );
+					$this->mo_start_delay_otp_grace( $user->data->ID );
 				}
 				$this->unset_otp_session_variables();
 				do_action( 'wp_login', $user->user_login, $user );
@@ -1347,26 +1354,62 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 * @param array $post_data - $_POST.
 		 */
 		private function mo_handle_wp_login_ajax_send_otp( $post_data ) {
-			$user_phone = $post_data['user_phone'];
 			MoUtility::initialize_transaction( $this->form_session_var );
+
 			$bound_username = MoPHPSessions::get_session_var( 'login_user_mo' );
-			$bound_email    = '';
-			if ( ! MoUtility::is_blank( $bound_username ) ) {
-				SessionUtils::add_user_in_session( $this->form_session_var, $bound_username );
-				$bound_user = get_user_by( 'login', $bound_username );
-				if ( $bound_user instanceof WP_User ) {
-					$bound_email = $bound_user->user_email;
-				}
-			}
-			if ( $this->restrict_duplicates() && ! MoUtility::is_blank( $this->mo_get_user_from_phone_number( $user_phone ) ) ) {
+			$bound_user     = MoUtility::is_blank( $bound_username ) ? false : get_user_by( 'login', $bound_username );
+			if ( ! $bound_user instanceof WP_User ) {
 				wp_send_json(
 					MoUtility::create_json(
-						MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_ALREADY_EXISTS, MoMessages::showMessage( MoMessages::PHONE_EXISTS ) ),
+						MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ),
 						MoConstants::ERROR_JSON_TYPE
 					)
 				);
-			} elseif ( SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
-				$this->send_challenge( 'ajax_phone', $bound_email, null, $user_phone, VerificationType::PHONE, null, $post_data, null, $this->form_session_var );
+			}
+			SessionUtils::add_user_in_session( $this->form_session_var, $bound_username );
+			$bound_email = $bound_user->user_email;
+
+			// The login OTP destination is resolved server-side and must belong to the target user.
+			// A number supplied in the request is honoured only for genuine first-time enrollment,
+			// which requires prior password ownership proof. Without this an unauthenticated caller
+			// could have the target's login OTP sent to a phone they control and log in as the target.
+			$registered_phone = MoUtility::process_phone_number( get_user_meta( $bound_user->data->ID, $this->get_phone_key_details(), true ) );
+			$ownership_ok     = ( '1' === (string) MoPHPSessions::get_session_var( 'mo_wp_login_enrollment_ownership_ok' ) );
+
+			if ( ! MoUtility::is_blank( $registered_phone ) ) {
+				$target_phone = $registered_phone;
+			} elseif ( $ownership_ok ) {
+				$requested_phone = isset( $post_data['user_phone'] ) ? MoUtility::process_phone_number( $post_data['user_phone'] ) : '';
+				if ( MoUtility::is_blank( $requested_phone ) ) {
+					wp_send_json(
+						MoUtility::create_json(
+							MoMessages::showMessage( MoMessages::UNKNOWN_ERROR ),
+							MoConstants::ERROR_JSON_TYPE
+						)
+					);
+				}
+				if ( $this->restrict_duplicates() && ! MoUtility::is_blank( $this->mo_get_user_from_phone_number( $requested_phone ) ) ) {
+					wp_send_json(
+						MoUtility::create_json(
+							MoUtility::append_otp_error_code( MoConstants::OTP_ERR_PHONE_ALREADY_EXISTS, MoMessages::showMessage( MoMessages::PHONE_EXISTS ) ),
+							MoConstants::ERROR_JSON_TYPE
+						)
+					);
+				}
+				$target_phone = $requested_phone;
+			} else {
+				// No phone on file and no password ownership proof: refuse. Phone enrollment must be
+				// completed via password login first; a login OTP is never sent to a request-supplied number.
+				wp_send_json(
+					MoUtility::create_json(
+						MoMessages::showMessage( MoMessages::PHONE_NOT_FOUND ),
+						MoConstants::ERROR_JSON_TYPE
+					)
+				);
+			}
+
+			if ( SessionUtils::is_otp_initialized( $this->form_session_var ) ) {
+				$this->send_challenge( 'ajax_phone', $bound_email, null, $target_phone, VerificationType::PHONE, null, $post_data, null, $this->form_session_var );
 			} else {
 				wp_send_json(
 					MoUtility::create_json(
@@ -1571,15 +1614,63 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 * @return bool TRUE or FALSE
 		 */
 		private function mo_delay_otp_process( $user_id ) {
-			if ( $this->delay_otp && $this->delay_otp_interval < 0 ) {
-				return true;
+			if ( ! $this->delay_otp ) {
+				return false;
 			}
 			$last_verified_dttm = get_user_meta( $user_id, $this->time_stamp_meta_key, true );
 			if ( MoUtility::is_blank( $last_verified_dttm ) ) {
 				return false;
 			}
-			$time_diff = time() - $last_verified_dttm;
-			return $this->delay_otp && $time_diff < ( $this->delay_otp_interval * 60 );
+			if ( ! $this->mo_delay_grace_token_matches( $user_id ) ) {
+				return false;
+			}
+			if ( $this->delay_otp_interval < 0 ) {
+				return true;
+			}
+			$time_diff = time() - (int) $last_verified_dttm;
+			return $time_diff < ( (int) $this->delay_otp_interval * 60 );
+		}
+
+		private function mo_start_delay_otp_grace( $user_id ) {
+			$token = wp_generate_password( 64, false );
+			update_user_meta( $user_id, $this->time_stamp_meta_key, time() );
+			update_user_meta( $user_id, $this->delay_token_meta_key, wp_hash( $token ) );
+
+			$expiry = time() + ( (int) $this->delay_otp_interval * 60 );
+			$path   = defined( 'COOKIEPATH' ) && COOKIEPATH ? COOKIEPATH : '/';
+			$domain = defined( 'COOKIE_DOMAIN' ) ? COOKIE_DOMAIN : '';
+
+			if ( PHP_VERSION_ID >= 70300 ) {
+				setcookie(
+					self::DELAY_OTP_COOKIE,
+					$token,
+					array(
+						'expires'  => $expiry,
+						'path'     => $path,
+						'domain'   => $domain,
+						'secure'   => is_ssl(),
+						'httponly' => true,
+						'samesite' => 'Lax',
+					)
+				);
+			} else {
+				setcookie( self::DELAY_OTP_COOKIE, $token, $expiry, $path, $domain, is_ssl(), true );
+			}
+			$_COOKIE[ self::DELAY_OTP_COOKIE ] = $token;
+		}
+
+		private function mo_delay_grace_token_matches( $user_id ) {
+			$stored = get_user_meta( $user_id, $this->delay_token_meta_key, true );
+			if ( MoUtility::is_blank( $stored ) ) {
+				return false;
+			}
+			$raw = isset( $_COOKIE[ self::DELAY_OTP_COOKIE ] )
+				? sanitize_text_field( wp_unslash( $_COOKIE[ self::DELAY_OTP_COOKIE ] ) )
+				: '';
+			if ( MoUtility::is_blank( $raw ) ) {
+				return false;
+			}
+			return hash_equals( (string) $stored, wp_hash( $raw ) );
 		}
 
 		/**

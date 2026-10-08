@@ -863,7 +863,13 @@ if ( ! class_exists( 'MoUtility' ) ) {
 		 * @return mixed
 		 */
 		public static function process_phone_number( $phone ) {
-			if ( ! $phone ) {
+			// Callers often pass the result of get_user_meta() directly; an unset/misconfigured
+			// phone-field key can yield an array (or other non-scalar), which must not reach trim().
+			if ( ! is_scalar( $phone ) ) {
+				return;
+			}
+			$phone = (string) $phone;
+			if ( '' === trim( $phone ) ) {
 				return;
 			}
 			$phone                = preg_replace( MoConstants::PATTERN_SPACES_HYPEN, '', ltrim( trim( $phone ), '0' ) );

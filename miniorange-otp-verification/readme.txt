@@ -5,7 +5,7 @@ Tags: OTP, OTP Login, SMS Notifications, Phone Verification, Email Verification
 Requires at least: 4.7.0
 Tested up to: 7.1
 Requires PHP: 5.3.0
-Stable tag: 5.5.7
+Stable tag: 5.5.8
 License: Expat
 License URI: https://plugins.miniorange.com/mit-license
 
@@ -280,6 +280,10 @@ Please mail us at **otpsupport@xecurify.com/info@xecurify.com**. You can also su
 8. OTP Verification Plugin Settings
 
 == Changelog ==
+= 5.5.8 =
+* Security updates for phone based login
+* Renamed the "Delay OTP Verification" login setting to "Skip OTP on repeat logins" and clarified its description.
+
 = 5.5.7 =
 * Added Export Configuration for OTP Verification settings.
 * Added Debug Logs under Troubleshooting for diagnosing OTP delivery issues.
@@ -400,6 +404,9 @@ For older changelog entries, please see the [additional changelog.txt file](http
 
 
 == Upgrade Notice ==
+= 5.5.8 =
+* Security updates for phone based login
+
 = 5.5.7 =
 * Added Export Configuration for OTP Verification settings.
 * Added Debug Logs under Troubleshooting for diagnosing OTP delivery issues.

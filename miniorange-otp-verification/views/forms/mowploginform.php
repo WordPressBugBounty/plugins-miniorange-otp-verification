@@ -164,13 +164,13 @@ echo '	    <div class="mo_registration_help_desc" id="wp_login_options">
 								data-toggle="otp_delay_time_interval"
 								name="mo_customer_validation_wp_login_delay_otp"
 								value="1" ' . esc_attr( $otpd_enabled ) . ' />
-						<b>' . esc_html__( 'Delay OTP Verification', 'miniorange-otp-verification' ) . '</b>
+						<b>' . esc_html__( 'Skip OTP on repeat logins', 'miniorange-otp-verification' ) . '</b>
 						<div class="mo_registration_help_desc_internal" ' . esc_attr( $otpd_enabled_div ) . ' id="otp_delay_time_interval">
 								<div class="flex gap-mo-1">
-									<i>' . esc_html__( 'Enter the interval after which you wish for OTP Verification to get invoked for the user', 'miniorange-otp-verification' ) . ' : </i>
+									<i>' . esc_html__( 'After a user completes OTP once, skip OTP verification on their next logins from the same device for the number of minutes set below; once the time passes, OTP is required again. This does not delay sending the OTP.', 'miniorange-otp-verification' ) . ' : </i>
 									<div class="mo-input-wrapper">
-										<label class="mo-input-label">' . esc_html__( 'Time in mins', 'miniorange-otp-verification' ) . '</label>
-										<input class=" mo-form-input" id="mo_customer_validation_wp_login_phone_field_key" placeholder="' . esc_attr__( 'Enter the time in mins', 'miniorange-otp-verification' ) . '" value="' . esc_attr( $otpd_time_interval ) . '" type="text" name="mo_customer_validation_wp_login_delay_otp_interval" >
+										<label class="mo-input-label">' . esc_html__( 'Skip OTP for (minutes)', 'miniorange-otp-verification' ) . '</label>
+										<input class=" mo-form-input" id="mo_customer_validation_wp_login_phone_field_key" placeholder="' . esc_attr__( 'e.g. 30', 'miniorange-otp-verification' ) . '" value="' . esc_attr( $otpd_time_interval ) . '" type="text" name="mo_customer_validation_wp_login_delay_otp_interval" >
 									</div>
 								</div>
 						</div>

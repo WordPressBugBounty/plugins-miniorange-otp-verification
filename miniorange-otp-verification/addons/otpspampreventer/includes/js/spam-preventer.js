@@ -1563,44 +1563,55 @@
         // Intercept jQuery AJAX responses and store request data for puzzle resubmission
         const originalAjax = $mo.ajax;
         $mo.ajax = function(options) {
-            const originalSuccess = options.success;
-            const originalError = options.error;
-            
+            // jQuery supports two call signatures: $.ajax(settings) and $.ajax(url, settings).
+            // Build a real array (not the arguments object) so .apply() below always forwards
+            // both the url and the settings object we patch, regardless of which form was used.
+            const args = Array.prototype.slice.call(arguments);
+            const isUrlFirst = typeof options === 'string';
+            if (isUrlFirst && !args[1]) {
+                args[1] = {};
+            }
+            const settings = isUrlFirst ? args[1] : options;
+            const requestUrl = isUrlFirst ? options : settings.url;
+
+            const originalSuccess = settings.success;
+            const originalError = settings.error;
+
             // Check if this is an OTP-related request by examining URL or data
-            const isOtpRequest = (options.url && (
-                options.url.indexOf('admin-ajax.php') !== -1 || 
-                options.url.indexOf('otp') !== -1 ||
-                options.url.indexOf('miniorange') !== -1
-            )) || (options.data && (
-                (typeof options.data === 'string' && (options.data.indexOf('otp') !== -1 || options.data.indexOf('miniorange') !== -1)) ||
-                (typeof options.data === 'object' && (options.data.action && (
-                    options.data.action.indexOf('otp') !== -1 || 
-                    options.data.action.indexOf('miniorange') !== -1 ||
-                    options.data.action === 'mo_external_popup_option'
+            const isOtpRequest = (requestUrl && (
+                requestUrl.indexOf('admin-ajax.php') !== -1 ||
+                requestUrl.indexOf('otp') !== -1 ||
+                requestUrl.indexOf('miniorange') !== -1
+            )) || (settings.data && (
+                (typeof settings.data === 'string' && (settings.data.indexOf('otp') !== -1 || settings.data.indexOf('miniorange') !== -1)) ||
+                (typeof settings.data === 'object' && (settings.data.action && (
+                    settings.data.action.indexOf('otp') !== -1 ||
+                    settings.data.action.indexOf('miniorange') !== -1 ||
+                    settings.data.action === 'mo_external_popup_option'
                 )))
             ));
-            
+
             // Wrap success callback to check for puzzle_required
-            options.success = function(response, textStatus, jqXHR) {
+            settings.success = function(response, textStatus, jqXHR) {
                 // Check if this is an external popup request
-                const isExternalPopupRequest = options.data && (
-                    (typeof options.data === 'object' && options.data.action === 'mo_external_popup_option') ||
-                    (typeof options.data === 'string' && options.data.indexOf('mo_external_popup_option') !== -1)
+                const isExternalPopupRequest = settings.data && (
+                    (typeof settings.data === 'object' && settings.data.action === 'mo_external_popup_option') ||
+                    (typeof settings.data === 'string' && settings.data.indexOf('mo_external_popup_option') !== -1)
                 );
-                
+
                 // Check if puzzle is required - if so, store the request for resubmission
                 if (isOtpRequest && response && (response.result === 'puzzle_required' || response.puzzle_required === true || response.authType === 'PUZZLE_REQUIRED')) {
                     window.mo_osp_pending_ajax_request = {
-                        url: options.url,
-                        type: options.type || 'POST',
-                        data: typeof options.data === 'string' ? options.data : (options.data ? JSON.parse(JSON.stringify(options.data)) : {}),
-                        dataType: options.dataType || 'json',
-                        crossDomain: options.crossDomain || false,
+                        url: requestUrl,
+                        type: settings.type || 'POST',
+                        data: typeof settings.data === 'string' ? settings.data : (settings.data ? JSON.parse(JSON.stringify(settings.data)) : {}),
+                        dataType: settings.dataType || 'json',
+                        crossDomain: settings.crossDomain || false,
                         originalSuccess: originalSuccess,
                         originalError: originalError
                     };
                 }
-                
+
                 // CRITICAL: Skip interceptAjaxResponse for external popup success responses
                 // External popup handles its own success/error messages and shouldn't be overwritten
                 if (isExternalPopupRequest && response && response.result === 'success') {
@@ -1610,52 +1621,52 @@
                     }
                     return;
                 }
-                
+
                 // Call interceptAjaxResponse if response has message
                 if (response && (response.message || response.result)) {
                     interceptAjaxResponse(response, null);
                 }
-                
+
                 // Call original success callback
                 if (originalSuccess) {
                     originalSuccess.apply(this, arguments);
                 }
             };
-            
+
             // Wrap error callback
-            options.error = function(jqXHR, textStatus, errorThrown) {
+            settings.error = function(jqXHR, textStatus, errorThrown) {
                 // Try to parse error response
                 try {
                     const response = jqXHR.responseJSON || JSON.parse(jqXHR.responseText);
-                    
+
                     // Check if puzzle is required in error response
                     if (isOtpRequest && response && (response.result === 'puzzle_required' || response.puzzle_required === true || response.authType === 'PUZZLE_REQUIRED')) {
                         window.mo_osp_pending_ajax_request = {
-                            url: options.url,
-                            type: options.type || 'POST',
-                            data: typeof options.data === 'string' ? options.data : (options.data ? JSON.parse(JSON.stringify(options.data)) : {}),
-                            dataType: options.dataType || 'json',
-                            crossDomain: options.crossDomain || false,
+                            url: requestUrl,
+                            type: settings.type || 'POST',
+                            data: typeof settings.data === 'string' ? settings.data : (settings.data ? JSON.parse(JSON.stringify(settings.data)) : {}),
+                            dataType: settings.dataType || 'json',
+                            crossDomain: settings.crossDomain || false,
                             originalSuccess: originalSuccess,
                             originalError: originalError
                         };
                     }
-                    
+
                     if (response && (response.message || response.result)) {
                         interceptAjaxResponse(response, null);
                     }
                 } catch (e) {
                     // Ignore parse errors
                 }
-                
+
                 // Call original error callback
                 if (originalError) {
                     originalError.apply(this, arguments);
                 }
             };
-            
+
             // Call original ajax
-            return originalAjax.apply(this, arguments);
+            return originalAjax.apply(this, args);
         };
     }
 
