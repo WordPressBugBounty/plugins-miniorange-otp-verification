@@ -1483,7 +1483,7 @@ msgstr "अमान्य एक बार पासकोड कृपया �
 
 #: helper/messages.php:146
 msgid ""
-"You password has been reset successfully and sent to your registered email. Please check your "
+"Your password has been reset successfully and sent to your registered email. Please check your "
 "mailbox."
 msgstr ""
 "आपका पासवर्ड सफलतापूर्वक रीसेट हो गया है और आपके पंजीकृत ईमेल को भेजा गया है। कृपया अपने मेलबॉक्स की जांच करें"

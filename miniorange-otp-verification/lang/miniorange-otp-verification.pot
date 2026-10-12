@@ -1320,7 +1320,7 @@ msgid "Invalid one time passcode. Please enter a valid passcode."
 msgstr ""
 
 #: helper/messages.php:146
-msgid "You password has been reset successfully and sent to your registered email. Please check your mailbox."
+msgid "Your password has been reset successfully and sent to your registered email. Please check your mailbox."
 msgstr ""
 
 #: helper/messages.php:147

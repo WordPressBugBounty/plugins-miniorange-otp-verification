@@ -1484,7 +1484,7 @@ msgstr ""
 
 #: helper/messages.php:146
 msgid ""
-"You password has been reset successfully and sent to your registered email. "
+"Your password has been reset successfully and sent to your registered email. "
 "Please check your mailbox."
 msgstr ""
 

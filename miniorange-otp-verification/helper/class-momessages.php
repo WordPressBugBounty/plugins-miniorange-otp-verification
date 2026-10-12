@@ -457,7 +457,7 @@ if ( ! class_exists( 'MoMessages' ) ) {
 
 					self::INVALID_OTP                   => __( 'Invalid one time passcode. Please enter a valid passcode.', 'miniorange-otp-verification' ),
 
-					self::RESET_PASS                    => __( 'You password has been reset successfully and sent to your registered email. Please check your mailbox.', 'miniorange-otp-verification' ),
+					self::RESET_PASS                    => __( 'Your password has been reset successfully and sent to your registered email. Please check your mailbox.', 'miniorange-otp-verification' ),
 
 					self::REQUIRED_FIELDS               => __( 'Please enter all the required fields', 'miniorange-otp-verification' ),
 
