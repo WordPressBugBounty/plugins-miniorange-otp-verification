@@ -5,7 +5,7 @@ Tags: OTP, OTP Login, SMS Notifications, Phone Verification, Email Verification
 Requires at least: 4.7.0
 Tested up to: 7.1
 Requires PHP: 5.3.0
-Stable tag: 5.6.0
+Stable tag: 5.6.1
 License: Expat
 License URI: https://plugins.miniorange.com/mit-license
 
@@ -280,6 +280,12 @@ Please mail us at **otpsupport@xecurify.com/info@xecurify.com**. You can also su
 8. OTP Verification Plugin Settings
 
 == Changelog ==
+= 5.6.1 =
+* Fixed the WooCommerce block checkout OTP popup failing with "Please verify your phone number" when the page has other empty required fields.
+* Fixed OTP verification state being lost on OTP resend and repeat orders.
+* Removed duplicate session cookie headers sent with each request.
+* Fixed sending OTP on the WordPress login form when logging in with an email address.
+
 = 5.6.0 =
 * Fixed a typo in the password reset success message.
 * Readme changes.
@@ -408,6 +414,9 @@ For older changelog entries, please see the [additional changelog.txt file](http
 
 
 == Upgrade Notice ==
+= 5.6.1 =
+* Fixes the WooCommerce block checkout OTP popup, OTP state lost on resend, duplicate session cookies, and sending OTP on login with an email address.
+
 = 5.6.0 =
 * Fixed a typo in the password reset success message.
 * Readme changes.

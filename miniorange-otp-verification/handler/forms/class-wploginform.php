@@ -1358,6 +1358,10 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 
 			$bound_username = MoPHPSessions::get_session_var( 'login_user_mo' );
 			$bound_user     = MoUtility::is_blank( $bound_username ) ? false : get_user_by( 'login', $bound_username );
+			// The session holds the identifier the user typed, which may be their email address.
+			if ( ! $bound_user && is_email( $bound_username ) ) {
+				$bound_user = get_user_by( 'email', $bound_username );
+			}
 			if ( ! $bound_user instanceof WP_User ) {
 				wp_send_json(
 					MoUtility::create_json(

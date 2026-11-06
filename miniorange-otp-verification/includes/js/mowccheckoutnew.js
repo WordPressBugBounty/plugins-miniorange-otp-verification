@@ -331,7 +331,7 @@ jQuery(document).ready(function () {
                 // block-checkout-specific AJAX behavior is used consistently.
                 .off("click")
                 .on("click.moPopupOtp", function (event) {
-                let requiredFields = $mo('[required]');
+                let requiredFields = $mo('.wc-block-checkout__form [required]:visible');
                 let allFieldsFilled = true;
                 requiredFields.each(function () {
                     if (!$mo(this).val().trim()) {

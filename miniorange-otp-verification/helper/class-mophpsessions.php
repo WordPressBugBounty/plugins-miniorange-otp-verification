@@ -57,6 +57,13 @@ if ( ! class_exists( 'MoPHPSessions' ) ) {
 		private static $close_hooks_registered = false;
 
 		/**
+		 * Original session.use_cookies value while it is suppressed for a repeat session_start().
+		 *
+		 * @var string|null
+		 */
+		private static $suppressed_use_cookies = null;
+
+		/**
 		 * Bootstraps storage early so cookies can be set before output (fixes TRANSIENT on cached themes).
 		 *
 		 * @return void
@@ -187,6 +194,43 @@ if ( ! class_exists( 'MoPHPSessions' ) ) {
 			if ( \function_exists( 'session_status' ) && PHP_SESSION_ACTIVE === \session_status() ) {
 				\session_write_close();
 			}
+			self::restore_session_cookie_setting();
+		}
+
+		/**
+		 * Starts the PHP session without re-sending the PHPSESSID cookie once the session ID is known.
+		 *
+		 * @param array $options Options passed to session_start().
+		 * @return bool
+		 */
+		private static function start_php_session( $options = array() ) {
+			if ( '' !== \session_id() && null === self::$suppressed_use_cookies ) {
+				$use_cookies = \ini_get( 'session.use_cookies' );
+				if ( false !== @\ini_set( 'session.use_cookies', '0' ) ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, Squiz.PHP.DiscouragedFunctions.Discouraged -- Prevents duplicate PHPSESSID headers on repeat session_start(); restored on close.
+					self::$suppressed_use_cookies = $use_cookies;
+				}
+			}
+
+			$started = empty( $options ) ? @\session_start() : @\session_start( $options ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+
+			if ( PHP_SESSION_ACTIVE !== \session_status() ) {
+				self::restore_session_cookie_setting();
+			}
+
+			return $started;
+		}
+
+		/**
+		 * Restores session.use_cookies after a suppressed session_start().
+		 *
+		 * @return void
+		 */
+		private static function restore_session_cookie_setting() {
+			if ( null === self::$suppressed_use_cookies || PHP_SESSION_ACTIVE === \session_status() ) {
+				return;
+			}
+			@\ini_set( 'session.use_cookies', self::$suppressed_use_cookies ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, Squiz.PHP.DiscouragedFunctions.Discouraged -- Restores the original session.use_cookies value.
+			self::$suppressed_use_cookies = null;
 		}
 
 		/**
@@ -210,10 +254,10 @@ if ( ! class_exists( 'MoPHPSessions' ) ) {
 			}
 
 			if ( \PHP_VERSION_ID >= 70000 ) {
-				return @\session_start( array( 'read_and_close' => true ) ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+				return self::start_php_session( array( 'read_and_close' => true ) );
 			}
 
-			if ( @\session_start() ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+			if ( self::start_php_session() ) {
 				return isset( $_SESSION );
 			}
 
@@ -240,7 +284,7 @@ if ( ! class_exists( 'MoPHPSessions' ) ) {
 				return false;
 			}
 
-			return @\session_start(); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+			return self::start_php_session();
 		}
 
 		/**
@@ -506,7 +550,11 @@ if ( ! class_exists( 'MoPHPSessions' ) ) {
 					if ( ! $transient_key ) {
 						return false;
 					}
-					return false !== \set_site_transient( 'mo_otp_' . $transient_key . $key, $val, 12 * \HOUR_IN_SECONDS );
+					$transient_name = 'mo_otp_' . $transient_key . $key;
+					if ( false !== \set_site_transient( $transient_name, $val, 12 * \HOUR_IN_SECONDS ) ) {
+						return true;
+					}
+					return \maybe_serialize( \get_site_transient( $transient_name ) ) === \maybe_serialize( $val );
 				case 'COOKIE':
 					if ( \headers_sent() ) {
 						return false;
