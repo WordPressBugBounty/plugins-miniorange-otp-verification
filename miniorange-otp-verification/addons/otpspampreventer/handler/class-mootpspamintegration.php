@@ -120,11 +120,13 @@ if ( ! class_exists( 'MoOtpSpamIntegration' ) ) {
 				$phone_number = '';
 			}
 
-			if ( ! empty( $user_email ) ) {
-				MoPHPSessions::add_session_var( 'user_email', $user_email );
-			}
-			if ( ! empty( $phone_number ) ) {
-				MoPHPSessions::add_session_var( 'phone_number_mo', $phone_number );
+			if ( ! MoSecurityHelper::mosp_login_destination_is_bound() ) {
+				if ( ! empty( $user_email ) ) {
+					MoPHPSessions::add_session_var( 'user_email', $user_email );
+				}
+				if ( ! empty( $phone_number ) ) {
+					MoPHPSessions::add_session_var( 'phone_number_mo', $phone_number );
+				}
 			}
 
 			static $attempt_recorded = false;

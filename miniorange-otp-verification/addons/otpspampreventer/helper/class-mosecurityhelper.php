@@ -36,6 +36,23 @@ if ( ! class_exists( 'MoSecurityHelper' ) ) {
 		const COUNTING_WINDOW_SECONDS = 900; // 15 minutes (15 * 60)
 
 		/**
+		 * Whether the current OTP flow belongs to a logged-in WordPress user.
+		 *
+		 * @return bool
+		 */
+		public static function mosp_login_destination_is_bound() {
+			$login_user = MoPHPSessions::get_session_var( 'login_user_mo' );
+			if ( empty( $login_user ) ) {
+				return false;
+			}
+			$user = get_user_by( 'login', $login_user );
+			if ( ! $user && is_email( $login_user ) ) {
+				$user = get_user_by( 'email', $login_user );
+			}
+			return $user instanceof \WP_User;
+		}
+
+		/**
 		 * Normalize email or phone the same way as puzzle verify / OTP send paths.
 		 *
 		 * @param string $value Raw value.

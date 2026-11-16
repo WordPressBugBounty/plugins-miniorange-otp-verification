@@ -929,11 +929,13 @@ if ( ! class_exists( 'MoOtpSpamPreventerHandler' ) ) {
 
 			$settings = $this->storage->mosp_get_settings();
 
-			if ( ! empty( $user_email ) ) {
-				MoPHPSessions::add_session_var( 'user_email', $user_email );
-			}
-			if ( ! empty( $phone_number ) ) {
-				MoPHPSessions::add_session_var( 'phone_number_mo', $phone_number );
+			if ( ! MoSecurityHelper::mosp_login_destination_is_bound() ) {
+				if ( ! empty( $user_email ) ) {
+					MoPHPSessions::add_session_var( 'user_email', $user_email );
+				}
+				if ( ! empty( $phone_number ) ) {
+					MoPHPSessions::add_session_var( 'phone_number_mo', $phone_number );
+				}
 			}
 
 			$identifiers = $this->mosp_get_request_identifiers( $user_email, $phone_number );

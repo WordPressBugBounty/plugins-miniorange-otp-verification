@@ -334,11 +334,13 @@ if ( ! class_exists( 'MoOtpSpamAjax' ) ) {
 				}
 			}
 
-			if ( ! empty( $email ) ) {
-				MoPHPSessions::add_session_var( 'user_email', $email );
-			}
-			if ( ! empty( $phone ) ) {
-				MoPHPSessions::add_session_var( 'phone_number_mo', $phone );
+			if ( ! MoSecurityHelper::mosp_login_destination_is_bound() ) {
+				if ( ! empty( $email ) ) {
+					MoPHPSessions::add_session_var( 'user_email', $email );
+				}
+				if ( ! empty( $phone ) ) {
+					MoPHPSessions::add_session_var( 'phone_number_mo', $phone );
+				}
 			}
 			$requires_puzzle = $this->handler->mosp_requires_puzzle_verification( $email, $phone, $ip, $browser_id );
 
