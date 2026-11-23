@@ -636,7 +636,8 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			}
 
 			// First-time phone bind must follow authenticate-time password verification (prevents account takeover).
-			if ( (string) MoPHPSessions::get_session_var( 'mo_wp_login_enrollment_ownership_ok' ) !== '1' ) {
+			$owner = $this->mo_get_bound_login_user();
+			if ( ! $owner || (string) MoPHPSessions::get_session_var( 'mo_wp_login_enrollment_ownership_ok' ) !== (string) $owner->ID ) {
 				$this->unset_otp_session_variables();
 				wp_die(
 					esc_html__( 'Phone registration could not be completed. Please sign in again and enter your account password before verifying your phone number.', 'miniorange-otp-verification' ),
@@ -645,34 +646,34 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 				);
 			}
 
-			/**
-			 * Anonymous function that returns the user for the email or
-			 * username that the user has submitted on the login screen
-			 *
-			 * @param $post_data
-			 * @return bool|WP_User
-			 */
-			$get_user_from_post = function ( $post_data ) {
-				$username = MoPHPSessions::get_session_var( 'login_user_mo' );
-
-				if ( ! $username ) {
-					$array    = array_filter(
-						$post_data,
-						function ( $key ) {
-							return strpos( $key, 'username' ) === 0;
-						},
-						ARRAY_FILTER_USE_KEY
-					);
-					$username = ! empty( $array ) ? array_shift( $array ) : $username;
-				}
-				return is_email( $username ) ? get_user_by( 'email', $username ) : get_user_by( 'login', $username );
-			};
-
-			$user  = $get_user_from_post( $post_data );
+			$user = $this->mo_get_bound_login_user();
+			if ( ! $user ) {
+				$this->unset_otp_session_variables();
+				wp_safe_redirect( wp_login_url() );
+				exit;
+			}
 			$phone = MoPHPSessions::get_session_var( 'phone_number_mo' );
 			$phone = $phone ? $phone : '';
 			update_user_meta( $user->data->ID, $this->get_phone_key_details(), $phone );
 			$this->login_wp_user( $user->data->user_login, null, $phone );
+		}
+
+		/**
+		 * Returns the user this login OTP flow was started for, or false.
+		 *
+		 * @return WP_User|false
+		 */
+		private function mo_get_bound_login_user() {
+			$bound_user_id = (int) MoPHPSessions::get_session_var( 'mo_otp_bound_user_id' );
+			$username      = MoPHPSessions::get_session_var( 'login_user_mo' );
+			if ( $bound_user_id <= 0 || MoUtility::is_blank( $username ) ) {
+				return false;
+			}
+			$user = get_user_by( 'login', $username );
+			if ( ! $user && is_email( $username ) ) {
+				$user = get_user_by( 'email', $username );
+			}
+			return ( $user instanceof WP_User && $bound_user_id === (int) $user->ID ) ? $user : false;
 		}
 
 		/**
@@ -686,6 +687,12 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			$user = is_email( $user_log ) ? get_user_by( 'email', $user_log ) : get_user_by( 'login', $user_log );
 			if ( ! $user && $this->mo_allow_login_through_phone() ) {
 				$user = $this->mo_get_user_from_phone_number( $phone_number );
+			}
+			$bound_user_id = (string) MoPHPSessions::get_session_var( 'mo_otp_bound_user_id' );
+			if ( ! $user || '' === $bound_user_id || (string) $user->ID !== $bound_user_id ) {
+				$this->unset_otp_session_variables();
+				wp_safe_redirect( wp_login_url() );
+				exit;
 			}
 			if ( $user ) {
 				wp_set_auth_cookie( $user->data->ID, true );
@@ -1040,7 +1047,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			if ( MoUtility::is_blank( $password ) || ! wp_check_password( $password, $user->user_pass, $user->ID ) ) {
 				$this->mo_redirect_to_login_with_password_for_phone_enrollment( $user->ID );
 			}
-			MoPHPSessions::add_session_var( 'mo_wp_login_enrollment_ownership_ok', '1' );
+			MoPHPSessions::add_session_var( 'mo_wp_login_enrollment_ownership_ok', (string) $user->ID );
 			return null;
 		}
 
@@ -1055,6 +1062,9 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 * @throws ReflectionException .
 		 */
 		public function mo_handle_mo_wp_login( $user, $username, $password ) {
+			if ( is_wp_error( $user ) && ! in_array( $user->get_error_code(), array( 'empty_password', 'incorrect_password', 'invalid_username', 'invalid_email', 'empty_username' ), true ) ) {
+				return $user;
+			}
 			if ( ! MoUtility::is_blank( $username ) ) {
 				$user = $this->mo_get_user( $username, $password );
 
@@ -1125,10 +1135,10 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 				$phone_number = get_user_meta( $user->data->ID, $this->get_phone_key_details(), true );
 				$phone_number = MoUtility::process_phone_number( $phone_number );
 				$this->mo_ask_phone_and_start_verification( $user, $this->get_phone_key_details(), $username, $phone_number );
-				$this->mo_fetch_phone_and_start_verification( $username, $password, $phone_number, $user->data->user_email );
+				$this->mo_fetch_phone_and_start_verification( $username, $password, $phone_number, $user->data->user_email, $user->ID );
 			} elseif ( VerificationType::EMAIL === $otp_type ) {
 				$email = $user->data->user_email;
-				$this->mo_start_email_verification( $username, $email, $password );
+				$this->mo_start_email_verification( $username, $email, $password, $user->ID );
 			}
 		}
 
@@ -1292,6 +1302,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			} else {
 				MoUtility::initialize_transaction( $this->form_session_var );
 				SessionUtils::add_user_in_session( $this->form_session_var, $username );
+				MoPHPSessions::add_session_var( 'mo_otp_bound_user_id', (string) $user->ID );
 				$this->send_challenge(
 					null,
 					$user->data->user_login,
@@ -1322,9 +1333,10 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 * @param string $user_email - the account's email, used as a fallback if the phone OTP send fails.
 		 * @throws ReflectionException .
 		 */
-		private function mo_fetch_phone_and_start_verification( $username, $password, $phone_number, $user_email = null ) {
+		private function mo_fetch_phone_and_start_verification( $username, $password, $phone_number, $user_email = null, $user_id = 0 ) {
 			MoUtility::initialize_transaction( $this->form_session_var2 );
 			SessionUtils::add_user_in_session( $this->form_session_var2, $username );
+			MoPHPSessions::add_session_var( 'mo_otp_bound_user_id', (string) $user_id );
 			$redirect_raw = MoUtility::get_current_page_parameter_value( 'redirect_to', '' );
 			$redirect_to  = wp_validate_redirect( $redirect_raw, MoUtility::current_page_url() );
 			$this->send_challenge( $username, $user_email, null, $phone_number, VerificationType::PHONE, $password, $redirect_to, false, $this->form_session_var );
@@ -1339,9 +1351,10 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 		 * @param array $password - password of the user.
 		 * @throws ReflectionException .
 		 */
-		private function mo_start_email_verification( $username, $email, $password ) {
+		private function mo_start_email_verification( $username, $email, $password, $user_id = 0 ) {
 			MoUtility::initialize_transaction( $this->form_session_var2 );
 			SessionUtils::add_user_in_session( $this->form_session_var2, $username );
+			MoPHPSessions::add_session_var( 'mo_otp_bound_user_id', (string) $user_id );
 			$redirect_raw = MoUtility::get_current_page_parameter_value( 'redirect_to', '' );
 			$redirect_to  = wp_validate_redirect( $redirect_raw, MoUtility::current_page_url() );
 			$this->send_challenge( $username, $email, null, null, VerificationType::EMAIL, $password, $redirect_to, false, $this->form_session_var );
@@ -1371,6 +1384,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 				);
 			}
 			SessionUtils::add_user_in_session( $this->form_session_var, $bound_username );
+			MoPHPSessions::add_session_var( 'mo_otp_bound_user_id', (string) $bound_user->ID );
 			$bound_email = $bound_user->user_email;
 
 			// The login OTP destination is resolved server-side and must belong to the target user.
@@ -1378,7 +1392,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			// which requires prior password ownership proof. Without this an unauthenticated caller
 			// could have the target's login OTP sent to a phone they control and log in as the target.
 			$registered_phone = MoUtility::process_phone_number( get_user_meta( $bound_user->data->ID, $this->get_phone_key_details(), true ) );
-			$ownership_ok     = ( '1' === (string) MoPHPSessions::get_session_var( 'mo_wp_login_enrollment_ownership_ok' ) );
+			$ownership_ok     = ( (string) $bound_user->ID === (string) MoPHPSessions::get_session_var( 'mo_wp_login_enrollment_ownership_ok' ) );
 
 			if ( ! MoUtility::is_blank( $registered_phone ) ) {
 				$target_phone = $registered_phone;
@@ -1500,9 +1514,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 			}
 
 			if ( SessionUtils::is_otp_initialized( $this->form_session_var2 ) ) {
-				$username = MoUtility::is_blank( $user_login ) ? MoUtility::sanitize_check( 'log', $_POST ) : $user_login;
-				$username = MoUtility::is_blank( $username ) ? MoUtility::sanitize_check( 'username', $_POST ) : $username;
-				$this->login_wp_user( $username, $extra_data, $phone_number );
+				$this->login_wp_user( $user_login, $extra_data, $phone_number );
 			}
 		}
 
@@ -1516,6 +1528,7 @@ if ( ! class_exists( 'WPLoginForm' ) ) {
 				array(
 					'mo_wp_login_enrollment_ownership_ok',
 					'mo_wp_login_pending_phone_enrollment_uid',
+					'mo_otp_bound_user_id',
 					$this->tx_session_id,
 					$this->form_session_var,
 					$this->form_session_var2,

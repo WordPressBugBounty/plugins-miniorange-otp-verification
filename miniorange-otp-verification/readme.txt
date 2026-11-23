@@ -5,7 +5,7 @@ Tags: OTP, OTP Login, SMS Notifications, Phone Verification, Email Verification
 Requires at least: 4.7.0
 Tested up to: 7.1
 Requires PHP: 5.3.0
-Stable tag: 5.6.2
+Stable tag: 5.6.3
 License: Expat
 License URI: https://plugins.miniorange.com/mit-license
 
@@ -280,6 +280,10 @@ Please mail us at **otpsupport@xecurify.com/info@xecurify.com**. You can also su
 8. OTP Verification Plugin Settings
 
 == Changelog ==
+= 5.6.3 =
+* Security fix: OTP login state is now kept in a single server-chosen storage and bound to the user it was started for.
+* Security fix: WordPress Login no longer discards errors from other login security checks (captcha, login lockout).
+
 = 5.6.2 =
 * Minor security fix.
 
@@ -417,6 +421,9 @@ For older changelog entries, please see the [additional changelog.txt file](http
 
 
 == Upgrade Notice ==
+= 5.6.3 =
+* Security fixes for OTP login. Upgrade strongly recommended for all sites.
+
 = 5.6.2 =
 * Minor security fix.
 

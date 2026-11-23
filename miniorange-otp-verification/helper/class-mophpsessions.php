@@ -21,12 +21,10 @@ if ( ! class_exists( 'MoPHPSessions' ) ) {
 	 * Implements the IMoSessions interface to provide consistent session handling
 	 * across different storage types: PHP sessions, cookies, cache and transients.
 	 *
-	 * AUTO mode (recommended) picks SESSION or TRANSIENT per browser and falls back
-	 * automatically when the primary mechanism cannot read/write OTP state.
+	 * AUTO mode (recommended) picks SESSION or TRANSIENT on the server for each request;
+	 * all OTP state for a request is read from and written to that one backend.
 	 */
 	class MoPHPSessions implements IMoSessions {
-
-		const STORAGE_MODE_COOKIE = 'mo_otp_storage_mode';
 
 		/**
 		 * Resolved storage type for the current request (SESSION or TRANSIENT when using AUTO/fallback).
@@ -124,13 +122,7 @@ if ( ! class_exists( 'MoPHPSessions' ) ) {
 
 			$storage_type = self::get_configured_storage_type();
 			if ( self::should_cross_fallback() ) {
-				$primary = self::get_effective_storage_type();
-				if ( ! self::write_by_type( $primary, $key, $val ) ) {
-					$alternate = self::get_alternate_storage_type( $primary );
-					if ( self::write_by_type( $alternate, $key, $val ) ) {
-						self::persist_storage_preference( $alternate );
-					}
-				}
+				self::write_by_type( self::get_effective_storage_type(), $key, $val );
 				return;
 			}
 
@@ -149,12 +141,7 @@ if ( ! class_exists( 'MoPHPSessions' ) ) {
 			}
 
 			if ( self::should_cross_fallback() ) {
-				$primary = self::get_effective_storage_type();
-				$value   = self::read_by_type( $primary, $key );
-				if ( null !== $value ) {
-					return $value;
-				}
-				return self::read_by_type( self::get_alternate_storage_type( $primary ), $key );
+				return self::read_by_type( self::get_effective_storage_type(), $key );
 			}
 
 			return self::read_by_type( self::get_configured_storage_type(), $key );
@@ -328,12 +315,9 @@ if ( ! class_exists( 'MoPHPSessions' ) ) {
 			}
 
 			$configured = self::get_configured_storage_type();
-			$sticky     = self::get_sticky_storage_mode();
 
 			if ( 'AUTO' === $configured ) {
-				self::$resolved_type = $sticky ? $sticky : self::detect_auto_storage_type();
-			} elseif ( $sticky ) {
-				self::$resolved_type = $sticky;
+				self::$resolved_type = self::detect_auto_storage_type();
 			} else {
 				self::$resolved_type = in_array( $configured, array( 'SESSION', 'TRANSIENT' ), true ) ? $configured : 'TRANSIENT';
 			}
@@ -344,36 +328,6 @@ if ( ! class_exists( 'MoPHPSessions' ) ) {
 			 * @param string $storage_type SESSION or TRANSIENT.
 			 */
 			return (string) \apply_filters( 'mo_otp_storage_type', self::$resolved_type );
-		}
-
-		/**
-		 * Reads sticky per-browser storage preference set after a fallback.
-		 *
-		 * @return string|null SESSION or TRANSIENT.
-		 */
-		private static function get_sticky_storage_mode() {
-			if ( empty( $_COOKIE[ self::STORAGE_MODE_COOKIE ] ) ) {
-				return null;
-			}
-			$mode = strtoupper( \sanitize_text_field( \wp_unslash( $_COOKIE[ self::STORAGE_MODE_COOKIE ] ) ) );
-			return in_array( $mode, array( 'SESSION', 'TRANSIENT' ), true ) ? $mode : null;
-		}
-
-		/**
-		 * Persists which storage type worked for this browser (12 hours).
-		 *
-		 * @param string $storage_type SESSION or TRANSIENT.
-		 * @return void
-		 */
-		private static function persist_storage_preference( $storage_type ) {
-			$storage_type = strtoupper( (string) $storage_type );
-			if ( ! in_array( $storage_type, array( 'SESSION', 'TRANSIENT' ), true ) || \headers_sent() || ! self::can_set_cookie() ) {
-				return;
-			}
-
-			self::$resolved_type = $storage_type;
-			\setcookie( self::STORAGE_MODE_COOKIE, $storage_type, time() + ( 12 * \HOUR_IN_SECONDS ), \COOKIEPATH, \COOKIE_DOMAIN, \is_ssl(), true );
-			$_COOKIE[ self::STORAGE_MODE_COOKIE ] = $storage_type;
 		}
 
 		/**
@@ -401,16 +355,6 @@ if ( ! class_exists( 'MoPHPSessions' ) ) {
 			}
 
 			return 'TRANSIENT';
-		}
-
-		/**
-		 * Returns the other OTP storage backend.
-		 *
-		 * @param string $primary SESSION or TRANSIENT.
-		 * @return string
-		 */
-		private static function get_alternate_storage_type( $primary ) {
-			return 'SESSION' === $primary ? 'TRANSIENT' : 'SESSION';
 		}
 
 		/**

@@ -217,7 +217,7 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 		 */
 		public function woocommerce_site_registration_errors( WP_Error $errors, $username, $password, $email ) {
 
-			$nonce = isset( $_POST['woocommerce-register-nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['woocommerce-register-nonce'] ) ) : '';
+			$nonce = isset( $_POST['woocommerce-register-nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['woocommerce-register-nonce'] ) ) : ( isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '' );
 			if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'woocommerce-register' ) ) {
 				$errors = new WP_Error(
 					'registration-error-invalid-nonce',
@@ -520,7 +520,7 @@ if ( ! class_exists( 'WooCommerceRegistrationForm' ) ) {
 		 * @param string $password_generated - the password provided by the user.
 		 */
 		public function register_woocommerce_user( $customer_id, $new_customer_data, $password_generated ) {
-			$nonce = isset( $_POST['woocommerce-register-nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['woocommerce-register-nonce'] ) ) : '';
+			$nonce = isset( $_POST['woocommerce-register-nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['woocommerce-register-nonce'] ) ) : ( isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '' );
 			if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'woocommerce-register' ) ) {
 				return;
 			}

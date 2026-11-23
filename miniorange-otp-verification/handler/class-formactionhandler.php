@@ -101,7 +101,7 @@ if ( ! class_exists( 'FormActionHandler' ) ) {
 		private function handleResendOTP( $otp_type, $from_both ) {
 
 			$user_email = MoPHPSessions::get_session_var( 'user_email' );
-			if ( empty( $user_email ) && VerificationType::EMAIL === $otp_type && ! empty( $_POST['mo_fallback_email'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( empty( $user_email ) && VerificationType::EMAIL === $otp_type && ! empty( $_POST['mo_fallback_email'] ) && MoUtility::is_blank( MoPHPSessions::get_session_var( 'mo_otp_bound_user_id' ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				$candidate = sanitize_email( wp_unslash( $_POST['mo_fallback_email'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				if ( is_email( $candidate ) ) {
 					$user_email = $candidate;

@@ -1024,11 +1024,12 @@ if ( ! class_exists( 'MoUtility' ) ) {
 			MoPHPSessions::check_session();
 
 			$reflect = new ReflectionClass( FormSessionVars::class );
-			foreach ( $reflect->getConstants() as $key => $value ) {
-				// Don't unset the current form session variable as we're about to initialize it.
-				if ( $value !== $form ) {
-					MoPHPSessions::unset_session( $value );
-				}
+			$keys    = array_merge(
+				array_values( $reflect->getConstants() ),
+				array( 'user_login', 'user_email', 'phone_number_mo', 'extra_data', 'form_session_var', 'mo_phone_fallback_active', 'mo_otp_bound_user_id' )
+			);
+			foreach ( array_unique( $keys ) as $value ) {
+				MoPHPSessions::unset_session( $value );
 			}
 
 			SessionUtils::initialize_form( $form );
